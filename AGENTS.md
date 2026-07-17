@@ -13,24 +13,22 @@ This file is a discoverability surface, not a behavioral contract.
 
 | Skill | Intent | When non-CC tools should suggest |
 |-------|--------|----------------------------------|
-| `/run` | Single-domain task execution via coordinated agents | "build X", "fix Y", "implement Z" |
-| `/team` | Parallel multi-agent execution with wave-gated quality | "build X in parallel", "complex multi-part Y" |
-| `/org` | Cross-domain C-suite strategic coordination | "strategic Z", "company-wide W" |
+| `/run` | Single-domain task execution via coordinated agents | "build X", "fix Y", "implement Z". Cross-domain strategic work routes here through `/team` strategic mode; quality review/optimize/audit through `/run review\|optimize\|audit ...` |
+| `/team` | Parallel multi-agent execution with wave-gated quality; auto-enables strategic mode for cross-domain requests | "build X in parallel", "complex multi-part Y", "strategic Z", "company-wide W" |
 | `/designer` | Interactive design exploration via guided Q&A | "design X", "plan this through" |
-| `/improve` | Quality improvement (review/optimize/audit) | "review X", "audit Y", "optimize Z" |
 | `/helper` | Command guide and skill recommender | "which command", "how do I", "what can cAgents do" |
 
-## Agent Catalog (238 agents across 9 archetypes)
+## Agent Catalog (58 agents across 9 archetypes)
 
-- `developer/` (30) — backend, frontend, fullstack, infrastructure, quality
-- `operator/` (74) — support, business-ops, people-ops, marketing-sales, content
-- `advisor/` (30) — legal, health, education, personal
-- `analyst/` (31) — data, BI, research, social science
-- `creator/` (11) — visual artists, designers, audiovisual
-- `writer/` (26) — copy, narrative, technical, editorial
-- `strategist/` (9) — product owners, portfolio managers, planners
-- `core/` (15) — pipeline infrastructure (used by skills, not directly routable)
-- `leadership/` (12) — C-suite (used by /org, not directly routable)
+- `developer/` (8) — backend, frontend, fullstack, infrastructure, quality
+- `operator/` (7) — support, business-ops, people-ops, marketing-sales, content
+- `advisor/` (4) — legal, health, education, personal
+- `analyst/` (5) — data, BI, research, social science
+- `creator/` (2) — visual artists, audiovisual
+- `writer/` (4) — copy, narrative, technical, editorial
+- `strategist/` (3) — product owners, portfolio managers, planners
+- `core/` (16) — pipeline infrastructure (used by skills, not directly routable)
+- `leadership/` (9) — C-suite (used by /team strategic mode, not directly routable)
 
 ## How non-CC tools can use this
 
@@ -42,14 +40,14 @@ This file is a discoverability surface, not a behavioral contract.
 2. **Gemini-CLI / OpenCode**: Same as above. cAgents agents are SKILL.md
    files in standard frontmatter format — readable but not natively
    executable without Claude Code's hook + state-machine infrastructure.
-3. **For deeper integration**: see `docs/MULTI_TOOL_DEPLOYMENT.md` (planned
-   for REC-8) for a roadmap on tool-specific deployment paths.
+3. **For deeper integration**: see `docs/MULTI_TOOL_DEPLOYMENT.md` for a
+   roadmap on tool-specific deployment paths.
 
 ## Conventions
 
 - All agents live under one of 9 archetype roots (no per-domain agent dirs since v11.1.0).
-- Skill discovery: `.claude/skills/<name>/SKILL.md` — these are the 6 user-facing entry points.
-- Plugin manifest: `.claude-plugin/plugin.json` — registers all 238 agents + 6 skills + 27 hooks.
+- Skill discovery: `.claude/skills/<name>/SKILL.md` — these are the 4 user-facing entry points.
+- Plugin manifest: `.claude-plugin/plugin.json` — registers 58 agents + 4 skills + 24 registered hooks (32 .cjs files total).
 
 ## Authoritative References
 

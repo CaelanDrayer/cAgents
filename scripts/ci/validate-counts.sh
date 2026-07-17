@@ -148,7 +148,7 @@ if [ -n "$stale_totals" ]; then
 fi
 
 # Check 3: .claude/settings.json $comment field hook counts.
-# Pattern: "31 .cjs files = 24 unique registered hooks ... 18 event types"
+# Pattern: "32 .cjs files = 24 unique registered hooks ... 18 event types"
 SETTINGS_COMMENT=$(jq -r '."$comment" // empty' .claude/settings.json)
 if [ -n "$SETTINGS_COMMENT" ]; then
   if ! echo "$SETTINGS_COMMENT" | grep -qE "\b${HOOK_FILES}\b.*\b${REGISTERED_HOOKS}\b"; then
@@ -157,7 +157,7 @@ if [ -n "$SETTINGS_COMMENT" ]; then
   fi
 fi
 
-# Check 4: .claude/rules/core/hooks.md mentions both 31 .cjs and 24 unique.
+# Check 4: .claude/rules/core/hooks.md mentions both 32 .cjs and 24 unique.
 if ! grep -qE "${HOOK_FILES} .cjs files? .*${REGISTERED_HOOKS} unique" .claude/rules/core/hooks.md; then
   # Fallback: looser check
   if ! grep -qE "\b${HOOK_FILES}\b" .claude/rules/core/hooks.md \
@@ -307,6 +307,32 @@ if [ -n "$claude_stale_total" ]; then
     report_mismatch "$CLAUDE_MD_PATH (CLAUDE.md agent-total absence check)" "$phrase" \
       "$ACTIVE_AGENTS (agent total)"
   done <<< "$claude_stale_total"
+fi
+
+# Check 14 (WI-6): AGENTS.md agent-total + per-archetype counts must match disk.
+# AGENTS.md is the multi-tool routing guide at the repo root. Its "Agent Catalog"
+# header states the total ("58 agents across 9 archetypes") and each archetype
+# line states a per-archetype count ("`developer/` (8)"). Both are compared
+# against the canonical values already derived above: ACTIVE_AGENTS (from
+# plugin.json) for the total, and ARCH_COUNTS (find-based SKILL.md counts,
+# _deprecated excluded) for each archetype — so AGENTS.md is tied to BOTH
+# plugin.json and the on-disk SKILL.md tree. Presence checks, mirroring Check 7
+# (docs/agents/index.md). Guarded by [ -f AGENTS.md ] so it no-ops if the file
+# is ever removed.
+if [ -f AGENTS.md ]; then
+  # Total: AGENTS.md must state "<ACTIVE_AGENTS> agents".
+  if ! grep -qE "\b${ACTIVE_AGENTS} agents\b" AGENTS.md; then
+    actual=$(grep -oE "\b[0-9]+ agents\b" AGENTS.md | head -1)
+    report_mismatch "AGENTS.md" "${actual:-agent total}" "$ACTIVE_AGENTS agents"
+  fi
+  # Per-archetype: AGENTS.md must state "`<arch>/` (<count>)" for each archetype.
+  for arch in developer operator advisor analyst creator writer strategist core leadership; do
+    count=${ARCH_COUNTS[$arch]}
+    if ! grep -qE "\`${arch}/\` \(${count}\)" AGENTS.md; then
+      actual=$(grep -oE "\`${arch}/\` \([0-9]+\)" AGENTS.md | head -1)
+      report_mismatch "AGENTS.md" "${actual:-${arch} count}" "\`${arch}/\` (${count})"
+    fi
+  done
 fi
 
 # ---- Result ----------------------------------------------------------------

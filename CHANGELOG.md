@@ -10,6 +10,38 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.44.0] - 2026-07-16
+
+**Documentation-accuracy sweep** (session `run_docs-cleanup_260716_001`). A pass over
+the living docs to re-anchor stale catalog counts, entry-point lists, and pointer
+targets on current v12.43.0 facts, plus a new CI guard so the AGENTS.md counts cannot
+drift again. This is a **minor bump** (not a tiny bump) per the version-registry.md
+"Audit / consolidation sessions" guidance — the change spans multiple docs, a CI script,
+and stale-comment fixes.
+
+### Fixed
+- **`AGENTS.md` rewritten to accurate v12.43.0 facts.** Corrected the agent total from a
+  stale `238` to `58` (with the correct per-archetype breakdown), dropped the removed
+  `/org` and `/improve` skills, fixed the hook count to `24`, de-staled the
+  `MULTI_TOOL_DEPLOYMENT` section, and corrected the "6 entry points" claim to the
+  actual **4** skills (`/run`, `/team`, `/designer`, `/helper`).
+- **Living-doc `238` de-stale.** `docs/ARCHITECTURE.md` current-catalog claim corrected
+  from `251` to `58`. The `238` line-count references in `docs/OPTIMIZATION_PROGRESS.md`
+  and `docs/REMAINING_OPTIMIZATIONS.md` are historical line-count figures and were
+  correctly left untouched.
+- **`docs/README.md` pointer repairs.** Fixed pointers to the dead `archive/docs/` path,
+  the pre-v11.1.0 `{domain}/agents` path, and the `{domain}/config` note.
+- **Stale hook-count comment.** Corrected a `31`→`32` `.cjs` file-count comment.
+
+### Added
+- **AGENTS.md count guard** — `scripts/ci/validate-counts.sh` Check 14 asserts the agent
+  total and per-archetype breakdown in AGENTS.md match the registered catalog, so the
+  counts cannot silently drift again.
+
+### Changed
+- **`docs/README.md` reorganized** into Canonical / Historical / Redirect-tombstone
+  index sections for clearer navigation.
+
 ## [12.43.0] - 2026-07-16
 
 **Production-readiness audit + fix pass** (audit session
