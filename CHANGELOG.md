@@ -10,6 +10,45 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.50.1] - 2026-07-17
+
+**Phase 5a follow-up — nested-shell true-positive regression fix (R2).** An
+independent `cagents:reviewer` pass on v12.50.0 found a real, verified
+true-positive regression the REC-08 relaxation introduced: an interpreter
+obfuscation wrapped in a nested shell — `sh -c "python3 -c 'import os;
+os.system(1)'"`, `bash -c "node -e '…child_process…'"`, `sh -c "curl … | sh"` —
+was DENIED by the pre-REC-08 belt but ALLOWED after. The wrapped interpreter
+canonicalizes to one whitespace-bearing `-c` argument token, so the v12.50.0
+command-position confirmation treated it as data — yet `sh -c` *executes* the
+payload, and the sound evaluator does not recurse into `sh -c` interiors (unlike
+`$(…)`/backticks), so the command leaked entirely. This is an arbitrary-code-
+execution bypass, so it is fixed (not merely documented).
+
+### Fixed
+- **`standaloneCommandWords()` now recurses a shell interpreter's `-c` payload**
+  (`.claude/hooks/bash-validator.cjs`). When a segment is `sh|bash|zsh|dash|ksh|ash
+  -c "PAYLOAD"`, the PAYLOAD is re-tokenized (bounded depth 3) and its command-
+  position words are folded into the confirmation set, because the payload is
+  executed as a shell command. So `sh -c "python3 -c 'os.system(…)'"` confirms the
+  wrapped `python3` → still denies, restoring the pre-REC-08 true positive. Benign
+  nested shells stay allowed — `sh -c "echo 'python3 -c os.system'"` (payload only
+  echoes text), `sh -c "python3 script.py"`, `sh -c "python3 -c 'print(1)'"` — and
+  the original REC-08 quoted-data false positives (`echo`/`grep`) remain allowed.
+  The recursion still only ever NARROWS a belt deny to allow → adds no false
+  positive; it re-adds coverage the confirmation had over-removed.
+
+### Added
+- **11 nested-shell regression cases** in `tests/hooks/bash-guard-guardfall.test.js`
+  (6 deny for the wrapped-interpreter ACE shapes, 5 allow for benign nested shells
+  + the preserved echo/grep false positives) — the failing-before/passing-after
+  guard for the reviewer's finding.
+
+### Changed
+- Documented the nested-shell coverage in
+  `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` § 5.1 (corrects the v12.50.0
+  "no true positive regresses" reasoning to account for the `-c` recursion; heredoc
+  interiors remain the honest § 7 residual).
+
 ## [12.50.0] - 2026-07-17
 
 **Phase 5a — GuardFall relaxation (REC-08 / REC-09)** (audit session
