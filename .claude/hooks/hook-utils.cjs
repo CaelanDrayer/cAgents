@@ -102,6 +102,23 @@ function isTerminalState(s) {
   return TERMINAL_STATES.includes(normalizeTerminalState(s));
 }
 
+// SUCCESS terminal states (post-normalize): the subset of TERMINAL_STATES that
+// represent a genuinely SUCCESSFUL completion. `VALIDATED` and `complete` (plus
+// the aliases completed/COMPLETE/FINALIZED, which normalize to `complete`) are
+// success terminals; `failed` / `aborted` / `incomplete` are terminal-but-NOT
+// -success. Used by the REC-02/03/06 honesty discriminator so a stall relabelled
+// `incomplete` (a terminal state) is never mistaken for a success.
+const SUCCESS_TERMINAL_STATES = ['VALIDATED', 'complete'];
+
+/**
+ * True iff the (normalized) value is a SUCCESS terminal state
+ * (VALIDATED / complete / completed / COMPLETE / FINALIZED). Returns false for
+ * failed / aborted / incomplete and for every non-terminal / unknown / null value.
+ */
+function isSuccessTerminalState(s) {
+  return SUCCESS_TERMINAL_STATES.includes(normalizeTerminalState(s));
+}
+
 // Grace period for accepting sessions without status.yaml (handles the race condition where
 // the trigger agent hasn't written status.yaml yet). 5 minutes covers typical pipeline init time.
 // Design intent: long enough to bridge session dir creation → first status write gap,
@@ -181,6 +198,84 @@ function extractYamlValue(content, key) {
 function countPattern(content, pattern) {
   const matches = content.match(pattern);
   return matches ? matches.length : 0;
+}
+
+/**
+ * REC-02/03/06 (v12.47.0) — the honesty discriminator.
+ *
+ * True ONLY when a session is GENUINELY validated, as opposed to a stall that a
+ * Stop/SessionEnd safety net laundered into `complete`/`PASS`/`completed`. This
+ * is the single source of truth consumed by BOTH verify-completion.cjs (Stop) and
+ * team-stop.cjs (SessionEnd), so the two hooks can never drift apart.
+ *
+ * ALL THREE conditions must hold:
+ *   (1) the resolved pipeline_state/phase is a SUCCESS terminal
+ *       (VALIDATED / complete / completed / FINALIZED) — never failed / aborted /
+ *       incomplete / any non-terminal state; AND
+ *   (2) a REAL validation_report.yaml exists with a PASS / PARTIAL_PASS
+ *       classification that was NOT written by a hook safety net. The stub writer
+ *       (autoResolveWarnings) always stamps
+ *       `generated_by: verify-completion-hook-safety-net`, so any report whose
+ *       `generated_by` names a hook/safety-net stub is rejected. A MISSING report
+ *       is rejected too (no verdict ⇒ not genuine); AND
+ *   (3) for plan-bearing sessions (workflow/plan.yaml exists), a
+ *       coordination_log.yaml with a `completed`/terminal status exists. Sessions
+ *       with no plan.yaml skip this requirement.
+ *
+ * On ANY read/parse error this returns false — fail toward "not genuine", the
+ * safe direction (a broken discriminator never launders a stall into a success).
+ *
+ * Provenance note: the hook-fabricated PASS stub is the ONLY code path that emits
+ * a PASS report without a validator agent, and it always carries the safety-net
+ * marker, so rejecting that marker reliably separates fabricated from genuine. A
+ * genuine validator report carries a real `generated_by` (e.g. `cagents:validator`)
+ * OR — for legacy/older reports — no marker at all; a marker-less non-stub PASS is
+ * therefore accepted, preserving the pre-existing clean-session contract (a real
+ * verdict that simply omits a provenance line).
+ *
+ * @param {string} sessionDir - absolute session directory path
+ * @param {string|null} [statusContent] - status.yaml content, if already read
+ * @returns {boolean}
+ */
+function sessionGenuinelyValidated(sessionDir, statusContent) {
+  try {
+    if (!sessionDir) return false;
+    let status = statusContent;
+    if (!status) status = safeRead(path.join(sessionDir, 'status.yaml'));
+    if (!status) return false;
+
+    // (1) SUCCESS terminal (VALIDATED / complete / …) — never a stall label.
+    const state = extractYamlValue(status, 'pipeline_state')
+      || extractYamlValue(status, 'phase')
+      || extractYamlValue(status, 'current_phase');
+    if (!isSuccessTerminalState(state)) return false;
+
+    // (2) A REAL, non-safety-net PASS/PARTIAL_PASS validation_report.
+    const valRaw = safeRead(path.join(sessionDir, 'workflow', 'validation_report.yaml'));
+    if (!valRaw) return false; // no validator verdict ⇒ not genuine
+    const generatedBy = (extractYamlValue(valRaw, 'generated_by') || '').toLowerCase();
+    if (generatedBy.includes('safety-net') || generatedBy.includes('verify-completion-hook')) {
+      return false; // hook-fabricated stub ⇒ not genuine
+    }
+    const classification = extractYamlValue(valRaw, 'classification')
+      || extractYamlValue(valRaw, 'overall_status')
+      || extractYamlValue(valRaw, 'status');
+    if (classification !== 'PASS' && classification !== 'PARTIAL_PASS') return false;
+
+    // (3) Plan-bearing sessions require a completed/terminal coordination_log.
+    const hasPlan = fs.existsSync(path.join(sessionDir, 'workflow', 'plan.yaml'));
+    if (hasPlan) {
+      const coordRaw = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+      if (!coordRaw) return false;
+      const coordStatus = extractYamlValue(coordRaw, 'status');
+      if (!coordStatus) return false;
+      if (coordStatus !== 'completed' && !isTerminalState(coordStatus)) return false;
+    }
+
+    return true;
+  } catch {
+    return false; // fail toward "not genuine"
+  }
 }
 
 /**
@@ -1279,8 +1374,11 @@ module.exports = {
   SESSION_PREFIXES,
   TERMINAL_STATES,
   TERMINAL_ALIASES,
+  SUCCESS_TERMINAL_STATES,
   normalizeTerminalState,
   isTerminalState,
+  isSuccessTerminalState,
+  sessionGenuinelyValidated,
   SESSION_DISCOVERY_GRACE_PERIOD_MS,
   MAX_SESSION_START_CHARS,
   MAX_ATTENTION_CHARS,

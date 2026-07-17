@@ -360,11 +360,16 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'coordination_log.yaml'),
         'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n    evidence: "done"\n');
 
-      // No validation_report.yaml — autoResolveWarnings should create it
+      // No validation_report.yaml — autoResolveWarnings should create it.
+      // REC-02 (v12.47.0): a hook-created stub is NOT a genuine validator verdict,
+      // so it now carries overall_status: UNKNOWN (never a fabricated PASS). This
+      // session has no real validation_report, so sessionGenuinelyValidated() is
+      // false and the honest stub value is UNKNOWN.
       const result = runHook({ session_id: TEST_SESSION });
       expect(existsSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'))).toBe(true);
       const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'), 'utf8');
-      expect(content).toContain('overall_status: PASS');
+      expect(content).toContain('overall_status: UNKNOWN');
+      expect(content).not.toContain('overall_status: PASS');
       expect(content).toContain('verify-completion-hook-safety-net');
     });
 

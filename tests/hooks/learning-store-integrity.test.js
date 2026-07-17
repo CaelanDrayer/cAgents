@@ -68,7 +68,7 @@ function outcomeFor(sid) {
   return null;
 }
 
-describe.skip('learning-store integrity — gate success-capture on genuine validation (REC-06; Phase 2 un-skips)', () => {
+describe('learning-store integrity — gate success-capture on genuine validation (REC-06; Phase 2 un-skips)', () => {
   const dirs = [];
   afterEach(() => cleanup(dirs));
 

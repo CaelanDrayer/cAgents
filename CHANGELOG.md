@@ -10,6 +10,86 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.47.0] - 2026-07-17
+
+**Phase 2 — honesty core: stop the laundering (REC-02/03/06)** (audit session
+`team_plugin-full-audit_260717_001`, ACTION-PLAN Phase 2). The Stop-hook /
+SessionEnd-hook safety net can no longer record an INIT/0-agent stall, a
+mid-flight COORDINATED stall, or a hook-fabricated PASS as `complete`/`PASS`/
+`completed`, and the learning store stops ingesting fabricated success. All three
+recommendations share one honesty discriminator, so they land together. **Minor
+bump** (not patch): it spans two hooks + a shared helper + a test-expectation fix
+across >5 non-registry files, exempt from the patch-only ≤5-file cap per
+`.claude/rules/core/version-registry.md`. Consumes the Phase-1 (REC-01) terminal
+enum.
+
+### Added
+- **`hook-utils.cjs` — `sessionGenuinelyValidated(sessionDir, statusContent)`**:
+  the single-source-of-truth honesty discriminator consumed by BOTH
+  `verify-completion.cjs` (Stop) and `team-stop.cjs` (SessionEnd) so the two
+  hooks can never drift. Returns true ONLY when ALL hold: (1) the resolved
+  `pipeline_state`/`phase` is a **SUCCESS terminal** (VALIDATED/complete/
+  completed/FINALIZED — never failed/aborted/incomplete/non-terminal); (2) a
+  **real, non-safety-net** `validation_report.yaml` with a PASS/PARTIAL_PASS
+  classification exists (the hook stub stamps
+  `generated_by: verify-completion-hook-safety-net`; any report whose
+  `generated_by` names a hook/safety-net stub is rejected, and a missing report
+  is rejected too — a marker-less non-stub PASS is still accepted, preserving the
+  pre-existing clean-session contract); (3) for plan-bearing sessions a
+  `coordination_log.yaml` with a `completed`/terminal status exists. Any read
+  error → false (fail toward "not genuine", the safe direction).
+- **`hook-utils.cjs` — `SUCCESS_TERMINAL_STATES` + `isSuccessTerminalState(s)`**:
+  the success subset of the Phase-1 terminal enum (`VALIDATED`/`complete`), so a
+  stall relabelled `incomplete` (itself a terminal state) is never read as a
+  success. All three symbols exported.
+
+### Changed
+- **REC-02 — `verify-completion.cjs`, three fabrication sites gated on
+  `sessionGenuinelyValidated`**:
+  - **Force-terminal patch**: a non-terminal session at Stop is finalized to
+    `complete` ONLY when genuinely validated, else `incomplete` — never the old
+    `result.issues.length === 0 ? 'complete' : 'failed'` that laundered a
+    zero-issue stall into `complete`. (Genuine sessions never reach this patch —
+    `applyValidatedToCompleteTransition` already stamped them terminal.)
+  - **Stub `validation_report.yaml` (`autoResolveWarnings`)**: `overall_status`/
+    `status` now `UNKNOWN` for a non-genuine session (was an unconditional
+    fabricated `PASS`). The stub is only ever written when the real report is
+    missing, so it is UNKNOWN by construction.
+  - **Stub `execution_summary.yaml` status field**: `incomplete` for a
+    non-genuine session (was `completed`/`unknown` off a raw state string).
+  - The `autoResolveWarnings` entry gate was relaxed from "TERMINAL only" to
+    "terminal OR a validation-expecting state" so a stalled COORDINATED session
+    receives honest UNKNOWN/incomplete stubs (previously it received none).
+- **REC-03 — `team-stop.cjs` `generateExecutionSummary`**: the status default is
+  no longer the unconditional `let status = 'completed'` that stamped an
+  INIT/0-agent stall as a success. Now: explicit `failed`/`partial` (from
+  `status.yaml`) win first, else `completed` ONLY when
+  `sessionGenuinelyValidated` is true, else `incomplete`. Shares the exact
+  discriminator with `verify-completion.cjs`.
+- **REC-06 — `verify-completion.cjs` learning capture gated on genuine
+  validation**: LP-24 `successes:` is emitted only for a genuinely-validated
+  session (a fabricated safety-net PASS reads `overall_status: PASS` too, so the
+  raw verdict alone is insufficient); PC-09 root `learnings.yaml`
+  `completion_status` is `completed` only when genuine, else `incomplete`; and
+  `session_outcomes.jsonl` `pass_fail` is now three-way
+  (`pass`/`fail`/`incomplete`, gated on genuine) with a new
+  `genuinely_validated: <bool>` field for honest downstream filtering.
+
+### Tests
+- **Un-skipped** the two Phase-0 scaffolds this bump makes pass:
+  `tests/hooks/verify-completion-honesty.test.js` (5 tests — INIT/0-agent +
+  COORDINATED-no-validation + fabricated-PASS resolve to `incomplete`/`UNKNOWN`;
+  a genuine VALIDATED positive control still resolves `complete`/PASS) and
+  `tests/hooks/learning-store-integrity.test.js` (3 tests — a fabricated PASS
+  writes NO `successes:` and records `pass_fail: incomplete` /
+  `genuinely_validated: false`; a genuine session still writes `successes:` +
+  `pass`). The Phase-3 targets (`verify-completion-active-wait.test.js`,
+  `verify-completion-stale-child.test.js`) stay skipped for Phase 3.
+- **Updated one existing expectation**: `tests/hooks/verify-completion.test.js`
+  "should auto-create validation_report.yaml …" now expects the honest
+  `overall_status: UNKNOWN` (was the fabricated `PASS`), since a hook-created
+  stub is never a genuine validator verdict.
+
 ## [12.46.0] - 2026-07-17
 
 **Phase 1 — canonical terminal-state enum + normalizer + CI guard (REC-01)**
