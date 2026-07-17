@@ -198,17 +198,51 @@ const HITL_PATTERNS = [
 // Fail-CLOSED: on a tokenize error return null and the caller keeps the deny
 // (never relax the guard on un-parseable input; the evaluator already fail-closes
 // such input in Stage 1 anyway).
-function standaloneCommandWords(rawCommand) {
+//
+// v12.50.1 (R2 nested-shell fix): a shell interpreter with a `-c` string —
+// `sh -c "PAYLOAD"`, `bash -c '…'` — EXECUTES PAYLOAD as a shell command, so
+// PAYLOAD's OWN command-position words are real command words one level down.
+// Without this, `sh -c "python3 -c 'os.system(1)'"` canonicalizes the whole
+// payload to one whitespace-bearing `-c` argument token, so `python3` was never a
+// standalone word → the belt skipped the deny → an interpreter-obfuscation ACE
+// that the pre-REC-08 belt DID block leaked. We recurse the `-c` payload (bounded
+// depth) and fold in its command words, so `sh -c "python3 -c os.system"` is
+// confirmed → still denied, while `echo 'python3 …'` / `sh -c "echo 'python3 …'"`
+// (data, not executed as an interpreter) stay allowed — the recursion only adds a
+// word for a REAL command-position interpreter inside the executed payload.
+const SHELL_INTERPRETERS = new Set(['sh', 'bash', 'zsh', 'dash', 'ksh', 'ash']);
+const MAX_SHELL_C_DEPTH = 3; // sh -c "sh -c '…'" nesting cap
+
+function standaloneCommandWords(rawCommand, _depth) {
+  const depth = _depth || 0;
   let segments;
   try { segments = tokenize(rawCommand).segments; }
   catch (e) { return null; }
   const words = new Set();
   for (const seg of segments) {
-    for (const t of (seg.argv || [])) {
+    const argv = seg.argv || [];
+    for (const t of argv) {
       const c = t && t.canon;
       if (c && !/\s/.test(c)) {
         const base = c.split('/').pop() || c;
         if (base) words.add(base);
+      }
+    }
+    // Recurse a shell interpreter's `-c` payload (its interior is executed).
+    if (depth < MAX_SHELL_C_DEPTH && argv.length >= 2) {
+      const head = argv[0].canon;
+      const headBase = (head && !/\s/.test(head)) ? (head.split('/').pop() || head) : '';
+      if (SHELL_INTERPRETERS.has(headBase)) {
+        for (let k = 1; k < argv.length - 1; k++) {
+          if (argv[k].canon === '-c') {
+            const payload = argv[k + 1] && argv[k + 1].canon;
+            if (payload) {
+              const inner = standaloneCommandWords(payload, depth + 1);
+              if (inner) { for (const w of inner) words.add(w); }
+            }
+            break;
+          }
+        }
       }
     }
   }

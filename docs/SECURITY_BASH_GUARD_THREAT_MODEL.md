@@ -265,10 +265,18 @@ untouched, so the 35-probe corpus verdicts and every true positive are preserved
   invocation (including `env python3 -c …` and `ruby -e '\`…\`'`, which the
   evaluator itself does not cover) keeps the interpreter as a standalone token and
   still denies. Literal-shape entries (fork bomb, `rm -rf /`, `mkfs`, `sudo`,
-  exfil) are unchanged and still match the raw string. Heredoc-embedded payloads
-  remain the §7 residual — the tokenizer does not parse heredoc quoting, so a
-  `node`/`python3` word inside a `<<EOF` body still reads as command-position
-  (conservative: it denies, not leaks).
+  exfil) are unchanged and still match the raw string. **Nested-shell interiors
+  are covered (v12.50.1):** a shell interpreter with a `-c` string —
+  `sh -c "python3 -c 'os.system(…)'"`, `bash -c '…'` — *executes* its payload, so
+  `standaloneCommandWords` recurses the `-c` payload (bounded depth 3) and folds
+  in its command-position words. The wrapped interpreter is therefore confirmed
+  and still denies, while `sh -c "echo 'python3 …'"` (the payload merely echoes
+  text) stays allowed. This closes a true-positive regression a reviewer found in
+  v12.50.0, where the wrapped interpreter canonicalized to one `-c` argument token
+  and slipped the confirmation. Heredoc-embedded payloads remain the §7 residual —
+  the tokenizer does not parse heredoc quoting, so a `node`/`python3` word inside a
+  `<<EOF` body still reads as command-position (conservative: it denies, not
+  leaks).
 
 - **REC-09 — `CAGENTS_BASH_GUARD` override** (parity with
   `CAGENTS_DELEGATION_ENFORCEMENT`; declared in `.claude/settings.json` `env`,
