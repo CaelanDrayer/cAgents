@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent } = require('./hook-utils.cjs');
 
 // Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
 // Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
@@ -1861,6 +1861,25 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
     const jsonlPath = path.join(learningDir, 'session_outcomes.jsonl');
     fs.appendFileSync(jsonlPath, JSON.stringify(outcome) + '\n');
     console.error(`[VerifyCompletion] Session outcome appended to ${path.relative(PROJECT_ROOT, jsonlPath)}`);
+
+    // REC-16 (v12.51.0): structured per-session lifecycle events for the Stop
+    // gate. `outcome` records the terminal roll-up beside session_outcomes.jsonl;
+    // `gate` records this Stop hook's block/allow decision. Both are emitted here
+    // where the outcome-scope vars are live (outcomePipelineState / *AgentCount /
+    // *WorkItemCount). Fail-open + lock-protected + session-scoped.
+    appendSessionEvent(sessionDir, {
+      type: 'outcome',
+      pass_fail: outcome.pass_fail,
+      work_item_count: outcomeWorkItemCount,
+      agent_count: outcomeAgentCount
+    });
+    appendSessionEvent(sessionDir, {
+      type: 'gate',
+      decision: result.issues.length > 0 ? 'block' : 'pass',
+      pipeline_state: outcomePipelineState,
+      issues: result.issues.length,
+      warnings: result.warnings.length
+    });
   } catch (e) {
     console.error(`[VerifyCompletion] Session outcome JSONL error (non-fatal): ${e.message}`);
   }

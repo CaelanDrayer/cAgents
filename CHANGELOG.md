@@ -10,6 +10,66 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.51.0] - 2026-07-17
+
+**Phase 5b — logging & session visibility (REC-10/14/15/16).** Audit
+`team_plugin-full-audit_260717_001` (Wave-2 `fix-plumbing.md`, AREA 1 + FIX 2.3)
+found the debug/observability surface un-greppable by cAgents session id: the
+global spawn audit logged raw SDK transcript UUIDs, there was no structured
+per-session lifecycle stream, `delegation_audit.log` was the only un-rotated log
+and carried no session field, and `session-catchup` sorted candidate sessions
+lexicographically (slug beat date) while never filtering stale test fixtures.
+This minor bump makes a failed run reconstructable from greppable, session-keyed
+stores. All four fixes are additive and fail-open; none removes a public
+contract.
+
+### Added
+- **REC-16 — structured per-session event stream `workflow/events.jsonl`**
+  (`.claude/hooks/hook-utils.cjs` new exported `appendSessionEvent(sessionDir,
+  evt)`; wired into `subagent-tracker.cjs` `spawn`, `subagent-stop-tracker.cjs`
+  `stop`, and `verify-completion.cjs` `gate` + `outcome`). Restores the
+  per-session timeline that `workflow/events/` provided before its v12.6.0
+  removal, but written by DETERMINISTIC hooks (not model-dependent skill prose,
+  the failure mode that killed the old EVT files) so it is useful even when a
+  skill omits optional lines. The helper is session-scoped (caller passes the
+  chain-resolved dir — never newest-active), lock-protected (`withFileLock`,
+  matching the agent_tree concurrency contract), and fail-open (a logging
+  failure never breaks the hook). Per-session + append-only ⇒ no rotation.
+
+### Changed
+- **REC-10 — global spawn audit logs the RESOLVED session basename, not the raw
+  SDK UUID** (`.claude/hooks/subagent-tracker.cjs`). The `agent_spawns.log` line
+  now reads `session=<run_slug_date> | sdk_uuid=<last-8-hex>` instead of
+  `session=<full-uuid>`, making the single cross-session audit trail greppable by
+  cAgents session id while keeping a short UUID tail for transcript correlation.
+  When no session resolves, the label falls back to the full session_id (never a
+  bare `unknown` unless the UUID is also absent).
+- **REC-14 — `delegation_audit.log` rotates at 1MB, stamps the resolving session,
+  and drops no-signal rows** (`.claude/hooks/model-routing-advisor.cjs`). Adds
+  the same 1MB size-based rotation idiom the other cAgents logs use, a
+  `session=<basename>` field (resolved via the deterministic chain, falling back
+  to the raw session_id then `unknown`), and a skip for rows that carried zero
+  diagnostic value (empty desc AND default model). The only previously-un-rotated
+  cAgents log (756K / 6911 lines and growing) is now bounded and correlatable.
+- **REC-15 — `session-catchup` sorts by directory mtime and skips test fixtures**
+  (`.claude/hooks/session-catchup.cjs`). The resume-offer candidate list now
+  sorts newest-first by directory mtime (the old `.sort().reverse()` sorted the
+  whole dir name, so the slug dominated the date — `team_zzz_260101` outranked
+  the newer `run_aaa_260716`) and drops fixture sessions via a token-delimited
+  `test|fixture` marker (matches `team_test-stop_…`, `…_fixture_…`; does NOT
+  match incidental substrings like `latest`/`contest`). Directly reduces the
+  prompt-router-consolidation footgun flake caused by stale fixture sessions
+  lingering in the git-ignored `cagents-memory/sessions/`.
+
+### Tests
+- `tests/hooks/subagent-tracker-session-label.test.js` (REC-10 log-line format +
+  UUID-tail fallback), `tests/hooks/session-events-jsonl.test.js` (REC-16 schema
+  + ordering + null no-op + fail-open + concurrent-lock + spawn/stop hook
+  wiring), `tests/hooks/delegation-audit-rotation.test.js` (REC-14 session stamp
+  + 1MB rotation + no-signal skip), `tests/hooks/session-catchup-mtime-sort.test.js`
+  (REC-15 mtime sort + fixture skip + latest-slug precision). Failing-before /
+  passing-after per the Bug-Driven Testing mandate.
+
 ## [12.50.1] - 2026-07-17
 
 **Phase 5a follow-up — nested-shell true-positive regression fix (R2).** An

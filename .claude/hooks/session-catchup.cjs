@@ -76,15 +76,35 @@ function isSessionLive(sessionDir) {
   return false;
 }
 
+// REC-15 (v12.51.0): fixture/test session marker. Matches a `test`/`fixture`
+// token delimited by `_`/`-`/start/end (e.g. team_test-stop_260317_999,
+// run_test_login, ..._fixture_...) but NOT an incidental substring inside a real
+// slug (latest, contest, fastest, greatest). Fixture sessions created by the
+// vitest suite linger in the git-ignored cagents-memory/sessions/ and must never
+// pollute the resume offer / newest-active resolution (the prompt-router
+// consolidation footgun flake).
+const FIXTURE_SESSION_RE = /(^|[_-])(test|fixture)s?([_-]|$)/i;
+
 function findIncompleteSessions() {
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) return [];
 
   const incomplete = [];
+  // REC-15 (v12.51.0): sort candidate sessions newest-first by DIRECTORY MTIME
+  // (as intended) rather than lexicographically by dir name. The old
+  // `.sort().reverse()` sorted the whole name, so the slug dominated the date
+  // (team_zzz_260101 outranked run_aaa_260716) and genuinely-newest incomplete
+  // sessions fell outside the top-10 slice. Also drop test-fixture sessions so
+  // stale vitest fixtures can never appear in the resume offer.
   const sessions = fs.readdirSync(sessionsDir)
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
-    .sort()
-    .reverse();
+    .filter(d => !FIXTURE_SESSION_RE.test(d))
+    .map(d => ({
+      d,
+      m: (() => { try { return fs.statSync(path.join(sessionsDir, d)).mtimeMs; } catch { return 0; } })()
+    }))
+    .sort((a, b) => b.m - a.m)
+    .map(x => x.d);
 
   for (const session of sessions.slice(0, 10)) {
     const sessionDir = path.join(sessionsDir, session);
@@ -224,7 +244,7 @@ createHook('SessionCatchup', async (input) => {
   // skill set is /run, /team, /designer, /helper — the guidance below must
   // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
   // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
-  let cagentsContext = 'cAgents V12.50.1 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /run keyword router: /run review <target>, /run optimize <target>, or /run improve <target> (v12.1.2 — the standalone improve skill was folded into /run). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.51.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /run keyword router: /run review <target>, /run optimize <target>, or /run improve <target> (v12.1.2 — the standalone improve skill was folded into /run). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0; path corrected in WI-5, session
   // run_improve-skills-hooks_260703_001): the CANONICAL product-context

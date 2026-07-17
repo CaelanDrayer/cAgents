@@ -32,7 +32,7 @@ try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap, appendSessionEvent } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
@@ -239,8 +239,17 @@ createHook('SubagentTracker', async (input) => {
   // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
   const parentAgent = inferParentAgent(sessionDir, subagentType, agentId);
 
-  // Build a global audit log entry regardless of session state
-  const auditEntry = `${now} | agent_id=${agentId} | type=${subagentType} | parent=${parentAgent} | session=${input.session_id || 'unknown'}`;
+  // Build a global audit log entry regardless of session state.
+  // REC-10 (v12.51.0): log the RESOLVED session basename (a human-readable
+  // run_slug_date, greppable across the audit trail) instead of the raw SDK
+  // transcript UUID that arrives as input.session_id. Keep a short UUID tail
+  // (last 8 hex) as a correlatable fallback so a `session=unknown` line is still
+  // tied back to its transcript. sessionDir is fully resolved (all 3 passes) or
+  // null here; when null the label falls back to the full UUID (never the bare
+  // literal `unknown` unless the UUID is also absent).
+  const sessionLabel = sessionDir ? path.basename(sessionDir) : (input.session_id || 'unknown');
+  const sdkTail = input.session_id ? String(input.session_id).slice(-8) : 'unknown';
+  const auditEntry = `${now} | agent_id=${agentId} | type=${subagentType} | parent=${parentAgent} | session=${sessionLabel} | sdk_uuid=${sdkTail}`;
   appendToGlobalAuditLog(auditEntry);
 
   if (!sessionDir) {
@@ -408,6 +417,17 @@ createHook('SubagentTracker', async (input) => {
   });
 
   if (total === -1) return null; // dedup: already recorded
+
+  // REC-16 (v12.51.0): structured per-session lifecycle event (fail-open,
+  // lock-protected, session-scoped — sessionDir was resolved via the
+  // deterministic chain above). One `spawn` line per newly-tracked agent.
+  appendSessionEvent(sessionDir, {
+    type: 'spawn',
+    agent_id: agentId,
+    agent_type: cagentsType || subagentType,
+    parent: parentAgent,
+    depth
+  });
 
   console.error(`[SubagentTracker] Spawned ${subagentType} (id: ${agentId}, session: ${path.basename(sessionDir)})`);
 

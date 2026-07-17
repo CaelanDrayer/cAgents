@@ -920,6 +920,45 @@ function ensureDir(dirPath) {
 }
 
 /**
+ * Append one lifecycle event to a session's structured event stream
+ * (`workflow/events.jsonl`, one JSON object per line). REC-16 (v12.51.0).
+ *
+ * Restores the per-session structured timeline that `workflow/events/` provided
+ * before it was removed in v12.6.0 — but written by DETERMINISTIC hooks (spawn /
+ * stop / gate / outcome), not model-dependent skill prose, so it is useful even
+ * when a skill omits optional lines (the failure mode that killed the old EVT
+ * files). An operator reconstructs a failed run from three greppable stores:
+ * this JSONL (ordered lifecycle timeline), `agent_spawns.log` (cross-session
+ * spawn context), and `status.yaml` state_history.
+ *
+ * Contract:
+ *   - SESSION-SCOPED: the caller passes the session dir it already resolved via
+ *     the deterministic chain (never the newest-active heuristic); a null/absent
+ *     sessionDir is a silent no-op so an unresolved hook never cross-writes.
+ *   - LOCK-PROTECTED: the append is wrapped in withFileLock (keyed on the file
+ *     path) so concurrent writers in the same session never truncate each other,
+ *     matching the agent_tree.yaml concurrency contract.
+ *   - FAIL-OPEN: every failure is swallowed to stderr — emitting an event must
+ *     NEVER break the hook that called it. Per-session + append-only ⇒ no
+ *     rotation is needed (the stream dies with the session dir).
+ *
+ * @param {string} sessionDir - absolute session directory (resolved by caller).
+ * @param {object} evt - event payload; a `ts` ISO timestamp is stamped
+ *   automatically and `type` should be one of spawn|stop|gate|outcome.
+ */
+function appendSessionEvent(sessionDir, evt) {
+  try {
+    if (!sessionDir) return; // unresolved session ⇒ never cross-write
+    const f = path.join(sessionDir, 'workflow', 'events.jsonl');
+    ensureDir(path.dirname(f));
+    const line = JSON.stringify({ ts: new Date().toISOString(), ...(evt || {}) }) + '\n';
+    withFileLock(f, () => fs.appendFileSync(f, line));
+  } catch (e) {
+    console.error('[appendSessionEvent] non-fatal: ' + (e && e.message));
+  }
+}
+
+/**
  * Generate a filesystem-safe timestamp slug.
  * Example: "2026-02-05_09-46-24"
  */
@@ -1405,6 +1444,7 @@ module.exports = {
   resolveSdkUuidToSession,
   removeSdkPointer,
   ensureDir,
+  appendSessionEvent,
   getTimestampSlug,
   getWaypointPath,
   assignGrade,
