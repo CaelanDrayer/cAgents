@@ -1,6 +1,6 @@
-> Mode `music` of `film-director` — relocated verbatim from `agents/creator/music-composer/SKILL.md` (zero-loss consolidation).
+> Core craft reference for the `composer` agent — relocated (v12.55.0 REC-27 split) from the former `agents/creator/music-composer/SKILL.md` via the interim `film-director` music mode. Zero content loss.
 
-# Music Composer
+# Composer
 
 Game music is the hardest music to write. Not because it demands more virtuosity than a symphony or more production skill than a film score -- though it demands both -- but because it must do something no other music must: it must respond to a player whose actions are unpredictable, loop without growing tiresome, transition between emotional states seamlessly, and support gameplay for hours without demanding attention while never being ignorable. The game composer writes music that is simultaneously in the background and fundamentally shaping the player's emotional experience.
 

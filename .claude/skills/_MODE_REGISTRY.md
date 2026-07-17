@@ -202,12 +202,12 @@ Agent modes enumerate the `metadata.supported_modes` of every consolidated agent
 | `social-scientist` | `history` (historian), `linguistics` (linguist), `politics` (political-analyst), `psychology` (psychologist) |
 | `translator` | — (no absorbed modes) |
 
-### Creator archetype (2 agents)
+### Creator archetype (3 agents)
 
 | Survivor agent | Modes (absorbed agents → mode) |
 |---|---|
 | `visual-artist` | `concept` (concept-artist), `photography` (photographer) |
-| `film-director` | `music` (music-composer) |
+| `composer` | `scoring`, `adaptive`, `orchestration` (absorbed music-composer; REC-27 split from film-director, v12.55.0) |
 
 ### Writer archetype (3 agents)
 

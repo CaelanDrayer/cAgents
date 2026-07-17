@@ -10,6 +10,51 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.55.0] - 2026-07-17
+
+**Phase 7b (bump 2 of 3) — REC-27: split `film-director` → `composer` (59 → 60).**
+Audit `team_plugin-full-audit_260717_001` (`SECOND-PASS-SUMMARY.md` § 6 MISMATCH;
+Wave-2 `fix-agents.md` § 3) found `film-director` bundled two genuinely different
+crafts under one film title: film directing (cinematography/screenwriting/editing)
+and adaptive **game music** composition (orchestration/leitmotif/interactive audio)
+— joined only by the `creator` archetype, with no shared method. This bump splits
+them: `film-director` narrows to film/video direction, and the music craft becomes
+a dedicated `composer` agent. Second of three independently revertible Phase-7b
+bumps. Minor bump (agents + counts across CLAUDE.md / README / AGENTS.md / docs / a
+count-guard test, exempt from the tiny-bump ≤5-file cap).
+
+### Added
+- **`composer`** live agent at `agents/creator/composer/SKILL.md` (archetype
+  `creator`, no branch, tier execution). Three coherent music modes — `scoring`,
+  `adaptive`, `orchestration` — with a purpose-first description advertising all
+  modes plus a NOT-for boundary (film/video direction → `film-director`; visual
+  art → `visual-artist`). The 4 music resource files
+  (`music.md`, `music-expertise.md`, `music-adaptive-music.md`,
+  `music-best-practices.md`) were `git mv`'d verbatim from
+  `film-director/resources/` into `composer/resources/` (zero content loss; the
+  `music.md` provenance header updated to name `composer`).
+
+### Changed
+- **`film-director`** narrowed to film/video direction only: dropped the `music`
+  supported-mode, the 8 music capabilities, and the 4 music `@resource` refs;
+  rewrote the description purpose-first (cinematography, screenwriting, editing,
+  production design, actor direction, festival/distribution) with a NOT-for
+  pointing music work at `composer`; added `composer` to `related_agents`.
+- **`music-composer → composer`** fold alias added to
+  `scripts/migration/v12-aliases.yaml` (decision Q8) — the legacy `music-composer`
+  name (previously folded into `film-director`'s `music` mode without an alias row)
+  now resolves to its true specialist home `composer`. Coverage block
+  `total_aliases` 68 → 69. `.claude/skills/_MODE_REGISTRY.md` creator section
+  updated (2 → 3 agents; `composer` row replaces the `film-director` music row).
+- Catalog count 59 → 60 everywhere machine-checked and human-facing: CLAUDE.md
+  (`60 agents` occurrences + `60-agent catalog` + Quick Reference `60 total` +
+  creator `2 → 3` in the archetype table and breakdown), README.md (count strings +
+  per-archetype table Creator `2 → 3` + TOTAL), AGENTS.md (`60 agents` +
+  `creator/` (3) + manifest line), the manifest descriptions
+  (`plugin.json` + `marketplace.json`), and the docs total/per-archetype claims.
+  `tests/v12/doc-counts-match-disk.test.js` `59 → 60`. `validate-counts.sh` and
+  `validate-agents.sh` both green at 60/60.
+
 ## [12.54.0] - 2026-07-17
 
 **Phase 7b (bump 1 of 3) — REC-25: restore `customer-success-manager` as a live

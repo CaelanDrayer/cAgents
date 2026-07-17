@@ -559,6 +559,20 @@ aliases:
     notes: "REC-38 (v12.53.0): core 'team' renamed to 'team-bootstrap' to remove the naming collision with the /team skill AND the team-lead agent. Same team-init / wave-bootstrap scope; dir moved to agents/core/team-bootstrap/."
     new_path: agents/core/team-bootstrap/SKILL.md
 
+  # ---------------------------------------------------------------------------
+  # REC-27 (audit team_plugin-full-audit_260717_001, v12.55.0): film-director
+  # split — the interactive/game-music craft became the dedicated `composer`
+  # agent. The former `music-composer` (folded into film-director's `music`
+  # mode in the v12.0 consolidation) now resolves to `composer`, its true
+  # specialist home. type: fold ⇒ `new` must resolve to a live SKILL.md
+  # (agents/creator/composer/). decision: Q8.
+  # ---------------------------------------------------------------------------
+  - old: cagents:music-composer
+    new: cagents:composer
+    type: fold
+    decision: Q8
+    notes: "REC-27 (v12.55.0): film-director split. The game/adaptive-music craft moved out of film-director's `music` mode into the dedicated `composer` agent (creator archetype). Legacy `music-composer` now resolves to `composer` (modes scoring/adaptive/orchestration)."
+
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
 coverage:
   engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
@@ -576,7 +590,8 @@ coverage:
   a3_designer_consolidations: 7    # ux-designer, business-analyst, concept-artist, copywriter, product-designer, research-specialist, instructional-designer (A3 audit — designer-referenced folds; dba deferred, its only ref is an out-of-scope playbook)
   w2c_legacy_backfill: 33          # REC-07 (audit team_plugin-full-audit_260717_001): 19 Tier1-3 individually specified + 14 Tier-4 batch. dba promoted here (64 spawns contradicted the A3 deferral).
   rec38_core_renames: 2            # REC-38 (v12.53.0): executor→execution-monitor, team→team-bootstrap (core-agent coherence renames)
-  total_aliases: 68                 # 33 prior (9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3) + 33 W2-C backfill + 2 REC-38 renames
+  rec27_composer_split: 1          # REC-27 (v12.55.0): music-composer→composer (film-director split)
+  total_aliases: 69                 # 33 prior (9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3) + 33 W2-C backfill + 2 REC-38 renames + 1 REC-27 fold
 
 # Notes for router consumers
 # - Router fallback semantics: on receiving an old name, log a deprecation warning
