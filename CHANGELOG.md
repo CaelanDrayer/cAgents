@@ -10,6 +10,47 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.56.0] - 2026-07-17
+
+**Phase 7b (bump 3 of 3) — REC-26 trim + REC-30 count housekeeping (no count
+change, stays 60).** The non-structural cleanup half of Phase 7b: trim the
+`operations-manager` grab-bag and correct three stale/dead counts. No agent is
+added or removed, so the catalog stays at 60/60. Third of three independently
+revertible Phase-7b bumps. Minor bump (agent trim + resource deletions + doc-count
+corrections, exempt from the tiny-bump ≤5-file cap).
+
+### Changed
+- **REC-26 — `operations-manager` trimmed 8 → 6 modes.** Per audit
+  `team_plugin-full-audit_260717_001` `fix-agents.md` § 2, the `scribe`
+  (meeting-notes/documentation) and `finance` (budgets/financial-analysis) modes
+  share no method with the core operations cluster (process / agile / project /
+  procurement / supply-chain / quality-mgmt). Both modes were removed from
+  `supported_modes`, `capabilities`, the mode-selection table, and the mode-resource
+  list; the description now carries a NOT-for boundary and `not-my-scope` gains the
+  two moved scopes; the body routes documentation → `technical-writer` and
+  budgets/finance → `cfo` / `data-scientist`. The 9 orphaned `scribe-*` / `finance-*`
+  resource files were `git rm`'d. `.claude/skills/_MODE_REGISTRY.md` operations-manager
+  row updated. No alias / routing referenced the removed modes (verified).
+- **REC-30 — dead haiku/support model+tier claim dropped from CLAUDE.md.**
+  Disk-verified that **0** agents declare `model: haiku` and **0** declare
+  `tier: support` (model dist: 9 opus / 24 opusplan / 27 sonnet; tier dist:
+  26 controller / 22 execution / 12 infrastructure). The Quick Reference Models
+  line no longer claims `haiku (support, Haiku 4.5)`; it now names the three
+  in-use aliases (opusplan/opus/sonnet) and states haiku/support remain available
+  in `model_routing.yaml` but unused by the catalog.
+- **REC-30 — "absorbed agents" count recomputed from disk: 84 → 88.** Method
+  (reproducible): `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md
+  | sort -u | wc -l` = **88** distinct former agents folded into a survivor mode
+  flag (120 total mode entries across 32 multi-mode agents; the broader
+  mode-OR-alias union is 127). The audit's "~112" was an over-estimate; the stale
+  "84" was low. Updated in CLAUDE.md and `docs/12-FACTOR-COMPLIANCE.md`.
+- **Count housekeeping — stale `42 routable` → `44 routable`** (60 − 16 core = 44).
+  Bumps 1-2 added two routable agents (customer-success-manager, composer) but the
+  `42 routable + 16 core` phrasing (= 58, contradicting the 60 total) was left
+  behind in CLAUDE.md, README.md, `docs/GETTING_STARTED.md`, `docs/ARCHITECTURE.md`,
+  `docs/12-FACTOR-COMPLIANCE.md`, `docs/agents/index.md`, and `docs/CONTRIBUTING.md`.
+  All corrected. `validate-counts.sh` and `validate-agents.sh` remain green at 60/60.
+
 ## [12.55.0] - 2026-07-17
 
 **Phase 7b (bump 2 of 3) — REC-27: split `film-director` → `composer` (59 → 60).**
