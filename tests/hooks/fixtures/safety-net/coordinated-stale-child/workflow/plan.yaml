@@ -1,0 +1,14 @@
+# FIXTURE (b) plan.yaml — present so verify-completion.cjs's `hasPlan` branch is
+# reachable and the coordination_log-enforcement block (:688/:714) can fire.
+# coordination_log.yaml is DELIBERATELY ABSENT from this fixture dir.
+plan_id: run_bash-guard-evaluator_260708_001
+tier: 3
+domain: engineering
+mission: "Reproduce the controller-background-yield stall shape."
+objectives:
+  - id: OBJ-1
+    description: "Placeholder objective for the stall fixture."
+controller_assignment:
+  primary: cagents:tech-lead
+success_criteria:
+  - "coordination_log.yaml written"

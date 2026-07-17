@@ -1,0 +1,14 @@
+# POSITIVE CONTROL agent_tree — a real child controller that STOPPED cleanly.
+schema_version: '1'
+root:
+  agent: run
+  agent_type: cagents:run
+  depth: 0
+  spawned_at: "2026-07-17T05:00:00.000Z"
+  stopped_at: "2026-07-17T05:05:00.000Z"
+agents:
+  - id: tl-done-1
+    type: cagents:tech-lead
+    depth: 1
+    spawned_at: "2026-07-17T05:00:30.000Z"
+    stopped_at: "2026-07-17T05:04:30.000Z"

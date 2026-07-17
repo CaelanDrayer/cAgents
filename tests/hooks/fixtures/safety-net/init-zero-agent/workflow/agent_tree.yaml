@@ -1,0 +1,12 @@
+# FIXTURE (a) agent_tree — ZERO child agents. The `root:` block exists (its
+# stopped_at stays null for the whole open session, so the discriminator must
+# EXCLUDE it), but `agents:` is empty: 0 `- id:` entries. This empty child list
+# is the load-bearing signal for REC-04 (INIT 0-child heartbeat gate).
+schema_version: '1'
+root:
+  agent: run
+  agent_type: cagents:run
+  depth: 0
+  spawned_at: "2026-05-27T10:00:00.000Z"
+  stopped_at: null
+agents: []

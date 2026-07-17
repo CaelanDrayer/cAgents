@@ -1,0 +1,13 @@
+# FIXTURE (a) SMOKING-GUN — the fabricated summary team-stop.cjs:242
+# (generateExecutionSummary) produces for an INIT/0-agent stall. `let status =
+# 'completed'` has no success check, so a 0-agent INIT stall is stamped
+# `status: completed` with `final_state: INIT` and `agent_count: 0` — the exact
+# N1-MCP fabrication. REC-03 must derive `status: incomplete` for this shape.
+session_id: "run_repo-refactor-review_260527_001"
+final_state: INIT
+status: completed
+agent_count: 0
+duration_seconds: 0
+started_at: "2026-05-27T10:00:00.000Z"
+completed_at: "2026-05-27T10:00:05.000Z"
+generated_by: session-stop-hook
