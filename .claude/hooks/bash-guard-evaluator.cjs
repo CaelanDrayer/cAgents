@@ -19,6 +19,23 @@
  *   5. CANONICAL-TOKEN-ANCHORED disabled list (legacy superset + Class-E +
  *      sensitive-path guard)
  *
+ * WI-P1 (§5.1/§7 argv[0] wrapper-bypass closure, session
+ * run_audit-remediation_260717_001): component 5's structured checks were
+ * anchored on basename(argv[0]) === 'rm'/'dd'/'find'/'sed'/'install'/'chmod'.
+ * A transparent wrapper (nice/env/timeout/nohup/ionice/setsid/stdbuf/time/
+ * command/exec) or a leading NAME=VALUE assignment prefix occupies argv[0]
+ * instead, so the real command was never inspected. resolveEffectiveCommand()
+ * now resolves past a leading run of assignment tokens and known transparent
+ * wrappers before those SIX specific checks run (rm-family, dd, find, sed,
+ * install, chmod — NOT the eval/python|node|perl|ruby|php -c|-e obfuscation
+ * checks, which stay argv[0]-anchored on purpose so the existing REC-08/
+ * REC-09 belt-only env/backtick warn->ask / off->allow downgrade semantics
+ * are untouched). checkDisabledList also now recurses a shell interpreter's
+ * `-c '<payload>'` argument through the evaluator (bounded depth, mirroring
+ * the existing $(...)/backtick recursion), and isDangerousPath recognizes
+ * any '~/...' path, the bare root-glob '/*', and '/home' as protected —
+ * closing the sh -c transport and home-glob/subdir destruction bypass shapes.
+ *
  * Verdict model (external shapes returned by evaluate()):
  *   provably-safe        -> null           (proceed to normal permission flow)
  *   ambiguous/dual-use   -> { hookSpecificOutput: { hookEventName:'PreToolUse',
@@ -57,13 +74,22 @@ function isSensitivePath(p) {
 }
 
 // System roots whose deletion/overwrite is (almost) never legitimate for an
-// agent. Deliberately EXCLUDES /home and /tmp so project/temp paths stay allow.
+// agent. Deliberately EXCLUDES /tmp so temp paths stay allow. /home IS
+// included (WI-P1): a recursive-force delete anywhere under a multi-user home
+// tree is never legitimate for an agent, so it is treated like the other
+// protected roots (matches bare '/home' AND any subdir/subpath beneath it,
+// same as '/etc' already did). Any '~'-anchored path (bare '~', '~/', a glob
+// under it '~/*', or a named subdir '~/Documents') is also protected (WI-P1
+// broadening from the prior bare-'~'/'~/' -only check) — the entire home
+// directory tree is treated as protected, not just its root. The bare
+// root-glob '/*' is protected too, independent of any specific root name.
 function isDangerousPath(p) {
   if (!p) return false;
   const s = String(p);
   if (s === '/') return true;
-  if (s === '~' || s === '~/') return true;
-  if (/^\/(etc|usr|bin|sbin|lib|lib64|boot|sys|proc|dev|root|var|opt)(\/|$)/.test(s)) return true;
+  if (s === '/*') return true;
+  if (/^~(\/.*)?$/.test(s)) return true;
+  if (/^\/(etc|usr|bin|sbin|lib|lib64|boot|sys|proc|dev|root|var|opt|home)(\/|$)/.test(s)) return true;
   if (isSensitivePath(s)) return true;
   return false;
 }
@@ -77,6 +103,79 @@ function basename(v) {
   const parts = s.split('/');
   return parts[parts.length - 1] || s;
 }
+
+// ── WI-P1: transparent wrapper / assignment-prefix resolution ──────────────
+// A destructive command can be smuggled past the argv[0]-anchored structured
+// checks in checkDisabledList by prefixing it with an env-var assignment
+// (`FOO=bar rm -rf /etc`) or a transparent wrapper that re-execs its own argv
+// unchanged (`nice rm -rf /etc`, `timeout 5 dd of=/dev/sda`). resolveEffective
+// Command() walks past a leading run of assignment tokens and known wrappers
+// (consuming each wrapper's own flags/operands) to land on the argv bash will
+// actually execve(). Deliberately consulted ONLY by the rm/dd/find/sed/
+// install/chmod checks and the shell -c recursion below — NOT by the eval /
+// python|node|perl|ruby|php -c|-e obfuscation checks, which stay argv[0]-
+// anchored on purpose so the existing REC-08/REC-09 belt-only env/backtick
+// warn->ask / off->allow downgrade semantics are untouched.
+const WRAPPER_CMDS = new Set([
+  'env', 'nice', 'ionice', 'nohup', 'setsid', 'stdbuf', 'timeout', 'time', 'command', 'exec'
+]);
+// Short/long options that consume a SEPARATE next token as their value (for
+// the wrappers above). Options not listed are assumed value-less, or to carry
+// their value combined (e.g. -oL, -n10, --chdir=DIR) — see the combined-form
+// detection in resolveEffectiveCommand.
+const WRAPPER_VALUE_OPTS = {
+  env: new Set(['-u', '--unset', '-C', '--chdir', '-S', '--split-string', '-a', '--argv0']),
+  nice: new Set(['-n', '--adjustment']),
+  ionice: new Set(['-c', '--class', '-n', '--classdata', '-p', '--pid']),
+  stdbuf: new Set(['-i', '--input', '-o', '--output', '-e', '--error']),
+  timeout: new Set(['-s', '--signal', '-k', '--kill-after'])
+};
+
+function resolveEffectiveCommand(argv) {
+  const n = argv.length;
+  let i = 0;
+  while (i < n) {
+    const tok = argv[i];
+    // Leading NAME=VALUE assignment: only a real literal counts (not a
+    // variable-substitution token that happens to canonicalize with an '=').
+    if (tok.litLen > 0 && tok.varCount === 0 && tok.substCount === 0 &&
+        /^[A-Za-z_][A-Za-z0-9_]*=/.test(tok.canon)) {
+      i++; continue;
+    }
+    const base = basename(tok.canon);
+    if (WRAPPER_CMDS.has(base)) {
+      i++;
+      const valueOpts = WRAPPER_VALUE_OPTS[base] || new Set();
+      let sawDuration = false;
+      while (i < n) {
+        const t = argv[i];
+        const v = t.canon;
+        if (v !== '-' && /^-/.test(v)) {
+          i++;
+          const isLongEq = /^--[A-Za-z-]+=/.test(v);
+          const isShortCombined = !/^--/.test(v) && v.length > 2 && /^-[A-Za-z]/.test(v);
+          if (!isLongEq && !isShortCombined && valueOpts.has(v)) i++;
+          continue;
+        }
+        // `timeout DURATION cmd...` — the first non-option token after
+        // `timeout` is a bare duration operand, not the command; skip it once.
+        if (base === 'timeout' && !sawDuration) { sawDuration = true; i++; continue; }
+        break;
+      }
+      continue; // may chain further (e.g. `env FOO=1 nice -n 5 rm ...`)
+    }
+    break; // not an assignment, not a wrapper -> this is the resolved command
+  }
+  return argv.slice(i);
+}
+
+// Shell interpreters whose `-c '<payload>'` argument is EXECUTED, not merely
+// passed as data — the payload is recursed through the evaluator (bounded
+// depth) so a destructive command hidden in the payload is not invisible to
+// component 5 (mirrors the existing $(...)/backtick recursion in
+// checkCommandSubstitution).
+const SHELL_INTERPRETERS_EVAL = new Set(['sh', 'bash', 'zsh', 'dash']);
+const MAX_SHELL_C_DEPTH = 3;
 
 const INTERPRETERS = new Set([
   'sh', 'bash', 'zsh', 'dash', 'ksh', 'ash', 'csh', 'tcsh', 'fish',
@@ -551,7 +650,8 @@ const ASK_CANON = [
   { re: /\bfdisk\b/, msg: 'fdisk modifies partition tables. Verify the device and back up first.' }
 ];
 
-function checkDisabledList(segments, canon) {
+function checkDisabledList(segments, canon, depth) {
+  let shellCAsk = null;
   // ---- structured DENY checks ----
   for (const seg of segments) {
     const argv = seg.argv;
@@ -560,14 +660,23 @@ function checkDisabledList(segments, canon) {
       const rest = argv.slice(1);
       const joined = rest.map(t => t.canon).join(' ');
 
+      // WI-P1: resolve past a transparent wrapper / assignment prefix for the
+      // six checks below that are anchored on the resolved command name
+      // (rm-family, dd, find, sed, install, chmod). `rcmd`/`rrest` deliberately
+      // stay UNUSED by the eval/python|node|perl|ruby|php checks further down
+      // (see the module header note) — those keep using the raw `cmd`/`rest`.
+      const resolved = resolveEffectiveCommand(argv);
+      const rcmd = resolved.length ? basename(resolved[0].canon) : '';
+      const rrest = resolved.length ? resolved.slice(1) : [];
+
       // rm-family recursive-force of a literal protected path
-      if (isDestructiveFileCmd(cmd) && hasRecursiveForce(argv)) {
-        if (rest.some(t => t.litLen > 0 && isDangerousPath(t.canon))) return D('recursive/forced delete of a protected path');
+      if (isDestructiveFileCmd(rcmd) && hasRecursiveForce(resolved)) {
+        if (rrest.some(t => t.litLen > 0 && isDangerousPath(t.canon))) return D('recursive/forced delete of a protected path');
       }
 
       // dd writing to a device / protected path (or zero/random source)
-      if (cmd === 'dd') {
-        for (const t of rest) {
+      if (rcmd === 'dd') {
+        for (const t of rrest) {
           const v = t.canon;
           if (/^of=/.test(v)) {
             const tgt = v.slice(3);
@@ -581,13 +690,28 @@ function checkDisabledList(segments, canon) {
       if (/^mkfs(\.[a-z0-9]+)?$/.test(cmd)) return D('mkfs (filesystem format destroys data)');
 
       // find -delete / -exec rm on a protected root
-      if (cmd === 'find') {
-        const hasDelete = rest.some(t => t.canon === '-delete');
-        const hasExecRm = rest.some(t => t.canon === '-exec' || t.canon === '-execdir')
-          && rest.some(t => /^(rm|rmdir|unlink|shred)$/.test(basename(t.canon)));
+      if (rcmd === 'find') {
+        const hasDelete = rrest.some(t => t.canon === '-delete');
+        const hasExecRm = rrest.some(t => t.canon === '-exec' || t.canon === '-execdir')
+          && rrest.some(t => /^(rm|rmdir|unlink|shred)$/.test(basename(t.canon)));
         if (hasDelete || hasExecRm) {
-          const root = rest.find(t => t.litLen > 0 && !/^-/.test(t.canon));
+          const root = rrest.find(t => t.litLen > 0 && !/^-/.test(t.canon));
           if (root && isDangerousPath(root.canon)) return D('find -delete/-exec rm on a protected path');
+        }
+      }
+
+      // shell -c '<payload>' — the payload is EXECUTED by the shell, so it is
+      // recursed through the evaluator (bounded depth) rather than treated as
+      // inert text. Most-restrictive of outer/inner: deny short-circuits
+      // immediately; ask is held until the end of this function.
+      if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth < MAX_SHELL_C_DEPTH) {
+        for (let k = 0; k < rrest.length; k++) {
+          if (rrest[k].canon === '-c' && rrest[k + 1]) {
+            const inner = evaluateInternal(rrest[k + 1].canon, depth + 1);
+            if (inner && inner.kind === 'deny') return D('shell -c payload is destructive: ' + (inner.reason || ''));
+            if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('shell -c payload requires confirmation: ' + (inner.reason || ''));
+            break;
+          }
         }
       }
 
@@ -599,11 +723,11 @@ function checkDisabledList(segments, canon) {
       }
 
       // install with a setuid/setgid mode
-      if (cmd === 'install') {
-        for (let k = 0; k < rest.length; k++) {
-          const v = rest[k].canon;
+      if (rcmd === 'install') {
+        for (let k = 0; k < rrest.length; k++) {
+          const v = rrest[k].canon;
           let mode = null;
-          if (v === '-m' || v === '--mode') mode = rest[k + 1] && rest[k + 1].canon;
+          if (v === '-m' || v === '--mode') mode = rrest[k + 1] && rrest[k + 1].canon;
           else if (/^-m/.test(v)) mode = v.slice(2);
           else if (/^--mode=/.test(v)) mode = v.slice(7);
           if (mode && /^[4-7]\d{3}$/.test(mode)) return D('install with a setuid/setgid mode');
@@ -611,20 +735,20 @@ function checkDisabledList(segments, canon) {
       }
 
       // sed -i on a sensitive file
-      if (cmd === 'sed') {
-        const inplace = rest.some(t => t.canon === '-i' || /^-i/.test(t.canon) || t.canon === '--in-place' || /^--in-place/.test(t.canon));
-        if (inplace && rest.some(t => t.litLen > 0 && isSensitivePath(t.canon))) return D('sed in-place edit of a sensitive file');
+      if (rcmd === 'sed') {
+        const inplace = rrest.some(t => t.canon === '-i' || /^-i/.test(t.canon) || t.canon === '--in-place' || /^--in-place/.test(t.canon));
+        if (inplace && rrest.some(t => t.litLen > 0 && isSensitivePath(t.canon))) return D('sed in-place edit of a sensitive file');
       }
 
       // chmod: setuid/setgid bit, or recursive world-writable
-      if (cmd === 'chmod') {
-        const recursive = rest.some(t => t.canon === '-R' || t.canon === '--recursive' || /^-[a-z]*R/.test(t.canon));
-        for (const t of rest) {
+      if (rcmd === 'chmod') {
+        const recursive = rrest.some(t => t.canon === '-R' || t.canon === '--recursive' || /^-[a-z]*R/.test(t.canon));
+        for (const t of rrest) {
           const v = t.canon;
           if (/\+s/.test(v)) return D('chmod setting the setuid/setgid bit');
           if (/^[4267]\d{3}$/.test(v)) return D('chmod setting a setuid/setgid octal mode');
         }
-        if (recursive && rest.some(t => t.canon === '777' || t.canon === '666')) return D('recursive chmod to world-writable (777/666)');
+        if (recursive && rrest.some(t => t.canon === '777' || t.canon === '666')) return D('recursive chmod to world-writable (777/666)');
       }
 
       // cp/mv/tee/truncate/shred writing over a sensitive file
@@ -719,6 +843,10 @@ function checkDisabledList(segments, canon) {
   }
   for (const { re, msg } of ASK_CANON) { if (re.test(canon)) return A(msg); }
 
+  // WI-P1: a shell -c payload that recursed to 'ask' (rather than 'deny')
+  // surfaces here — nothing stronger was found elsewhere in this function.
+  if (shellCAsk) return shellCAsk;
+
   return null;
 }
 
@@ -743,7 +871,7 @@ function evaluateInternal(command, depth) {
     () => checkVariableExpansion(segments),
     () => checkCommandSubstitution(segments, depth),
     () => checkPipeDestination(segments),
-    () => checkDisabledList(segments, canon)
+    () => checkDisabledList(segments, canon, depth)
   ];
 
   let ask = null;

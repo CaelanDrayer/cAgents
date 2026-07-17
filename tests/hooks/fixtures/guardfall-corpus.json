@@ -278,5 +278,181 @@
     "expected_verdict": "null",
     "red_today": false,
     "rationale": "Negative-result / no-crash: unbalanced-LOOKING bracket that is a quoted regex fragment. The '[' is inside balanced double quotes, so it is a literal grep argument. No pattern -> null today. Evaluator tokenizes the balanced quotes successfully -> benign grep -> null (a scary-looking-but-quoted metacharacter must not false-positive). Agree -> green; chosen null (benign)."
+  },
+  {
+    "id": "FW-1",
+    "class": "F-wrapper",
+    "command": "nice rm -rf /etc",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 argv[0] wrapper bypass: the rm-family structured check is anchored on basename(argv[0]) === 'rm'; a transparent wrapper (nice) sits in argv[0] instead, so the check never fires today -> ALLOWs. The evaluator now resolves past known transparent wrappers (env/nice/ionice/nohup/setsid/stdbuf/timeout/time/command/exec) to the real command before running the structured checks -> resolves to rm -rf /etc -> DENY. Red."
+  },
+  {
+    "id": "FW-2",
+    "class": "F-wrapper",
+    "command": "env rm -rf /home/user/build",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: env-wrapped rm evades the argv[0]-anchored rm check today (cmd resolves to 'env', not 'rm') -> ALLOWs. Also exercises the broadened protected-root predicate: /home is now treated like /etc (recursive-force rm anywhere under /home is dangerous, not just bare-root/home-anchored ~ paths). Evaluator resolves past 'env' -> rm -rf /home/user/build -> protected-root match -> DENY. Red."
+  },
+  {
+    "id": "FW-3",
+    "class": "F-wrapper",
+    "command": "timeout 5 rm -rf /usr/local/share",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: 'timeout 5' (wrapper + duration operand) sits in argv[0]/argv[1], so cmd resolves to 'timeout' today, not 'rm' -> ALLOWs (even though /usr/local/share is already a protected root once cmd correctly resolves to rm). Evaluator skips the wrapper AND its duration operand -> resolves to rm -rf /usr/local/share -> DENY. Red."
+  },
+  {
+    "id": "FW-4",
+    "class": "F-wrapper",
+    "command": "nohup rm -rf ~/.ssh",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: nohup-wrapped rm evades the argv[0]-anchored check today (cmd resolves to 'nohup') -> ALLOWs, even though ~/.ssh is already a sensitive path once cmd correctly resolves to rm. Evaluator resolves past 'nohup' -> rm -rf ~/.ssh -> sensitive-path match -> DENY. Red."
+  },
+  {
+    "id": "FW-5",
+    "class": "F-wrapper",
+    "command": "ionice rm -rf /etc",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: ionice-wrapped rm evades the argv[0]-anchored check today -> ALLOWs. Evaluator resolves past 'ionice' -> rm -rf /etc -> DENY. Red."
+  },
+  {
+    "id": "FW-6",
+    "class": "F-wrapper",
+    "command": "setsid rm -rf /etc",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: setsid-wrapped rm evades the argv[0]-anchored check today -> ALLOWs. Evaluator resolves past 'setsid' -> rm -rf /etc -> DENY. Red."
+  },
+  {
+    "id": "FW-7",
+    "class": "F-wrapper",
+    "command": "stdbuf -oL rm -rf /etc",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: stdbuf-wrapped rm (with a combined-form option -oL) evades the argv[0]-anchored check today -> ALLOWs. Evaluator skips the wrapper and its own combined-form option before landing on rm -rf /etc -> DENY. Red."
+  },
+  {
+    "id": "FA-1",
+    "class": "F-assign",
+    "command": "FOO=bar rm -rf /etc",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 assignment-prefix bypass: 'FOO=bar' occupies argv[0] as one literal token, so basename(argv[0]) !== 'rm' -> the rm-family check never fires today -> ALLOWs. Evaluator strips a leading run of NAME=VALUE assignment tokens before running structured checks -> resolves to rm -rf /etc -> DENY. Red."
+  },
+  {
+    "id": "FA-2",
+    "class": "F-assign",
+    "command": "X=1 dd of=/dev/sda",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: 'X=1' in argv[0] means cmd !== 'dd' today, so the dd of=<block-device> check never fires (even though bare 'dd of=/dev/sda' already denies as E-2) -> ALLOWs. Evaluator strips the assignment prefix -> resolves to dd of=/dev/sda -> block-device match -> DENY. Red."
+  },
+  {
+    "id": "FV-1",
+    "class": "F-verb",
+    "command": "nice dd of=/dev/sda",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 wrapped destructive verb: nice-wrapped dd evades the argv[0]-anchored dd check today -> ALLOWs. Evaluator resolves past 'nice' -> dd of=/dev/sda -> DENY. Red."
+  },
+  {
+    "id": "FV-2",
+    "class": "F-verb",
+    "command": "nice find / -delete",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 wrapped destructive verb: nice-wrapped find evades the argv[0]-anchored find check today -> ALLOWs. Evaluator resolves past 'nice' -> find / -delete -> protected-root match -> DENY. Red."
+  },
+  {
+    "id": "FV-3",
+    "class": "F-verb",
+    "command": "nice sed -i s/a/b/ ~/.aws/credentials",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 wrapped destructive verb: nice-wrapped sed -i evades the argv[0]-anchored sed check today -> ALLOWs. Evaluator resolves past 'nice' -> sed -i on a sensitive path -> DENY. Red."
+  },
+  {
+    "id": "FV-4",
+    "class": "F-verb",
+    "command": "env install -m 4755 x /usr/local/bin/bd",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 wrapped destructive verb: env-wrapped install evades the argv[0]-anchored install check today -> ALLOWs. Evaluator resolves past 'env' -> install -m 4755 (setuid) -> DENY. Red."
+  },
+  {
+    "id": "FH-1",
+    "class": "F-home",
+    "command": "rm -rf ~/*",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 home-glob destruction: today's isDangerousPath only recognizes bare '~'/'~/' as home-anchored, not a glob under it -> '~/*' is not flagged -> ALLOWs. Evaluator broadens the tilde-anchored predicate to any '~/...' path -> DENY. Red."
+  },
+  {
+    "id": "FH-2",
+    "class": "F-home",
+    "command": "rm -rf ~/Documents",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 home-subdir destruction: today's isDangerousPath only recognizes bare '~'/'~/', not a named subdirectory -> ALLOWs. Evaluator broadens to any '~/<subdir>' -> DENY. Red."
+  },
+  {
+    "id": "FH-3",
+    "class": "F-home",
+    "command": "rm -rf ~/.config",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 home-subdir destruction: '~/.config' is not one of the specifically-listed sensitive dotdirs (only ~/.ssh, ~/.aws, ~/.gnupg, ~/.kube, ~/.netrc, ~/.config/gcloud are sensitive-path-listed) and is not bare '~'/'~/' -> ALLOWs today. Evaluator's broadened tilde-anchored predicate covers it regardless -> DENY. Red."
+  },
+  {
+    "id": "FH-4",
+    "class": "F-home",
+    "command": "rm -rf /home",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1: today's protected-root list deliberately excludes /home (comment: 'so project/temp paths stay allow') -> bare 'rm -rf /home' ALLOWs. Evaluator adds /home to the protected-root predicate (recursive-force delete of an entire multi-user home tree is never legitimate) -> DENY. Red."
+  },
+  {
+    "id": "FS-1",
+    "class": "F-shellc",
+    "command": "sh -c 'rm -rf /etc'",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 shell -c transport: the destructive payload is inert single-quoted text at argv[2] from the tokenizer's point of view -- no structured check runs on it and no DENY_CANON regex references rm -- so today's evaluator ALLOWs even though 'sh -c' EXECUTES the payload as a shell command. Evaluator recurses a shell interpreter's -c payload through itself (bounded depth) and takes the most-restrictive of outer/inner verdicts -> inner rm -rf /etc -> DENY -> outer DENY. Red."
+  },
+  {
+    "id": "FS-2",
+    "class": "F-shellc",
+    "command": "bash -c 'dd of=/dev/sda'",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 shell -c transport: same bypass as FS-1 with dd -- the payload is inert text to today's evaluator -> ALLOWs. Evaluator recurses the -c payload -> dd of=/dev/sda -> block-device match -> DENY -> outer DENY. Red."
+  },
+  {
+    "id": "FS-3",
+    "class": "F-shellc",
+    "command": "sh -c 'rm -rf ~/*'",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 shell -c transport combined with home-glob destruction: today's evaluator neither recurses -c payloads nor recognizes '~/*' as dangerous -> ALLOWs. Evaluator recurses the payload and the broadened tilde predicate flags '~/*' -> inner DENY -> outer DENY. Red."
+  },
+  {
+    "id": "FD-1",
+    "class": "F-downgrade",
+    "command": "nohup chmod -R 777 /",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 downgrade-to-deny: the structured chmod -R 777 hard-deny is anchored on basename(argv[0]) === 'chmod'; nohup occupies argv[0] instead, so the evaluator's structured check never fires today -> null (the legacy HOOK-level HITL pattern still asks separately, but the evaluator itself must not rely on that -- an ask auto-resolves to allow under bypassPermissions). Evaluator resolves past 'nohup' -> chmod -R 777 / -> hard DENY (not ask). Red."
+  },
+  {
+    "id": "FC-1",
+    "class": "F-catastrophic",
+    "command": "rm -rf /*",
+    "expected_verdict": "deny",
+    "red_today": true,
+    "rationale": "WI-P1 headline requirement: today's isDangerousPath does not recognize the bare root-glob '/*' (only exact '/' matches) -> the evaluator ALLOWs 'rm -rf /*' (even though the LEGACY BELT's regex happens to catch it today via a different mechanism -- which is exactly the problem, because CAGENTS_BASH_GUARD=off disables the belt but must NOT disable the evaluator floor). Evaluator adds '/*' to the protected-path predicate -> DENY, independent of the belt. Red."
   }
 ]

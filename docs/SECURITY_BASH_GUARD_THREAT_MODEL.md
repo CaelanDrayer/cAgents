@@ -300,13 +300,16 @@ A single-source-of-truth probe corpus at
 `tests/hooks/fixtures/guardfall-corpus.json`, consumed by a data-driven
 `it.each` Vitest file `tests/hooks/bash-guard-guardfall.test.js`:
 
-- **35 probes** — A 5 · B 3 · C 3 · D 3 · E 6 · canonical-destructive 5 ·
-  benign (must-not-deny) 7 · negative-result (no-crash) 3. All 35 are green
-  against the shipped evaluator.
-- **21 of 35 were RED against the pre-hardening guard** and pass only with the
-  evaluator + wiring landed — the failing-before / passing-after evidence
-  required by the CLAUDE.md bug-driven-testing mandate. The other 14 are
-  regression / false-positive / no-crash guards.
+- **57 probes** — A 5 · B 3 · C 3 · D 3 · E 6 · canonical-destructive 5 ·
+  benign (must-not-deny) 7 · negative-result (no-crash) 3 · F-wrapper 7 ·
+  F-assign 2 · F-verb 4 · F-home 4 · F-shellc 3 · F-downgrade 1 ·
+  F-catastrophic 1 (the last 7 classes, 22 probes, added by WI-P1 §7.1). All
+  57 are green against the shipped evaluator.
+- **43 of 57 were RED against the guard at the time each class was written**
+  (21 from the original hardening, 22 from WI-P1) and pass only with the
+  corresponding evaluator logic landed — the failing-before / passing-after
+  evidence required by the CLAUDE.md bug-driven-testing mandate. The other 14
+  are regression / false-positive / no-crash guards.
 - **CI gate** — Vitest auto-collects the file; any class regression → a failing
   `it.each` row → `vitest run` exits 1 → `scripts/ci/cagents-ci.sh` returns
   non-zero → **release held**. No new plumbing.
@@ -348,11 +351,70 @@ sensitive credential path** now escalates to **deny** rather than ask (a
 Class-B/sensitive-path hardening). This tightens one named shape; it does not
 close any of the five residuals above.
 
-Coverage honesty: the 35 probes pin **named shapes**, not exhaustive class
+Coverage honesty: the corpus pins **named shapes**, not exhaustive class
 coverage. Classes B (exotic IFS), D (non-base64 decoders), and especially E
 (disabled-list + sensitive-path completeness) remain **partially open** — new field
 leaks are closed by the same bug-driven loop: add a red fixture row, then an
 evaluator rule that greens it.
+
+### 7.1 WI-P1 — argv[0] wrapper-bypass class CLOSED (v12.60.0-in-progress)
+
+A follow-up gap in the shipped evaluator: every structured check in component 5
+(`checkDisabledList`) was anchored on `basename(argv[0])` — the literal first
+word of the command. A **transparent wrapper** (`nice`, `env`, `timeout`,
+`nohup`, `ionice`, `setsid`, `stdbuf`, `time`, `command`, `exec`) or a leading
+**env-var assignment prefix** (`FOO=bar cmd`) occupies argv[0] instead, so the
+real command was never inspected — `nice rm -rf /etc`, `env install -m 4755 x
+/usr/local/bin/bd`, and `FOO=bar dd of=/dev/sda` all **ALLOWed**. Two related
+gaps in the same family: (a) `sh -c '<payload>'` — a shell interpreter's `-c`
+argument is *executed*, but the evaluator never recursed into it (unlike its
+existing `$(...)`/backtick recursion), so `sh -c 'rm -rf /etc'` **ALLOWed**
+even though nothing about it required obfuscation; (b) the protected-path
+predicate recognized only bare `~`/`~/` (not a glob or subdirectory under it)
+and explicitly excluded `/home`, so `rm -rf ~/*`, `rm -rf ~/Documents`, and
+`rm -rf /home` all **ALLOWed**, and the bare root-glob `rm -rf /*` also
+**ALLOWed** (caught only by the legacy belt's regex — meaning
+`CAGENTS_BASH_GUARD=off` disarmed it, defeating the "evaluator floor never
+disarmed" invariant §5.1 promises).
+
+**Closed by**: `resolveEffectiveCommand()` in `bash-guard-evaluator.cjs`
+resolves past a leading run of assignment tokens and known transparent
+wrappers (consuming each wrapper's own flags/operands, including combined
+forms like `-oL`/`-n10` and `timeout`'s bare duration operand) before the
+rm-family, `dd`, `find`, `sed`, `install`, and `chmod` structured checks run.
+`checkDisabledList` also now recurses a shell interpreter's `-c` payload
+through `evaluateInternal` (bounded to depth 3), taking the most-restrictive of
+the outer/inner verdicts — mirroring the existing command-substitution
+recursion. `isDangerousPath` was broadened: any `~`-anchored path (`~`, `~/`,
+`~/*`, `~/<subdir>`) is now protected (not just bare `~`/`~/`), `/home` was
+added to the protected-root list (a recursive-force delete anywhere under a
+multi-user home tree is never legitimate for an agent), and the bare
+root-glob `/*` is protected independent of any specific root name.
+
+**Deliberately NOT extended to**: the `eval`/`python|node|perl|ruby|php -c|-e`
+obfuscation checks. Those stay argv[0]-anchored on purpose — extending
+wrapper-resolution to them would have closed the `env`-wrapped-interpreter and
+`ruby -e` backtick gaps that §5.1's REC-08/REC-09 downgrade semantics
+(`warn` → `ask`, `off` → allow) *intentionally* rely on the legacy belt
+catching (not the evaluator), since those two specific shapes are documented
+as "evaluator misses env"/"evaluator misses backtick; belt confirms" in the
+existing test suite. Closing them at the evaluator level would have made them
+permanently un-downgradable under `warn`/`off`, breaking that contract.
+
+**Verification**: 22 new corpus rows (classes `F-wrapper`, `F-assign`,
+`F-verb`, `F-home`, `F-shellc`, `F-downgrade`, `F-catastrophic`) plus 5 new
+full-hook rows in `tests/hooks/bash-guard-guardfall.test.js`, all failing
+before the fix and passing after, with 2 additional false-positive guard rows
+(`env NODE_ENV=prod node app.js`, `nice npm test`) proving wrapper-resolution
+does not over-match. `CAGENTS_BASH_GUARD=off` now denies `rm -rf /*` via the
+evaluator floor alone (the headline requirement this closure restores), and
+`nohup chmod -R 777 /` denies rather than merely asks.
+
+This closure does not exhaustively cover every wrapper (e.g. `xargs`,
+`chroot`, `su -c` as a wrapper rather than a privilege-escalation target) or
+every protected-root variant (e.g. `/mnt`, `/media`, `/srv`); those remain
+open by the same "coverage honesty" note above — add a red fixture row, then
+an evaluator rule that greens it.
 
 ---
 
