@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, isTerminalState, normalizeTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock } = require('./hook-utils.cjs');
 
 // Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
 // Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
@@ -181,7 +181,7 @@ function finalizeSessionLifecycle(sessionDir) {
   const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
   const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
   const currentState = pipelineState || phase;
-  if (!currentState || !TERMINAL_STATES.includes(currentState)) return;
+  if (!currentState || !isTerminalState(currentState)) return;
 
   const now = new Date().toISOString();
 
@@ -406,7 +406,7 @@ function autoResolveWarnings(sessionDir) {
   const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
   const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
   const currentState = pipelineState || phase;
-  if (!currentState || !TERMINAL_STATES.includes(currentState)) return resolved;
+  if (!currentState || !isTerminalState(currentState)) return resolved;
 
   const sessionId = path.basename(sessionDir);
   const now = new Date().toISOString();
@@ -531,7 +531,7 @@ function checkTeamArtifacts(sessionDir, statusContent) {
     || extractYamlValue(statusContent, 'current_phase');
 
   // Terminal SUCCESS gate. Non-terminal team sessions are NOT touched.
-  const isTerminalSuccess = result === 'success' && state && TERMINAL_STATES.includes(state);
+  const isTerminalSuccess = result === 'success' && state && isTerminalState(state);
   if (!isTerminalSuccess) return { issues, warnings };
 
   // BLOCK: coordination_log.yaml is mandatory for a completed team run.
@@ -630,7 +630,7 @@ function verifyCompletion(sessionDir) {
             warnings.push(`Pipeline actively working in '${pipelineState}' state despite no recent state transition`);
           }
         }
-      } else if (!TERMINAL_STATES.includes(pipelineState)) {
+      } else if (!isTerminalState(pipelineState)) {
         warnings.push(`Workflow stopping in '${pipelineState}' pipeline state`);
       }
     } else if (!phase) {
@@ -673,7 +673,9 @@ function verifyCompletion(sessionDir) {
         } else {
           issues.push(enrichMsg);
         }
-      } else if (phase !== 'completed' && phase !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED') {
+      } else if (normalizeTerminalState(phase) !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED') {
+        // normalizeTerminalState folds completed/COMPLETE/FINALIZED -> complete;
+        // validating + TEAM_CREATED stay explicit non-terminal "ok to stop" states.
         warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
       }
     }
@@ -1419,7 +1421,7 @@ createHook('VerifyCompletion', async (input) => {
       const curPipeline = extractYamlValue(statusRaw, 'pipeline_state');
       const curPhase = extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
       const curVal = curPipeline || curPhase;
-      if (!curVal || !TERMINAL_STATES.includes(curVal)) {
+      if (!curVal || !isTerminalState(curVal)) {
         const finalState = result.issues.length === 0 ? 'complete' : 'failed';
         const field = curPipeline !== undefined ? 'pipeline_state' : (curPhase !== undefined ? 'phase' : 'pipeline_state');
         const patched = statusRaw.replace(

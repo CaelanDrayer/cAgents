@@ -42,6 +42,14 @@ let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
 const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer } = require('./hook-utils.cjs');
 
+// Defensive: REC-01 terminal-state normalizer (v12.46.0). Guarded in the same
+// try/catch style as the js-yaml require above so an older hook-utils.cjs without
+// these exports can't crash teardown. Consumed only to keep team-stop's inline
+// terminal vocabulary consistent (Phase 2 owns the actual status-default derivation).
+let _normalizeTerminalState;
+try { ({ normalizeTerminalState: _normalizeTerminalState } = require('./hook-utils.cjs')); } catch { _normalizeTerminalState = null; }
+const _normTerminal = (s) => (typeof _normalizeTerminalState === 'function' ? _normalizeTerminalState(s) : (typeof s === 'string' ? s.trim() : s));
+
 // SDK transcript UUID shape (8-4-4-4-12 hex). Matches the per-session
 // {sessionDir}/session.sdk_id marker written by the map-writer hooks (WI-3/WI-4).
 const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -240,7 +248,7 @@ function generateExecutionSummary(sessionDir, now) {
 
   // Determine status string
   let status = 'completed';
-  if (result === 'failed' || finalState === 'failed' || finalState === 'FAILED') {
+  if (result === 'failed' || _normTerminal(finalState) === 'failed') {
     status = 'failed';
   } else if (result === 'partial') {
     status = 'partial';

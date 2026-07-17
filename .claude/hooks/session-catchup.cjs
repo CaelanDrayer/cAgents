@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession } = require('./hook-utils.cjs');
 
 /**
  * Liveness check (WI-4, session run_concurrent-session-hooks_260602_001):
@@ -143,7 +143,7 @@ function findIncompleteSessions() {
     }
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-    if (TERMINAL_STATES.includes(phase)) continue;
+    if (isTerminalState(phase)) continue;
 
     const instructionFile = path.join(sessionDir, 'instruction.yaml');
     const briefFile = path.join(sessionDir, 'strategic_brief.yaml');
@@ -224,7 +224,7 @@ createHook('SessionCatchup', async (input) => {
   // skill set is /run, /team, /designer, /helper — the guidance below must
   // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
   // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
-  let cagentsContext = 'cAgents V12.45.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /run keyword router: /run review <target>, /run optimize <target>, or /run improve <target> (v12.1.2 — the standalone improve skill was folded into /run). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.46.0 session initialized. Minimum Claude Code version: 2.1.69 (required for hook lifecycle events). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/run, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /run and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /run keyword router: /run review <target>, /run optimize <target>, or /run improve <target> (v12.1.2 — the standalone improve skill was folded into /run). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0; path corrected in WI-5, session
   // run_improve-skills-hooks_260703_001): the CANONICAL product-context
