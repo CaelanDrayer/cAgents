@@ -29,7 +29,7 @@ try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
 
 /**
  * LP-22: Pattern heuristics for MEMORY.md auto-append.
@@ -262,6 +262,20 @@ createHook('SubagentStopTracker', async (input) => {
     cachedParsedObj = parsedObj;
     cachedAgentEntry = agentEntry;
   });
+
+  // REC-16 (v12.51.0): structured per-session `stop` lifecycle event. Emitted
+  // ONLY when this invocation actually recorded the stop (cachedAgentEntry set),
+  // so a repeated SubagentStop for an already-stopped agent does not append a
+  // duplicate stop line. Fail-open + lock-protected + session-scoped.
+  if (cachedAgentEntry) {
+    appendSessionEvent(sessionDir, {
+      type: 'stop',
+      agent_id: agentId,
+      duration_seconds: typeof cachedAgentEntry.duration_seconds === 'number'
+        ? cachedAgentEntry.duration_seconds
+        : null
+    });
+  }
 
   // --- Agent performance JSONL logging ---
   try {
