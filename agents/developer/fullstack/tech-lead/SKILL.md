@@ -79,6 +79,10 @@ See @resources/implement.md for the implement mode full playbook.
 See @resources/backend-lead.md for the backend-lead mode full playbook.
 See @resources/frontend-lead.md for the frontend-lead mode full playbook.
 
+## Synchronous Spawning (never background-and-yield)
+
+Spawn every execution agent and reviewer synchronously — `Agent({ run_in_background: false, ... })` (explicit; subagents are background-by-default since CC 2.1.198) — and collect its result in the same turn before yielding. Never background a sub-agent and then yield: a backgrounded child plus a yielding parent leaves a `stopped_at: null` child that makes the session *look* alive while nothing progresses — an hours-long stall (REC-05). See @.claude/rules/core/controllers.md § CRITICAL: Synchronous Spawning.
+
 ## Worked Examples
 
 Pull the matching worked example when coordinating non-obvious work:

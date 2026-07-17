@@ -10,6 +10,53 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.48.0] - 2026-07-17
+
+**Phase 3 — stall prevention: kill both stall mechanisms + enforce delegation at
+the Stop gate (REC-04/05/13)** (audit session `team_plugin-full-audit_260717_001`).
+Closes the integrity/stall spine (P0 → P3). The two real production stalls
+(INIT-never-spawns and controller-background-yield) can no longer silently
+self-complete, and the aggressive-delegation contract is enforced as a hard block
+for genuinely-abandoned sessions. All three fixes are ordered so a legitimately
+mid-flight or genuinely-validated session NEVER deadlocks: genuine/live/active
+checks first → 0-child + stale-child gate → delegation-violation hard block.
+
+### Fixed
+- **REC-04 — INIT 0-child heartbeat gate** (`verify-completion.cjs`
+  `sessionActivelyWorking`): a fresh `last_updated_at` heartbeat no longer rescues
+  a session with ZERO spawned child agents. Its own INIT write IS the heartbeat,
+  so a 0-child session with no running child has done no work and now returns
+  `false` (via `countChildAgents()` — depth≥1 entries, `- id:` fallback), letting
+  the INIT-stall block fire and the session be labeled `incomplete`, not
+  `complete`.
+- **REC-05 — controller synchronous-spawn rule + stale-child freshness gate**: a
+  `stopped_at: null` child now counts as "actively working" only when its
+  `spawned_at` is within `CAGENTS_STALE_CHILD_MS` (default 30 min) via
+  `hasFreshRunningChild()`. A backgrounded-and-yielded child left null-stopped for
+  hours no longer masks the stall → the coordination_log-missing block fires. A
+  child with no/unparseable `spawned_at` is treated as fresh (preserves the live
+  concurrent-Agent wave-teammate path). Behavioral counterpart: a new
+  **"Synchronous Spawning"** rule (spawn `run_in_background: false`, collect before
+  yielding; never background-and-yield) added to `controllers.md` +
+  `delegation.md` and mirrored into the `tech-lead`, `architect`, and
+  `coordinator` SKILL bodies.
+- **REC-13 — delegation-violation check promoted to a hard block**: the §3
+  pre-COORDINATED 0-child check now pushes a blocking `issue` (was a warning) —
+  guarded so it fires ONLY for a genuinely-abandoned session (`!sessionActivelyWorking`
+  AND not recently transitioned <30 min AND no graceful-degradation sentinel), so
+  a mid-flight or just-started session is never deadlocked. Preserves the existing
+  "Agent/subagent-spawn tool was not available" graceful-degradation escape.
+
+### Added
+- **`CAGENTS_STALE_CHILD_MS`** env var (default `1800000` = 30 min) — the
+  stale-child freshness threshold, distinct from `CAGENTS_SESSION_LIVENESS_MS`
+  (the 60s heartbeat window).
+- Un-skipped the two Phase-3 regression suites landed skipped in Phase 0:
+  `tests/hooks/verify-completion-active-wait.test.js` (REC-04 block, 7 tests) and
+  `tests/hooks/verify-completion-stale-child.test.js` (REC-05 block, 2 tests). The
+  `init-zero-agent` and `coordinated-stale-child` fixtures now yield
+  `decision: block`.
+
 ## [12.47.1] - 2026-07-17
 
 **Phase 2 honesty core — precision follow-up (reviewer LOW finding)** (audit

@@ -57,7 +57,7 @@ function runStopHook(sid) {
   try { return JSON.parse(r.stdout); } catch { return {}; }
 }
 
-describe.skip('verify-completion stale-child freshness gate (REC-05; Phase 3 un-skips)', () => {
+describe('verify-completion stale-child freshness gate (REC-05; Phase 3 un-skips)', () => {
   const dirs = [];
   afterEach(() => cleanup(dirs));
 

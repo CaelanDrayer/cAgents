@@ -361,7 +361,7 @@ describe('verify-completion.cjs Stop-hook actively-working discriminator (FIX-2 
  * Phase-3 assertions" contract.
  * ===========================================================================
  */
-describe.skip('verify-completion INIT 0-child heartbeat gate (REC-04; Phase 3 un-skips)', () => {
+describe('verify-completion INIT 0-child heartbeat gate (REC-04; Phase 3 un-skips)', () => {
   const dirs = [];
   afterEach(() => cleanup(dirs));
 

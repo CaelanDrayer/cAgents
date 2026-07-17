@@ -80,6 +80,8 @@ If neither the consolidated routing.yaml nor the legacy `{domain}/config/domain_
 Only allowed: ask questions, synthesize answers, write coordination_log.yaml, manage task list.
 Prohibited: write content directly, answer domain questions, create implementations, edit implementation files.
 
+**Synchronous spawning**: spawn every specialist synchronously — `Agent({ run_in_background: false, ... })` (explicit; subagents are background-by-default since CC 2.1.198) — and collect its result in the same turn before yielding. Never background a sub-agent and then yield: a leaked `stopped_at: null` child makes the session *look* alive while nothing progresses (an hours-long stall, REC-05). See @.claude/rules/core/controllers.md § CRITICAL: Synchronous Spawning.
+
 ## Domain-Specific Disclaimers
 
 Apply the appropriate disclaimer based on the active domain:
