@@ -1,0 +1,12 @@
+# POSITIVE CONTROL — a REAL validator verdict. `generated_by: cagents:validator`
+# (NOT the safety-net marker) is what sessionGenuinelyValidated() keys on to
+# accept this as a genuine PASS.
+schema_version: "1"
+overall_status: PASS
+classification: PASS
+generated_by: cagents:validator
+generated_at: "2026-07-17T05:04:45.000Z"
+criteria:
+  - criterion: "All acceptance criteria met."
+    verdict: MET
+    evidence: "src/foo.ts:15 - implemented"

@@ -1,0 +1,20 @@
+# FIXTURE (a) — INIT / 0-agent session (run_repo-refactor-review_260527_001 shape).
+# Timestamps here are ILLUSTRATIVE. The regression tests build a live copy with a
+# FRESH last_updated_at via tests/hooks/fixtures/safety-net/materialize.mjs
+# (materializeInitZeroAgent) because the active-wait assertion is heartbeat-sensitive.
+#
+# DEFECT: the pipeline wrote status.yaml (its own init heartbeat) and yielded
+# WITHOUT ever spawning the orchestrator. Pre-fix, the fresh heartbeat made
+# sessionActivelyWorking() return true (REC-04) and the force-terminal patch
+# stamped pipeline_state -> complete (REC-02). A 0-child session must NOT be
+# rescued by its own init heartbeat.
+session_id: run_repo-refactor-review_260527_001
+pipeline_state: INIT
+phase: init
+created_at: "2026-05-27T10:00:00.000Z"
+last_updated_at: "2026-07-17T06:27:18.247Z"
+started_at: "2026-05-27T10:00:00.000Z"
+state_history:
+  - state: INIT
+    entered_at: "2026-05-27T10:00:00.000Z"
+    duration_ms: null

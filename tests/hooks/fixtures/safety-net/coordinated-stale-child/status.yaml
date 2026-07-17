@@ -1,0 +1,19 @@
+# FIXTURE (b) — controller-background-yield stall (run_bash-guard-evaluator_260708_001 shape).
+# Timestamps ILLUSTRATIVE; tests build a live copy via materialize.mjs
+# (materializeCoordinatedStaleChild) so the child spawned_at age is controllable.
+#
+# DEFECT: the session reached COORDINATED with plan.yaml present but NO
+# coordination_log.yaml. A controller spawned a child in the BACKGROUND and
+# yielded, leaving a `stopped_at: null` child. Pre-fix, that leaked-null child
+# made sessionActivelyWorking() return true, masking the coordination_log-missing
+# stall forever. The heartbeat is stale, so the ONLY masking signal is the child.
+session_id: run_bash-guard-evaluator_260708_001
+pipeline_state: COORDINATED
+phase: coordinating
+created_at: "2026-07-08T04:00:00.000Z"
+last_updated_at: "2026-07-17T06:27:34.539Z"
+started_at: "2026-07-08T04:02:00.000Z"
+state_history:
+  - state: COORDINATED
+    entered_at: "2026-07-08T04:02:00.000Z"
+    duration_ms: null

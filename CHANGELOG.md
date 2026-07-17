@@ -10,6 +10,54 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.45.0] - 2026-07-17
+
+**Phase 0 — audit safety-net regression tests** (audit session
+`team_plugin-full-audit_260717_001`, ACTION-PLAN Phase 0). Lands on-disk fixtures
+plus **skipped** (`describe.skip`) Vitest regression tests that reproduce the three
+systemic pipeline-integrity defects, so every subsequent fix phase becomes provable
+by flipping a skipped assertion green. Nothing is un-skipped here — `npm test` and
+`scripts/ci/cagents-ci.sh` stay GREEN (the 12 new tests are registered-but-skipped).
+This is a **minor bump** (not a tiny/patch bump): it adds >5 non-registry files
+(fixtures + four test files), so it is exempt from the patch-only ≤5-non-sync-file
+cap per `.claude/rules/core/version-registry.md`.
+
+### Added
+- **Safety-net fixtures** at `tests/hooks/fixtures/safety-net/` — a `materialize.mjs`
+  timestamp-parameterized builder module, four committed static reference session
+  shapes (`init-zero-agent/`, `coordinated-stale-child/`, `fabricated-pass/`,
+  `genuine-validated/`), and a `README.md` documenting each defect and the un-skip map.
+  The three defects reproduced: (a) fabricated `status: completed` on an INIT/0-agent
+  session, (b) the controller-background-yield stall (COORDINATED with no
+  coordination_log + a stale null-`stopped_at` child), (c) a hook-fabricated
+  `generated_by: verify-completion-hook-safety-net` PASS validation_report. Fixture
+  (a) backs BOTH a Phase-2 honesty assertion and a Phase-3 active-wait assertion.
+- **`tests/hooks/verify-completion-honesty.test.js`** (skipped) — un-skipped by Phase 2
+  (REC-02/03): INIT/0-agent + COORDINATED-no-validation + fabricated-PASS resolve to
+  `incomplete`/`UNKNOWN`; the genuine-validated positive control stays `complete`/PASS.
+- **`tests/hooks/learning-store-integrity.test.js`** (skipped) — un-skipped by Phase 2
+  (REC-06): a fabricated-PASS session writes no `successes:` and records
+  `pass_fail: incomplete`, `genuinely_validated: false`; a genuine session still writes
+  `successes:` + `pass`.
+- **`tests/hooks/verify-completion-stale-child.test.js`** (skipped) — un-skipped by
+  Phase 3 (REC-05): COORDINATED + 2h-old null-stop child + missing coordination_log →
+  BLOCK; a 10s-old child → warn.
+- **`tests/hooks/verify-completion-active-wait.test.js`** — appended a `describe.skip`
+  REC-04 block (INIT + fresh heartbeat + 0 children → BLOCK; with a running child →
+  warn), un-skipped by Phase 3. Appended per the ACTION-PLAN's "extend
+  verify-completion-active-wait.test.js" wording; the pre-existing FIX-2/WI-8 suite in
+  that file (the actively-working discriminator) is left un-skipped and passing.
+
+### Notes
+- `npm test`: 5 passed | 12 skipped across the four touched files (full suite green).
+- Refreshed the CLAUDE.md Quick-Reference test-count claim (`1514+`/`179+` →
+  `1534+`/`183+`) so the `claude-md-counts-current` freshness guard stays green after
+  the four new test files landed.
+- Deviation from the contract's "create the file" phrasing for
+  `verify-completion-active-wait.test.js`: the file already existed as a landed FIX-2
+  suite, so the REC-04 assertions were **appended** as a separate skipped block rather
+  than creating the file — which matches the ACTION-PLAN's "extend" wording.
+
 ## [12.44.1] - 2026-07-16
 
 ### Changed

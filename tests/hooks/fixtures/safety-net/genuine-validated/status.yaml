@@ -1,0 +1,11 @@
+# POSITIVE CONTROL — a genuinely-validated session that MUST still resolve to
+# complete/PASS and MUST still write `successes:` after the REC-02/06 fixes.
+# This is the "do not over-correct" guard. Tests build a live copy via
+# materialize.mjs (materializeGenuineValidated).
+session_id: run_genuine-validated_fixture_260717_001
+pipeline_state: VALIDATED
+phase: complete
+result: success
+created_at: "2026-07-17T05:00:00.000Z"
+last_updated_at: "2026-07-17T06:28:01.349Z"
+started_at: "2026-07-17T05:00:00.000Z"

@@ -1,0 +1,10 @@
+# FIXTURE (c) agent_tree — 0 child agents. No work was actually delegated; the
+# PASS is pure fabrication.
+schema_version: '1'
+root:
+  agent: run
+  agent_type: cagents:run
+  depth: 0
+  spawned_at: "2026-07-17T05:02:00.000Z"
+  stopped_at: null
+agents: []

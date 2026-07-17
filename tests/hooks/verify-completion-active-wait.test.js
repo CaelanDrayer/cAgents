@@ -95,6 +95,9 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Phase-0 safety-net (audit team_plugin-full-audit_260717_001): shared fixture
+// builders for the appended REC-04 describe.skip block at the bottom of this file.
+import { materializeInitZeroAgent, cleanup } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
@@ -323,6 +326,64 @@ describe('verify-completion.cjs Stop-hook actively-working discriminator (FIX-2 
     });
     const result = runHook(sid);
 
+    expect(result.decision).not.toBe('block');
+    expect(result.continue).toBe(true);
+  });
+});
+
+/**
+ * ===========================================================================
+ * SAFETY-NET Phase-0 scaffold (audit team_plugin-full-audit_260717_001) —
+ * appended REC-04 block. The suite ABOVE (FIX-2 / WI-8) is a LANDED, passing
+ * suite for the actively-working discriminator and is intentionally left
+ * un-skipped. This SEPARATE describe.skip block below is the not-yet-landed
+ * REC-04 assertion; per the ACTION-PLAN Phase-3 line ("extend
+ * verify-completion-active-wait.test.js — INIT + fresh heartbeat + 0 `- id:` →
+ * BLOCK"), it is appended here rather than in a new file.
+ *
+ * UN-SKIPPED BY: Phase 3 (REC-04 — INIT-never-spawns 0-child heartbeat gate).
+ *
+ * WHAT THE UN-SKIPPED ASSERTION MUST PROVE:
+ *   A fresh heartbeat may NOT rescue a session that has 0 child agents — its own
+ *   init write IS the heartbeat. After REC-04, sessionActivelyWorking() returns
+ *   false when `!runningChild` AND agent_tree.yaml has 0 `- id:` entries, so the
+ *   INIT-stall block (:613/:626) fires and the session BLOCKS. A fresh heartbeat
+ *   WITH a running child still warns.
+ *
+ * WHY IT'S SKIPPED NOW (fail-if-run):
+ *   On pre-REC-04 HEAD, sessionActivelyWorking() returns true on the fresh
+ *   heartbeat alone (regardless of child count), so the INIT/0-child session is
+ *   downgraded to a warning and Test 1 would observe no block and FAIL its
+ *   `toBe('block')`. Skipping keeps `npm test` GREEN until REC-04 lands.
+ *
+ * FIXTURE: materializeInitZeroAgent (fixture (a)) — the SAME fixture the Phase-2
+ * honesty suite consumes, satisfying the "fixture (a) backs BOTH Phase-2 and
+ * Phase-3 assertions" contract.
+ * ===========================================================================
+ */
+describe.skip('verify-completion INIT 0-child heartbeat gate (REC-04; Phase 3 un-skips)', () => {
+  const dirs = [];
+  afterEach(() => cleanup(dirs));
+
+  it('Test 1 (FAIL-before, PASS-after) — INIT + fresh heartbeat + 0 `- id:` children → BLOCK', () => {
+    // Fresh heartbeat (now), zero child agents: the init write is the only
+    // heartbeat, so it must NOT rescue the stalled session.
+    const { sid, dir } = materializeInitZeroAgent({ heartbeatMsAgo: 0, withRunningChild: false });
+    dirs.push(dir);
+    const result = runHook(sid);
+    expect(result.decision).toBe('block');
+  });
+
+  it('Test 2 (control) — INIT + fresh heartbeat WITH a running child → warn (not block)', () => {
+    // A running child means real work is in flight; the fresh-heartbeat rescue is
+    // legitimate here, so REC-04 must NOT block this case.
+    const { sid, dir } = materializeInitZeroAgent({
+      heartbeatMsAgo: 0,
+      withRunningChild: true,
+      childSpawnedMsAgo: 10 * 1000,
+    });
+    dirs.push(dir);
+    const result = runHook(sid);
     expect(result.decision).not.toBe('block');
     expect(result.continue).toBe(true);
   });
