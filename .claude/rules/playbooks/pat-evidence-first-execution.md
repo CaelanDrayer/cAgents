@@ -67,11 +67,11 @@ Three guards keep the checker from producing its own false negatives:
 
 The pass computes `passRate = verified / (verified + failed)` (with `checkable_claims = verified + failed`). When **`passRate < 0.8` AND `checkable_claims >= 2`**, it `console.error` a WARN and appends a `claim_verification:` block (pass_rate, per-claim dispositions, `top_failures`) to the report on disk.
 
-This pass is **advisory-first**: it annotates and warns only. It does **not** change the report's `classification`, does **not** route back to PLANNED, and does **not** touch pipeline state (hard re-route is deferred). The existing PASS→FAIL evidence downgrade is untouched. See @.claude/rules/examples/ex-verification-mechanical-claim-check.md for the claim taxonomy, guards, and the passRate gate this pass imports.
+This pass is **advisory-first**: it annotates and warns only. It does **not** change the report's `classification`, does **not** route back to PLANNED, and does **not** touch pipeline state (hard re-route is deferred). The existing PASS→FAIL evidence downgrade is untouched. See @docs/example-store/ex-verification-mechanical-claim-check.md for the claim taxonomy, guards, and the passRate gate this pass imports.
 
 ## Distrust the self-report
 
-The executor's own account of its work is an unverified claim, not evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" should be checked against the actual diff — never taken at face value and never used to lower a finding's severity. If a claim cannot be located in the diff, that is a REVISE. See @.claude/rules/examples/ex-review-distrust-self-report.md.
+The executor's own account of its work is an unverified claim, not evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" should be checked against the actual diff — never taken at face value and never used to lower a finding's severity. If a claim cannot be located in the diff, that is a REVISE. See @docs/example-store/ex-review-distrust-self-report.md.
 
 ## See also
 

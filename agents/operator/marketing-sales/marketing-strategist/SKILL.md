@@ -101,4 +101,4 @@ See @resources/partnership.md for partnership mode full playbook.
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.
+- See @docs/example-store/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.

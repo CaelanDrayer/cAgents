@@ -52,4 +52,4 @@ See @resources/ux.md for the full ux-mode playbook (including design process, co
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the minimal-solution ladder before adding structure.
+- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the minimal-solution ladder before adding structure.

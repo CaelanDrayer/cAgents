@@ -41,7 +41,7 @@
  * deferred). The existing PASS→FAIL downgrade behavior is untouched. See the
  * claim taxonomy + guards (prose-of-absence, snippet_in_wrong_file,
  * line-number-as-count) and passRate gate in
- * .claude/rules/examples/ex-verification-mechanical-claim-check.md.
+ * docs/example-store/ex-verification-mechanical-claim-check.md.
  * D3: advisory; hard re-route deferred.
  *
  * Calibration evidence
@@ -250,7 +250,7 @@ function mutateReport(filePath, original, failures) {
 // APPENDS a `claim_verification:` advisory block and console.error a WARN. It
 // NEVER changes the classification or routes back to PLANNED.
 // D3: advisory; hard re-route deferred.
-// See .claude/rules/examples/ex-verification-mechanical-claim-check.md.
+// See docs/example-store/ex-verification-mechanical-claim-check.md.
 
 const CLAIM_PASS_RATE_THRESHOLD = 0.8;
 const CLAIM_MIN_CHECKABLE = 2;

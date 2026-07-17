@@ -1,7 +1,7 @@
 /**
  * H1 (v12.x): planner consumes the curated example store — wiring regression test
  *
- * The few-shot example store (.claude/rules/examples/ — ex-*.md + _index.yaml)
+ * The few-shot example store (docs/example-store/ — ex-*.md + _index.yaml)
  * shipped INERT: nothing referenced it. H1 wires the planner to consume it as
  * advisory few-shot context during decomposition + delegation-prompt assembly.
  *
@@ -12,7 +12,7 @@
  *
  * Asserts:
  *   1. agents/core/planner/SKILL.md references the example store (its catalog
- *      `.claude/rules/examples/_index.yaml` or the `rules/examples` dir).
+ *      `docs/example-store/_index.yaml` or the `docs/example-store` dir).
  *   2. The resource doc agents/core/planner/resources/example-store-selection.md
  *      exists.
  *   3. The SKILL.md @path-references that resource doc.
@@ -36,18 +36,18 @@ const RESOURCE_DOC = path.join(
   'resources',
   'example-store-selection.md'
 );
-const INDEX_YAML = path.join(REPO_ROOT, '.claude', 'rules', 'examples', '_index.yaml');
+const INDEX_YAML = path.join(REPO_ROOT, 'docs', 'example-store', '_index.yaml');
 
 describe('H1 (v12.x): planner consumes the example store', () => {
-  it('planner SKILL.md references the example store (_index.yaml or rules/examples)', () => {
+  it('planner SKILL.md references the example store (_index.yaml or docs/example-store)', () => {
     expect(fs.existsSync(PLANNER_SKILL), 'planner SKILL.md is missing').toBe(true);
     const body = fs.readFileSync(PLANNER_SKILL, 'utf8');
     const referencesStore =
-      body.includes('.claude/rules/examples/_index.yaml') ||
-      body.includes('rules/examples');
+      body.includes('docs/example-store/_index.yaml') ||
+      body.includes('docs/example-store');
     expect(
       referencesStore,
-      'planner SKILL.md does not reference the example store catalog (.claude/rules/examples/_index.yaml or rules/examples)'
+      'planner SKILL.md does not reference the example store catalog (docs/example-store/_index.yaml or docs/example-store)'
     ).toBe(true);
   });
 
@@ -69,19 +69,19 @@ describe('H1 (v12.x): planner consumes the example store', () => {
   it('the resource doc references the example store / its catalog', () => {
     const doc = fs.readFileSync(RESOURCE_DOC, 'utf8');
     const referencesStore =
-      doc.includes('.claude/rules/examples/_index.yaml') ||
-      doc.includes('.claude/rules/examples/') ||
-      doc.includes('rules/examples');
+      doc.includes('docs/example-store/_index.yaml') ||
+      doc.includes('docs/example-store/') ||
+      doc.includes('docs/example-store');
     expect(
       referencesStore,
-      'example-store-selection.md does not reference the example store (.claude/rules/examples or _index.yaml)'
+      'example-store-selection.md does not reference the example store (docs/example-store or _index.yaml)'
     ).toBe(true);
   });
 
   it('sanity: the example store catalog the wiring points at actually exists', () => {
     expect(
       fs.existsSync(INDEX_YAML),
-      '.claude/rules/examples/_index.yaml (the catalog the planner consumes) is missing'
+      'docs/example-store/_index.yaml (the catalog the planner consumes) is missing'
     ).toBe(true);
   });
 });

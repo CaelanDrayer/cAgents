@@ -73,8 +73,8 @@ See @resources/owasp-audit.md for OWASP framework auditing.
 
 Pull the matching worked example when a review or audit is non-obvious:
 
-- See @.claude/rules/examples/ex-security-allowed-tools-vs-actual.md — diff declared allowed-tools against the capabilities the body/code actually uses.
-- See @.claude/rules/examples/ex-security-trigger-collision-abuse.md — check triggers for over-broad words, reserved-name collisions, and keyword-baiting.
-- See @.claude/rules/examples/ex-verification-intended-vs-implemented.md — audit code against documented intent, keeping only trust/tenant-boundary-crossing drift.
-- See @.claude/rules/examples/ex-verification-mechanical-claim-check.md — re-check each audit finding mechanically with grep + fs + math.
-- See @.claude/rules/examples/ex-review-distrust-self-report.md — treat a "validated elsewhere" claim as unverified until located in the diff.
+- See @docs/example-store/ex-security-allowed-tools-vs-actual.md — diff declared allowed-tools against the capabilities the body/code actually uses.
+- See @docs/example-store/ex-security-trigger-collision-abuse.md — check triggers for over-broad words, reserved-name collisions, and keyword-baiting.
+- See @docs/example-store/ex-verification-intended-vs-implemented.md — audit code against documented intent, keeping only trust/tenant-boundary-crossing drift.
+- See @docs/example-store/ex-verification-mechanical-claim-check.md — re-check each audit finding mechanically with grep + fs + math.
+- See @docs/example-store/ex-review-distrust-self-report.md — treat a "validated elsewhere" claim as unverified until located in the diff.

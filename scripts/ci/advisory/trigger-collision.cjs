@@ -5,7 +5,7 @@
 // Advisory validator F2 — trigger-collision / trigger-abuse (WARN-only).
 //
 // Mechanizes the TR1-3 checks distilled in
-// .claude/rules/examples/ex-security-trigger-collision-abuse.md (from
+// docs/example-store/ex-security-trigger-collision-abuse.md (from
 // NVIDIA/SkillSpector static_patterns_supply_chain.py):
 //
 //   TR1 over-broad   — a trigger that is a single very-common word or <=2 chars

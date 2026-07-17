@@ -196,4 +196,4 @@ See @resources/self-correct-patterns.md for correction strategies.
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-verification-feedback-loop-first-debugging.md — establish a tight red-capable reproduction loop before hypothesizing, and write falsifiable, ranked hypotheses when a work item keeps failing.
+- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md — establish a tight red-capable reproduction loop before hypothesizing, and write falsifiable, ranked hypotheses when a work item keeps failing.

@@ -151,11 +151,11 @@ When the team manifest includes a template with waves, coordinate wave-by-wave w
 
 Pull the matching worked example when coordinating waves and gates:
 
-- See @.claude/rules/examples/ex-gates-context-budget-tiers.md — shift read-depth across peak / good / degrading / poor bands and checkpoint before forced compaction during long lead sessions.
-- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with revision stall-detection.
-- See @.claude/rules/examples/ex-gates-deterministic-candidate-selection.md — bind each teammate spawn to named files and surface what was skipped.
-- See @.claude/rules/examples/ex-review-blind-dual-convergence.md — two independent blind reviewers at wave gates, both must pass.
-- See @.claude/rules/examples/ex-review-distrust-self-report.md — treat teammate self-reports as unverified claims to check against actual outputs.
+- See @docs/example-store/ex-gates-context-budget-tiers.md — shift read-depth across peak / good / degrading / poor bands and checkpoint before forced compaction during long lead sessions.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with revision stall-detection.
+- See @docs/example-store/ex-gates-deterministic-candidate-selection.md — bind each teammate spawn to named files and surface what was skipped.
+- See @docs/example-store/ex-review-blind-dual-convergence.md — two independent blind reviewers at wave gates, both must pass.
+- See @docs/example-store/ex-review-distrust-self-report.md — treat teammate self-reports as unverified claims to check against actual outputs.
 
 ---
 

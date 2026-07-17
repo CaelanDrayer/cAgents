@@ -60,7 +60,7 @@ reviewer-call token budget.
 
 ## See also
 
-- `@.claude/rules/examples/ex-gates-taxonomy-four-types.md` — worked example this playbook distills.
+- `@docs/example-store/ex-gates-taxonomy-four-types.md` — worked example this playbook distills.
 - `.claude/rules/core/resources/controller-validation-checklist.md` — the Pre-flight checks (Checks 0–6).
 - `.claude/rules/playbooks/pat-two-stage-review.md` — the Revision-gate reviewer loop.
 - `.claude/rules/playbooks/pat-subagent-status-protocol.md` — NEEDS_CONTEXT (Escalation) + dead_letter (Abort).

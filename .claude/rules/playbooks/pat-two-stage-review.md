@@ -76,7 +76,7 @@ Reviewer prompt (Stage 2):
 
 ### Distrust the self-report
 
-Treat the executor's own account of its work as an unverified claim, not as evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" is something to check against the actual diff — never something that lowers a finding's severity. If a claim cannot be located in the diff, that is a REVISE, not a pass. See @.claude/rules/examples/ex-review-distrust-self-report.md.
+Treat the executor's own account of its work as an unverified claim, not as evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" is something to check against the actual diff — never something that lowers a finding's severity. If a claim cannot be located in the diff, that is a REVISE, not a pass. See @docs/example-store/ex-review-distrust-self-report.md.
 
 ## Why two stages
 
@@ -103,7 +103,7 @@ The tier is independent of severity: a HIGH finding can be SAFE (an unused impor
 
 **Chesterton's-Fence rule**: before flagging any code for removal, run `git blame` on it. If you cannot determine why it exists, treat the fix as flag-only regardless of its apparent tier, and record `confidence: low` — do not delete code whose purpose is unclear.
 
-See @.claude/rules/examples/ex-review-safe-careful-risky.md for a worked example with a findings-log shape.
+See @docs/example-store/ex-review-safe-careful-risky.md for a worked example with a findings-log shape.
 
 ## Optional variant: two-axis parallel review
 
@@ -118,7 +118,7 @@ Keep the two reports separate. Do not merge them into a single PASS/score, becau
 
 Fowler 12-smell baseline the standards reviewer can cite: Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative Generality, Message Chains, Middle Man, Refused Bequest.
 
-See @.claude/rules/examples/ex-review-standards-vs-spec-two-axis.md for the full variant with reviewer prompts.
+See @docs/example-store/ex-review-standards-vs-spec-two-axis.md for the full variant with reviewer prompts.
 
 ## Coordination log format
 

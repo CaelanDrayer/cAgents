@@ -57,7 +57,7 @@ than pushing on.
 
 ## See also
 
-- `@.claude/rules/examples/ex-gates-context-budget-tiers.md` — worked example this playbook distills.
+- `@docs/example-store/ex-gates-context-budget-tiers.md` — worked example this playbook distills.
 - `.claude/rules/core/hooks.md` — the reactive PreCompact / PostCompact hooks this complements.
 - `.claude/rules/memory/agent-memory.md` — waypoint types and the checkpoint contract.
 - `.claude/rules/core/controllers.md` — Read-Before-Decide (re-read plan objectives to combat drift).

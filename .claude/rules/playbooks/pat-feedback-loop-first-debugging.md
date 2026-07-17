@@ -78,6 +78,6 @@ guard is established and shown RED *before* the fix, not merely green after.
 
 ## See also
 
-- `@.claude/rules/examples/ex-verification-feedback-loop-first-debugging.md` — worked example this playbook distills.
+- `@docs/example-store/ex-verification-feedback-loop-first-debugging.md` — worked example this playbook distills.
 - `.claude/rules/core/resources/execution-self-validation.md` — Check 3 (guard exit codes).
 - `.claude/rules/core/execution.md` — commit-before-verify pattern.

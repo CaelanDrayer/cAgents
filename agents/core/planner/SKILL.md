@@ -157,8 +157,8 @@ controller-side invocation/fallback.
 ## Example-Store Few-Shot (advisory)
 
 During decomposition + delegation-prompt assembly, optionally consult the curated
-few-shot example store at `.claude/rules/examples/`. Read its catalog
-`.claude/rules/examples/_index.yaml`, filter entries by the request's detected
+few-shot example store at `docs/example-store/`. Read its catalog
+`docs/example-store/_index.yaml`, filter entries by the request's detected
 `category` AND by `applies_to` overlap with the controllers/agents you are about
 to assign (treat `all-controllers` / `all-execution-agents` as wildcards), rank,
 and `@path`-load the **top 1-3** matching example bodies as few-shot guidance for

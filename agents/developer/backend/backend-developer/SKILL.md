@@ -76,8 +76,8 @@ See @resources/game.md for the game mode full playbook (gameplay programming, AI
 
 Pull the matching worked example when building or debugging a work item:
 
-- See @.claude/rules/examples/ex-verification-evidence-first.md — cite specific file:line / test output on completion; "handled upstream" is not evidence.
-- See @.claude/rules/examples/ex-verification-feedback-loop-first-debugging.md — build a tight red-capable reproduction loop before hypothesizing a fix.
-- See @.claude/rules/examples/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the ladder before adding structure.
-- See @.claude/rules/examples/ex-minimalism-surgical-diff-vs-refactor.md — keep the diff surgical; every changed line should trace to an acceptance criterion.
-- See @.claude/rules/examples/ex-gates-fact-forcing-pre-hoc.md — gather caller/schema/instruction facts before the first write to a file.
+- See @docs/example-store/ex-verification-evidence-first.md — cite specific file:line / test output on completion; "handled upstream" is not evidence.
+- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md — build a tight red-capable reproduction loop before hypothesizing a fix.
+- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the ladder before adding structure.
+- See @docs/example-store/ex-minimalism-surgical-diff-vs-refactor.md — keep the diff surgical; every changed line should trace to an acceptance criterion.
+- See @docs/example-store/ex-gates-fact-forcing-pre-hoc.md — gather caller/schema/instruction facts before the first write to a file.

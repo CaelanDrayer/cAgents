@@ -7,10 +7,10 @@ paths:
 
 Topic-specific rules organized for better maintainability. Counts in this index are derived from disk at edit time:
 
-- **Rule files**: 43 (`find .claude/rules -name '*.md' -type f -not -path '*/examples/*' | wc -l`)
+- **Rule files**: 43 (`find .claude/rules -name '*.md' -type f | wc -l`)
 - **Hook event types**: 18 (`jq -r '.hooks | keys | length' .claude/settings.json`)
 - **Version-registry slots**: 16 (post-v12.2.0; was 17 in v12.1.x, was 18 in V11.0)
-- **Example store** (`.claude/rules/examples/`): a distinct set of curated few-shot exemplars (`ex-*.md` + `README.md` + `_index.yaml`) — NOT rule files. Deliberately excluded from the "Rule files" count above (via `-not -path '*/examples/*'`) so the 40-rules invariant stays semantically true.
+- **Example store** (`docs/example-store/`): a distinct set of curated few-shot exemplars (`ex-*.md` + `README.md` + `_index.yaml`) — NOT rule files. **Relocated out of `.claude/rules/` to `docs/example-store/` in v12.57.0 (REC-34)** so it no longer auto-loads into every agent's context (it was ~21K tokens on every spawn); the planner still consumes `docs/example-store/_index.yaml` by explicit path, and agent SKILLs `@`-reference the bodies on demand. Because the store now lives under `docs/` (outside the rules tree), the "Rule files" count above needs no examples exclusion.
 
 When rule files are added, removed, or renamed, re-derive these numbers and update this header. The `scripts/ci/validate-counts.sh` CI guard verifies the load-bearing counts elsewhere in the repo (CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md); this README is not in its check matrix but should still stay aligned with disk reality.
 

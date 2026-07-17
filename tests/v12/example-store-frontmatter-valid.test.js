@@ -1,7 +1,7 @@
 /**
  * H3 (v12.x): example-store frontmatter spec-compliance regression test
  *
- * Asserts every .claude/rules/examples/ex-*.md file has Agent Skills-spec-
+ * Asserts every docs/example-store/ex-*.md file has Agent Skills-spec-
  * compliant frontmatter: only the 6 spec-allowed top-level fields (`name`,
  * `description`, `license`, `compatibility`, `metadata`, `allowed-tools`),
  * a `name:` that matches its filename, and a frontmatter block that parses
@@ -25,7 +25,7 @@ import yaml from 'js-yaml';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-const EXAMPLES_DIR = path.join(REPO_ROOT, '.claude', 'rules', 'examples');
+const EXAMPLES_DIR = path.join(REPO_ROOT, 'docs', 'example-store');
 
 const ALLOWED_TOP_LEVEL = new Set([
   'name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'

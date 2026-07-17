@@ -87,8 +87,8 @@ Spawn every execution agent and reviewer synchronously — `Agent({ run_in_backg
 
 Pull the matching worked example when coordinating non-obvious work:
 
-- See @.claude/rules/examples/ex-review-blind-dual-convergence.md — blind dual review to run at tier 3+, with a fresh reviewer per round.
-- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each checkpoint pre-flight / revision / escalation / abort, with revision stall-detection.
-- See @.claude/rules/examples/ex-gates-deterministic-candidate-selection.md — bind each executor to named files before spawning and surface what was skipped.
-- See @.claude/rules/examples/ex-intake-assumption-surfacing.md — state scope/format assumptions (or ask) before decomposing work.
-- See @.claude/rules/examples/ex-gates-context-budget-tiers.md — shift read-depth and checkpoint early as coordination context fills.
+- See @docs/example-store/ex-review-blind-dual-convergence.md — blind dual review to run at tier 3+, with a fresh reviewer per round.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each checkpoint pre-flight / revision / escalation / abort, with revision stall-detection.
+- See @docs/example-store/ex-gates-deterministic-candidate-selection.md — bind each executor to named files before spawning and surface what was skipped.
+- See @docs/example-store/ex-intake-assumption-surfacing.md — state scope/format assumptions (or ask) before decomposing work.
+- See @docs/example-store/ex-gates-context-budget-tiers.md — shift read-depth and checkpoint early as coordination context fills.
