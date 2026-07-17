@@ -266,8 +266,14 @@
 
 ## Tools & Resources
 
-- **Migration Script**: `scripts/migrate_agent.sh`
-- **Validation Script**: `scripts/verify-skill-migration.sh`
+> **Historical (retired in v12.52.0 / REC-21):** the one-time v10/v11-era migration
+> scripts `scripts/migrate_agent.sh` and `scripts/verify-skill-migration.sh` were
+> deleted after the archetype-tree migration completed. The `make/agents/…` paths
+> below are also pre-v11.1.0 and no longer exist. This section is kept as a record
+> of the completed migration, not as runnable tooling.
+
+- **Migration Script**: `scripts/migrate_agent.sh` *(retired v12.52.0)*
+- **Validation Script**: `scripts/verify-skill-migration.sh` *(retired v12.52.0)*
 - **Reference Template**: `make/agents/architect/` (93% savings achieved)
 - **Completion Guide**: `cagents-memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
 - **Progressive Disclosure Spec**: `.claude/rules/core/progressive-disclosure.md`
@@ -284,7 +290,7 @@
 ## Questions?
 
 - Migration guide: `cat cagents-memory/sessions/run_20260129_010237/outputs/final/MIGRATION_COMPLETION_GUIDE.md`
-- Check status: `./scripts/migrate_agent.sh make <agent-name>`
+- Check status: ~~`./scripts/migrate_agent.sh make <agent-name>`~~ *(script retired v12.52.0)*
 - Review template: `cat make/agents/architect/SKILL.md`
 
 ---

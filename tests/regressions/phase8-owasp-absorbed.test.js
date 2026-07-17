@@ -131,23 +131,26 @@ describe('Phase 8 — claude-code-owasp absorbed as security-engineer owasp-audi
     expect(content).toMatch(/L3\b/);
   });
 
-  it('does not modify the read-only corpus source', () => {
-    // v12.8.0 (eef900a7) "streamline root" moved example/ under
-    // _archive/repo_root_scratch/. The read-only corpus now lives there.
+  it('does not modify the read-only corpus source (vendored fixture)', () => {
+    // REC-18 (v12.52.0): the absorption source was previously read from the
+    // 4.2GB git-ignored corpus at
+    // _archive/repo_root_scratch/example/external-skills/agamm__claude-code-owasp/…,
+    // which pinned the entire corpus alive just to satisfy this one assertion.
+    // The single 21,586-byte source file is now VENDORED (tracked) at
+    // tests/fixtures/owasp/, so CI is decoupled from the corpus and the corpus
+    // can be pruned from any working tree without breaking this test. The
+    // "read-only source contract" is preserved by pinning the immutable copy.
     const corpusPath = resolve(
       REPO_ROOT,
-      '_archive',
-      'repo_root_scratch',
-      'example',
-      'external-skills',
-      'agamm__claude-code-owasp',
-      '.claude',
-      'skills',
-      'owasp-security',
-      'SKILL.md'
+      'tests',
+      'fixtures',
+      'owasp',
+      'owasp-security-corpus-source.md'
     );
     expect(existsSync(corpusPath)).toBe(true);
-    // Sanity: corpus header still has the original `name: owasp-security` (untouched)
+    // Byte-size lock: the vendored copy is a byte-for-byte immutable snapshot.
+    expect(statSync(corpusPath).size).toBe(21586);
+    // Sanity: header still has the original `name: owasp-security` (untouched)
     const corpus = readFileSync(corpusPath, 'utf8');
     expect(corpus).toMatch(/^name:\s*owasp-security\b/m);
   });

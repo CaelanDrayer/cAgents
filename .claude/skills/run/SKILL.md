@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.51.0"
+  version: "12.52.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -116,6 +116,16 @@ Special flag handling:
 
 **ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
 
+**ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/run` (or a `/team` teammate) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
+
+```bash
+CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
+MEM="$CAGENTS_ROOT/cagents-memory"
+SESSION_DIR="$MEM/sessions/${SESSION_ID}"
+```
+
+Never run `npm install` / `npm ci` (or any dependency install / build) with the cwd inside a session or scratch dir — it dumps `node_modules/` into the session tree. Installs run from `$CAGENTS_ROOT` only.
+
 `{ISO_TIMESTAMP}` MUST be the real current time. NEVER fabricate timestamps like `T00:00:00Z`. Note: /run uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
 
 See @reference/session-id-format.md for slug rules, NNN counter generation, and required initial files.
@@ -130,8 +140,8 @@ See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
 SID="${CLAUDE_SESSION_ID:-}"
 if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
   printf '%s' "$SID" > "${SESSION_DIR}/session.sdk_id"
-  mkdir -p cagents-memory/_system/sdk_session_map
-  printf '%s' "${SESSION_ID}" > "cagents-memory/_system/sdk_session_map/${SID}"
+  mkdir -p "$MEM/_system/sdk_session_map"
+  printf '%s' "${SESSION_ID}" > "$MEM/_system/sdk_session_map/${SID}"
 fi
 ```
 

@@ -36,16 +36,24 @@ Compact date: `YYMMDD` (e.g., 260317 for 2026-03-17).
 Before generating a new SESSION_ID, check `process.env.CAGENTS_SESSION_ID`:
 
 - If set and non-empty: use it verbatim as SESSION_ID (skip generation)
-  - SESSION_DIR = `cagents-memory/sessions/${CAGENTS_SESSION_ID}`
+  - SESSION_DIR = `$MEM/sessions/${CAGENTS_SESSION_ID}` (absolute — see anchor below)
   - If SESSION_DIR exists: this is a RESUME -- skip session file creation
   - If SESSION_DIR does not exist: treat as new session, mkdir using the env var value
 - If not set or empty: proceed with auto-generation
 
 ## Session Directory Creation
 
+**Anchor session paths to an ABSOLUTE project root, not a relative `cagents-memory/…`
+literal.** A relative path resolves against the *current working directory*, and a
+nested `/run` (or a `/team` teammate) can run with its cwd inside a parent session
+dir — a relative write then nests a whole `cagents-memory/` tree under that session
+(the CWD-leak, REC-20). Anchor once and derive everything from `$MEM`:
+
 ```
-SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
-mkdir -p "${SESSION_DIR}/workflow/events" "${SESSION_DIR}/outputs"
+CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
+MEM="$CAGENTS_ROOT/cagents-memory"
+SESSION_DIR="$MEM/sessions/${SESSION_ID}"
+mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"
 ```
 
 ## Required Initial Files

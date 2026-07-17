@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.51.0"
+  version: "12.52.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -111,7 +111,15 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 
 ## Step 2 — Wave 0 Enrichment
 
-**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `cagents-memory/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs` (v12.6.0: do NOT create `workflow/events/`). Write `instruction.yaml`, `status.yaml` (`phase: INIT`), and lead entry to `workflow/agent_tree.yaml`. Set `CAGENTS_ACTIVE_SESSION=${SESSION_ID}`.
+**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `$MEM/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. Anchor ALL session writes to an ABSOLUTE project root (REC-20) — never a relative `cagents-memory/…` literal, which a cwd-drifted teammate would nest under a parent session dir (the CWD-leak). Define once and reuse `$MEM`:
+
+```bash
+CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
+MEM="$CAGENTS_ROOT/cagents-memory"
+SESSION_DIR="$MEM/sessions/${SESSION_ID}"
+```
+
+Then `mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"` (v12.6.0: do NOT create `workflow/events/`). Write `instruction.yaml`, `status.yaml` (`phase: INIT`), and lead entry to `workflow/agent_tree.yaml`. Set `CAGENTS_ACTIVE_SESSION=${SESSION_ID}`. Never run `npm install`/`npm ci` with the cwd inside a session or scratch dir — installs run from `$CAGENTS_ROOT` only.
 
 **2a-i (BEST-EFFORT PRIMARY — SDK-UUID map).** After the session dir + `status.yaml` exist, if `${CLAUDE_SESSION_ID}` is available AND SDK-UUID-shaped, persist the mapping so hooks resolve this session deterministically by its SDK transcript UUID. This write is **best-effort PRIMARY only**; the **authoritative / robust fallback** is the WI-3 hook self-population (`subagent-tracker.cjs` / `session-init-gate.cjs` `upsertSdkSessionMap`), since `${CLAUDE_SESSION_ID}` may be empty at skill init and may not equal the hook payload's `input.session_id` — the map must never depend SOLELY on the skill capturing its own UUID.
 
@@ -119,8 +127,8 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 SID="${CLAUDE_SESSION_ID:-}"
 if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
   printf '%s' "$SID" > "${SESSION_DIR}/session.sdk_id"
-  mkdir -p cagents-memory/_system/sdk_session_map
-  printf '%s' "${SESSION_ID}" > "cagents-memory/_system/sdk_session_map/${SID}"
+  mkdir -p "$MEM/_system/sdk_session_map"
+  printf '%s' "${SESSION_ID}" > "$MEM/_system/sdk_session_map/${SID}"
 fi
 ```
 

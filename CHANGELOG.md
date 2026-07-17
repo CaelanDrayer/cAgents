@@ -10,6 +10,100 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.52.0] - 2026-07-17
+
+**Phase 6 — hygiene & session GC (REC-18/19/20/21).** Audit
+`team_plugin-full-audit_260717_001` (Wave-2 `fix-plumbing.md`, AREA 2 + AREA 4)
+found the repo pinned to a 4.2GB scratch corpus by a single test, no session-dir
+GC (228 live session dirs, 205 >30d old, every hook `readdirSync`-scanning all of
+them), a CWD-relative session-path leak in the skill bodies, and seven dead
+scripts. This minor bump prunes the corpus (after decoupling the last test),
+adds an age-based session GC sweep, anchors session writes to an absolute `$MEM`
+root with a CI guard, and retires the dead scripts. Minor bump (touches many
+surfaces, exempt from the tiny-bump ≤5-file cap). REC-18 preceded REC-21 as
+required (the corpus was the reason `check-quality.sh` hung).
+
+### Added
+- **REC-19 — session GC sweep `scripts/maintenance/session-gc.cjs`.** Archives
+  terminal sessions older than 30d (`mv` → `cagents-memory/_archive/sessions/`),
+  deletes archived sessions older than 120d, and ALWAYS skips live / recent /
+  non-terminal / fixture sessions. Consumes the Phase-1 canonical
+  `TERMINAL_STATES` / `isTerminalState` from `hook-utils.cjs` (the terminal
+  vocabulary is NOT re-spelled) and mirrors `session-catchup.cjs` liveness
+  (pid `kill -0` + `status.yaml` mtime + `last_updated_at` heartbeat within
+  `CAGENTS_SESSION_LIVENESS_MS`). `--dry-run` is the default (writes nothing);
+  `--yes` acts. Idempotent, per-dir try/catch, honors `CAGENTS_TEST_ROOT` for
+  sandboxed tests. Fired from `team-stop.cjs` Phase-4 alongside the
+  pattern-extractor — a 24h-throttled (`_system/.last-gc` sentinel), detached,
+  fail-open spawn that never blocks teardown, honoring
+  `CAGENTS_SESSION_GC_OVERRIDE` for tests. A test-hermeticity guard skips the
+  DESTRUCTIVE real-repo sweep when `process.env.VITEST` is set without an
+  explicit stub override, so an un-sandboxed real-hook test
+  (`tests/hooks/team-stop.test.js` runs team-stop against `process.cwd()/
+  cagents-memory`) can never archive the live session tree — production
+  (VITEST unset) always runs.
+- **REC-20 — skill session-path CWD-leak CI guard**
+  (`scripts/ci/check-skill-session-paths.cjs`, wired into `cagents-ci.sh` as the
+  blocking `skill-paths` stage, exit 9). Fails if a shipped skill body
+  reintroduces a CWD-relative `cagents-memory/…` session-path write or an
+  npm-into-session/scratch install footgun.
+
+### Changed
+- **REC-18 — vendored the OWASP fixture; pruned the 4.2GB corpus.** The single
+  21,586-byte absorption-source file (`agamm/claude-code-owasp` owasp-security
+  SKILL.md) is now a tracked fixture at
+  `tests/fixtures/owasp/owasp-security-corpus-source.md` (byte-identical, with a
+  provenance README). `tests/regressions/phase8-owasp-absorbed.test.js` was
+  repointed at the vendored copy and gained a byte-size lock (21,586) — decoupling
+  CI from the corpus. The other repo references to `_archive/repo_root_scratch/`
+  were confirmed non-blocking: `tests/skills/no-commit-changes-symlink.test.js`
+  asserts a symlink is ABSENT (passes without the corpus), and the
+  README/CHANGELOG mentions are prose. The git-ignored 4.2GB
+  `_archive/repo_root_scratch/` was then pruned from the working tree (a local
+  filesystem op, not a git change): `_archive/` 4.2G → 4.0K.
+- **REC-20 — session-path writes anchored to an absolute `$MEM`.**
+  `.claude/skills/{run,team,designer}/SKILL.md` and
+  `run/reference/session-id-format.md` now define
+  `CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git … rev-parse --show-toplevel || pwd)}"`
+  / `MEM="$CAGENTS_ROOT/cagents-memory"` and write via `"$MEM/…"` instead of a
+  relative `cagents-memory/…` literal that a cwd-drifted nested `/run` or `/team`
+  teammate would nest under a parent session dir.
+
+### Removed
+- **REC-21 — retired 7 dead scripts** (+ their live-tooling doc references):
+  `scripts/ci/check-quality.sh` (dead: walks `_archive/`, matches `.js` not
+  `.cjs`, expects pre-v11 `core/` paths, unwired from `cagents-ci.sh`), the
+  root `scripts/validate-versions.sh` DUPLICATE (canonical is
+  `scripts/ci/validate-versions.sh`, wired to `npm run validate:versions`), and
+  the one-time v11.1.0-era migrators `scripts/migrate-v11.1.0.sh`,
+  `migrate-v11.1.0-execute.sh`, `migrate-v11.1.0-rename.sh`, `migrate_agent.sh`,
+  `verify-skill-migration.sh`. Each was confirmed unreferenced by any live
+  tooling before removal (historical CHANGELOG/RELEASE_NOTES/migration-doc
+  mentions retained as records).
+
+### Deferred
+- **REC-22(B) — `.git` `.venv` bloat: ACCEPT + DOCUMENT (no history rewrite).**
+  The 74MB `.git` (vs ~9MB tracked) is historical committed-then-removed `.venv`
+  blobs; `.venv/` is now gitignored so it cannot re-accumulate (the bloat is
+  capped). Per the fix plan this bump does NOT run any history rewrite
+  (`git filter-repo`/BFG rewrites all SHAs — a separate, announced maintenance
+  action, not a tiny/minor bump). It is affects only contributor clones, not the
+  shipped npm package.
+
+### Tests
+- `tests/regressions/phase8-owasp-absorbed.test.js` — repointed at the vendored
+  fixture + byte-size lock (REC-18).
+- `tests/maintenance/session-gc.test.js` — archive/delete/skip-live/skip-recent/
+  skip-nonterminal/skip-fixture classification, `--dry-run` no-write contract,
+  canonical-`isTerminalState`-consumption identity check, and the team-stop
+  24h-throttle wiring (REC-19).
+- `tests/ci/skill-session-paths.test.js` — the guard catches a CWD-relative
+  session path / npm-into-session footgun and passes the real shipped bodies;
+  asserts the `cagents-ci.sh` wiring (REC-20).
+- `tests/repo/no-dead-scripts.test.js` — the 7 retired scripts are absent AND
+  unreferenced by live tooling; the canonical `validate-versions.sh` is kept
+  (REC-21).
+
 ## [12.51.0] - 2026-07-17
 
 **Phase 5b — logging & session visibility (REC-10/14/15/16).** Audit

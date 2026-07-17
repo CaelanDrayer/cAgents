@@ -389,7 +389,7 @@ The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin 
 - `.claude/settings.json` — Hook registration (active configuration)
 - `.claude/hooks/hook-utils.cjs` — Shared utilities and `createHook()` factory
 - `cagents-memory/_system/config/hooks.yaml` — Hook behavior config
-- `scripts/ci/check-quality.sh` — Hook validation in CI
+- `scripts/ci/cagents-ci.sh` — CI runner (hook lint + tests); `node scripts/lint-hooks.cjs` for the hook inventory
 - `cagents-memory/_system/evals/` — Evaluation framework
 
 **Removed in V9.5** (no longer present in codebase): legacy `hooks/` directory, `scripts/hook-dispatch.sh`, `scripts/hook-dispatch-node.sh`.

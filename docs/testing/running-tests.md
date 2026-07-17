@@ -99,6 +99,5 @@ Additional validation scripts beyond [Vitest](https://vitest.dev/):
 ```bash
 bash scripts/ci/validate-agents.sh          # Agent schema validation
 bash scripts/ci/validate-versions.sh        # Version consistency
-bash scripts/ci/check-quality.sh            # Full quality gates
-bash scripts/ci/cagents-ci.sh all           # All checks
+bash scripts/ci/cagents-ci.sh all           # Full quality gates (all checks)
 ```

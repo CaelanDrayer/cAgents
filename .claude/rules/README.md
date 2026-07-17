@@ -202,7 +202,6 @@ Removed/folded skills (do not appear as current):
 - `scripts/ci/cagents-ci.sh` — Quality-gate CI runner (includes tiny-bump guard)
 - `scripts/ci/validate-agents.sh` — Agent frontmatter and archetype validation
 - `scripts/ci/validate-counts.sh` — Disk-derived counts guard (P1-5; checks CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md)
-- `scripts/ci/check-quality.sh` — Pre-commit quality checks
 
 ### Memory & Evals
 
