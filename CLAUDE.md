@@ -548,8 +548,8 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1609+ Vitest tests across 190+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.51.0
+**Tests**: `npm test` runs 1635+ Vitest tests across 192+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.52.0
 
 ## Troubleshooting
 

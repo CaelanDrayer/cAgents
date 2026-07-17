@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.51.0"
+  version: "12.52.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -78,10 +78,16 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 **CRITICAL**: Create the session directory and metadata files BEFORE spawning any agents, doing any analysis, or asking any questions.
 
 ```
-0. Check for CAGENTS_SESSION_ID override:
+0. Anchor session paths to an ABSOLUTE project root (REC-20) — never a relative
+   `cagents-memory/…` literal, which a cwd-drifted invocation would nest under a
+   parent session dir (the CWD-leak). Define once and reuse "$MEM":
+     CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
+     MEM="$CAGENTS_ROOT/cagents-memory"
+
+   Check for CAGENTS_SESSION_ID override:
    - Read process.env.CAGENTS_SESSION_ID
    - If set and non-empty: use it verbatim as SESSION_ID (skip steps 1-4 below)
-     - SESSION_DIR="cagents-memory/sessions/${CAGENTS_SESSION_ID}"
+     - SESSION_DIR="$MEM/sessions/${CAGENTS_SESSION_ID}"
      - If SESSION_DIR already exists: this is a RESUME — skip session file creation
      - If SESSION_DIR does not exist: treat as new session — proceed with mkdir
    - If not set or empty: proceed with auto-generation (steps 1-4 below)
@@ -89,9 +95,9 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 1. Generate a slug from the topic: 2-6 key words, kebab-case, lowercase, max 50 chars.
    Strip filler words (the, a, an, to, for, with, and, of). Example: "Redo session names" -> "redo-session-names"
 2. Get compact date: YYMMDD (e.g., 260317)
-3. Scan cagents-memory/sessions/ for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
+3. Scan "$MEM/sessions/" for dirs matching designer_*_{YYMMDD}_* to find highest NNN, increment by 1 (start at 001)
 4. Compose: SESSION_ID="designer_{slug}_{YYMMDD}_{NNN}"
-5. SESSION_DIR="cagents-memory/sessions/${SESSION_ID}"
+5. SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
 7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml` (designer at depth 0).
 ```

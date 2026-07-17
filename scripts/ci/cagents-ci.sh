@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.51.0
+# Version: 12.52.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -18,6 +18,7 @@
 #                 CAGENTS_TINY_BUMP_BLOCK=0 to fall back to warn-only)
 #   counts      - Verify documented counts match disk (warn-only by default)
 #   terminal-states - Reject off-enum pipeline_state/phase literals (REC-01, BLOCKING)
+#   skill-paths - Reject CWD-relative session-path writes in skill bodies (REC-20, BLOCKING)
 #   advisory    - Run advisory validators (F6, WARN-only; never blocks CI)
 #   all         - Run all checks
 #
@@ -32,6 +33,7 @@
 #       CAGENTS_TINY_BUMP_BLOCK=0 for warn-only)
 #   7 - Counts-derivation mismatch (blocking only when CAGENTS_COUNTS_BLOCK=1)
 #   8 - Terminal-state vocabulary violation (REC-01, blocking)
+#   9 - Skill session-path CWD-leak violation (REC-20, blocking)
 
 set -e
 
@@ -582,6 +584,37 @@ check_terminal_states() {
 }
 
 #
+# Skill session-path CWD-leak guard (REC-20, BLOCKING)
+#
+# Fails if a shipped skill body reintroduces a CWD-relative session-path write
+# (relative `cagents-memory/…` mkdir/redirect/SESSION_DIR=) or an npm-into-
+# session/scratch footgun. Both nest a stray tree under a session dir when a
+# nested /run or /team teammate has a drifted cwd. Session writes must anchor on
+# an absolute "$MEM" ($CAGENTS_ROOT/cagents-memory).
+#
+check_skill_paths() {
+    log_section "Skill Session-Path Guard (REC-20)"
+
+    local script="$PROJECT_ROOT/scripts/ci/check-skill-session-paths.cjs"
+    if [[ ! -f "$script" ]]; then
+        log_warn "check_skill_paths: $script not found; skipping"
+        return 0
+    fi
+    if ! command -v node &> /dev/null; then
+        log_warn "check_skill_paths: node not available; skipping"
+        return 0
+    fi
+
+    if node "$script" 2>&1; then
+        log_info "check_skill_paths: skill bodies anchor session writes on \$MEM"
+        return 0
+    fi
+
+    log_error "check_skill_paths: CWD-relative session-path write in a skill body (blocking)"
+    return 9
+}
+
+#
 # Advisory validators (F6, WARN-only)
 #
 # Runs scripts/ci/run-advisory.cjs, the driver that F1-F4 advisory validators
@@ -618,7 +651,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.51.0"
+    log_section "cAgents CI Runner v12.52.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
@@ -650,6 +683,9 @@ main() {
         terminal-states)
             check_terminal_states || exit_code=8
             ;;
+        skill-paths)
+            check_skill_paths || exit_code=9
+            ;;
         advisory)
             # WARN-only stage: check_advisory always returns 0, so it can never
             # set a non-zero exit_code.
@@ -664,13 +700,14 @@ main() {
             check_tiny_bump || exit_code=$((exit_code > 0 ? exit_code : 6))
             check_counts || exit_code=$((exit_code > 0 ? exit_code : 7))
             check_terminal_states || exit_code=$((exit_code > 0 ? exit_code : 8))
+            check_skill_paths || exit_code=$((exit_code > 0 ? exit_code : 9))
             # Advisory validators run LAST as a non-blocking stage — this call
             # never flips exit_code (check_advisory always returns 0).
             check_advisory
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|terminal-states|advisory|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|terminal-states|skill-paths|advisory|all]"
             exit 1
             ;;
     esac

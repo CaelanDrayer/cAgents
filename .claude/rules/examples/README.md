@@ -6,9 +6,12 @@ own vocabulary (work items, controllers, acceptance criteria, the minimal-soluti
 ladder). Each example is a small, context-sized worked pattern — NOT a vendored
 copy of a whole repo.
 
-This store is the *curated, shipped* counterpart to the raw research corpus at
-`_archive/repo_root_scratch/` (git-ignored). The corpus is the extraction
-*source*; this directory is the extracted, distilled *deliverable*.
+This store is the *curated, shipped* counterpart to the raw research corpus that
+lived at `_archive/repo_root_scratch/` (git-ignored). The corpus was the
+extraction *source*; this directory is the extracted, distilled *deliverable*.
+(The 4.2GB corpus was pruned from the working tree in v12.52.0 once the last
+test depending on it was decoupled via a vendored fixture — REC-18; re-clone the
+upstream repos if a fresh extraction pass is needed.)
 
 ## What lives here
 

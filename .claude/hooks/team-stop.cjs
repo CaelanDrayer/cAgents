@@ -152,6 +152,94 @@ function maybeExtractPatterns() {
   }
 }
 
+// =============================================================================
+// REC-19 (v12.52.0): Session GC Runtime Wiring (24h throttle)
+// =============================================================================
+
+/**
+ * Resolve the session-gc.cjs path. CAGENTS_SESSION_GC_OVERRIDE is honored so
+ * tests can swap in a stub script (mirrors CAGENTS_PATTERN_EXTRACTOR_OVERRIDE).
+ */
+function resolveSessionGcPath() {
+  if (process.env.CAGENTS_SESSION_GC_OVERRIDE) {
+    return process.env.CAGENTS_SESSION_GC_OVERRIDE;
+  }
+  return path.join(__dirname, '..', '..', 'scripts', 'maintenance', 'session-gc.cjs');
+}
+
+/**
+ * Conditionally spawn scripts/maintenance/session-gc.cjs to sweep old terminal
+ * sessions. Same proven fire-and-forget pattern as maybeExtractPatterns:
+ *
+ * Throttle: if `_system/.last-gc` was touched <24h ago, skip. Otherwise spawn
+ * session-gc.cjs `--yes` detached/unref'd (fire-and-forget — never blocks
+ * team-stop) and touch the sentinel. Runs for ALL session types (the sweep is a
+ * global sweep of cagents-memory/sessions/, not scoped to the ending session).
+ *
+ * Fail-open: errors are swallowed — team-stop must never fail because of GC.
+ *
+ * @returns {string} 'invoked' | 'throttled' | 'no-gc' | 'error: <msg>'
+ */
+function maybeRunSessionGc() {
+  try {
+    // Test-hermeticity guard: the destructive GC (mv/rm of session dirs) must
+    // never sweep the REAL repo when a test harness invokes team-stop against
+    // process.cwd()/cagents-memory (e.g. tests/hooks/team-stop.test.js runs the
+    // real hook un-sandboxed). Under vitest, only proceed when an explicit stub
+    // override is set (the session-gc wiring test, which points at a harmless
+    // stub). Production (VITEST unset) always runs. This mirrors why the
+    // pattern-extractor is safe un-sandboxed (read-mostly) — GC is destructive,
+    // so it needs the guard.
+    if (process.env.VITEST && !process.env.CAGENTS_SESSION_GC_OVERRIDE) {
+      return 'skipped-test';
+    }
+    const memoryRoot = resolveMemoryRoot();
+    const systemDir = path.join(memoryRoot, '_system');
+    const sentinelPath = path.join(systemDir, '.last-gc');
+    const gcPath = resolveSessionGcPath();
+
+    if (!fs.existsSync(gcPath)) {
+      console.error(`[SessionStop] session-gc not found at ${gcPath} — skipping`);
+      return 'no-gc';
+    }
+
+    // Sentinel throttle: skip if <24h old
+    if (fs.existsSync(sentinelPath)) {
+      try {
+        const ageMs = Date.now() - fs.statSync(sentinelPath).mtimeMs;
+        if (ageMs < SENTINEL_THROTTLE_MS) {
+          const hoursAgo = (ageMs / 3600000).toFixed(1);
+          console.error(`[SessionStop] session-gc throttled (last run ${hoursAgo}h ago, <24h)`);
+          return 'throttled';
+        }
+      } catch (e) {
+        console.error(`[SessionStop] gc sentinel stat failed: ${e.message} — proceeding with GC`);
+      }
+    }
+
+    try {
+      ensureDir(systemDir);
+    } catch (e) {
+      console.error(`[SessionStop] failed to ensure _system dir: ${e.message}`);
+    }
+
+    try {
+      const child = spawn('node', [gcPath, '--yes'], { detached: true, stdio: 'ignore' });
+      child.unref();
+      // Touch sentinel immediately so concurrent team-stops don't double-fire
+      fs.writeFileSync(sentinelPath, new Date().toISOString() + '\n');
+      console.error(`[SessionStop] session-gc spawned (pid=${child.pid})`);
+      return 'invoked';
+    } catch (e) {
+      console.error(`[SessionStop] session-gc spawn failed: ${e.message}`);
+      return `error: ${e.message}`;
+    }
+  } catch (e) {
+    console.error(`[SessionStop] maybeRunSessionGc outer error: ${e.message}`);
+    return `error: ${e.message}`;
+  }
+}
+
 /**
  * Clean up agent_tree.yaml: mark all unstopped agents with stopped_at,
  * compute duration_seconds from spawned_at, and set a cleanup summary.
@@ -404,6 +492,16 @@ createHook('SessionEnd', async (input) => {
   // pointer is created for any of them.
   if (anySession) {
     reapSdkPointer(anySession);
+  }
+
+  // --- Phase 1d: REC-19 session GC (24h throttle, fire-and-forget, ALL session types) ---
+  // The sweep is global (archives old terminal sessions, deletes long-archived
+  // ones, always skips live/recent/mid-flight/fixture sessions), so it runs for
+  // every session type — not just team_* — right alongside the pattern-extractor
+  // pattern. Never blocks teardown.
+  const gcStatus = maybeRunSessionGc();
+  if (gcStatus === 'invoked') {
+    summary += 'Session GC: spawned (background)\n';
   }
 
   // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---
