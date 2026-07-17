@@ -10,6 +10,52 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.54.0] - 2026-07-17
+
+**Phase 7b (bump 1 of 3) — REC-25: restore `customer-success-manager` as a live
+agent (58 → 59).** Audit `team_plugin-full-audit_260717_001`
+(`SECOND-PASS-SUMMARY.md` § 6 MISMATCH; Wave-2 `fix-agents.md` § 2/5) flagged
+`support-director` as a 9-mode customer-facing hub whose proactive customer-success
+scope was previously a standalone agent. Its content still lived verbatim in
+`support-director/resources/customer-success.md`, and the shared planner catalog
+(`agents/_overlay/shared/config/planner_config.yaml:141`) already pointed at
+`operator/support/customer-success-manager/SKILL.md` (a dangling path) — so this
+is a **restore**, not an invention. This is the FIRST of three independently
+revertible Phase-7b bumps; it is the only structural change that alters the
+catalog count. Minor bump (touches agents + counts across CLAUDE.md / README /
+AGENTS.md / docs / a count-guard test, exempt from the tiny-bump ≤5-file cap).
+
+### Added
+- **`customer-success-manager`** live agent at
+  `agents/operator/support/customer-success-manager/SKILL.md` (archetype
+  `operator`, branch `support`, tier controller). Three coherent
+  customer-success modes — `onboarding`, `adoption`, `retention` — with a
+  purpose-first description advertising all modes plus a NOT-for boundary
+  (reactive support → `support-director`; sales prospecting/closing →
+  `sales-strategist`). Ships its own progressive-disclosure resources
+  (`resources/frameworks.md`, `resources/best-practices.md`, copied from the
+  former consolidated content). Fixes the dangling `planner_config.yaml`
+  reference. No `v12-aliases.yaml` change was needed — `customer-success-manager`
+  had no alias row (it was folded as a `support-director` *mode*, not aliased),
+  and a now-live agent must not be a stale alias, so it stays out of the alias
+  map and the stale-name guard.
+
+### Changed
+- Catalog count 58 → 59 everywhere it is machine-checked and human-facing:
+  CLAUDE.md (5 "N agents" occurrences + the `59-agent catalog` note + Quick
+  Reference `59 total` + operator `7 → 8` in the archetype table and breakdown),
+  README.md (7 count strings incl. the per-archetype table + TOTAL), AGENTS.md
+  (`59 agents` + `operator/` (8) + manifest line), and the docs total/per-archetype
+  claims (`docs/agents/index.md`, `docs/12-FACTOR-COMPLIANCE.md`,
+  `docs/architecture/overview.md`, `docs/ARCHITECTURE.md`, `docs/GETTING_STARTED.md`,
+  `docs/DOMAIN_STRUCTURE_STANDARD.md`, `docs/CONTRIBUTING.md`). `support-director`
+  is intentionally left unchanged this bump (its `customer-success` mode remains a
+  support-led convenience); the standalone restore is for direct routability.
+- `tests/v12/doc-counts-match-disk.test.js`: the hardcoded `58` mutation regex
+  and `active_agents=58` derive-only assertion bumped to `59` to track the new
+  disk-derived count. `scripts/ci/validate-counts.sh` and
+  `scripts/ci/validate-agents.sh` both green at 59/59.
+
 ## [12.53.0] - 2026-07-17
 
 **Phase 7a — non-structural agent coherence (REC-28 / REC-38).** Audit
