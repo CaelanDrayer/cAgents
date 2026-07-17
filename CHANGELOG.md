@@ -10,6 +10,59 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.58.0] - 2026-07-17
+
+**Phase 8b (bump 2 of 2) — REC-33 CLAUDE.md context trim + REC-36 doc accuracy.**
+`CLAUDE.md` is always-loaded project memory: every agent/subagent pays its full
+token cost on every spawn. REC-33 trims it 568 → **382 lines** (< 400) by MOVING
+(not deleting) history / benchmark-provenance / verbose narrative to `docs/`,
+keeping every load-bearing contract and disk-derived count inline. REC-36 fixes a
+batch of stale doc-accuracy items. Minor bump (multi-surface doc/context work,
+exempt from the tiny-bump ≤5-file cap). Second of two Phase-8b bumps.
+
+### Changed
+- **REC-33 — CLAUDE.md 568 → 382 lines (< 400).** New `docs/ARCHITECTURE-HISTORY.md`
+  receives the moved content: the Standalone-Contract "What this means for users" +
+  "History" subsections, the full Performance-Benchmarks measured-vs-estimate tables +
+  provenance, and the Plugin-Architecture feature/manifest detail — each left with a
+  pointer in CLAUDE.md. Also compressed in place (no info loss, contracts intact):
+  removed the redundant Table of Contents (derived from headings); folded the two
+  Task-lifecycle CRITICAL sections into one; collapsed the Controller-Centric
+  coordination-log YAML + controllers-by-domain table to a pointer to
+  `@.claude/rules/core/controllers.md`; compressed the Project-Overview archetype
+  table + Directory-Structure agent tree + Aggressive-Delegation role lists +
+  Core-Infrastructure breakdown; dropped the duplicate `## Team Mode` section
+  (teams.md still referenced). **Every guarded literal preserved** — `60 agents`,
+  the per-archetype `developer 8, operator 8, …` line, `32 .cjs files`,
+  `Total: 43 .md`, `Modular rules (43 files`, `pat-* reusable patterns (… 12 files)`,
+  the Standalone-Contract strings, and `people`/`shared` + `routing.yaml` —
+  `validate-counts.sh` stays 0-mismatch.
+- **REC-33 regression guard** — `tests/regressions/claude-md-size.test.js` pins the
+  < 400-line ceiling, asserts the moved content landed in `docs/ARCHITECTURE-HISTORY.md`,
+  and spot-checks the honesty-critical literals survive the trim (failing-before:
+  the 568-line file exceeded the ceiling).
+- **REC-36 — doc-accuracy batch**:
+  - `README.md` Models tagline (2 places) no longer claims `Haiku 4.5 (support)` — the
+    catalog uses no `model: haiku` / `tier: support` (both remain available via
+    `model_routing.yaml`, unused).
+  - `docs/agents/index.md` + `docs/LIFECYCLE.md` legacy tables now list `composer`
+    (the live creator agent split out in v12.55.0 REC-27) instead of the folded
+    `music-composer` name.
+  - `scripts/ci/validate-counts.sh` — 4 stale `currently 57` / `"57 agents"` comments
+    corrected to `60` (the derived `ACTIVE_AGENTS`).
+  - `cagents-memory/_system/config/pipeline_config.yaml` — the `ORCHESTRATED` state's
+    planner `outputs` corrected `objectives.yaml` → `work_items.yaml` (the actual
+    planner artifact; matches the `PLANNED` inputs and orchestration.md).
+  - `.claude/skills/team/SKILL.md` now `@reference/architecture.md`-links the
+    previously-orphan team architecture doc (a `session-hierarchy.test.js` assertion
+    already depended on its content).
+  - Core-Infrastructure count corrected: `Task Management (2)` → `(1)` (only
+    `task-state`), so the group tally 4+3+5+1+1+1+1 = 16 matches the heading.
+- The `.claude/rules/README.md` "40-rules invariant" phrasing was already removed in
+  v12.57.0 (REC-34); no residual remains.
+- **NOT in this bump**: REC-36's P-11 status-desync `post-write-validator.cjs` WARN is
+  a behavioral code change (not doc-accuracy) — deferred to a separate bump.
+
 ## [12.57.0] - 2026-07-17
 
 **Phase 8b (bump 1 of 2) — REC-34: relocate the curated example store out of the

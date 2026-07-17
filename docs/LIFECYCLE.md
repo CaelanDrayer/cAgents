@@ -141,7 +141,7 @@ analyses, models — the actual work product.*
 | statistician | analyst | Statistical analysis: experimental design, hypothesis testing, regression modeling |
 | translator | analyst | Professional translation, localization, and cultural adaptation |
 | animator | creator | Creating character animations, motion systems, animation state machines |
-| music-composer | creator | Composing game music, designing adaptive music systems, leitmotifs |
+| composer | creator | Composing original + adaptive music, game scoring, leitmotifs, interactive audio systems (was `music-composer`; dedicated creator agent since v12.55.0 REC-27) |
 | photographer | creator | Composition, lighting, camera settings, post-processing |
 | sound-designer | creator | Designing game audio, sound effects and Foley, spatial audio systems |
 | visual-artist | creator | Painting techniques, composition, color theory, art history |

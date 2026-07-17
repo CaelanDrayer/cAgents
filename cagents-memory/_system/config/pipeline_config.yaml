@@ -30,7 +30,7 @@ states:
     agent: cagents:planner
     next: PLANNED
     inputs: [enriched_context.yaml]
-    outputs: [plan.yaml, objectives.yaml]
+    outputs: [plan.yaml, work_items.yaml]
     description: "Define objectives, select controllers, create plan"
 
   PLANNED:
