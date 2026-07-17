@@ -10,6 +10,31 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.47.1] - 2026-07-17
+
+**Phase 2 honesty core — precision follow-up (reviewer LOW finding)** (audit
+session `team_plugin-full-audit_260717_001`). Post-merge review of v12.47.0
+flagged one non-exploitable precision gap in the shared honesty discriminator.
+
+### Fixed
+- **`hook-utils.cjs` — `sessionGenuinelyValidated()` condition (3)** now requires
+  the coordination_log to have reached a **success** terminal
+  (`isSuccessTerminalState(coordStatus)`), not merely any terminal state. The
+  prior `coordStatus !== 'completed' && !isTerminalState(coordStatus)` accepted a
+  `failed`/`aborted` coordination_log as "genuinely validated" for a plan-bearing
+  session. Not a laundering vector in practice (condition (1) already rejects any
+  session whose `status.yaml` is not a success terminal), but a `failed`
+  coordination_log contributing to a genuine verdict contradicts the phase's
+  honesty goal. `isSuccessTerminalState('completed') === true` via the
+  `completed → complete` alias, so the canonical value still passes.
+
+### Added
+- **`tests/hooks/session-genuinely-validated.test.js`** — 10 white-box unit tests
+  pinning the discriminator: success-terminal + real PASS + completed coord-log →
+  true; no-plan skips coord-log; INIT/`incomplete` stalls → false; safety-net stub
+  → false; missing report → false; marker-less genuine PASS accepted; and the
+  v12.47.1 precision cases (a `failed` / `in_progress` coordination_log → false).
+
 ## [12.47.0] - 2026-07-17
 
 **Phase 2 — honesty core: stop the laundering (REC-02/03/06)** (audit session
