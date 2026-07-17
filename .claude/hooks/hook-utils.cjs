@@ -262,14 +262,19 @@ function sessionGenuinelyValidated(sessionDir, statusContent) {
       || extractYamlValue(valRaw, 'status');
     if (classification !== 'PASS' && classification !== 'PARTIAL_PASS') return false;
 
-    // (3) Plan-bearing sessions require a completed/terminal coordination_log.
+    // (3) Plan-bearing sessions require a SUCCESSFULLY-completed coordination_log.
+    // The coordination_log must have reached success (`completed`, or a
+    // success-terminal per the enum) — a `failed`/`aborted` coordination_log is
+    // terminal but NOT a success and must not count toward "genuinely validated"
+    // (honesty precision; `isSuccessTerminalState('completed') === true` via the
+    // `completed → complete` alias, so it covers the canonical value).
     const hasPlan = fs.existsSync(path.join(sessionDir, 'workflow', 'plan.yaml'));
     if (hasPlan) {
       const coordRaw = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
       if (!coordRaw) return false;
       const coordStatus = extractYamlValue(coordRaw, 'status');
       if (!coordStatus) return false;
-      if (coordStatus !== 'completed' && !isTerminalState(coordStatus)) return false;
+      if (!isSuccessTerminalState(coordStatus)) return false;
     }
 
     return true;
