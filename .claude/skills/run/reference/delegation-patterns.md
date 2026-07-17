@@ -105,11 +105,11 @@ Max 3 revision cycles (lowered from 5 in v12.0.0) before escalation to user.
 
 ## Team Mode Delegation
 
-For `--team`, /run delegates to the `cagents:team` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline):
+For `--team`, /run delegates to the `cagents:team-bootstrap` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline. `team-bootstrap` was renamed from the former `team` name in v12.53.0):
 
 ```javascript
 Agent({
-  subagent_type: "cagents:team",
+  subagent_type: "cagents:team-bootstrap",
   description: "Team: {request}",
   prompt: `
     Request: {request}

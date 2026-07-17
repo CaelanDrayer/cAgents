@@ -537,6 +537,28 @@ aliases:
     decision: Q8
     notes: "5 spawns. → security-engineer mode:harden (dependency/vulnerability audit, controls). Use mode=harden."
 
+  # ---------------------------------------------------------------------------
+  # REC-38 (audit team_plugin-full-audit_260717_001, v12.53.0): two core-agent
+  # renames from the title↔purpose coherence pass (SECOND-PASS-SUMMARY.md § 6
+  # MISMATCH). Both are pure renames (name + dir move; same scope) so old
+  # `cagents:<name>` spawns keep resolving. type: rename ⇒ new_path is required
+  # (asserted by tests/v12/aliases-resolve.test.js) and points at the moved dir.
+  # decision: Q8 (same rename bucket as universal-planner/universal-validator).
+  # ---------------------------------------------------------------------------
+  - old: cagents:executor
+    new: cagents:execution-monitor
+    type: rename
+    decision: Q8
+    notes: "REC-38 (v12.53.0): core 'executor' renamed to 'execution-monitor' — the agent monitors controller execution progress, it does not execute work items (the name previously said the opposite of what it does). Same monitoring/aggregation scope; dir moved to agents/core/execution-monitor/."
+    new_path: agents/core/execution-monitor/SKILL.md
+
+  - old: cagents:team
+    new: cagents:team-bootstrap
+    type: rename
+    decision: Q8
+    notes: "REC-38 (v12.53.0): core 'team' renamed to 'team-bootstrap' to remove the naming collision with the /team skill AND the team-lead agent. Same team-init / wave-bootstrap scope; dir moved to agents/core/team-bootstrap/."
+    new_path: agents/core/team-bootstrap/SKILL.md
+
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
 coverage:
   engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
@@ -553,7 +575,8 @@ coverage:
   lp13_analyst_consolidations: 2   # literature-review-author, academic-paper-searcher -> scholar (mode flag)
   a3_designer_consolidations: 7    # ux-designer, business-analyst, concept-artist, copywriter, product-designer, research-specialist, instructional-designer (A3 audit — designer-referenced folds; dba deferred, its only ref is an out-of-scope playbook)
   w2c_legacy_backfill: 33          # REC-07 (audit team_plugin-full-audit_260717_001): 19 Tier1-3 individually specified + 14 Tier-4 batch. dba promoted here (64 spawns contradicted the A3 deferral).
-  total_aliases: 66                 # 33 prior (9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3) + 33 W2-C backfill
+  rec38_core_renames: 2            # REC-38 (v12.53.0): executor→execution-monitor, team→team-bootstrap (core-agent coherence renames)
+  total_aliases: 68                 # 33 prior (9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3) + 33 W2-C backfill + 2 REC-38 renames
 
 # Notes for router consumers
 # - Router fallback semantics: on receiving an old name, log a deprecation warning

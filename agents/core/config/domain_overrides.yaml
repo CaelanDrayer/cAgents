@@ -4,9 +4,9 @@ description: "Infrastructure agents powering the orchestration pipeline, routing
 
 planner:
   controller_catalog:
-    tier_2: [orchestrator, planner, executor]
-    tier_3: [orchestrator, planner, executor, validator]
-    tier_4: [orchestrator, planner, executor, validator, self-correct]
+    tier_2: [orchestrator, planner, execution-monitor]
+    tier_3: [orchestrator, planner, execution-monitor, validator]
+    tier_4: [orchestrator, planner, execution-monitor, validator, self-correct]
 
   specialist_routing:
     orchestration:
@@ -19,7 +19,7 @@ planner:
       description: "Objective planning and task decomposition"
     execution:
       keywords: [execute, coordinate, monitor, track, delegate]
-      agents: [executor]
+      agents: [execution-monitor]
       description: "Execution monitoring and controller coordination"
     validation:
       keywords: [validate, verify, quality, gate, check, review]
@@ -43,8 +43,8 @@ planner:
       description: "Prompt optimization and workflow improvement"
     team:
       keywords: [team, teammate, wave, parallel, gate]
-      agents: [team, team-lead]
-      description: "Team creation and team lead coordination"
+      agents: [team-bootstrap, team-lead]
+      description: "Team bootstrap and team lead coordination"
     escalation:
       keywords: [escalate, human, approval, hitl]
       agents: [hitl]

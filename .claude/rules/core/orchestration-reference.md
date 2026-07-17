@@ -3,7 +3,7 @@ paths:
   - "agents/core/orchestrator/**"
   - "agents/core/planner/**"
   - "agents/core/router/**"
-  - "agents/core/executor/**"
+  - "agents/core/execution-monitor/**"
   - "agents/core/validator/**"
   - "agents/core/self-correct/**"
   - ".claude/skills/run/**"

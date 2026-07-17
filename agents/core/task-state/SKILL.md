@@ -1,7 +1,7 @@
 ---
 name: task-state
 archetype: core
-description: "Consolidated task-management agent. Modes: state (CSV-based inventory for 20+ task workflows, 60-80% context savings), merge (task splitting and parallel micro-task consolidation for 15K+ token tasks). Set metadata.mode or pass mode=<value>."
+description: "Manages large task inventories — CSV-based state tracking for 20+ task workflows (60-80% context savings) and splitting/merging of parallel micro-tasks for 15K+ token jobs. Use when a workflow has many tasks to track or consolidate. Modes: state, merge. Set metadata.mode. NOT for: coordinating the work itself (use a controller) or monitoring pipeline progress (use execution-monitor)."
 metadata:
   version: "1.0.0"
   tier: infrastructure

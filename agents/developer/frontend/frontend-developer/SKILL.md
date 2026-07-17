@@ -2,7 +2,7 @@
 name: frontend-developer
 archetype: developer
 branch: frontend
-description: "Consolidated frontend agent. Modes: ui (UI components, responsive design, React/Vue/Angular, accessibility, performance — default), ux (user research, wireframing, design systems, usability testing, interaction patterns). Set metadata.mode or pass mode=<value>."
+description: "Builds user interfaces and user experience — UI components, responsive design, React/Vue/Angular, accessibility, and performance, plus user research, wireframing, design systems, and usability testing. Use for any UI or UX work. Modes: ui, ux. Set metadata.mode. NOT for: server-side/API logic (use backend-developer) or backend performance profiling (use devops-engineer)."
 metadata:
   version: "1.0.0"
   tier: execution

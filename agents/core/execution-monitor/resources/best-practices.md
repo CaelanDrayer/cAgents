@@ -1,4 +1,4 @@
-# Best Practices: Universal Executor
+# Best Practices: Execution Monitor
 
 > Design principles, patterns, and frameworks that guide high-quality controller monitoring, blocker detection, and execution phase coordination.
 

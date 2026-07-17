@@ -115,10 +115,10 @@ describe('P1-8: playbook extraction cohesion', () => {
     expect(lines, `core/validator/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
   });
 
-  it('agents/core/team/SKILL.md body <= 250 lines', () => {
-    const f = path.join(REPO_ROOT, 'agents/core/team/SKILL.md');
+  it('agents/core/team-bootstrap/SKILL.md body <= 250 lines', () => {
+    const f = path.join(REPO_ROOT, 'agents/core/team-bootstrap/SKILL.md');
     const lines = bodyLineCount(f);
-    expect(lines, `core/team/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
+    expect(lines, `core/team-bootstrap/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
   });
 
   it('.claude/rules/core/hooks.md total length <= 400 lines', () => {

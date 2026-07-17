@@ -10,6 +10,71 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.53.0] - 2026-07-17
+
+**Phase 7a — non-structural agent coherence (REC-28 / REC-38).** Audit
+`team_plugin-full-audit_260717_001` (second-pass agent title↔purpose review,
+`SECOND-PASS-SUMMARY.md` + Wave-2 `fix-agents.md`) found 6 MISMATCH agent
+titles and 24 SELFREF descriptions that open with "Consolidated X agent"
+(consolidation history, not user-facing purpose) with no NOT-for boundary —
+the single biggest router-disambiguation gap. This is the LOW-RISK, NON-STRUCTURAL
+half of the agent work: **no catalog-count change (stays 58/58)**. The 2 SPLIT
+MISMATCHes (support-director, film-director) and the count guard are deferred to
+Phase 7b. Minor bump (touches ~40 files across agents/config/rules/tests, exempt
+from the tiny-bump ≤5-file cap).
+
+### Changed
+- **REC-38 — two core-agent coherence renames (name + dir move, back-compat
+  preserved via aliases).**
+  - `executor` → `execution-monitor` (`agents/core/executor/` →
+    `agents/core/execution-monitor/`). The agent *monitors* controller execution
+    progress — it never executes work items — so the old name said the opposite
+    of its job. Every live reference updated: `subagent-tracker.cjs`
+    ENRICHMENT_AGENTS list, `scripts/update-agent-frontmatter.cjs` maxTurns map,
+    three path-conditional rule `paths:` globs, `agents/core/config/domain_overrides.yaml`
+    controller catalog + specialist routing, the example-store `_index.yaml` +
+    two `ex-gates-*` example bodies, `v12-6-no-removed-emitters.test.js`, and the
+    CLAUDE.md core-agent listing.
+  - `team` → `team-bootstrap` (`agents/core/team/` → `agents/core/team-bootstrap/`).
+    Removes the naming collision with the `/team` skill AND the `team-lead` agent
+    (a reader could not tell the three apart); the SKILL.md now documents the
+    boundary vs `team-lead`. Live refs updated: `/run` `delegation-patterns.md`
+    spawn, `playbook-extraction-cohesion.test.js` line-count path, the
+    `domain_overrides.yaml` team routing block, and the CLAUDE.md listing.
+  - Both added to `scripts/migration/v12-aliases.yaml` (type `rename`, with
+    `new_path`) so `cagents:executor` / `cagents:team` spawns keep resolving;
+    `total_aliases` 66 → 68. Both added to the `no-stale-agent-names.test.js`
+    RENAMED_AGENTS guard — `team` with a new `skipQuoted` flag (it is a common
+    word that legitimately appears as the session subdir name and `/team` skill
+    name in code, so only the distinctive `cagents:team` / `core/team/` patterns
+    are scanned, not the `'team'` quoted-string literal).
+- **REC-38 — 3 hidden modes made router-reachable (mode-move, NOT a split, no
+  count change).** `backend-developer`'s `engine` + `game` modes: the
+  `routing.yaml` `game_programming` specialist block now routes to
+  `backend-developer` (was a stale `tech-lead → game-programmer` mapping) with
+  expanded engine/gameplay keywords. `market-research-analyst`'s `requirements`
+  mode: a new `requirements` specialist block (elicitation/BRD/acceptance-criteria/
+  solution-design) routes to `market-research-analyst`, plus `requirements` / `BRD`
+  / `acceptance criteria` / `elicitation` added to the business-domain router
+  keywords. Both agents' descriptions rewritten (below) to advertise the modes.
+- **REC-28 — 24 SELFREF agent descriptions rewritten** (purpose-first + advertise
+  ALL modes + explicit NOT-for boundary, per
+  `ex-skill-authoring-pushy-description.md`): medical-advisor, general-counsel,
+  life-coach, data-scientist, market-research-analyst, scholar, social-scientist,
+  task-state, visual-artist, backend-developer, frontend-developer, data-lead,
+  tech-lead, devops-engineer, security-engineer, qa-lead, marketing-strategist,
+  sales-strategist, hr-manager, support-director, game-designer, product-owner,
+  strategic-planner, narrative-director. No description opens with "Consolidated"
+  any more; each carries a NOT-for clause and names every one of its modes.
+
+### Added
+- **REC-28 — description-quality regression test**
+  (`tests/agents/description-quality.test.js`): for the 24 rewritten agents,
+  asserts (1) no "Consolidated" opener, (2) a "NOT for:" boundary, (3) every
+  `metadata.supported_modes` key appears in the description, (4) 120-1024 char
+  length window. Failing-before (old descriptions fail checks 1 + 3) /
+  passing-after.
+
 ## [12.52.0] - 2026-07-17
 
 **Phase 6 — hygiene & session GC (REC-18/19/20/21).** Audit

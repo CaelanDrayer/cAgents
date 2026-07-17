@@ -1,7 +1,7 @@
 ---
-name: executor
+name: execution-monitor
 archetype: core
-description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline."
+description: "Use when monitoring controller execution progress, verifying coordination_log completeness, or managing phase transitions in the pipeline. Monitors controllers — it does NOT execute work items itself (controllers spawn execution agents). NOT for: implementing tasks (use an execution agent) or coordinating work (use a controller)."
 metadata:
   version: "1.0.0"
   vibe: Monitors controllers like a hawk and never lets a phase slip
@@ -18,9 +18,9 @@ metadata:
 allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskList TaskGet
 ---
 
-# Universal Executor
+# Execution Monitor
 
-Controller coordination monitor for all domains.
+Controller coordination monitor for all domains. (Renamed from the former `executor` name in v12.53.0 — the name now signals its true job: it *monitors* controller execution progress, it does not *execute* work. Old references to the prior name resolve via `scripts/migration/v12-aliases.yaml`.)
 
 ## Core Responsibilities
 

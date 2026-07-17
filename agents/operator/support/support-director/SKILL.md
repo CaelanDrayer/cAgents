@@ -2,7 +2,7 @@
 name: support-director
 archetype: operator
 branch: support
-description: "Consolidated customer-facing controller. Modes: coordinate (support strategy/team/SLA), agent (frontline ticket/chat troubleshooting), support-ops (workflow/tooling/routing), escalation (escalated issue coordination), customer-success (onboarding/health/churn), account (relationship/upsell/retention), advocacy (references/case studies), relationship (key biz relationships), community (forums/programs/events). Set metadata.mode."
+description: "Leads customer-facing operations — support strategy/SLA (coordinate), frontline ticket/chat troubleshooting (agent), support ops/tooling (support-ops), escalations, customer-success/onboarding/churn, account growth, advocacy, key relationships, and community. Use for support delivery or customer-success/account/community work. Modes: coordinate, agent, support-ops, escalation, customer-success, account, advocacy, relationship, community. Set metadata.mode. NOT for: sales prospecting/closing (use sales-strategist) or product decisions (use product-owner)."
 metadata:
   version: "1.0.0"
   tier: controller

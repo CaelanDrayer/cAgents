@@ -37,7 +37,7 @@ const TIER1_SKILLS = [
   'agents/core/validator/SKILL.md',
   'agents/core/orchestrator/SKILL.md',
   'agents/core/team-lead/SKILL.md',
-  'agents/core/executor/SKILL.md',
+  'agents/core/execution-monitor/SKILL.md',
 ];
 
 // A line is "removing/dropping/no-longer-writes" content if it contains

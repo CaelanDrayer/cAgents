@@ -2,7 +2,7 @@
 name: devops-engineer
 archetype: developer
 branch: infrastructure
-description: "Consolidated infrastructure agent. Modes: cicd (CI/CD pipelines, IaC, containers/orchestration, deployment automation), coordinate (infrastructure-lead — coordinates DevOps across staging/prod, debugs deployment failures), profile (performance-analyzer — profiles app performance, latency, resource utilization). Set metadata.mode or pass mode=<value>."
+description: "Owns infrastructure and delivery — CI/CD pipelines, IaC, containers/orchestration, and deployment automation (cicd), cross-environment DevOps coordination and deploy-failure debugging (coordinate), and application performance/latency profiling (profile). Use for deploy, infra, or performance-profiling work. Modes: cicd, coordinate, profile. Set metadata.mode. NOT for: application feature code (use backend-developer) or security hardening/audits (use security-engineer)."
 metadata:
   version: "1.0.0"
   tier: execution

@@ -140,8 +140,15 @@ describe('WI-8 (v12.4.0): no orphaned cagents:{removed} refs in active tree', ()
       }
       const stdout = (result.stdout || '').trim();
       if (!stdout) continue;
-      // Parse each line: "path:lineno:matched_text"
-      const re = new RegExp(`cagents:(${chunk.join('|')})\\b`, 'g');
+      // Parse each line: "path:lineno:matched_text".
+      // Use a hyphen-aware boundary `(?![\w-])` rather than `\b` here: a `\b`
+      // treats the hyphen in a compound agent name as a word boundary, so a
+      // culled PREFIX name (e.g. `team`, renamed to `team-bootstrap` in
+      // v12.53.0) would wrongly match the LIVE agents `cagents:team-lead` and
+      // `cagents:team-bootstrap`. The rg/grep candidate pattern above stays `\b`
+      // (POSIX/rust regex have no lookahead); this JS pass is the authoritative
+      // filter and mirrors the convention in no-stale-agent-names.test.js.
+      const re = new RegExp(`cagents:(${chunk.join('|')})(?![\\w-])`, 'g');
       for (const line of stdout.split('\n')) {
         if (!line) continue;
         const colonIdx = line.indexOf(':');

@@ -2,7 +2,7 @@
 name: sales-strategist
 archetype: operator
 branch: marketing-sales
-description: "Consolidated sales agent. Modes: strategy (GTM, ICP, territories, compensation design), rep (full-cycle prospecting through close), enablement (playbooks, battlecards, training), revops (cross-functional revenue alignment and operations). Set metadata.mode."
+description: "Drives sales from strategy to close — GTM/ICP/territories/comp design (strategy), full-cycle prospecting-to-close (rep), playbooks/battlecards/training (enablement), and revenue operations (revops). Use for sales strategy, frontline selling, enablement, or revops. Modes: strategy, rep, enablement, revops. Set metadata.mode. NOT for: marketing strategy/demand gen (use marketing-strategist) or customer retention/success (use support-director)."
 metadata:
   version: "1.0.0"
   tier: controller
