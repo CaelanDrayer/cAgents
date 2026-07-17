@@ -46,8 +46,61 @@ const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'cagents-memory');
 
 const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
 
-// Canonical list of terminal pipeline/phase states (single source of truth).
-const TERMINAL_STATES = ['completed', 'complete', 'failed', 'aborted', 'COMPLETE', 'VALIDATED'];
+// Canonical terminal pipeline/phase vocabulary (single source of truth, REC-01).
+// TERMINAL_STATES holds ONLY canonical forms. Raw variants seen in the wild
+// (older status.yaml writes, uppercase, FINALIZED, `completed` with a trailing
+// 'd') resolve to a canonical form via TERMINAL_ALIASES + normalizeTerminalState().
+// Readers MUST test membership through isTerminalState(), never
+// `TERMINAL_STATES.includes(rawValue)` directly, so legacy on-disk values keep
+// resolving. `TEAM_CREATED` is deliberately NOT terminal (a bare TEAM_CREATED is
+// a stall, not a completion).
+const TERMINAL_STATES = ['VALIDATED', 'complete', 'failed', 'aborted', 'incomplete'];
+
+// Raw -> canonical aliases. Exact (case-sensitive) matches are tried first;
+// normalizeTerminalState() additionally does a case-insensitive pass so arbitrary
+// casing (e.g. `Completed`, `finalized`) also folds. `completed` is the
+// historically-most-common status.yaml value and MUST keep resolving terminal.
+const TERMINAL_ALIASES = {
+  completed: 'complete',
+  COMPLETE: 'complete',
+  FINALIZED: 'complete',
+};
+
+/**
+ * Fold a raw pipeline_state/phase value to its canonical terminal form.
+ * Non-terminal / transient values (INIT, TEAM_CREATED, validating, …) and
+ * non-strings are returned effectively unchanged (trimmed if a string), so
+ * isTerminalState() reports them as non-terminal.
+ */
+function normalizeTerminalState(s) {
+  if (typeof s !== 'string') return s;
+  const trimmed = s.trim();
+  if (!trimmed) return trimmed;
+  // 1. Exact alias (fast path for the known raw variants).
+  if (Object.prototype.hasOwnProperty.call(TERMINAL_ALIASES, trimmed)) {
+    return TERMINAL_ALIASES[trimmed];
+  }
+  const lower = trimmed.toLowerCase();
+  // 2. Case-insensitive match against a canonical terminal state.
+  for (const canon of TERMINAL_STATES) {
+    if (canon.toLowerCase() === lower) return canon;
+  }
+  // 3. Case-insensitive alias match (e.g. `Completed`, `finalized`).
+  for (const raw in TERMINAL_ALIASES) {
+    if (raw.toLowerCase() === lower) return TERMINAL_ALIASES[raw];
+  }
+  // 4. No mapping — transient / unknown. Return the trimmed original.
+  return trimmed;
+}
+
+/**
+ * True iff the (normalized) value is a canonical terminal state.
+ * isTerminalState('completed') === true (alias), ('FINALIZED') === true,
+ * ('TEAM_CREATED') === false, ('INIT') === false, (null) === false.
+ */
+function isTerminalState(s) {
+  return TERMINAL_STATES.includes(normalizeTerminalState(s));
+}
 
 // Grace period for accepting sessions without status.yaml (handles the race condition where
 // the trigger agent hasn't written status.yaml yet). 5 minutes covers typical pipeline init time.
@@ -214,7 +267,7 @@ function _tryResolveCandidate(sessionsDir, candidate) {
   const phase = extractYamlValue(content, 'pipeline_state')
     || extractYamlValue(content, 'phase')
     || extractYamlValue(content, 'current_phase');
-  if (phase && TERMINAL_STATES.includes(phase)) {
+  if (phase && isTerminalState(phase)) {
     return null; // Terminal — refuse to resolve.
   }
   return dir;
@@ -493,7 +546,7 @@ function findActiveSession(hintOrOptions) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
-    if (phase && !TERMINAL_STATES.includes(phase)) {
+    if (phase && !isTerminalState(phase)) {
       const result = path.join(sessionsDir, session);
       _cachedActiveSessions.set(cacheKey, result);
       return result;
@@ -654,7 +707,7 @@ function findTeamSession(input = {}) {
     if (!content) continue;
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
-    if (phase && !TERMINAL_STATES.includes(phase)) {
+    if (phase && !isTerminalState(phase)) {
       return path.join(sessionsDir, session);
     }
   }
@@ -704,7 +757,7 @@ function findMostRecentSessionDir(options) {
             const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
             if (phaseMatch) {
               const phase = phaseMatch[1];
-              if (TERMINAL_STATES.includes(phase)) {
+              if (isTerminalState(phase)) {
                 continue; // Skip finished sessions
               }
             }
@@ -740,7 +793,7 @@ function findMostRecentSessionDir(options) {
                   const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
                   if (phaseMatch) {
                     const phase = phaseMatch[1];
-                    if (TERMINAL_STATES.includes(phase)) continue;
+                    if (isTerminalState(phase)) continue;
                   }
                 }
               }
@@ -1225,6 +1278,9 @@ module.exports = {
   AGENT_MEMORY_DIR,
   SESSION_PREFIXES,
   TERMINAL_STATES,
+  TERMINAL_ALIASES,
+  normalizeTerminalState,
+  isTerminalState,
   SESSION_DISCOVERY_GRACE_PERIOD_MS,
   MAX_SESSION_START_CHARS,
   MAX_ATTENTION_CHARS,

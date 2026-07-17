@@ -10,6 +10,60 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.46.0] - 2026-07-17
+
+**Phase 1 — canonical terminal-state enum + normalizer + CI guard (REC-01)**
+(audit session `team_plugin-full-audit_260717_001`, ACTION-PLAN Phase 1). This
+is the substrate the honesty fixes (Phase 2, REC-02/03/06) depend on: a single
+canonical terminal vocabulary, a liberal runtime normalizer that folds legacy
+on-disk variants, and a strict guard-first CI check that keeps shipped content
+canonical. **Minor bump** (not patch): it adds >5 non-registry files (a CI
+script + a test file + the routed-reader edits across four hooks), so it is
+exempt from the patch-only ≤5-non-sync-file cap per
+`.claude/rules/core/version-registry.md`.
+
+### Changed
+- **`hook-utils.cjs`** — `TERMINAL_STATES` is now the canonical-only set
+  `['VALIDATED','complete','failed','aborted','incomplete']` (adds the honest
+  `incomplete` terminal, drops the raw aliases). Added `TERMINAL_ALIASES`
+  (`completed`/`COMPLETE`/`FINALIZED` → `complete`), `normalizeTerminalState(s)`
+  (exact-alias → case-insensitive canonical → case-insensitive alias fold; trims;
+  passes transient/non-string through), and `isTerminalState(s)` (canonical
+  membership after normalization). All three exported. **Legacy `completed`
+  recognition is preserved** — `isTerminalState('completed') === true` via the
+  alias, so no reader silently loses terminal detection.
+- **Routed every raw `TERMINAL_STATES.includes(...)` reader through
+  `isTerminalState(...)`**: `hook-utils.cjs` (5 internal readers — the
+  `findMostRecentSessionDir` + active-session resolution paths),
+  `verify-completion.cjs` (5 readers), `session-catchup.cjs` (1). The
+  `verify-completion.cjs` `phase !== 'completed' && …` chain was refactored to
+  `normalizeTerminalState(phase) !== 'complete' && phase !== 'validating' &&
+  phase !== 'TEAM_CREATED'` (semantics preserved; TEAM_CREATED stays
+  non-terminal). `team-stop.cjs` consumes `normalizeTerminalState` (via a
+  js-yaml-style guarded require) in its inline `finalState === 'failed'`
+  comparison; its status-default derivation is left for Phase 2.
+- **`TEAM_CREATED` remains deliberately NON-terminal** (a bare TEAM_CREATED is a
+  stall, not a completion).
+
+### Added
+- **`scripts/ci/validate-terminal-states.cjs`** — scans shipped skills
+  (`.claude/skills/**/*.{md,yaml,yml}`) + config
+  (`cagents-memory/_system/config/*.{yaml,yml}`, incl. `pipeline_config.yaml`)
+  for `pipeline_state:`/`phase:`/`current_phase:` literals and rejects any value
+  that is neither a valid transient (pipeline machine states + designer
+  design-thinking phases) nor a **canonical** terminal. A non-canonical alias in
+  shipped content (e.g. `phase: FINALIZED`) is rejected with the canonical
+  replacement suggested — the runtime tolerates it, but authored content must not
+  drift. Wired into `scripts/ci/cagents-ci.sh` as the blocking `terminal-states`
+  stage (exit code 8). Green against the current repo (0 off-enum literals).
+- **`tests/hooks/terminal-state-vocabulary.test.js`** — 26 tests: normalizer +
+  `isTerminalState` behavior (aliases resolve, `TEAM_CREATED` non-terminal,
+  `completed`→terminal, off-enum/nullish→false), routed-reader agreement, and the
+  CI guard (green on the repo, rejects `phase: FINALIZED` + off-enum, accepts
+  canonical + transient fixtures).
+- Updated the coupled assertion in `tests/hooks/subagent-tracker.test.js` to the
+  routed `isTerminalState(phase)` form.
+
 ## [12.45.0] - 2026-07-17
 
 **Phase 0 — audit safety-net regression tests** (audit session

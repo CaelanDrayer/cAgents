@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.45.0
+# Version: 12.46.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -16,6 +16,8 @@
 #   contract   - (removed in v12.6.0; no-op for back-compat)
 #   tiny-bump   - Run tiny-bump guard (BLOCKING as of V10.26.5; set
 #                 CAGENTS_TINY_BUMP_BLOCK=0 to fall back to warn-only)
+#   counts      - Verify documented counts match disk (warn-only by default)
+#   terminal-states - Reject off-enum pipeline_state/phase literals (REC-01, BLOCKING)
 #   advisory    - Run advisory validators (F6, WARN-only; never blocks CI)
 #   all         - Run all checks
 #
@@ -28,6 +30,8 @@
 #   5 - Contract test failures
 #   6 - Tiny-bump guard failure (blocking by default; set
 #       CAGENTS_TINY_BUMP_BLOCK=0 for warn-only)
+#   7 - Counts-derivation mismatch (blocking only when CAGENTS_COUNTS_BLOCK=1)
+#   8 - Terminal-state vocabulary violation (REC-01, blocking)
 
 set -e
 
@@ -551,6 +555,33 @@ check_counts() {
 }
 
 #
+# check_terminal_states (REC-01): Run scripts/ci/validate-terminal-states.cjs to
+# reject off-enum / non-canonical `pipeline_state:` / `phase:` literals in shipped
+# skills and config. BLOCKING — the canonical terminal vocabulary must not drift.
+#
+check_terminal_states() {
+    log_section "Terminal-State Vocabulary Check (REC-01)"
+
+    local script="$PROJECT_ROOT/scripts/ci/validate-terminal-states.cjs"
+    if [[ ! -f "$script" ]]; then
+        log_warn "check_terminal_states: $script not found; skipping"
+        return 0
+    fi
+    if ! command -v node &> /dev/null; then
+        log_warn "check_terminal_states: node not available; skipping"
+        return 0
+    fi
+
+    if node "$script" 2>&1; then
+        log_info "check_terminal_states: shipped state literals are canonical"
+        return 0
+    fi
+
+    log_error "check_terminal_states: off-enum pipeline_state/phase literal(s) found (blocking)"
+    return 8
+}
+
+#
 # Advisory validators (F6, WARN-only)
 #
 # Runs scripts/ci/run-advisory.cjs, the driver that F1-F4 advisory validators
@@ -587,7 +618,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.45.0"
+    log_section "cAgents CI Runner v12.46.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
@@ -616,6 +647,9 @@ main() {
         counts)
             check_counts || exit_code=7
             ;;
+        terminal-states)
+            check_terminal_states || exit_code=8
+            ;;
         advisory)
             # WARN-only stage: check_advisory always returns 0, so it can never
             # set a non-zero exit_code.
@@ -629,13 +663,14 @@ main() {
             run_contract_tests || exit_code=$((exit_code > 0 ? exit_code : 5))
             check_tiny_bump || exit_code=$((exit_code > 0 ? exit_code : 6))
             check_counts || exit_code=$((exit_code > 0 ? exit_code : 7))
+            check_terminal_states || exit_code=$((exit_code > 0 ? exit_code : 8))
             # Advisory validators run LAST as a non-blocking stage — this call
             # never flips exit_code (check_advisory always returns 0).
             check_advisory
             ;;
         *)
             echo "Unknown command: $command"
-            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|advisory|all]"
+            echo "Usage: $0 [validate|lint|check|contract|evals|test|tiny-bump|counts|terminal-states|advisory|all]"
             exit 1
             ;;
     esac

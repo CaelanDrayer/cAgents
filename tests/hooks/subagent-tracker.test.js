@@ -96,9 +96,11 @@ describe('subagent-tracker.cjs', () => {
     it('should skip completed sessions in fallback', () => {
       // findMostRecentSessionDir was moved to hook-utils.cjs (GAP-4 fix: shared between
       // subagent-tracker and subagent-stop-tracker). Check the shared implementation.
+      // REC-01 (v12.46.0): the raw `TERMINAL_STATES.includes(phase)` reader was routed
+      // through the isTerminalState() normalizer so legacy on-disk values still resolve.
       const utilsPath = join(HOOKS_DIR, 'hook-utils.cjs');
       const utilsContent = readFileSync(utilsPath, 'utf8');
-      expect(utilsContent).toContain('TERMINAL_STATES.includes(phase)');
+      expect(utilsContent).toContain('isTerminalState(phase)');
     });
   });
 
