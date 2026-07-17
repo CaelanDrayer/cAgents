@@ -72,7 +72,7 @@ Current official business domains:
 | **trades** | Culinary & construction | 5 | trades-coordinator, chef |
 | **core** | Infrastructure | 17 | orchestrator, trigger, universal-* agents |
 
-**Total (historical V10.1.0 figure)**: this V10.1.0 layout described 243 agent slots across 15 directories (13 business domains + shared + core). The current canonical structure is **58 agents across 9 builder-role archetypes** (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) — see [docs/architecture/domains.md](architecture/domains.md). The historical sum below is retained for context only:
+**Total (historical V10.1.0 figure)**: this V10.1.0 layout described 243 agent slots across 15 directories (13 business domains + shared + core). The current canonical structure is **59 agents across 9 builder-role archetypes** (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) — see [docs/architecture/domains.md](architecture/domains.md). The historical sum below is retained for context only:
 Sum (historical): 31+30+28+34+17+28+11+12+10+5+5+5+5+5+17 = 243.
 
 ---

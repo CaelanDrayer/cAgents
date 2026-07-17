@@ -8,13 +8,13 @@
     "email": "caelan@caelandrayer.ca"
   },
   "metadata": {
-    "description": "Universal multi-domain agent orchestration framework. 58 specialized agents across 9 builder-role archetypes, coordinated by an intelligent pipeline."
+    "description": "Universal multi-domain agent orchestration framework. 59 specialized agents across 9 builder-role archetypes, coordinated by an intelligent pipeline."
   },
   "plugins": [
     {
       "name": "cagents",
-      "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 58 specialized agents across 9 builder-role archetypes, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router; cross-domain strategic work via Strategic Mode in /team), /team runs parallel execution waves with optional Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper recommends commands.",
-      "version": "12.53.0",
+      "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 59 specialized agents across 9 builder-role archetypes, coordinated by an intelligent pipeline. /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router; cross-domain strategic work via Strategic Mode in /team), /team runs parallel execution waves with optional Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper recommends commands.",
+      "version": "12.54.0",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

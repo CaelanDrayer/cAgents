@@ -70,8 +70,8 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // is never touched, eliminating the race entirely.
     const claudeMd = join(REPO_ROOT, 'CLAUDE.md');
     const original = readFileSync(claudeMd, 'utf8');
-    // Find "58 agents" claim and replace ALL occurrences with bogus 999.
-    const mutated = original.replace(/\b58 agents\b/g, '999 agents');
+    // Find "59 agents" claim and replace ALL occurrences with bogus 999.
+    const mutated = original.replace(/\b59 agents\b/g, '999 agents');
     expect(mutated).not.toBe(original); // must have actually mutated
 
     const tmpDir = mkdtempSync(join(tmpdir(), 'doc-counts-test-'));
@@ -176,8 +176,8 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     });
     // The --derive-only mode should print derived counts and exit 0 without
     // doing comparison.
-    expect(output, 'derive-only should print active_agents=58').toMatch(
-      /active_agents[=:]\s*58/
+    expect(output, 'derive-only should print active_agents=59').toMatch(
+      /active_agents[=:]\s*59/
     );
     // A2-12: agent-dispatch.cjs consolidated the PreToolUse[Agent] hooks
     // (session-init-gate + model-routing-advisor) into one dispatcher; approval-gate.cjs

@@ -18,10 +18,10 @@ This file is a discoverability surface, not a behavioral contract.
 | `/designer` | Interactive design exploration via guided Q&A | "design X", "plan this through" |
 | `/helper` | Command guide and skill recommender | "which command", "how do I", "what can cAgents do" |
 
-## Agent Catalog (58 agents across 9 archetypes)
+## Agent Catalog (59 agents across 9 archetypes)
 
 - `developer/` (8) — backend, frontend, fullstack, infrastructure, quality
-- `operator/` (7) — support, business-ops, people-ops, marketing-sales, content
+- `operator/` (8) — support, business-ops, people-ops, marketing-sales, content
 - `advisor/` (4) — legal, health, education, personal
 - `analyst/` (5) — data, BI, research, social science
 - `creator/` (2) — visual artists, audiovisual
@@ -47,7 +47,7 @@ This file is a discoverability surface, not a behavioral contract.
 
 - All agents live under one of 9 archetype roots (no per-domain agent dirs since v11.1.0).
 - Skill discovery: `.claude/skills/<name>/SKILL.md` — these are the 4 user-facing entry points.
-- Plugin manifest: `.claude-plugin/plugin.json` — registers 58 agents + 4 skills + 24 registered hooks (32 .cjs files total).
+- Plugin manifest: `.claude-plugin/plugin.json` — registers 59 agents + 4 skills + 24 registered hooks (32 .cjs files total).
 
 ## Authoritative References
 
