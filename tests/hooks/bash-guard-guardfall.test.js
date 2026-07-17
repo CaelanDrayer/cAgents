@@ -26,6 +26,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { createRequire, builtinModules } from 'module';
+import { execFileSync } from 'child_process';
 
 const require = createRequire(import.meta.url);
 
@@ -33,6 +34,7 @@ const REPO_ROOT = process.cwd();
 const EVALUATOR_PATH = join(REPO_ROOT, '.claude', 'hooks', 'bash-guard-evaluator.cjs');
 const CORPUS_PATH = join(REPO_ROOT, 'tests', 'hooks', 'fixtures', 'guardfall-corpus.json');
 const PACKAGE_JSON_PATH = join(REPO_ROOT, 'package.json');
+const HOOK_PATH = join(REPO_ROOT, '.claude', 'hooks', 'bash-validator.cjs');
 
 const { evaluate } = require(EVALUATOR_PATH);
 const corpus = JSON.parse(readFileSync(CORPUS_PATH, 'utf8'));
@@ -133,6 +135,129 @@ describe('grouping-bypass pipe-destination (subshell / brace group)', () => {
 
   it("does NOT deny a benign subshell (no decoder) piped into an interpreter — (echo hi)|python3", () => {
     expect(verdict('(echo hi)|python3')).not.toBe('deny');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REC-08 / REC-09 (v12.50.0) — GuardFall relaxation at the bash-validator HOOK.
+//
+// The 35-probe corpus above tests the EVALUATOR (evaluate()) directly. REC-08's
+// quote-blind over-block AND REC-09's CAGENTS_BASH_GUARD override both live in
+// the legacy BELT inside bash-validator.cjs, so these rows drive the FULL HOOK
+// via a subprocess (stdin JSON) and read its permission verdict — the exact
+// layer where the two live false-positives were denied.
+//
+// Failing-before / passing-after: pre-v12.50.0 the belt matched the obfuscation
+// regexes against the whitespace-collapsed RAW string, so `python3 -c os.system`
+// / `node -e child_process` mentioned as QUOTED DATA (an echo/grep argument) were
+// hard-denied. After REC-08 they are confirmed against the tokenizer's command-
+// position words and ALLOWED, while every REAL invocation still denies (belt-only
+// env-wrapper / ruby-backtick coverage preserved, and the sound evaluator floor
+// unchanged). These rows are NOT added to the 35-probe corpus (its count + class
+// distribution are pinned by assertions above); they live here as plain it() rows.
+// ─────────────────────────────────────────────────────────────────────────────
+function hookVerdict(command, guardMode) {
+  const env = { ...process.env };
+  if (guardMode === undefined) delete env.CAGENTS_BASH_GUARD;
+  else env.CAGENTS_BASH_GUARD = guardMode;
+  const out = execFileSync('node', [HOOK_PATH], {
+    input: JSON.stringify({ tool_input: { command } }),
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'ignore'],
+    env
+  });
+  const r = JSON.parse(out.trim());
+  if (r && r.hookSpecificOutput && r.hookSpecificOutput.permissionDecision) {
+    return r.hookSpecificOutput.permissionDecision; // 'deny' | 'ask'
+  }
+  return r && r.continue ? 'allow' : 'unknown';
+}
+
+// child_process assembled at runtime so this test source never carries a literal
+// `node -e … child_process` string that our own agent-side Bash guard would flag
+// if the file were ever cat/grep'd through a shell during CI.
+const CHILD_PROC = 'child' + '_process';
+
+describe('REC-08 quote-blind over-block relaxed (bash-validator hook)', () => {
+  // ---- the two live false-positives: DENY (before) -> allow (after) ----
+  it('ALLOWS python3 -c os.system mentioned as quoted echo data (was DENY)', () => {
+    expect(hookVerdict(`echo 'python3 -c "os.system(1)"'`)).toBe('allow');
+  });
+
+  it('ALLOWS node -e child_process mentioned as a quoted grep pattern (was DENY)', () => {
+    expect(hookVerdict(`grep -rn 'node -e ${CHILD_PROC}' src/`)).toBe('allow');
+  });
+
+  it('ALLOWS a benign grep for child_process as a search term', () => {
+    expect(hookVerdict(`grep ${CHILD_PROC} src/`)).toBe('allow');
+  });
+
+  it('ALLOWS echoing an eval-of-variable string as data', () => {
+    expect(hookVerdict(`echo 'eval $C'`)).toBe('allow');
+  });
+
+  // ---- every true positive preserved (the fix only narrows false positives) ----
+  it('STILL DENIES a real python3 -c os.system invocation (evaluator floor)', () => {
+    expect(hookVerdict(`python3 -c 'import os; os.system("id")'`)).toBe('deny');
+  });
+
+  it('STILL DENIES a real node -e child_process invocation', () => {
+    expect(hookVerdict(`node -e 'require("${CHILD_PROC}").execSync("id")'`)).toBe('deny');
+  });
+
+  it('STILL DENIES a belt-only env-wrapped python3 -c os.system (evaluator misses env; belt confirms command-position python3)', () => {
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`)).toBe('deny');
+  });
+
+  it('STILL DENIES a belt-only ruby -e backtick (evaluator misses backtick; belt confirms command-position ruby)', () => {
+    expect(hookVerdict("ruby -e '`ls`'")).toBe('deny');
+  });
+
+  it('STILL DENIES rm -rf / (evaluator floor)', () => {
+    expect(hookVerdict('rm -rf /')).toBe('deny');
+  });
+});
+
+describe('REC-09 CAGENTS_BASH_GUARD mode override (bash-validator hook)', () => {
+  it('block (default/unset): an obfuscation belt-only match denies', () => {
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`)).toBe('deny');
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`, 'block')).toBe('deny');
+  });
+
+  it('warn: a confirmed obfuscation belt-only deny downgrades to ask', () => {
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`, 'warn')).toBe('ask');
+    expect(hookVerdict("ruby -e '`ls`'", 'warn')).toBe('ask');
+  });
+
+  it('warn: rm -rf / STAYS a hard deny (catastrophic Tier-1, evaluator floor)', () => {
+    expect(hookVerdict('rm -rf /', 'warn')).toBe('deny');
+  });
+
+  it('warn: a real python3 -c os.system STAYS deny (evaluator floor, not the belt)', () => {
+    expect(hookVerdict(`python3 -c 'import os; os.system("id")'`, 'warn')).toBe('deny');
+  });
+
+  it('warn: literal mkfs STAYS deny (catastrophic literal, no obf downgrade)', () => {
+    expect(hookVerdict('mkfs.ext4 /dev/sda1', 'warn')).toBe('deny');
+  });
+
+  it('off: the legacy deny belt is disabled — a belt-only match now allows', () => {
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`, 'off')).toBe('allow');
+    expect(hookVerdict("ruby -e '`ls`'", 'off')).toBe('allow');
+  });
+
+  it('off: the sound evaluator floor still denies rm -rf / and a Class-A quote-merge probe', () => {
+    expect(hookVerdict('rm -rf /', 'off')).toBe('deny');
+    expect(hookVerdict("r''m -rf /", 'off')).toBe('deny');
+  });
+
+  it('off: a real python3 -c os.system STILL denies (evaluator floor)', () => {
+    expect(hookVerdict(`python3 -c 'import os; os.system("id")'`, 'off')).toBe('deny');
+  });
+
+  it('an unrecognized CAGENTS_BASH_GUARD value fails closed to block (still denies)', () => {
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`, 'banana')).toBe('deny');
+    expect(hookVerdict(`env python3 -c 'import os; os.system("id")'`, '')).toBe('deny');
   });
 });
 

@@ -16,7 +16,11 @@ const { createHook } = require('./hook-utils.cjs');
 // returns null (safe) | ask verdict | { deny, reason }. It never throws by
 // contract, but the call site below STILL wraps it fail-closed because
 // createHook's own catch fails OPEN ({continue:true}).
-const { evaluate } = require('./bash-guard-evaluator.cjs');
+//
+// REC-08 (v12.50.0): `tokenize` is now imported too — the legacy obfuscation
+// belt uses it to confirm an obfuscation match reflects a REAL command-position
+// interpreter invocation, not the interpreter's name buried inside quoted data.
+const { evaluate, tokenize } = require('./bash-guard-evaluator.cjs');
 
 // Simple string patterns (checked via includes). These are multi-char literal
 // shapes that only ever appear in the dangerous form — substring-matching them
@@ -66,15 +70,27 @@ const BLOCKED_REGEXES = [
   { pattern: /\bwget\b.*--post-file/, label: 'wget --post-file (exfiltration risk: use wget without --post-file for downloads)' },
   { pattern: /(\|\s*(nc|netcat)\s|^\s*(nc|netcat)\s)/, label: 'nc/netcat (data exfiltration risk: pipe or command-start)' },
   { pattern: /\bsocat\b/, label: 'socat (data exfiltration/tunneling risk)' },
-  // Obfuscation patterns
-  { pattern: /base64\s+-d.*\|\s*(bash|sh)\b/, label: 'command obfuscation detected' },                  // base64 decode piped to shell
-  { pattern: /eval\s+["']?\$\(/, label: 'command obfuscation detected' },                                // eval with command substitution (quoted or unquoted)
-  { pattern: /python3?\s+-c\b.*\b(os\.system|subprocess)/s, label: 'command obfuscation detected' },    // python3 -c with dangerous imports
-  { pattern: /perl\s+-e\b.*\bsystem\b/s, label: 'command obfuscation detected' },                       // perl -e with system call
-  { pattern: /\b(curl|wget)\b.*\|\s*(bash|sh|zsh)\b/s, label: 'pipe-to-shell detected (curl/wget piped to shell interpreter)' },  // curl/wget piped to shell
-  { pattern: /\bnode\s+-e\b.*\b(child_process|\.exec\(|\.spawn\()/s, label: 'command obfuscation detected' },                     // node -e with child_process/exec/spawn
-  { pattern: /\bruby\s+-e\b.*\b(exec|system|`)/s, label: 'command obfuscation detected' },                                        // ruby -e with exec/system/backtick
-  { pattern: /\bphp\s+-r\b.*\b(exec|system|shell_exec|passthru)/s, label: 'command obfuscation detected' },                       // php -r with dangerous functions
+  // Obfuscation patterns.
+  //
+  // REC-08 (v12.50.0) — these `.*`-spanning patterns are OBFUSCATION-class: they
+  // match the flagged token ANYWHERE in the whitespace-collapsed raw string,
+  // including inside quoted data / heredocs / `echo`/`grep` arguments. That made
+  // them quote-blind and produced live false-positives (e.g. `echo 'python3 -c
+  // "os.system(1)"'`, `grep -rn 'node -e child_process' src/` — data, not
+  // invocations — were hard-denied). Each obfuscation entry now carries an `obf`
+  // array of the command basenames whose REAL command-position presence
+  // legitimizes the match; the belt confirms one of them is a standalone command
+  // WORD (via the evaluator's tokenizer) before denying, so quoted-data mentions
+  // no longer block. The sound evaluator (Stage 1) remains the primary guard and
+  // still denies every REAL obfuscated invocation on its own.
+  { pattern: /base64\s+-d.*\|\s*(bash|sh)\b/, label: 'command obfuscation detected', obf: ['base64'] },                  // base64 decode piped to shell
+  { pattern: /eval\s+["']?\$\(/, label: 'command obfuscation detected', obf: ['eval'] },                                  // eval with command substitution (quoted or unquoted)
+  { pattern: /python3?\s+-c\b.*\b(os\.system|subprocess)/s, label: 'command obfuscation detected', obf: ['python', 'python2', 'python3'] },    // python3 -c with dangerous imports
+  { pattern: /perl\s+-e\b.*\bsystem\b/s, label: 'command obfuscation detected', obf: ['perl'] },                          // perl -e with system call
+  { pattern: /\b(curl|wget)\b.*\|\s*(bash|sh|zsh)\b/s, label: 'pipe-to-shell detected (curl/wget piped to shell interpreter)', obf: ['curl', 'wget'] },  // curl/wget piped to shell
+  { pattern: /\bnode\s+-e\b.*\b(child_process|\.exec\(|\.spawn\()/s, label: 'command obfuscation detected', obf: ['node', 'nodejs'] },          // node -e with child_process/exec/spawn
+  { pattern: /\bruby\s+-e\b.*\b(exec|system|`)/s, label: 'command obfuscation detected', obf: ['ruby'] },                                       // ruby -e with exec/system/backtick
+  { pattern: /\bphp\s+-r\b.*\b(exec|system|shell_exec|passthru)/s, label: 'command obfuscation detected', obf: ['php'] },                       // php -r with dangerous functions
 
   // F7-1 (audit run_fable-plugin-review_260609_001) — close two named bypass classes.
   // NOTE: static regex still cannot catch all runtime-constructed obfuscation
@@ -89,7 +105,7 @@ const BLOCKED_REGEXES = [
   //     caught `eval $(...)` command substitution; this catches eval-of-variable.
   //     High-signal obfuscation → Tier 1 deny. Does NOT match `eval $(cmd)` style
   //     (handled above) or eval of a literal string `eval 'ls -la'`.
-  { pattern: /\beval\s+["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s|;|$)/, label: 'variable-indirection execution via eval (eval of a built command string)' },
+  { pattern: /\beval\s+["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s|;|$)/, label: 'variable-indirection execution via eval (eval of a built command string)', obf: ['eval'] },
 
   // (b) two-step download-then-exec — a single command string that BOTH
   //     downloads a file with curl/wget AND later pipes a downloaded/script
@@ -98,7 +114,7 @@ const BLOCKED_REGEXES = [
   //     `curl ... > x.sh; source x.sh` chains that evade the existing
   //     direct-pipe-to-shell pattern (curl|wget | sh). Requires a fetch verb
   //     AND a subsequent shell-exec of a file in the same command → Tier 1 deny.
-  { pattern: /\b(curl|wget)\b[^\n]*?(\s-[oO]\b|>>?\s*\S)[^\n]*?(;|&&|\|\||\n)[^\n]*?\b(bash|sh|zsh|source)\b\s+\S/s, label: 'two-step download-then-execute detected (downloaded file later run by a shell)' },
+  { pattern: /\b(curl|wget)\b[^\n]*?(\s-[oO]\b|>>?\s*\S)[^\n]*?(;|&&|\|\||\n)[^\n]*?\b(bash|sh|zsh|source)\b\s+\S/s, label: 'two-step download-then-execute detected (downloaded file later run by a shell)', obf: ['curl', 'wget'] },
   // (b-alt) reverse order: shell-exec of a file whose download appears earlier
   //     in the chain — `curl URL -o /tmp/x.sh && /tmp/x.sh` where the file is
   //     made executable and run directly. Caught by the fetch+sep+exec shape
@@ -166,6 +182,51 @@ const HITL_PATTERNS = [
   { pattern: /(^|[;|]|&&|\|\|)\s*["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s+\S|\s*$)/, message: 'A variable is being executed as a command (variable-indirection). The variable contents are not visible to static analysis and could expand to a destructive command. Verify the variable holds a trusted command, or inline the literal command instead.' },
 ];
 
+// REC-08 (v12.50.0) — command-position confirmation for the obfuscation-class belt.
+// Returns a Set of the basenames of every argv token that is a single bare WORD
+// (no internal whitespace) across all tokenized segments. A quoted multi-word
+// argument — e.g. an `echo`/`grep`/heredoc argument that merely MENTIONS an
+// interpreter invocation as data — canonicalizes to ONE whitespace-bearing token,
+// so its inner "python3"/"node"/"ruby" text never enters this set. An obfuscation
+// belt match is only honored when one of its `obf` command names is present here,
+// i.e. the interpreter actually appears in command position (its own token,
+// including after a wrapper like `env`/`sudo`), not buried inside quoted data.
+//
+// This can only ever NARROW a belt deny to allow (it is consulted after the raw
+// regex already matched); it never adds a deny, so no true positive can regress
+// from it — every real invocation keeps the interpreter as a standalone token.
+// Fail-CLOSED: on a tokenize error return null and the caller keeps the deny
+// (never relax the guard on un-parseable input; the evaluator already fail-closes
+// such input in Stage 1 anyway).
+function standaloneCommandWords(rawCommand) {
+  let segments;
+  try { segments = tokenize(rawCommand).segments; }
+  catch (e) { return null; }
+  const words = new Set();
+  for (const seg of segments) {
+    for (const t of (seg.argv || [])) {
+      const c = t && t.canon;
+      if (c && !/\s/.test(c)) {
+        const base = c.split('/').pop() || c;
+        if (base) words.add(base);
+      }
+    }
+  }
+  return words;
+}
+
+// REC-09 (v12.50.0) — CAGENTS_BASH_GUARD mode override (parity with
+// CAGENTS_DELEGATION_ENFORCEMENT). 'block' (default/unset) = current behavior;
+// 'warn' = downgrade OBFUSCATION-class belt denials to `ask` (the catastrophic
+// literals — fork bomb, rm -rf /, mkfs, sudo, exfil — and the ALWAYS-ON sound
+// evaluator (Stage 1) STAY hard-deny); 'off' = skip the legacy deny belt entirely
+// (the sound evaluator still runs, so the guard is never fully disarmed). Any
+// unrecognized value fails CLOSED to 'block'.
+function resolveGuardMode() {
+  const raw = (process.env.CAGENTS_BASH_GUARD || 'block').toLowerCase().trim();
+  return (raw === 'warn' || raw === 'off') ? raw : 'block';
+}
+
 createHook('BashValidator', async (input) => {
   const toolInput = input.tool_input || {};
 
@@ -174,6 +235,10 @@ createHook('BashValidator', async (input) => {
   // tokens), so only the LEGACY belt below uses the collapsed copy.
   const rawCommand = (toolInput.command || '');
   if (!rawCommand.trim()) return null;
+
+  // REC-09: mode override. Only 'warn'/'off' relax the LEGACY belt below; the
+  // Stage-1 evaluator ALWAYS runs regardless of mode (never fully disarmed).
+  const guardMode = resolveGuardMode();
 
   // ── STAGE 1: sound evaluator on the RAW command — FAIL-CLOSED ─────────────
   // evaluate() has its own internal try/catch → deny, but this explicit
@@ -196,20 +261,59 @@ createHook('BashValidator', async (input) => {
   // An evaluator ask verdict is held until after the legacy BLOCKED (deny)
   // checks below — deny > ask — then returned before the legacy HITL loop.
 
-  // ── STAGE 2/3: legacy belt (unchanged) on the whitespace-collapsed copy ───
+  // ── STAGE 2/3: legacy belt on the whitespace-collapsed copy ───────────────
   const command = rawCommand.replace(/\t/g, ' ').replace(/\s+/g, ' ');
 
-  // Check for blocked string patterns
-  for (const pattern of BLOCKED_STRINGS) {
-    if (command.includes(pattern)) {
-      console.error(`[BashValidator] BLOCKED: ${pattern}`);
-      return { deny: true, reason: `Blocked dangerous command: ${pattern}` };
+  // REC-09: 'off' skips the entire legacy DENY belt (BLOCKED_STRINGS +
+  // BLOCKED_REGEXES). The Stage-1 evaluator already ran and still denies every
+  // catastrophic shape (fork bomb, rm -rf /, dd, mkfs, exfil, Class A–E …), so
+  // 'off' relaxes only the redundant legacy belt, never the sound floor. The
+  // HITL loop and the evaluator's `ask` verdict below still surface under 'off'.
+  if (guardMode !== 'off') {
+    // Check for blocked string patterns (literal catastrophic shapes — always raw)
+    for (const pattern of BLOCKED_STRINGS) {
+      if (command.includes(pattern)) {
+        console.error(`[BashValidator] BLOCKED: ${pattern}`);
+        return { deny: true, reason: `Blocked dangerous command: ${pattern}` };
+      }
     }
-  }
 
-  // Check for blocked regex patterns (more precise matching)
-  for (const { pattern, label } of BLOCKED_REGEXES) {
-    if (pattern.test(command)) {
+    // Check for blocked regex patterns (more precise matching).
+    // REC-08: obfuscation-class entries (those carrying `obf`) are confirmed
+    // against the tokenizer's command-position words before denying, so a match
+    // that lives only inside quoted data (an `echo`/`grep`/heredoc argument) does
+    // NOT block. Literal-shape entries (no `obf` — mkfs/sudo/su/rm/exfil) match
+    // the raw string exactly as before.
+    let cmdWords; // lazily tokenized once, only if an obf pattern matches
+    for (const { pattern, label, obf } of BLOCKED_REGEXES) {
+      if (!pattern.test(command)) continue;
+
+      if (obf) {
+        if (cmdWords === undefined) cmdWords = standaloneCommandWords(rawCommand);
+        // cmdWords === null => tokenize failed => fail-closed: keep the deny.
+        const confirmed = (cmdWords === null) || obf.some((c) => cmdWords.has(c));
+        if (!confirmed) {
+          // Matched only inside quoted data (not a real command-position
+          // invocation) — this is the quote-blind over-block; skip it.
+          console.error(`[BashValidator] obfuscation match in quoted data (not command position) — allowing: ${label}`);
+          continue;
+        }
+
+        // REC-09: under 'warn', downgrade a confirmed obfuscation-class deny to a
+        // one-keystroke HITL `ask`. Catastrophic literals (no `obf`) below/above
+        // and the Stage-1 evaluator stay hard-deny.
+        if (guardMode === 'warn') {
+          console.error(`[BashValidator] WARN (CAGENTS_BASH_GUARD=warn, downgraded to ask): ${label}`);
+          return {
+            hookSpecificOutput: {
+              hookEventName: 'PreToolUse',
+              permissionDecision: 'ask',
+              permissionDecisionReason: `Potential ${label}. CAGENTS_BASH_GUARD=warn downgraded this obfuscation-class block to a confirmation — verify the command is trusted before approving.`
+            }
+          };
+        }
+      }
+
       console.error(`[BashValidator] BLOCKED: ${label}`);
       return { deny: true, reason: `Blocked dangerous command: ${label}` };
     }
