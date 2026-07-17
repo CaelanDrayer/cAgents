@@ -10,6 +10,66 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.50.0] - 2026-07-17
+
+**Phase 5a — GuardFall relaxation (REC-08 / REC-09)** (audit session
+`team_plugin-full-audit_260717_001`, `outputs/wave-2/fix-plumbing.md` § AREA 3).
+A **standalone, independently-revertible, security-sensitive** minor bump —
+deliberately NOT bundled with the Phase 5b logging work so a guard regression
+stays revertible in isolation. **No true positive was weakened**: the sound
+Stage-1 evaluator (`bash-guard-evaluator.cjs`) is untouched, the 35-probe A–E
+GuardFall corpus retains every verdict (35/35), and the fix only ever NARROWS a
+legacy-belt false positive to allow — it never adds a deny.
+
+### Fixed
+- **REC-08 — GuardFall quote-blind over-block.** The legacy Stage-2/3 belt in
+  `.claude/hooks/bash-validator.cjs` ran its OBFUSCATION-class regexes
+  (`python3 -c … os.system`, `node -e … child_process`, `perl -e`, `ruby -e`,
+  `php -r`, `base64 … | sh`, `curl | sh`, `eval $(…)`, `eval $VAR`, two-step
+  download-exec) with `.*` across the whitespace-collapsed RAW command, so an
+  interpreter+keyword appearing only as **quoted data** (an `echo`/`grep`
+  argument) was hard-denied. Two live false positives —
+  `echo 'python3 -c "os.system(1)"'` and `grep -rn 'node -e child_process' src/`
+  — now go from DENY → allowed. Each obfuscation entry gained an `obf`
+  command-name list and is confirmed against the evaluator's exported `tokenize`:
+  the flagged interpreter must be a **standalone command word** (its own token,
+  including after a wrapper like `env`/`sudo`), not text buried inside a quoted
+  multi-word argument, before the belt denies. Because the confirmation runs
+  after the raw regex already matched, it can only turn a belt deny into an allow
+  — it never adds a deny, so no true positive regresses. Real invocations still
+  deny: `python3 -c 'os.system(…)'` and `rm -rf /` via the evaluator floor, and
+  belt-only `env python3 -c …` / `ruby -e '`…`'` (which the evaluator does not
+  independently cover) via the confirmed belt. Heredoc-embedded payloads remain
+  the documented §7 residual (the tokenizer does not parse heredoc quoting →
+  conservative deny, never leak).
+
+### Added
+- **REC-09 — `CAGENTS_BASH_GUARD` mode override** (`block` | `warn` | `off`;
+  parity with `CAGENTS_DELEGATION_ENFORCEMENT`; declared in
+  `.claude/settings.json` `env`, default `block`). `block` (default/unset) keeps
+  current behavior. `warn` downgrades a **confirmed obfuscation-class belt deny**
+  to a one-keystroke HITL `ask` — the catastrophic literals (fork bomb,
+  `rm -rf /`, `mkfs`, `sudo`, exfil) AND the always-on Stage-1 evaluator STAY
+  hard-deny, so **`rm -rf /` stays a hard DENY even under `warn`**. `off` skips
+  the entire legacy deny belt while the sound evaluator still runs — catastrophic
+  shapes (`rm -rf /`, `r''m -rf /`, Class A–E) are **never disarmed**. Any
+  unrecognized value fails **closed** to `block`.
+- **18 new `it()` cases** in `tests/hooks/bash-guard-guardfall.test.js` that
+  drive the FULL `bash-validator.cjs` hook via subprocess (the belt layer the
+  35-probe corpus, which tests `evaluate()` directly, does not exercise):
+  the two false positives now allow; real `python3 -c os.system` / `node -e
+  child_process` / `env python3 -c …` / `ruby -e` backtick / `rm -rf /` still
+  deny; `rm -rf /` stays deny under `warn`; `off` disables the belt but the
+  evaluator floor still denies `rm -rf /` and a Class-A probe; unrecognized
+  values fail closed. 5 of these are failing-before / passing-after (verified by
+  reverting only the hook). The 35-probe corpus (35 count, 21 `red_today`) is
+  unchanged.
+
+### Changed
+- Documented the relaxation + override in
+  `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` (new § 5.1) and
+  `.claude/rules/core/resources/hook-catalog.md` § PreToolUse[Bash].
+
 ## [12.49.0] - 2026-07-17
 
 **Phase 4 — legacy alias backfill (REC-07)** (audit session

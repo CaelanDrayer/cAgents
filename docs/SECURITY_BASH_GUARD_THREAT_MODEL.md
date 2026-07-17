@@ -240,6 +240,50 @@ never `ask`.** `ask` is correct only for genuinely-unknowable-but-commonly-benig
 cases (`rm -rf $VAR`, `$CMD file`, a lone secret read, a bare non-decoded pipe
 into an interpreter, `chmod 777 <normal file>`).
 
+### 5.1 Belt relaxation + mode override (REC-08 / REC-09, v12.50.0)
+
+Two follow-ups to the shipped hardening, driven by audit
+`team_plugin-full-audit_260717_001` (W2-D, area GUARDFALL). Both change ONLY the
+legacy Stage-2/3 belt in `bash-validator.cjs`; the sound evaluator (§5) is
+untouched, so the 35-probe corpus verdicts and every true positive are preserved.
+
+- **REC-08 — quote-blind over-block fixed.** The legacy `BLOCKED_REGEXES`
+  obfuscation-class patterns (`python3 -c … os.system`, `node -e … child_process`,
+  `perl -e`, `ruby -e`, `php -r`, `base64 … | sh`, `curl | sh`, `eval $(…)`,
+  `eval $VAR`, two-step download-exec) run `.*` across the whitespace-collapsed
+  RAW string, so they matched the flagged interpreter+keyword even when it was
+  merely **quoted data** — an `echo`/`grep`/heredoc argument. This produced live
+  false positives (`echo 'python3 -c "os.system(1)"'`,
+  `grep -rn 'node -e child_process' src/` were hard-denied). Each obfuscation
+  entry now carries an `obf` array of the command basenames whose REAL
+  command-position presence legitimizes it; the belt confirms one of them is a
+  **standalone command word** (via the evaluator's exported `tokenize`) before
+  denying. A quoted multi-word argument canonicalizes to one whitespace-bearing
+  token, so its inner `python3`/`node` text is never a standalone word → the match
+  is skipped (allowed). The confirmation can only ever NARROW a belt deny to
+  allow; it never adds one, so no true positive regresses — every real
+  invocation (including `env python3 -c …` and `ruby -e '\`…\`'`, which the
+  evaluator itself does not cover) keeps the interpreter as a standalone token and
+  still denies. Literal-shape entries (fork bomb, `rm -rf /`, `mkfs`, `sudo`,
+  exfil) are unchanged and still match the raw string. Heredoc-embedded payloads
+  remain the §7 residual — the tokenizer does not parse heredoc quoting, so a
+  `node`/`python3` word inside a `<<EOF` body still reads as command-position
+  (conservative: it denies, not leaks).
+
+- **REC-09 — `CAGENTS_BASH_GUARD` override** (parity with
+  `CAGENTS_DELEGATION_ENFORCEMENT`; declared in `.claude/settings.json` `env`,
+  default `block`). `block` (default/unset) = current behavior. `warn` = downgrade
+  a **confirmed obfuscation-class belt deny** to a one-keystroke HITL `ask` — the
+  catastrophic literals (fork bomb, `rm -rf /`, `mkfs`, `sudo`, exfil) AND the
+  always-on Stage-1 evaluator **stay hard-deny** (so `rm -rf /` and a real
+  `python3 -c os.system` remain denied even under `warn`). `off` = skip the entire
+  legacy deny belt; the sound evaluator still runs, so catastrophic shapes
+  (`rm -rf /`, `r''m -rf /`, Class A–E) are **never disarmed** — `off` only relaxes
+  the redundant belt. Any unrecognized value fails **closed** to `block`. Risk of
+  `off`: an obfuscated invocation the evaluator does not independently cover (e.g.
+  `env`-wrapped interpreter, `ruby -e` backtick) is no longer belt-caught — use it
+  only in trusted, non-ingested-content workflows.
+
 ---
 
 ## 6. Test harness & CI gate (implemented)
