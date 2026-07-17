@@ -100,6 +100,11 @@ pipeline_state: "{STATE}"               # /run: INIT, ORCHESTRATED, PLANNED, COO
 phase: "{phase}"                        # /team, /designer: phase name
 
 created_at: "{ISO_TIMESTAMP}"           # REQUIRED: Session creation time
+revision_cycles: 0                      # /run: revision counter (REC-11). Re-added to
+                                        # status.yaml in REC-11 (removed v12.6.0). /run
+                                        # increments it on each FAIL/REVISE route-back to
+                                        # PLANNED; verify-completion.cjs reads it to enforce
+                                        # the max_cycles cap (pipeline_config.yaml, 3).
 state_history:                          # REQUIRED: Ordered list of state transitions
   - state: "{STATE_NAME}"               # REQUIRED: State/phase name
     entered_at: "{ISO_TIMESTAMP}"       # REQUIRED: When this state was entered
@@ -126,7 +131,7 @@ state_history:                          # REQUIRED: Ordered list of state transi
 **Runtime responsibilities of /run state machine** (not delegated to agents):
 - Append state_history entry on each transition (state + entered_at)
 - Always write `execution_summary.yaml` at pipeline exit
-- Track revision counter in working state (max 3 cycles before HITL)
+- Persist + increment `revision_cycles` in status.yaml on each FAIL/REVISE route-back to PLANNED (REC-11); at `revision_cycles >= max_cycles` (pipeline_config.yaml, 3) escalate to user (HITL) + finalize `incomplete` instead of re-planning again
 
 ### /team
 - `team/metrics/timing.yaml` - Team timing metrics

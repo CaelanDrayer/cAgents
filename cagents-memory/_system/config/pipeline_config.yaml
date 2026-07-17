@@ -54,13 +54,22 @@ states:
 
 # Revision routing
 # When validator returns FAIL or REVISE, the state machine jumps back.
+# REC-11 (P-5): the /run loop PERSISTS a `revision_cycles` counter to
+# status.yaml and increments it on each FAIL/REVISE route-back to PLANNED
+# (re-added in REC-11; removed in v12.6.0). `max_cycles` below is the SINGLE
+# revision cap — the /run loop (run/SKILL.md Step 3g), the /goal auto-anchor
+# (run/SKILL.md Step 2 ACTION 4), and the verify-completion.cjs Stop hook all
+# reconcile to it. There is exactly one cap, not two (the pre-REC-11 hard-coded
+# /goal "8" contradicted this and was a defect).
 revision:
   # max_revision_cycles lowered 5 -> 3 in v12.0.0.
   # Basis: cagents-memory/sessions/team_v12-audits-only_260520_001/outputs/wave-1/revision-distribution.yaml
   # verdict: lower-cap-safe (p95=0 across 24 sessions; no observed session
   # required more than 3 revisions). Telemetry note: if any future session
   # exhausts 3 cycles without resolution, the universal-self-correct agent
-  # should escalate visibly rather than silently truncate.
+  # should escalate visibly rather than silently truncate. At the cap the Stop
+  # hook FINALIZES the session `incomplete` + escalates (user_hitl) rather than
+  # re-planning forever.
   max_cycles: 3
   on_fail: PLANNED            # v12.0.0: PROMPTS_READY removed; route back to PLANNED (controller re-runs with validator feedback)
   on_revise: PLANNED           # re-plan with feedback (more fundamental issue)
@@ -91,6 +100,14 @@ classification_mapping:
 
 # Signal file intervention (v10.6.0)
 # Pipeline checks for signal files before each state transition.
+# REC-17 (P-10): `enabled: true` is HONOURED — the /run state-machine loop
+# implements the before_transition signal check (run/SKILL.md Step 3e-signals),
+# and the canonical protocol lives in
+# .claude/rules/core/orchestration-reference.md § Signal File Intervention
+# Protocol. This is no longer a config-`enabled` feature with zero
+# implementation. tests/config/signals-feature-consistency.test.js pins the
+# config-enabled ⟺ skill-implements-it invariant so the feature can never
+# regress to half-advertised.
 signals:
   enabled: true
   check_interval: before_transition
