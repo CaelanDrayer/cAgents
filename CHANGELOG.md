@@ -10,6 +10,47 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.59.1] - 2026-07-17
+
+**Audit P1 (HIGH, security) — close the bash-guard `argv[0]` wrapper bypass.**
+Session `run_audit-remediation_260717_001` (audit of v12.59.0). Patch bump; the
+new destructive-shape coverage lives in the SOUND evaluator
+(`bash-guard-evaluator.cjs`), not only the disableable legacy belt, so
+`CAGENTS_BASH_GUARD=off` cannot disarm the catastrophic shapes.
+
+### Fixed
+- **Effective-command resolution** in `bash-guard-evaluator.cjs`: before the
+  `argv[0]`-anchored destructive checks in `checkDisabledList`, a new
+  `resolveEffectiveCommand()` strips a leading run of `NAME=VALUE` assignments and
+  known transparent wrappers (`env`, `nice`, `ionice`, `nohup`, `setsid`,
+  `stdbuf`, `timeout`, `time`, `command`, `exec`), consuming only each wrapper's
+  own options so the real command word is found. Closes the wrapper-prefix
+  bypass (`nice rm -rf /etc`, `env rm -rf /home/user/build`, `timeout 5 rm …`,
+  `nohup rm -rf ~/.ssh`, …) and the assignment-prefix bypass (`FOO=bar rm -rf
+  /etc`, `X=1 dd of=/dev/sda`).
+- **Shell `-c` recursion**: `sh|bash|dash|zsh -c '<payload>'` payloads are now
+  recursed through the evaluator at bounded depth (cap 3), taking the
+  most-restrictive of the outer/inner verdict — so `sh -c 'rm -rf /etc'`,
+  `bash -c 'dd of=/dev/sda'`, and `sh -c 'rm -rf ~/*'` deny.
+- **Broadened protected-path predicate** (`isDangerousPath`): recursive-force
+  `rm` now escalates `~`-anchored and glob-under-protected-root targets — `~/*`,
+  `~/<subdir>` (e.g. `~/Documents`, `~/.config`), `/*`, and `/home` — while
+  benign targets (`rm -rf ./build`, `node_modules`, `dist`) still allow. The
+  downgrade case `nohup chmod -R 777 /` now DENYs (not `ask`) because
+  wrapper-stripping reaches the destructive verb before the ask/deny tiering.
+- **Regression coverage**: 22 new red rows added to
+  `tests/hooks/fixtures/guardfall-corpus.json` (corpus 35→57, `red_today` 21→43)
+  plus a full-hook `describe` block in `tests/hooks/bash-guard-guardfall.test.js`
+  pinning `CAGENTS_BASH_GUARD=off` still DENYs `rm -rf /*` via the evaluator
+  floor. All 35 pre-existing probes and the REC-08/09/R2 rows still pass. The
+  evaluator stays FAIL-CLOSED (a throw still DENYs) and the Standalone Contract is
+  untouched.
+
+### Docs
+- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §7.1 documents the now-closed shapes
+  and the deliberate scope boundary (interpreter `-c`/`-e` obfuscation stays a
+  belt-covered residual per REC-08/09); §6 counts updated to 57/43.
+
 ## [12.59.0] - 2026-07-17
 
 **Phase 9 (FINAL) — pipeline robustness: REC-11 (HIGH) revision-cycle cap +

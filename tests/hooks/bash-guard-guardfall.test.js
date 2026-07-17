@@ -2,11 +2,21 @@
  * bash-guard-guardfall.test.js — WI-4 convergence gate (GuardFall corpus × evaluator).
  *
  * Data-driven: one test row per probe in tests/hooks/fixtures/guardfall-corpus.json
- * (35 probes across classes A-E + canonical-destructive + benign + negative-result),
+ * (57 probes across classes A-E + canonical-destructive + benign + negative-result +
+ * F-wrapper/F-assign/F-verb/F-home/F-shellc/F-downgrade/F-catastrophic [WI-P1]),
  * each asserting that bash-guard-evaluator.cjs evaluate() returns the corpus's
  * expected_verdict. This is the failing-before / passing-after regression suite for
  * the GuardFall bypass classes documented in docs/SECURITY_BASH_GUARD_THREAT_MODEL.md
- * (21 probes carry red_today: true — commands today's bash-validator.cjs gets wrong).
+ * (43 probes carry red_today: true — commands today's bash-validator.cjs gets wrong).
+ *
+ * WI-P1 (session run_audit-remediation_260717_001) added the 22 F-* rows: the
+ * argv[0]-anchored structured checks in bash-guard-evaluator.cjs's checkDisabledList
+ * could be smuggled past by a transparent wrapper (nice/env/timeout/...), an
+ * env-var assignment prefix (FOO=bar cmd), a `sh -c '<payload>'` transport, or a
+ * home-glob/subdir destructive target (~/*, ~/Documents, /home) that the prior
+ * protected-path predicate did not recognize. Coverage lives in the EVALUATOR
+ * (not only the legacy Stage-2/3 belt) so CAGENTS_BASH_GUARD=off cannot disarm
+ * these catastrophic shapes.
  *
  * Verdict mapping (corpus string -> evaluate() external shape):
  *   "deny" -> { deny: true, reason }                                  (truthy, .deny === true)
@@ -52,10 +62,10 @@ function actualVerdictLabel(result) {
   return 'UNRECOGNIZED_SHAPE:' + JSON.stringify(result);
 }
 
-describe('bash-guard-evaluator × guardfall corpus (35 probes)', () => {
-  it('corpus fixture contains exactly 35 probes', () => {
+describe('bash-guard-evaluator × guardfall corpus (57 probes)', () => {
+  it('corpus fixture contains exactly 57 probes', () => {
     expect(Array.isArray(corpus)).toBe(true);
-    expect(corpus.length).toBe(35);
+    expect(corpus.length).toBe(57);
   });
 
   it.each(corpus)(
@@ -96,9 +106,9 @@ describe('bash-guard-evaluator × guardfall corpus (35 probes)', () => {
     }
   );
 
-  it('exactly 21 probes carry red_today === true (bug-driven GuardFall count)', () => {
+  it('exactly 43 probes carry red_today === true (bug-driven GuardFall count)', () => {
     const red = corpus.filter((p) => p.red_today === true);
-    expect(red.length).toBe(21);
+    expect(red.length).toBe(43);
   });
 });
 
@@ -320,6 +330,45 @@ describe('R2 nested-shell interpreter obfuscation (bash-validator hook)', () => 
   it('still ALLOWS the original REC-08 quoted-data false positives (echo/grep)', () => {
     expect(hookVerdict(`echo 'python3 -c "os.system(1)"'`)).toBe('allow');
     expect(hookVerdict(`grep -rn 'node -e ${CHILD_PROC}' src/`)).toBe('allow');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WI-P1 (session run_audit-remediation_260717_001) — argv[0] wrapper-bypass
+// closure, driven through the FULL HOOK. The corpus rows above (FW/FA/FV/FH/
+// FS/FD/FC) prove the EVALUATOR now denies these shapes directly; these rows
+// prove the fix survives end-to-end through bash-validator.cjs, including the
+// headline requirement that CAGENTS_BASH_GUARD=off (which disables ONLY the
+// legacy belt) still denies via the evaluator floor.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('P1 wrapper-bypass (bash-validator hook)', () => {
+  it('CAGENTS_BASH_GUARD=off still DENIES rm -rf /* (evaluator floor, headline requirement)', () => {
+    expect(hookVerdict('rm -rf /*', 'off')).toBe('deny');
+  });
+
+  it('DENIES nohup chmod -R 777 / (deny, not ask -- wrapper-stripped chmod hits the structured deny)', () => {
+    expect(hookVerdict('nohup chmod -R 777 /')).toBe('deny');
+  });
+
+  it('DENIES a wrapper-prefixed destructive rm through the full hook -- nice rm -rf /etc', () => {
+    expect(hookVerdict('nice rm -rf /etc')).toBe('deny');
+  });
+
+  it('DENIES an assignment-prefixed destructive dd through the full hook -- FOO=bar dd of=/dev/sda', () => {
+    expect(hookVerdict('FOO=bar dd of=/dev/sda')).toBe('deny');
+  });
+
+  it('DENIES a shell -c transport of a destructive rm through the full hook -- sh -c \'rm -rf /etc\'', () => {
+    expect(hookVerdict(`sh -c 'rm -rf /etc'`)).toBe('deny');
+  });
+
+  // False-positive guards: wrapper-stripping must not over-match a benign wrapped command.
+  it('ALLOWS a benign env-wrapped node invocation -- env NODE_ENV=prod node app.js', () => {
+    expect(hookVerdict('env NODE_ENV=prod node app.js')).toBe('allow');
+  });
+
+  it('ALLOWS a benign nice-wrapped test run -- nice npm test', () => {
+    expect(hookVerdict('nice npm test')).toBe('allow');
   });
 });
 
