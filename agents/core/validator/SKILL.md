@@ -166,8 +166,8 @@ decision_log_check:
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-verification-mechanical-claim-check.md — re-check each evidence claim with grep + fs + math and gate on a computed pass rate (pass rate < 0.8 with 2+ claims routes back).
-- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each gate pre-flight / revision / escalation / abort, with revision stall-detection.
+- See @docs/example-store/ex-verification-mechanical-claim-check.md — re-check each evidence claim with grep + fs + math and gate on a computed pass rate (pass rate < 0.8 with 2+ claims routes back).
+- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each gate pre-flight / revision / escalation / abort, with revision stall-detection.
 
 ---
 

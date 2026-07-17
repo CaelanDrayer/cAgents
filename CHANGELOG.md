@@ -10,6 +10,57 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.57.0] - 2026-07-17
+
+**Phase 8b (bump 1 of 2) — REC-34: relocate the curated example store out of the
+auto-loading rules tree.** The Phase-8a spike
+(`team_execute-fixplan_260717_001/outputs/phase8a-spike-result.md`) empirically
+confirmed that the 27 `ex-*.md` files (+ `README.md`) under
+`.claude/rules/examples/` **auto-loaded** into every agent/subagent's
+project-instruction context — ~21K tokens on every single spawn (~one-sixth of
+the whole auto-loaded rules corpus) — because they carry no top-level `paths:`
+gate and cAgents' rules loader recurses `.claude/rules/**/*.md` unconditionally.
+The store was authored for *on-demand* consumption (planner few-shot from
+`_index.yaml`; Tier-3 `@`-refs from agent SKILLs), so the always-on load was pure
+waste. A sentinel-in-place gate (a never-matching top-level `paths:`) is blocked
+by `tests/v12/example-store-frontmatter-valid.test.js`, which asserts only the 6
+Agent-Skills-spec top-level keys — so the correct fix is **relocation**. Minor bump
+(cross-surface move + repoint, exempt from the tiny-bump ≤5-file cap). First of two
+independently revertible Phase-8b bumps.
+
+### Changed
+- **Relocated the example store `.claude/rules/examples/` → `docs/example-store/`**
+  via `git mv` (history preserved): 27 `ex-*.md` + `README.md` + `_index.yaml` (29
+  files). `docs/` is outside the memory hierarchy, so the store no longer
+  auto-loads — saving ~21K tokens/spawn — while staying git-tracked (the store's
+  "first-class, git-tracked" requirement; `cagents-memory/` was rejected as it is
+  git-ignored). Both intended consumption paths are preserved: the planner reads
+  `docs/example-store/_index.yaml` by explicit path, and agent SKILLs `@`-reference
+  the bodies on demand.
+- **Repointed 31 referencing files** (verified by grep, not the spike list): 21
+  agent SKILLs + 5 playbooks (`pat-two-stage-review`, `pat-evidence-first-execution`,
+  `pat-gate-taxonomy`, `pat-feedback-loop-first-debugging`, `pat-context-budget-tiers`)
+  + `agents/core/planner/SKILL.md` + `agents/core/planner/resources/example-store-selection.md`
+  + `.claude/hooks/validator-evidence-recheck.cjs` (comments) + the 2 advisory-CI
+  provenance comments (`trigger-collision.cjs`, `allowed-tools-actual.cjs`) + the
+  moved `docs/example-store/README.md` self-refs. Every `@.claude/rules/examples/…`
+  Tier-3 ref became `@docs/example-store/…`; zero dangling `@`-imports remain.
+- **Repointed the 3 example-store regression tests** to `docs/example-store/`:
+  `tests/v12/example-index-resolves.test.js`, `example-store-frontmatter-valid.test.js`,
+  and `planner-consumes-example-store.test.js` (the `EXAMPLES_DIR`/`INDEX_YAML`
+  constants and the `rules/examples` string-match assertions). They now validate the
+  store at its new home and stay green.
+- **Simplified `scripts/ci/validate-counts.sh`** — dropped the now-unnecessary
+  `-not -path '*/examples/*'` exclusion from the `RULES_MD` derivation (examples no
+  longer live under `.claude/rules/`). `RULES_MD` still derives to 43; `validate-counts.sh`
+  stays green.
+- **Updated `.claude/rules/README.md`** — the "Rule files" `find` derivation (no
+  examples exclusion) and the "Example store" bullet (now `docs/example-store/`, with
+  the relocation rationale).
+- Historical `.claude/rules/examples/` mentions in `CHANGELOG.md` and
+  `docs/RELEASE_NOTES.md` are left as-is — they describe the store's location at the
+  time of those releases (accurate historical record).
+
 ## [12.56.0] - 2026-07-17
 
 **Phase 7b (bump 3 of 3) — REC-26 trim + REC-30 count housekeeping (no count

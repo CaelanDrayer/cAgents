@@ -5,7 +5,7 @@
 // Advisory validator F1 — allowed-tools vs actual capability use.
 //
 // Mechanizes the LP1-LP4 rule family from
-// .claude/rules/examples/ex-security-allowed-tools-vs-actual.md: build a
+// docs/example-store/ex-security-allowed-tools-vs-actual.md: build a
 // capability inventory from each agent's SKILL.md BODY (signal grep) and diff
 // it against the tools DECLARED in that agent's frontmatter `allowed-tools`.
 //

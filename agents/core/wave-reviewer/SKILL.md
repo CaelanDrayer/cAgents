@@ -82,4 +82,4 @@ See @resources/gate-check-protocol.md for detailed check-by-check guidance and e
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with a stall-detection rule when findings do not shrink between rounds.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with a stall-detection rule when findings do not shrink between rounds.

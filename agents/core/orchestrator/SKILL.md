@@ -189,4 +189,4 @@ See @resources/team-mode-execution.md for team-mode detection, execution flow, t
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-intake-ambiguous-request-disambiguation.md — mapping a vague request to named interpretations with distinct effort before enriching context or handing off to the planner.
+- See @docs/example-store/ex-intake-ambiguous-request-disambiguation.md — mapping a vague request to named interpretations with distinct effort before enriching context or handing off to the planner.

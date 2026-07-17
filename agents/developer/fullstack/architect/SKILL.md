@@ -146,11 +146,11 @@ See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-s
 
 Pull the matching worked example when a design decision or review is non-obvious:
 
-- See @.claude/rules/examples/ex-verification-intended-vs-implemented.md — audit an implementation against its documented design intent boundary-by-boundary.
-- See @.claude/rules/examples/ex-intake-assumption-surfacing.md — surface design assumptions (scope, data shape, boundaries) explicitly before committing.
-- See @.claude/rules/examples/ex-gates-fact-forcing-pre-hoc.md — gather caller and schema facts before a design decision, mirroring read-before-decide.
-- See @.claude/rules/examples/ex-gates-taxonomy-four-types.md — name each design checkpoint pre-flight / revision / escalation / abort.
-- See @.claude/rules/examples/ex-verification-evidence-first.md — back each tradeoff claim with concrete evidence rather than assertion.
+- See @docs/example-store/ex-verification-intended-vs-implemented.md — audit an implementation against its documented design intent boundary-by-boundary.
+- See @docs/example-store/ex-intake-assumption-surfacing.md — surface design assumptions (scope, data shape, boundaries) explicitly before committing.
+- See @docs/example-store/ex-gates-fact-forcing-pre-hoc.md — gather caller and schema facts before a design decision, mirroring read-before-decide.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each design checkpoint pre-flight / revision / escalation / abort.
+- See @docs/example-store/ex-verification-evidence-first.md — back each tradeoff claim with concrete evidence rather than assertion.
 
 ---
 

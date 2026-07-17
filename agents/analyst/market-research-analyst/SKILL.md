@@ -71,4 +71,4 @@ See @resources/requirements.md for the requirements analysis playbook (elicitati
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.
+- See @docs/example-store/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.

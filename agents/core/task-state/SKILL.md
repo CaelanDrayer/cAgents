@@ -44,4 +44,4 @@ See @resources/merge.md for the merge mode's full playbook (splitting strategies
 
 ## Worked Examples
 
-- See @.claude/rules/examples/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for transform-shaped work (vague prose vs a schema-constrained, checkable spec).
+- See @docs/example-store/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for transform-shaped work (vague prose vs a schema-constrained, checkable spec).

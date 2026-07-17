@@ -16,7 +16,7 @@ upstream repos if a fresh extraction pass is needed.)
 ## What lives here
 
 ```
-.claude/rules/examples/
+docs/example-store/
 ├── README.md          # this file (conventions + how to add/consume)
 ├── _index.yaml        # machine-readable catalog (planner few-shot selection)
 └── ex-{category}-{slug}.md   # one distilled example per file
@@ -75,7 +75,7 @@ enforces for playbooks.
 4. Pin provenance: fill `source_repo` + `source_url`.
 5. Append a matching entry to `_index.yaml`.
 6. (Optional) Add a Tier-3 `@path` reference from the SKILL.md of every agent in
-   `applies_to`, e.g. `See @.claude/rules/examples/ex-review-distrust-self-report.md`.
+   `applies_to`, e.g. `See @docs/example-store/ex-review-distrust-self-report.md`.
 
 ## How it is intended to be consumed (two paths)
 

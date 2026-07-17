@@ -1,7 +1,7 @@
 # Example-Store Few-Shot Selection (advisory)
 
 The full selection procedure for the planner's advisory few-shot lookup against
-the curated example store at `.claude/rules/examples/`. The SKILL.md body carries
+the curated example store at `docs/example-store/`. The SKILL.md body carries
 the one-paragraph summary and points here (`See @agents/core/planner/resources/example-store-selection.md`).
 
 **This is ADVISORY context, not a required pipeline step.** It improves work-item
@@ -11,7 +11,7 @@ decomposition — the pipeline never fails because no example was selected.
 
 ## What the store is
 
-`.claude/rules/examples/` holds distilled, git-tracked few-shot exemplars:
+`docs/example-store/` holds distilled, git-tracked few-shot exemplars:
 
 - `_index.yaml` — machine-readable catalog (the file you read).
 - `ex-*.md` — one distilled worked pattern per file (`## Context` / `## Example`
@@ -47,8 +47,8 @@ examples:
     path: ex-review-distrust-self-report.md   # @path-loadable, relative to the store dir
 ```
 
-Load a body via `@.claude/rules/examples/{path}` (e.g.
-`@.claude/rules/examples/ex-review-distrust-self-report.md`).
+Load a body via `@docs/example-store/{path}` (e.g.
+`@docs/example-store/ex-review-distrust-self-report.md`).
 
 ## Selection procedure
 
@@ -100,7 +100,7 @@ Order the surviving entries, best first:
 ### 4. `@path`-load the top 1-3 bodies
 
 Take the top 1-3 ranked entries and `@path`-load each body via
-`@.claude/rules/examples/{path}`. Use them as few-shot guidance while writing
+`@docs/example-store/{path}`. Use them as few-shot guidance while writing
 work-item acceptance criteria and delegation prompts (e.g., under a
 `## Few-Shot Guidance` note in the delegation prompt, mirroring the
 `## Prior Learnings` shape from the pre-emptive `_knowledge/` scan).
@@ -140,17 +140,17 @@ it doesn't."*
    `demonstrates`) > `ex-verification-mechanical-claim-check` > 
    `ex-review-blind-dual-convergence`.
 5. **Load** the top 3 (at the cap) via
-   `@.claude/rules/examples/ex-review-distrust-self-report.md`,
-   `@.claude/rules/examples/ex-verification-mechanical-claim-check.md`,
-   `@.claude/rules/examples/ex-review-blind-dual-convergence.md` and fold their
+   `@docs/example-store/ex-review-distrust-self-report.md`,
+   `@docs/example-store/ex-verification-mechanical-claim-check.md`,
+   `@docs/example-store/ex-review-blind-dual-convergence.md` and fold their
    patterns into the reviewer work item's acceptance criteria and delegation
    prompt.
 
 ## See also
 
-- `.claude/rules/examples/README.md` — the store's own description of this
+- `docs/example-store/README.md` — the store's own description of this
   consumption path (planner few-shot).
-- `.claude/rules/examples/_index.yaml` — the catalog this procedure reads.
+- `docs/example-store/_index.yaml` — the catalog this procedure reads.
 - The `## Pre-emptive Consultation` section in `../SKILL.md` — the sibling
   advisory scan against `cagents-memory/_knowledge/`, which surfaces prior
   learnings the same way this surfaces distilled examples.

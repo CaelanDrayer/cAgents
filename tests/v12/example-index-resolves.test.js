@@ -2,7 +2,7 @@
  * H3 (v12.x): example-store index bijection regression test
  *
  * Asserts the curated few-shot example store's machine-readable catalog
- * (.claude/rules/examples/_index.yaml) stays in one-to-one correspondence
+ * (docs/example-store/_index.yaml) stays in one-to-one correspondence
  * with the ex-*.md files on disk:
  *   - _index.yaml parses as valid YAML with an `examples:` list.
  *   - Every catalog entry's `path` (and `id`) resolves to an existing
@@ -23,7 +23,7 @@ import yaml from 'js-yaml';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-const EXAMPLES_DIR = path.join(REPO_ROOT, '.claude', 'rules', 'examples');
+const EXAMPLES_DIR = path.join(REPO_ROOT, 'docs', 'example-store');
 const INDEX_PATH = path.join(EXAMPLES_DIR, '_index.yaml');
 
 function listExampleBasenames(dir) {
