@@ -49,6 +49,45 @@ function getLastTransitionAgeMs(statusContent) {
 }
 
 /**
+ * REC-11 (P-5): revision-cycle cap.
+ *
+ * `revision_cycles` was re-added to status.yaml in REC-11 (it was removed in
+ * v12.6.0). The /run state machine increments it each time it routes back to
+ * PLANNED on a validator FAIL/REVISE verdict. Read the persisted counter here
+ * so the Stop hook can FINALIZE (rather than block into yet another re-plan
+ * cycle) once the pipeline has exhausted its revision budget.
+ *
+ * Returns 0 for an absent/unparseable counter (a session that never revised).
+ */
+function getRevisionCycles(statusContent) {
+  if (!statusContent) return 0;
+  const m = statusContent.match(/^\s*revision_cycles:\s*(\d+)\b/m);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+/**
+ * REC-11: the pipeline revision cap from pipeline_config.yaml `revision.max_cycles`
+ * (default 3). This is the SAME knob the /run loop and the /goal auto-anchor
+ * reconcile to — there is exactly one revision cap, not two. Falls back to 3 if
+ * the config is unreadable so the cap is always enforced.
+ */
+function getMaxRevisionCycles() {
+  const DEFAULT = 3;
+  try {
+    const cfgPath = path.join(AGENT_MEMORY_DIR, '_system', 'config', 'pipeline_config.yaml');
+    const raw = safeRead(cfgPath);
+    if (raw) {
+      const m = raw.match(/^\s*max_cycles:\s*(\d+)\b/m);
+      if (m) {
+        const v = parseInt(m[1], 10);
+        if (Number.isFinite(v) && v > 0) return v;
+      }
+    }
+  } catch { /* fall through to default */ }
+  return DEFAULT;
+}
+
+/**
  * Check if the expected next-stage agent was spawned for a given pipeline state.
  * Maps pipeline states to expected next-stage agent types and checks agent_tree.yaml.
  *
@@ -1905,6 +1944,34 @@ ${result.issues.length > 0 ? `issues:\n${result.issues.map(i => `  - "${i}"`).jo
 ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}"`).join('\n')}` : 'warnings: []'}
 `;
   try { fs.writeFileSync(summaryFile, content); } catch {}
+
+  // REC-11 (P-5): revision-cycle cap enforcement.
+  // When the persisted revision_cycles counter (status.yaml) has reached
+  // max_cycles (pipeline_config.yaml revision.max_cycles, default 3), the
+  // pipeline has exhausted its revision budget. Blocking the session here would
+  // force /run to route back to PLANNED and re-plan AGAIN — the "re-plan forever"
+  // defect. Instead FINALIZE honestly: the force-terminal patch above has already
+  // stamped a non-genuine session `incomplete` (never a fabricated PASS/complete —
+  // respecting the REC-02 honesty gate), so allow the stop and surface a
+  // user-facing escalation (pipeline_config.yaml revision.escalation: user_hitl).
+  // A genuinely-validated session never reaches the cap carrying issues (it
+  // PASSED and produced 0 issues), so this override only fires on a real
+  // budget-exhausted stall.
+  const revisionCycles = getRevisionCycles(statusContent);
+  const maxCycles = getMaxRevisionCycles();
+  if (result.issues.length > 0 && revisionCycles >= maxCycles) {
+    console.error(
+      `[VerifyCompletion] Revision cap reached (${revisionCycles}/${maxCycles}) — FINALIZING as incomplete + escalating to user, NOT blocking into another re-plan cycle: ${path.basename(sessionDir)}`
+    );
+    return {
+      continue: true,
+      systemMessage:
+        `cAgents pipeline exhausted its revision budget (${revisionCycles}/${maxCycles} cycles) without a genuine validation PASS. ` +
+        `Per pipeline_config.yaml revision.escalation: user_hitl, the session is FINALIZED as INCOMPLETE and escalated to you — ` +
+        `it is NOT re-planned again (max_revision_cycles reached). Unresolved: ${result.issues.join('; ')}. ` +
+        `See ${path.relative(PROJECT_ROOT, summaryFile)}. Resume with \`/run --resume ${path.basename(sessionDir)}\` after addressing the blockers.`
+    };
+  }
 
   if (result.issues.length > 0) {
     console.error(`[VerifyCompletion] ISSUES: ${result.issues.join('; ')}`);

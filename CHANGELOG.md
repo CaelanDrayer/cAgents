@@ -10,6 +10,53 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.59.0] - 2026-07-17
+
+**Phase 9 (FINAL) — pipeline robustness: REC-11 (HIGH) revision-cycle cap +
+REC-12 experimental-teams flag + REC-17 PAUSE/STOP/RESUME signals.** Audit
+`team_plugin-full-audit_260717_001`. Minor bump (multi-surface pipeline + config
++ hook + skill work; exempt from the tiny-bump ≤5-file cap). Closes the audit
+fix-plan.
+
+### Added
+- **REC-11 (HIGH) — revision-cycle cap enforcement.** Re-added the
+  `revision_cycles` counter to session `status.yaml` (removed in v12.6.0). The
+  `/run` state machine (`run/SKILL.md` Step 3g) now PERSISTS and increments it on
+  every FAIL/REVISE route-back to PLANNED, and `verify-completion.cjs` reads it to
+  FINALIZE-instead-of-block once `revision_cycles >= max_cycles`
+  (`pipeline_config.yaml revision.max_cycles = 3`) — closing the "re-plan forever"
+  defect. At the cap the session terminates HONESTLY (escalate to user per
+  `revision.escalation: user_hitl`, `status.yaml pipeline_state: incomplete`),
+  never a fabricated `complete`/PASS (respects the Phase-2 REC-02 honesty gate).
+  Reconciled the `/goal` auto-anchor's hard-coded "8 revision cycles" → **3** so
+  there is exactly ONE revision cap (the pre-fix "8" contradicted the config cap
+  of 3 and could never fire). Documented `revision_cycles` in
+  `run/reference/session-schema.md`.
+- **REC-17 — PAUSE/STOP/RESUME signal check implemented** in the `/run` loop
+  (`run/SKILL.md` Step 3e-signals), honouring `pipeline_config.yaml
+  signals.enabled: true`. Before each state transition the loop checks
+  `sessions/{id}/signals/{STOP,PAUSE,RESUME}` and acts per the canonical protocol
+  in `orchestration-reference.md`. The config-`enabled` feature is no longer
+  half-advertised (zero implementation).
+
+### Removed
+- **REC-12 — dropped `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1"` from shipped
+  `.claude/settings.json` `env`.** The DEFAULT `/team` model (concurrent-Agent
+  waves) never depends on it; shipping it ON by default opted every user into an
+  experimental, harness-variable path. It remains a documented manual USER opt-in
+  (adjusted `$comment_teammateMode`). Safe: the running default path is unaffected.
+
+### Tests
+- `tests/hooks/verify-completion-revision-cap.test.js` (REC-11): a `revision_cycles:
+  3` COORDINATED stall + REVISE verdict FINALIZES (allow-stop + escalation) instead
+  of blocking into another re-plan, resolves `incomplete` (not fabricated PASS);
+  `revision_cycles: 1` still blocks (cap gate is specific).
+- `tests/config/settings-no-experimental-teams.test.js` (REC-12): asserts the flag
+  is absent from `env` and the opt-in stays documented.
+- `tests/config/signals-feature-consistency.test.js` (REC-17): pins
+  config-`enabled` ⟺ `run/SKILL.md`-implements-it (fails on the half-advertised
+  state).
+
 ## [12.58.0] - 2026-07-17
 
 **Phase 8b (bump 2 of 2) — REC-33 CLAUDE.md context trim + REC-36 doc accuracy.**

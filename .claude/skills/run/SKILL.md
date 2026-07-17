@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.58.0"
+  version: "12.59.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -159,10 +159,10 @@ fi
 When NOT opted out, surface this Bash invocation as an optional setup step:
 
 ```bash
-claude /goal "cagents-memory/sessions/{SESSION_ID}/workflow/completion_summary.yaml exists with status: COMPLETED AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 8 revision cycles"
+claude /goal "cagents-memory/sessions/{SESSION_ID}/workflow/completion_summary.yaml exists with status: COMPLETED AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 3 revision cycles"
 ```
 
-The condition references verifiable end state (file existence + status field + clean TaskList) and includes a turn-cap clause for bounded execution. Goal evaluator reasons are captured by `.claude/hooks/goal-evaluator-logger.cjs` and consumed by `cagents:self-correct` as additional revision signal.
+The condition references verifiable end state (file existence + status field + clean TaskList) and includes a revision-cap clause for bounded execution. **REC-11 reconciliation**: the cap in this clause is `3`, which MUST equal `pipeline_config.yaml` `revision.max_cycles` (currently 3) — the same cap the state-machine loop (Step 3g) and the `verify-completion.cjs` Stop hook enforce. This is deliberately ONE knob, not two: the pre-REC-11 hard-coded "8" contradicted the config cap of 3 (the pipeline escalates to HITL at 3, so a `/goal` clause of 8 could never fire) and was a defect. If `revision.max_cycles` changes, update this literal to match. Goal evaluator reasons are captured by `.claude/hooks/goal-evaluator-logger.cjs` and consumed by `cagents:self-correct` as additional revision signal.
 
 Proceed to Step 3.
 
@@ -209,6 +209,26 @@ Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_
 
 **MANDATORY**: Update status.yaml after EVERY state transition. The verify-completion.cjs hook (and post-compact-restore.cjs after compaction) reads pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
 
+**3e-signals. PAUSE/STOP/RESUME signal check (REC-17 — implemented).** `pipeline_config.yaml` `signals.enabled: true` is honoured by this loop: **before EACH state transition**, check the session signal directory and act. The signal dir does not need to pre-exist — an absent file is a no-op, so this check is free on the happy path.
+
+```bash
+SIG="$SESSION_DIR/signals"
+if [ -f "$SIG/STOP" ]; then
+  # Graceful stop: finish the current agent, write a waypoint, finalize honestly.
+  # A user-requested stop is NOT a genuine validation — go to Step 4, write
+  # execution_summary.yaml with status: interrupted, set the terminal state to
+  # `incomplete` (never fabricate `complete`/VALIDATED), then STOP.
+  :
+elif [ -f "$SIG/PAUSE" ]; then
+  # Pause: finish the current agent, write a waypoint, record a `paused_at: {ISO}`
+  # marker in status.yaml, and WAIT until "$SIG/RESUME" appears (poll or resume on
+  # the next turn). Remove PAUSE + RESUME and continue to the next state on resume.
+  :
+fi
+```
+
+Honour order: STOP wins over PAUSE. The canonical protocol (waypoint contents, resume semantics) lives in `.claude/rules/core/orchestration-reference.md` § Signal File Intervention Protocol — this step is its `/run`-loop implementation, so the config `signals.enabled: true` is no longer a half-advertised feature. A user drives it with `touch cagents-memory/sessions/{SESSION_ID}/signals/{PAUSE|STOP|RESUME}`.
+
 **3f. Agent delegation pattern** for each state spawn:
 
 ```
@@ -238,11 +258,17 @@ For the **PLANNED state (controller)**, the controller is dynamic -- resolved fr
 | Verdict | Action |
 |---------|--------|
 | PASS | Advance to VALIDATED. **Loop exits -- proceed IMMEDIATELY to Step 4.** Do NOT stop. |
-| FAIL | Route back to PLANNED. Pass validation feedback to controller. (v12.0.0: PROMPTS_READY removed; controller re-runs from PLANNED.) |
-| REVISE | Route back to PLANNED. Pass feedback to planner. |
-| BLOCKED (debug only) | Route to PLANNED with falsification annotation. |
+| FAIL | Increment `revision_cycles` (below), then route back to PLANNED. Pass validation feedback to controller. (v12.0.0: PROMPTS_READY removed; controller re-runs from PLANNED.) |
+| REVISE | Increment `revision_cycles` (below), then route back to PLANNED. Pass feedback to planner. |
+| BLOCKED (debug only) | Increment `revision_cycles`, then route to PLANNED with falsification annotation. |
 
-Track revision cycles internally (max 3 total before HITL escalation; lowered from 5 in v12.0.0). v12.6.0: `revision_round` and `validation_cycles` are no longer written to status.yaml — these were external-UI-only fields. Hold the counter in working state and use it to enforce the 3-cycle cap.
+**Revision-cycle cap (REC-11 — MANDATORY, persisted).** Persist the revision counter to `status.yaml` as `revision_cycles` (re-added in REC-11; removed in v12.6.0). On EVERY FAIL/REVISE/BLOCKED verdict, BEFORE routing back to PLANNED:
+
+1. Increment `revision_cycles` in `status.yaml` (write it — do NOT hold it only in working memory; the `verify-completion.cjs` Stop hook reads this persisted counter to enforce the cap mechanically).
+2. Read `max_cycles` from `pipeline_config.yaml` (`revision.max_cycles`, currently **3**). This is the single revision cap — the same value the `/goal` auto-anchor (Step 2 ACTION 4) and the Stop hook reconcile to.
+3. If `revision_cycles >= max_cycles`: **do NOT route back to PLANNED again.** The budget is exhausted. Escalate to the user per `pipeline_config.yaml revision.escalation: user_hitl` — write `execution_summary.yaml` with `status: incomplete`, set `status.yaml` `pipeline_state: incomplete` (NEVER fabricate `complete`/`VALIDATED`/PASS for a capped-out session — a session that exhausted its revision budget is NOT genuinely validated), report what completed vs what remains, and STOP. The `verify-completion.cjs` hook independently detects `revision_cycles >= max_cycles` and finalizes-instead-of-blocks as a backstop.
+
+This is a mechanical cap, not a heuristic: two contradictory caps (a config `max_cycles: 3` and an ephemeral "8") are a defect. There is exactly ONE revision cap (`max_cycles`, currently 3).
 
 > **CRITICAL: DO NOT STOP HERE.** When the loop exits at ANY terminal state, Step 4 is MANDATORY. The verify-completion.cjs Stop hook will block stopping if execution_summary.yaml is missing or auto-generated.
 
