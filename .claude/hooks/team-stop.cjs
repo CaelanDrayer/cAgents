@@ -40,7 +40,7 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated } = require('./hook-utils.cjs');
 
 // Defensive: REC-01 terminal-state normalizer (v12.46.0). Guarded in the same
 // try/catch style as the js-yaml require above so an older hook-utils.cjs without
@@ -246,12 +246,25 @@ function generateExecutionSummary(sessionDir, now) {
   const createdAt = extractYamlValue(statusContent, 'created_at');
   const result = extractYamlValue(statusContent, 'result');
 
-  // Determine status string
-  let status = 'completed';
+  // Determine status string.
+  // REC-03 honesty (v12.47.0): the default is NOT an unconditional `completed`.
+  // A 0-agent / mid-flight stall (e.g. an INIT session that never spawned the
+  // orchestrator) previously defaulted to `completed`, laundering a stall into a
+  // success. Now only a GENUINELY-validated session (a real, non-safety-net PASS
+  // report + — for plan-bearing sessions — a completed coordination_log) is
+  // `completed`; everything else is `incomplete`. Explicit `failed`/`partial`
+  // signals from status.yaml still win first. Shares the exact honesty
+  // discriminator with verify-completion.cjs (single source of truth in
+  // hook-utils.cjs) so the two hooks can never disagree.
+  let status;
   if (result === 'failed' || _normTerminal(finalState) === 'failed') {
     status = 'failed';
   } else if (result === 'partial') {
     status = 'partial';
+  } else if (sessionGenuinelyValidated(sessionDir, statusContent)) {
+    status = 'completed';
+  } else {
+    status = 'incomplete';
   }
 
   // Count agents from agent_tree.yaml.

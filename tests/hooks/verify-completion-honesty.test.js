@@ -78,7 +78,7 @@ function readYaml(dir, rel) {
   try { return readFileSync(join(dir, rel), 'utf8'); } catch { return ''; }
 }
 
-describe.skip('verify-completion honesty — never launder to complete/PASS (REC-02/03; Phase 2 un-skips)', () => {
+describe('verify-completion honesty — never launder to complete/PASS (REC-02/03; Phase 2 un-skips)', () => {
   const dirs = [];
   afterEach(() => cleanup(dirs));
 
