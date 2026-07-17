@@ -10,6 +10,34 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.59.2] - 2026-07-17
+
+**Audit P2 (RED CI, sanity) — unblock 2 tests coupled to git-ignored session
+artifacts.** Session `run_audit-remediation_260717_001` (audit of v12.59.0).
+Patch bump. Two `tests/v12/` files asserted `fs.existsSync(PATH)` on
+`cagents-memory/sessions/…` artifacts that were never committed, so `npm test`
+exited 1 (and `cagents-ci.sh` exited 4) on any clean checkout. Fixed per the
+v12.52.0 scratch-corpus pattern: since both source artifacts are genuinely
+absent (git-ignored, cannot be vendored, no fabrication), each assertion is
+gated to SKIP-with-reason when the artifact is absent while still RUNNING
+unchanged when it is present — test intent preserved, nothing deleted.
+
+### Fixed
+- `tests/v12/alias-map-coverage.test.js`: the "final-decisions.yaml exists"
+  sanity test is now `it.skipIf(!fs.existsSync(FINAL_DECISIONS_PATH))` — it
+  skips when `run_full-plugin-revamp-plan_260520_001/outputs/final-decisions.yaml`
+  is absent, runs when present.
+- `tests/v12/validator-bias-recheck.test.js`: ALL three `CALIBRATION_REPORT`
+  read sites gated so none can hard-fail on a clean checkout —
+  (1) Case (d) top-level (the actual baseline RED) via
+  `it.skipIf(!fs.existsSync(CALIBRATION_REPORT))`; (2) Case (a) and (3) Case (b)
+  fallback branches (inside `if(!fs.existsSync(HOOK_PATH))`) via an in-body
+  `ctx.skip()` guard. Path:
+  `team_execute-self-improvement_260522_001/outputs/wave-2/P1-6/calibration-report.md`.
+- Result: on a clean checkout the two files report `26 passed | 2 skipped`,
+  `0 failed` (was `2 failed`). Two test files touched, no new fixtures vendored,
+  no other assertions weakened, Standalone Contract untouched.
+
 ## [12.59.1] - 2026-07-17
 
 **Audit P1 (HIGH, security) — close the bash-guard `argv[0]` wrapper bypass.**
