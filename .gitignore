@@ -1,22 +1,18 @@
-# Dependencies
 node_modules/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Environment
 .env
 .env.local
 .env.*.local
 
-# Logs
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Editor directories and files
 .vscode/
 .idea/
 .obsidian/
@@ -26,108 +22,67 @@ yarn-error.log*
 *.iml
 .devcontainer/
 
-# OS files
 .DS_Store
 Thumbs.db
 
-# Build outputs
 dist/
 build/
 *.tsbuildinfo
 
-# Test outputs
 test-results/
 coverage/
 playwright-report/
 playwright/.cache/
 
-# cAgents runtime memory — session/state data is NOT source-controlled.
-# The tree is blanket-ignored, then the force-tracked plugin SOURCE (config +
-# templates that ship WITH the plugin) is explicitly re-included below. Those
-# files are ALREADY git-tracked; the `!` exceptions make the intent legible and
-# guard against an accidental `git rm -r --cached cagents-memory/` silently
-# dropping shipped plugin config. Keep the `!` list in sync with
-# `git ls-files cagents-memory/`.
 cagents-memory/*
 cagents-memory-staging/
 
-# ── Force-tracked plugin source (NOT runtime state) ─────────────────────────
-# _system top-level tracked file
 !cagents-memory/_system/
 cagents-memory/_system/*
 !cagents-memory/_system/task_completion_protocol.yaml
-# _system/config: consolidated routing + pipeline state machine (Key Files)
 !cagents-memory/_system/config/
 cagents-memory/_system/config/*
 !cagents-memory/_system/config/routing.yaml
 !cagents-memory/_system/config/pipeline_config.yaml
-# _system/capacity: capacity README
 !cagents-memory/_system/capacity/
 cagents-memory/_system/capacity/*
 !cagents-memory/_system/capacity/README.md
-# _system/skills: skill taxonomy
 !cagents-memory/_system/skills/
 cagents-memory/_system/skills/*
 !cagents-memory/_system/skills/skill_taxonomy.yaml
-# _system/trigger: domain-detection keywords
 !cagents-memory/_system/trigger/
 cagents-memory/_system/trigger/*
 !cagents-memory/_system/trigger/domain_detection.yaml
-# _system/domains/_template: new-domain scaffolding (fully tracked)
 !cagents-memory/_system/domains/
 cagents-memory/_system/domains/*
 !cagents-memory/_system/domains/_template/
-# _system/templates: repo-bootstrap scaffolding + task-manifest template
 !cagents-memory/_system/templates/
 cagents-memory/_system/templates/*
 !cagents-memory/_system/templates/repo-bootstrap/
 !cagents-memory/_system/templates/task_manifest_template.yaml
 
-# Archive - Documentation archive (not part of source control)
 archive/
-# _archive/ - closed migration outputs, deprecated buckets, archived docs +
-# vendored foreign repos (F9-2, AGGRESSIVE untrack 2026-06-09). Not part of
-# the shipped plugin; 150 files removed from tracking via `git rm -r --cached`.
 _archive/
 
-# Backup files
 *.backup
 backup_*/
 
-# WI-2 (v12.12.1): belt-and-suspenders against broken-symlink re-creation.
-# Claude Code's plugin discovery occasionally re-creates `.claude/skills/commit-changes`
-# as a broken symlink when it encounters externally-bundled `commit-changes` skill
-# references. The offending source symlink in _archive/ has been deleted, but
-# this gitignore entry ensures any future session-time re-creation never makes
-# it into a commit. See tests/skills/no-commit-changes-symlink.test.js for the
-# regression guard.
 .claude/skills/commit-changes
 
-# Cache directories
 .agent-cache/
 .claude-plugin-cache/
 
-# Domain-specific ignores
-# Each domain plugin may have additional ignores
-
-# Creative domain (future)
 creative/outputs/drafts/
-
-# Finance domain (future)
 finance/outputs/reports/
-
 documentation/temp/
 
-# Local memory (personal preferences)
 CLAUDE.local.md
 *.local.md
 
-# Claude Code sessions and plans (runtime data)
 .claude/sessions/
 .claude/plans/
 .claude/*.lock
 
-# Python virtual environment
 .venv/
 __pycache__/
 .pytest_cache/
@@ -136,7 +91,6 @@ example/
 metrics.jsonl
 vendor_repos/
 
-# Test/tool temp directories
 .loki-test-tmp/
 .omc/
 .orphaned_at
