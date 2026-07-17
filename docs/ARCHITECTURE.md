@@ -46,7 +46,7 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 - **`cagents-memory/_communication/` removed**: Unused agent-messaging
   inbox/broadcast directory deleted.
 
-Net effect: total agents 251 -> 238, pipeline transitions 7 -> 5, agent
+Net effect: total agents 251 -> 58, pipeline transitions 7 -> 5, agent
 self-validation noise floor reduced from 15 to 5 checks. Cross-reference:
 `_archive/v12-migration/migration-state.yaml` tracks per-wave progress against
 locked decisions Q1..Q8.

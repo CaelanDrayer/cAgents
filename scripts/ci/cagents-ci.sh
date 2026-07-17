@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.43.0
+# Version: 12.44.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -587,7 +587,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.43.0"
+    log_section "cAgents CI Runner v12.44.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
