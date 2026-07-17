@@ -23,7 +23,7 @@
 | 7. Contact Humans with Tool Calls | PARTIAL | HITL gates via `core/hitl` + `approval-gate.cjs` hook; no out-of-band Slack/email/SMS channels |
 | 8. Own Your Control Flow | YES | `pipeline_config.yaml`-driven state machine; revision routing (FAIL/REVISE) is hand-coded, not LLM-decided |
 | 9. Compact Errors into Context Window | PARTIAL | `tool-failure-tracker.cjs` records failures but does not yet summarize for re-injection on retry |
-| 10. Small, Focused Agents | YES | 59 agents across 9 archetypes (post-v12.20.0 catalog consolidation from 141; 42 routable + 16 core); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
+| 10. Small, Focused Agents | YES | 60 agents across 9 archetypes (post-v12.20.0 catalog consolidation from 141; 42 routable + 16 core); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
 | 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
 | 12. Make Your Agent a Stateless Reducer | DIVERGENCE | Controllers carry state across reviewer-loop rounds; session state lives in `cagents-memory/sessions/{id}/` files by design |
 
@@ -94,7 +94,7 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 10: Small, Focused Agents — YES (arguably over-shot)
 
-59 agents across 9 archetypes — 42 routable + 16 core — each with a single SKILL.md scoped to one role. This is the post-v12.20.0 catalog consolidation from 141: the 84 absorbed agents were collapsed into mode flags rather than separate SKILL.md files, and 0 `_deprecated/` SKILL.md remain on disk. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. The catalog may be over-fragmented for some domains — a future consolidation pass remains on the roadmap (see `CHANGELOG.md` for the v12.0.0/v12.7.0 consolidation pattern, which the next pass would extend) — but the "small, focused" principle is honored.
+60 agents across 9 archetypes — 42 routable + 16 core — each with a single SKILL.md scoped to one role. This is the post-v12.20.0 catalog consolidation from 141: the 84 absorbed agents were collapsed into mode flags rather than separate SKILL.md files, and 0 `_deprecated/` SKILL.md remain on disk. The `skill-size-monitor.cjs` `PreToolUse` hook warns at 600 lines and blocks at 900 to prevent SKILL.md bloat. The catalog may be over-fragmented for some domains — a future consolidation pass remains on the roadmap (see `CHANGELOG.md` for the v12.0.0/v12.7.0 consolidation pattern, which the next pass would extend) — but the "small, focused" principle is honored.
 
 **cAgents implementation**: All 57 SKILL.md files; `.claude/hooks/skill-size-monitor.cjs`.
 
