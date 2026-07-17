@@ -69,6 +69,9 @@ const SKIP_PATH_PATTERNS = [
   '/tests/v12/no-generic-coordinator-refs.test.js',
   '/tests/v12/alias-map-coverage.test.js',
   '/tests/v12/aliases-resolve.test.js',
+  // REC-07 (v12.49.0): the alias-resolution regression test enumerates legacy
+  // old names (incl. universal-planner/validator) in its BACKFILL contract table.
+  '/tests/migration/alias-map-resolution.test.js',
   '/tests/v12/aliases-runtime-resolution.test.js',
   '/tests/v12/agent-name-registration-drift.test.js',
   '/tests/v12/deleted-agents-not-referenced.test.js',
