@@ -7,7 +7,7 @@ Core architecture and development guidance for cAgents.
 cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 
 - **60 agents** across 9 builder-role archetypes (developer, operator, advisor,
-  analyst, creator, writer, strategist, core, leadership) — 42 routable + 16
+  analyst, creator, writer, strategist, core, leadership) — 44 routable + 16
   core. Pre-v12 agent names resolve via `scripts/migration/v12-aliases.yaml`.
 - **5-state event-driven pipeline**: `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED` (decomposition + prompt-assembly folded into the
@@ -392,7 +392,7 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (43 files: 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 60 agents (42 routable + 16 core)
++-- agents/                  # All 60 agents (44 routable + 16 core)
 |   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
 |   +-- operator/            # Operator archetype (8 agents — support/business-ops/people-ops/marketing-sales/content)
 |   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
@@ -540,16 +540,16 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 
 **Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; removed skills — `/review`, `/optimize`, `/context`, `/debug`, `/improve`, `/org` — see `docs/MIGRATION-V11.md` and CHANGELOG)
 **Built-in**: `/memory`, `/init` (Claude Code native)
-**Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 42 routable + 16 core; 84 absorbed agents use mode flags
+**Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
 **Hooks**: 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
-**Models**: opusplan (controllers, Opus 4.8 + Sonnet 4.6), sonnet (execution, Sonnet 4.6), haiku (support, Haiku 4.5)
+**Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1635+ Vitest tests across 192+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.55.0
+**Version**: 12.56.0
 
 ## Troubleshooting
 

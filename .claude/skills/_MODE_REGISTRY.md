@@ -175,7 +175,7 @@ Agent modes enumerate the `metadata.supported_modes` of every consolidated agent
 
 | Survivor agent | Modes (absorbed agents → mode) |
 |---|---|
-| `operations-manager` | `agile` (agile-coach), `project` (program-project-manager), `procurement` (procurement-specialist), `supply-chain` (supply-chain-manager), `quality-mgmt` (quality-manager), `scribe` (scribe), `finance` (finance-manager) |
+| `operations-manager` | `agile` (agile-coach), `project` (program-project-manager), `procurement` (procurement-specialist), `supply-chain` (supply-chain-manager), `quality-mgmt` (quality-manager) — REC-26 (v12.56.0): `scribe`→technical-writer, `finance`→cfo/data-scientist |
 | `marketing-strategist` | `brand` (brand-manager), `creative-direction` (creative-director), `growth` (growth-marketer), `ops` (marketing-ops-specialist), `partnership` (partnership-marketing-manager) |
 | `marketing-analyst` | `seo` (seo-specialist) |
 | `sales-strategist` | `rep` (sales-rep), `enablement` (sales-enablement-specialist), `revops` (revenue-operations-manager) |
