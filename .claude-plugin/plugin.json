@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "12.52.0",
+  "version": "12.53.0",
   "description": "Universal multi-domain agent orchestration framework. 58 agents across 9 builder-role archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership), coordinated by an intelligent pipeline. 4 user skills: /run routes any task through controller + specialist agents (including review/audit/optimize/improve modes via keyword router; cross-domain strategic work via Strategic Mode in /team), /team runs parallel agent waves with optional Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper guides usage.",
   "author": {
     "name": "CaelanDrayer",
@@ -25,7 +25,7 @@
     "./agents/analyst/translator/SKILL.md",
     "./agents/core/coord-log-writer/SKILL.md",
     "./agents/core/coordinator/SKILL.md",
-    "./agents/core/executor/SKILL.md",
+    "./agents/core/execution-monitor/SKILL.md",
     "./agents/core/hitl/SKILL.md",
     "./agents/core/optimizer/SKILL.md",
     "./agents/core/orchestrator/SKILL.md",
@@ -34,8 +34,8 @@
     "./agents/core/router/SKILL.md",
     "./agents/core/self-correct/SKILL.md",
     "./agents/core/task-state/SKILL.md",
+    "./agents/core/team-bootstrap/SKILL.md",
     "./agents/core/team-lead/SKILL.md",
-    "./agents/core/team/SKILL.md",
     "./agents/core/trigger/SKILL.md",
     "./agents/core/validator/SKILL.md",
     "./agents/core/wave-reviewer/SKILL.md",

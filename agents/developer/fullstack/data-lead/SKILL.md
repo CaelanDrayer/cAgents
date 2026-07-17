@@ -2,7 +2,7 @@
 name: data-lead
 archetype: developer
 branch: fullstack
-description: "Consolidated fullstack data agent. Modes: coordinate (data engineering coordination — schema design, pipeline architecture, data quality standards, data team leadership), analyze (data analysis execution — ETL/ELT pipelines, SQL queries, dashboards, BI, data quality checks). Set metadata.mode or pass mode=<value>."
+description: "Leads and executes data engineering — pipeline architecture, schema design, and data-quality standards (coordinate), plus hands-on ETL/ELT, SQL, dashboards, and BI (analyze). Use for data-platform coordination or data-analysis execution. Modes: coordinate, analyze. Set metadata.mode. NOT for: ML modeling/statistics/forecasting (use data-scientist) or application backend work (use backend-developer)."
 metadata:
   version: "1.0.0"
   tier: controller

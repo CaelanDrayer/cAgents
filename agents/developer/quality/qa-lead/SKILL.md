@@ -2,7 +2,7 @@
 name: qa-lead
 archetype: developer
 branch: quality
-description: "Consolidated quality agent. Modes: coordinate (QA Lead — test strategy, coverage gates, quality assurance coordination), code-review (reviews code for quality/security/performance/maintainability), standards-audit (audits codebase for convention compliance, style-guide violations), a11y (WCAG 2.1/2.2 accessibility compliance audits, ARIA review), playwright (authors and debugs Playwright E2E/API/component/visual tests). Set metadata.mode."
+description: "Owns quality — test strategy and coverage gates, code review, standards/style audits, WCAG accessibility, and Playwright E2E. Use to review code or plan/verify coverage. Modes: coordinate, code-review, standards-audit, a11y, playwright. Set metadata.mode. NOT for: acceptance-criteria pipeline gating (use reviewer/validator) or security-specific audits (use security-engineer)."
 metadata:
   version: "1.0.0"
   tier: controller

@@ -15,6 +15,14 @@ import { join, relative, sep } from 'node:path';
 // path references in active config, etc).
 //
 // To add a new rename: append the name and its replacement to RENAMED_AGENTS.
+// Some renamed names are GENERIC English words that legitimately appear as
+// quoted string literals in unrelated code (e.g. `'team'` as a session
+// SUBDIRECTORY name in path.join(sessionDir, 'team', ...), or `'team'` as the
+// /team SKILL name in test fixtures). For those, set `skipQuoted: true` so the
+// scan only flags the DISTINCTIVE agent-reference patterns (`cagents:<name>`,
+// `core/<name>/`) and does not false-positive on the common-word quoted-string
+// literals. The distinctive patterns are unambiguous agent references and are
+// still fully enforced.
 const RENAMED_AGENTS = [
   { stale: 'universal-planner',     replacement: 'planner',   removed_in: 'v12.5.0' },
   { stale: 'universal-validator',   replacement: 'validator', removed_in: 'v12.5.0' },
@@ -24,7 +32,13 @@ const RENAMED_AGENTS = [
   { stale: 'task-decomposer',       replacement: 'planner',   removed_in: 'v12.0.0' },
   { stale: 'chief-legal-officer',   replacement: 'clo',       removed_in: 'v12.0.0' },
   { stale: 'team-trigger',          replacement: null,        removed_in: 'v12.0.0' }, // inlined into /team SKILL.md
-  { stale: 'team-lead-adapter',     replacement: null,        removed_in: 'v12.0.0' }  // inlined into /team SKILL.md
+  { stale: 'team-lead-adapter',     replacement: null,        removed_in: 'v12.0.0' }, // inlined into /team SKILL.md
+  // REC-38 (v12.53.0) core-agent coherence renames. Both `executor` and `team`
+  // are common words, so `team` skips the quoted-string scan (many legit
+  // `'team'` dir/skill-name literals exist); `executor`'s only quoted refs WERE
+  // the agent and have been updated, so it keeps the full scan.
+  { stale: 'executor', replacement: 'execution-monitor', removed_in: 'v12.53.0' },
+  { stale: 'team',     replacement: 'team-bootstrap',     removed_in: 'v12.53.0', skipQuoted: true }
 ];
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
@@ -109,7 +123,7 @@ function walk(dir, results = []) {
 //   - core/<name>/             — config path reference to a now-deleted dir
 //   - 'name' or "name"         — quoted-string entry in executable code/config
 //                                  (active routing tables, agent registries)
-function buildLoadBearingPatterns(stale, ext) {
+function buildLoadBearingPatterns(stale, ext, skipQuoted = false) {
   const escaped = stale.replace(/-/g, '\\-');
   const patterns = [
     { tag: 'cagents-prefix', re: new RegExp(`cagents:${escaped}(?![\\w-])`, 'g') },
@@ -117,14 +131,16 @@ function buildLoadBearingPatterns(stale, ext) {
   ];
   // For executable code files (.cjs, .js), also catch quoted-string references.
   // These are how routing tables / agent registries reference agents at runtime.
-  if (ext === '.cjs' || ext === '.js') {
+  // Skipped for generic-word renames (skipQuoted) where `'name'` legitimately
+  // appears as a directory/skill-name literal unrelated to the agent.
+  if ((ext === '.cjs' || ext === '.js') && !skipQuoted) {
     patterns.push({ tag: 'quoted-string', re: new RegExp(`['"]${escaped}['"]`, 'g') });
   }
   return patterns;
 }
 
-function findLoadBearingHits(content, stale, ext) {
-  const patterns = buildLoadBearingPatterns(stale, ext);
+function findLoadBearingHits(content, stale, ext, skipQuoted = false) {
+  const patterns = buildLoadBearingPatterns(stale, ext, skipQuoted);
   const hits = [];
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
@@ -162,8 +178,8 @@ describe('v12.x rename sweep: no load-bearing stale agent identifiers', () => {
         continue;
       }
 
-      for (const { stale, replacement } of RENAMED_AGENTS) {
-        const hits = findLoadBearingHits(content, stale, ext);
+      for (const { stale, replacement, skipQuoted } of RENAMED_AGENTS) {
+        const hits = findLoadBearingHits(content, stale, ext, skipQuoted);
         for (const h of hits) {
           const fix = replacement
             ? `use cagents:${replacement} / core/${replacement}/`

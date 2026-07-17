@@ -2,7 +2,7 @@
 name: tech-lead
 archetype: developer
 branch: fullstack
-description: "Consolidated fullstack engineering lead. Modes: coordinate (team coordination, delivery, strategic risk, go/no-go), implement (complex full-stack implementation, refactoring, mentoring), backend-lead (backend domain coordination, API/database planning), frontend-lead (frontend domain coordination, UI/component review). Set metadata.mode or pass mode=<value>."
+description: "Coordinates and leads multi-specialist engineering work — build, refactor, migrate, go/no-go, mentoring. Use for tier 2+ engineering that needs a lead. Modes: coordinate (delivery/risk), implement (complex full-stack build), backend-lead, frontend-lead. Set metadata.mode. NOT for: single-file execution with no coordination (use backend-developer/frontend-developer) or architecture/API-contract design (use architect)."
 metadata:
   version: "1.0.0"
   tier: controller

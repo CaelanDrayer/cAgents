@@ -1,7 +1,7 @@
 ---
 name: market-research-analyst
 archetype: analyst
-description: "Consolidated analyst agent. Modes: market (primary/secondary research, market sizing, customer segmentation, competitive landscapes), business-research (industry trend research, strategic intelligence gathering, synthesis and reporting), competitive (competitor monitoring, battle cards, win/loss analysis, competitive positioning), requirements (requirements elicitation, gap analysis, acceptance criteria, solution design). Set metadata.mode."
+description: "Researches markets and captures requirements — market sizing/segmentation, industry-trend and strategic-intelligence research, competitor monitoring/battle-cards/win-loss, and requirements elicitation, BRDs, acceptance criteria, and solution design. Use for market research, competitive intelligence, or business-requirements/BRD/elicitation work. Modes: market, business-research, competitive, requirements. Set metadata.mode. NOT for: quantitative modeling/BI (use data-scientist) or product backlog decisions (use product-owner)."
 metadata:
   version: "1.0.0"
   tier: execution

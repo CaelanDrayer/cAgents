@@ -2,7 +2,7 @@
 name: medical-advisor
 archetype: advisor
 branch: health
-description: "Consolidated health advisor. Modes: medical (clinical info, symptom research, differential diagnosis, medical literature), mental-health (CBT/DBT techniques, psychoeducation, crisis resources, coping strategies). Set metadata.mode. NOT a substitute for professional care."
+description: "Provides health information and mental-health support — clinical/symptom research, differential diagnosis, medical literature, and CBT/DBT techniques, psychoeducation, crisis resources, and coping strategies. Use for medical or mental-health questions. Modes: medical, mental-health. Set metadata.mode. NOT a substitute for professional care. NOT for: personal/career/finance coaching (use life-coach) or academic medical-literature synthesis (use scholar)."
 metadata:
   version: "1.0.0"
   tier: execution

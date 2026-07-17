@@ -1,7 +1,7 @@
 ---
 name: product-owner
 archetype: strategist
-description: "Consolidated strategist agent. Modes: product (feature prioritization, backlog management, go/no-go decisions, scope tradeoffs), roadmap (product/tech roadmap creation, dependency mapping, Now-Next-Later planning), okr (OKR setting, key result definition, goal tracking, cascade alignment). Set metadata.mode."
+description: "Owns product decisions — feature prioritization, backlog, roadmaps, OKRs, go/no-go, and scope tradeoffs. Use for what-to-build-and-when. Modes: product, roadmap, okr. Set metadata.mode. NOT for: company/market strategy (use strategic-planner) or game systems design (use game-designer)."
 metadata:
   version: "1.0.0"
   tier: controller

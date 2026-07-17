@@ -11,7 +11,7 @@ metadata:
   applies_to:
     - all-controllers
     - cagents:team-lead
-    - cagents:executor
+    - cagents:execution-monitor
   demonstrates: "PEAK / GOOD / DEGRADING / POOR context bands that change read-depth and trigger proactive checkpointing before compaction."
   added: "2026-07-10"
 ---

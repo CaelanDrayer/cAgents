@@ -1,4 +1,4 @@
-# Best Practices: Team Trigger
+# Best Practices: Team Bootstrap
 
 > Design principles, patterns, and frameworks that guide high-quality team initialization, wave decomposition, and parallel workflow bootstrapping.
 

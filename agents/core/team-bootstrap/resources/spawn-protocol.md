@@ -1,6 +1,6 @@
 # Team — Spawn Protocol Detail
 
-Detailed teammate-spawning protocol for `cagents:team`. The SKILL.md body keeps the contract short; this resource carries spawning syntax, anti-patterns, and the per-wave decomposition schema.
+Detailed teammate-spawning protocol for the `team-bootstrap` agent. The SKILL.md body keeps the contract short; this resource carries spawning syntax, anti-patterns, and the per-wave decomposition schema.
 
 ## Controller Resolution (do this ONCE before spawning any teammates)
 

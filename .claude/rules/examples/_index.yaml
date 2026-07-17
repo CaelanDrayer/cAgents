@@ -140,13 +140,13 @@ examples:
   - id: ex-gates-context-budget-tiers
     category: gates
     source_repo: NousResearch/hermes-agent
-    applies_to: [all-controllers, cagents:team-lead, cagents:executor]
+    applies_to: [all-controllers, cagents:team-lead, cagents:execution-monitor]
     demonstrates: "PEAK / GOOD / DEGRADING / POOR context bands that change read-depth and trigger proactive checkpointing before compaction."
     path: ex-gates-context-budget-tiers.md
   - id: ex-gates-deterministic-candidate-selection
     category: gates
     source_repo: vercel-labs/agent-skills
-    applies_to: [cagents:planner, all-controllers, cagents:executor]
+    applies_to: [cagents:planner, all-controllers, cagents:execution-monitor]
     demonstrates: "A deterministic LLM-free gate selects investigation candidates from evidence, binds each to named files (never grep-the-repo), and surfaces every skipped candidate with its reason in a 'Not investigated' trust section."
     path: ex-gates-deterministic-candidate-selection.md
 

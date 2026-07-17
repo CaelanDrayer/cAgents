@@ -1,7 +1,7 @@
 ---
 name: game-designer
 archetype: strategist
-description: "Consolidated strategist agent. Modes: design (game mechanics, systems design, player experience, GDDs), production (milestone planning, cross-discipline coordination, risk management). Set metadata.mode."
+description: "Designs game mechanics and systems — player experience, GDDs, and milestone/production planning. Use for how-the-game-plays. Modes: design, production. Set metadata.mode. NOT for: engine/gameplay code (use backend-developer mode=game) or product roadmap/backlog (use product-owner)."
 metadata:
   version: "1.0.0"
   tier: execution

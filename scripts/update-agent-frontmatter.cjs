@@ -41,11 +41,11 @@ const INFRA_MAX_TURNS = {
   'hitl': 15,
   'router': 15,
   'planner': 40,
-  'executor': 40,
+  'execution-monitor': 40,
   'validator': 40,
   'self-correct': 40,
   'optimizer': 50,
-  'team': 30,
+  'team-bootstrap': 30,
   'team-lead': 30,
   'coordinator': 30,
 };

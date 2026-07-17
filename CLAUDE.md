@@ -168,9 +168,9 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
 
-**Team** (3): `team` (team init + lead wrapper used by `/team` skill loop), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates).
+**Team** (3): `team-bootstrap` (team init + lead wrapper used by `/team` skill loop; renamed from `team` in v12.53.0), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates).
 
-**Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly), `executor` (monitor controllers), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
+**Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly), `execution-monitor` (monitor controllers; renamed from `executor` in v12.53.0), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
 
 **Review** (1): `reviewer` (PASS/REVISE verdict against acceptance criteria; spawned by controllers and team leads)
 
@@ -549,7 +549,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1635+ Vitest tests across 192+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.52.0
+**Version**: 12.53.0
 
 ## Troubleshooting
 

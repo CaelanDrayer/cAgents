@@ -1,7 +1,7 @@
 ---
 name: scholar
 archetype: analyst
-description: "Consolidated academic research and science coordination agent. Modes: scholarship (DEFAULT — full-lifecycle research: search papers via OpenAlex, synthesize literature reviews, write academic prose), citation-graph (citation network analysis, echo chamber detection, load-bearing reference identification), methodology (adversarial methodology critique — sample sizing, bias, validity threats, ROBUST/WEAK/INVALID verdicts), science-coord (STEM coordination controller — delegates cross-domain science questions to domain specialists). Set metadata.mode."
+description: "Conducts academic research and coordinates science — literature search/synthesis via OpenAlex and academic writing, citation-network analysis, adversarial methodology critique (ROBUST/WEAK/INVALID), and cross-domain STEM coordination. Use for scholarly research, citation analysis, methodology review, or multi-discipline science questions. Modes: scholarship, citation-graph, methodology, science-coord. Set metadata.mode. NOT for: market/business research (use market-research-analyst) or social-science discipline analysis (use social-scientist)."
 metadata:
   version: "1.0.0"
   tier: execution

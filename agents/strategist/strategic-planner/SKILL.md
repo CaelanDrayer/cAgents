@@ -1,7 +1,7 @@
 ---
 name: strategic-planner
 archetype: strategist
-description: "Consolidated strategist agent. Modes: strategy (long-term strategy, competitive positioning, vision development — default), portfolio (portfolio management, initiative prioritization, resource allocation), scenario (future scenarios, contingency planning, strategy stress-testing). Set metadata.mode."
+description: "Sets long-horizon strategy — competitive positioning, portfolio prioritization, scenario/contingency planning, and vision. Use for where-should-we-go. Modes: strategy, portfolio, scenario. Set metadata.mode. NOT for: product backlog/roadmap execution (use product-owner) or C-suite cross-domain synthesis (use /team strategic mode)."
 metadata:
   version: "1.0.0"
   tier: controller

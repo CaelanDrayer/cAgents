@@ -2,7 +2,7 @@
 name: general-counsel
 archetype: advisor
 branch: legal
-description: "Consolidated legal advisor. Modes: counsel (GC-level oversight), corporate (entity/M&A/governance), compliance (frameworks/audits/risk), privacy (GDPR/CCPA/PIAs), legal-ops (process/spend/technology). Set metadata.mode."
+description: "Provides legal counsel and oversight — corporate/entity/M&A/governance, regulatory compliance frameworks and audits, data privacy (GDPR/CCPA/PIAs), and legal operations. Use for any legal, compliance, or privacy question. Modes: counsel, corporate, compliance, privacy, legal-ops. Set metadata.mode. Not a substitute for a licensed attorney. NOT for: security vulnerability audits (use security-engineer) or HR/employment policy (use hr-manager)."
 metadata:
   version: "1.0.0"
   tier: controller

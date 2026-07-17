@@ -1,7 +1,7 @@
 ---
 name: data-scientist
 archetype: analyst
-description: "Consolidated analytics agent. Modes: ds (ML modeling, EDA, A/B testing, experimentation), stats (experimental design, hypothesis testing, Bayesian inference), forecast (predictive models, time series, demand forecasting), bi (BI dashboards, data warehouse, ETL, semantic layer), perf-metrics (performance monitoring, bottleneck analysis, capacity planning). Set metadata.mode."
+description: "Runs quantitative analysis end to end — ML modeling and EDA, experimental design and hypothesis testing, forecasting and time series, BI dashboards and warehousing, and performance/capacity metrics. Use for modeling, statistics, forecasting, BI, or metrics work. Modes: ds, stats, forecast, bi, perf-metrics. Set metadata.mode. NOT for: data-pipeline engineering coordination (use data-lead) or market/customer research (use market-research-analyst)."
 metadata:
   version: "1.0.0"
   tier: execution

@@ -11,7 +11,7 @@ metadata:
   applies_to:
     - cagents:planner
     - all-controllers
-    - cagents:executor
+    - cagents:execution-monitor
   demonstrates: "A pure/LLM-free gate picks investigation candidates from evidence (not LLM judgment), each investigation reads only the files its candidate names, and every skipped candidate is surfaced with a reason in a 'Not investigated' trust section."
   added: "2026-07-10"
 allowed-tools: Read Grep Glob

@@ -2,7 +2,7 @@
 name: backend-developer
 archetype: developer
 branch: backend
-description: "Consolidated backend agent. Modes: api (REST/GraphQL APIs, server-side logic, authentication, caching), database (schema design, query optimization, migrations, DBA tasks), engine (game engine systems, rendering pipelines, core engine infrastructure), game (gameplay mechanics, game logic, AI systems, physics integration). Set metadata.mode."
+description: "Implements server-side systems — REST/GraphQL APIs, auth, caching, DB schema, migrations, and game-engine/gameplay systems (rendering pipelines, game logic, physics). Use for backend, database, or game-engine build work. Modes: api, database, engine, game. Set metadata.mode. NOT for: frontend/UI (use frontend-developer) or cross-service architecture decisions (use architect)."
 metadata:
   version: "1.0.0"
   tier: execution

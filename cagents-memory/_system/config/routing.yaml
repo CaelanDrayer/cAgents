@@ -48,9 +48,9 @@ domains:
           agents: [devops-engineer]
           description: "DevOps and infrastructure coordination"
         game_programming:
-          keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering]
-          agents: [tech-lead]
-          description: "Game programming routed through tech-lead to game-programmer"
+          keywords: [game programming, game engine, gameplay, physics engine, Unity, Unreal, Godot, shader, rendering, engine systems, rendering pipeline, game logic, game AI, physics integration]
+          agents: [backend-developer]
+          description: "Game-engine and gameplay-systems code — backend-developer modes engine (engine systems, rendering pipelines) and game (gameplay mechanics, game logic, AI, physics). Route through tech-lead for tier 3+ coordination."
         security:
           keywords: [security, vulnerability, penetration, OWASP, CVE, threat, authentication security]
           agents: [security-engineer]
@@ -285,6 +285,10 @@ domains:
           keywords: [market research, competitive analysis, industry analysis, benchmarking]
           agents: [market-research-analyst]
           description: "Business and market research"
+        requirements:
+          keywords: [requirements, requirements elicitation, business requirements, BRD, acceptance criteria, solution design, functional spec, user needs, stakeholder requirements, elicitation]
+          agents: [market-research-analyst]
+          description: "Requirements elicitation, BRDs, acceptance criteria, gap analysis, solution design — market-research-analyst mode:requirements (business-analyst function)"
         planning:
           keywords: [strategic planning, roadmap, long-term plan, multi-year, vision]
           agents: [strategic-planner, product-owner]
@@ -378,6 +382,10 @@ domains:
         - business case
         - PMO
         - change management
+        - requirements
+        - BRD
+        - acceptance criteria
+        - elicitation
         - transformation
         - capacity planning
         - benchmarking

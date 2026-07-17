@@ -133,7 +133,7 @@ function inferParentAgent(sessionDir, subagentType, agentId) {
   // Known enrichment agents are pipeline-level (parent = 'pipeline')
   // Pre-v12.0.0 decomposer + prompt-crafting agents were absorbed into 'planner'.
   const ENRICHMENT_AGENTS = ['orchestrator', 'planner', 'validator',
-    'router', 'executor', 'self-correct'];
+    'router', 'execution-monitor', 'self-correct'];
   const agentBaseName = subagentType.replace(/^cagents:/, '');
   if (ENRICHMENT_AGENTS.includes(agentBaseName)) {
     return 'pipeline';

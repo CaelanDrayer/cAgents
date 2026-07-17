@@ -2,7 +2,7 @@
 name: security-engineer
 archetype: developer
 branch: infrastructure
-description: "Consolidated infrastructure security agent. Modes: harden (implement controls, pentest, vulnerability scan), coordinate (controller — threat modeling, security program oversight, tier 3-4), owasp-audit (code audit against OWASP Top 10:2025, LLM Top 10, ASVS 5.0, Agentic AI). Set metadata.mode."
+description: "Hardens systems and audits for vulnerabilities — controls, pentest, threat modeling, and OWASP/LLM/ASVS code audits. Use for security work: secrets, injection, auth bypass, agentic-AI risk. Modes: harden, coordinate, owasp-audit. Set metadata.mode. NOT for: general code quality (use qa-lead) or infra provisioning (use devops-engineer)."
 metadata:
   version: "1.0.0"
   tier: controller

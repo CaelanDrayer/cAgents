@@ -2,7 +2,7 @@
 name: marketing-strategist
 archetype: operator
 branch: marketing-sales
-description: "Consolidated marketing controller. Modes: strategy (GTM, positioning, multi-channel planning), brand (brand strategy/guidelines/perception), creative-direction (campaign concepts, visual identity), growth (acquisition experiments, retention, viral loops), ops (martech stack, automation, data hygiene), partnership (co-marketing, affiliate, influencer). Set metadata.mode."
+description: "Leads marketing strategy across lenses — GTM/positioning/multi-channel planning (strategy), brand, creative-direction, growth experiments, martech ops, and partnerships. Use for marketing planning, brand, growth, or campaign coordination. Modes: strategy, brand, creative-direction, growth, ops, partnership. Set metadata.mode. NOT for: marketing analytics/attribution/SEO execution (use marketing-analyst) or sales strategy (use sales-strategist)."
 metadata:
   version: "1.0.0"
   tier: controller
