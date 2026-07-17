@@ -11,6 +11,10 @@ describe('v12.5.0 rename: universal-validator -> validator', () => {
       '--exclude-dir=archive --exclude-dir=_archive --exclude-dir=_deprecated ' +
       '--exclude-dir=sessions ' +
       '| grep -v CHANGELOG.md | grep -v RELEASE_NOTES.md ' +
+      // REC-07 (v12.49.0): the back-compat alias map + its resolution test are the
+      // sanctioned locations for the legacy name (same policy as no-stale-agent-names.test.js).
+      '| grep -v "scripts/migration/v12-aliases.yaml" ' +
+      '| grep -v "tests/migration/alias-map-resolution.test.js" ' +
       '| grep -v "tests/v12/no-universal-validator-refs.test.js" || true',
       { encoding: 'utf8' }
     ).trim();

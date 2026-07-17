@@ -314,6 +314,229 @@ aliases:
     decision: Q8
     notes: "A3 (REG-2): instructional-designer folded into academic-advisor (education/curriculum design, learner-facing writeups). Referenced in /designer education domain prose."
 
+  # ---------------------------------------------------------------------------
+  # W2-C (audit team_plugin-full-audit_260717_001, REC-07): high-frequency legacy
+  # names with NO alias row that were silently degrading to general-purpose (losing
+  # the specialist mode). 33 rows = 19 Tier1-3 individually specified + 14 Tier-4
+  # batch. Every `new:` verified live in .claude-plugin/plugin.json; every `mode`
+  # verified present in the successor's metadata.supported_modes on disk.
+  # decision: Q8 (same mode-flag-fold bucket as LP-12/LP-13/A3).
+  # Source of truth: cagents-memory/sessions/team_plugin-full-audit_260717_001/
+  #   outputs/wave-2/fix-agents.md § 1.
+  # ---------------------------------------------------------------------------
+
+  # NOTE ON mode_flag: per the A3 convention + tests/v12/aliases-resolve.test.js,
+  # `mode_flag` is set ONLY when the successor SKILL.md literally documents that
+  # exact "mode: X" string. Most successors document modes as supported_modes keys
+  # (not the literal "mode: X"), so the mode guidance for these backfills lives in
+  # the `notes` prose ("Use mode=X") and the structured mode_flag is omitted. The
+  # mode contract is mechanically verified against metadata.supported_modes by
+  # tests/migration/alias-map-resolution.test.js.
+
+  # Tier 1 — HIGH (>100 machine-wide spawns)
+  - old: cagents:senior-developer
+    new: cagents:tech-lead
+    type: fold
+    decision: Q8
+    notes: "678 machine-wide spawns (3rd-most overall). Content absorbed into tech-lead mode:implement (tech-lead/SKILL.md 'absorbed from senior-developer'). Use mode=implement."
+
+  - old: cagents:universal-planner
+    new: cagents:planner
+    type: rename
+    decision: Q8
+    notes: "284 spawns. v11 'universal-planner' renamed to core/planner in the v12 pipeline collapse. Same decomposition + controller-selection scope. Use mode=(default)."
+    new_path: agents/core/planner/SKILL.md
+
+  - old: cagents:universal-validator
+    new: cagents:validator
+    type: rename
+    decision: Q8
+    notes: "124 spawns. v11 'universal-validator' renamed to core/validator. Same PASS/FAIL/REVISE quality-gate scope. Use mode=(default)."
+    new_path: agents/core/validator/SKILL.md
+
+  - old: cagents:code-reviewer
+    new: cagents:qa-lead
+    type: fold
+    decision: Q8
+    notes: "123 spawns. Standalone code-quality reviewer folded into qa-lead mode:code-review. Distinct from core `reviewer` (pipeline acceptance-criteria loop) — this was the user-invoked quality reviewer. Use mode=code-review."
+
+  # Tier 2 — MEDIUM (16–91 spawns)
+  - old: cagents:ai-writing-rewriter
+    new: cagents:ai-writing-editor
+    type: fold
+    decision: Q8
+    notes: "91 spawns. Folded into ai-writing-editor mode:rewrite (humanize generated prose). Use mode=rewrite."
+
+  - old: cagents:ai-writing-detector
+    new: cagents:ai-writing-editor
+    type: fold
+    decision: Q8
+    notes: "18 spawns. Folded into ai-writing-editor mode:detect (detect synthetic markers). Use mode=detect."
+
+  - old: cagents:dba
+    new: cagents:backend-developer
+    type: fold
+    decision: Q8
+    notes: "64 spawns. Folded into backend-developer mode:database (schema design, query optimization, migrations, DBA tasks). Use mode=database."
+
+  - old: cagents:frontend-lead
+    new: cagents:tech-lead
+    type: fold
+    decision: Q8
+    notes: "37 spawns. Folded into tech-lead mode:frontend-lead (frontend domain coordination, UI/component review). Use mode=frontend-lead."
+
+  - old: cagents:backend-lead
+    new: cagents:tech-lead
+    type: fold
+    decision: Q8
+    notes: "16 spawns. Folded into tech-lead mode:backend-lead (backend domain coordination, API/database planning). Use mode=backend-lead."
+
+  - old: cagents:security-lead
+    new: cagents:security-engineer
+    type: fold
+    decision: Q8
+    notes: "18 spawns. Folded into security-engineer mode:coordinate (threat modeling, security program oversight). Use mode=coordinate."
+
+  - old: cagents:content-marketing-manager
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q8
+    notes: "32 spawns. Folded into marketing-strategist mode:growth (content/acquisition). Use mode=growth."
+
+  - old: cagents:continuity-checker
+    new: cagents:worldbuilder
+    type: fold
+    decision: Q8
+    notes: "20 spawns. Narrative continuity → worldbuilder mode:world (universe/systems consistency). Use mode=world."
+
+  - old: cagents:literary-critic
+    new: cagents:editor
+    type: fold
+    decision: Q8
+    notes: "36 spawns. Developmental literary critique → editor mode:line-edit (developmental + structural editing). AMBIGUITY (fix-agents.md §1 Tier-2): if the intent was academic literary analysis, narrative-director is the alternative; dev-editing successor chosen. Use mode=line-edit."
+
+  # Tier 3 — LOW (10–14 spawns)
+  - old: cagents:story-architect
+    new: cagents:narrative-director
+    type: fold
+    decision: Q8
+    notes: "10 spawns. → narrative-director mode:architecture (story structure, multi-act design). Use mode=architecture."
+
+  - old: cagents:creative-researcher
+    new: cagents:market-research-analyst
+    type: fold
+    decision: Q8
+    notes: "14 spawns. → market-research-analyst mode:business-research (trend/intelligence synthesis). Use mode=business-research."
+
+  - old: cagents:frontend-aesthetics
+    new: cagents:frontend-developer
+    type: fold
+    decision: Q8
+    notes: "12 spawns. → frontend-developer mode:ui (visual/UI polish). Use mode=ui."
+
+  - old: cagents:creative-director
+    new: cagents:cco
+    type: fold
+    decision: Q8
+    notes: "10 spawns. Creative vision leadership → cco (Chief Creative Officer). Leadership tier; used via /team strategic mode. No mode flag (leadership agent has no supported_modes)."
+
+  - old: cagents:character-designer
+    new: cagents:visual-artist
+    type: fold
+    decision: Q8
+    notes: "10 spawns. Character VISUAL design → visual-artist mode:concept (character/environment design). AMBIGUITY (fix-agents.md §1 Tier-3): if intent was character PSYCHOLOGY, worldbuilder mode:character is the alternative. Use mode=concept."
+
+  - old: cagents:narrative-designer
+    new: cagents:narrative-director
+    type: fold
+    decision: Q8
+    notes: "10 spawns. Game/interactive narrative → narrative-director mode:direct. AMBIGUITY (fix-agents.md §1 Tier-3): game-designer is the alternative if the work is mechanics-driven. Use mode=direct."
+
+  # Tier 4 — BATCH (<10 spawns)
+  - old: cagents:code-standards-auditor
+    new: cagents:qa-lead
+    type: fold
+    decision: Q8
+    notes: "8 spawns. → qa-lead mode:standards-audit (convention compliance, style-guide violations). Use mode=standards-audit."
+
+  - old: cagents:scribe
+    new: cagents:technical-writer
+    type: fold
+    decision: Q8
+    notes: "4 spawns. Meeting notes / documentation capture → technical-writer (single-mode agent)."
+
+  - old: cagents:curriculum-designer
+    new: cagents:academic-advisor
+    type: fold
+    decision: Q8
+    notes: "8 spawns. Curriculum / education design → academic-advisor (education/curriculum scope)."
+
+  - old: cagents:lore-keeper
+    new: cagents:worldbuilder
+    type: fold
+    decision: Q8
+    notes: "4 spawns. → worldbuilder mode:world (universe/lore consistency). Use mode=world."
+
+  - old: cagents:demand-generation-manager
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q8
+    notes: "7 spawns. → marketing-strategist mode:growth (demand gen / acquisition). Use mode=growth."
+
+  - old: cagents:competitive-intelligence-analyst
+    new: cagents:market-research-analyst
+    type: fold
+    decision: Q8
+    notes: "4 spawns. → market-research-analyst mode:competitive (competitor monitoring, battle cards, win/loss). Use mode=competitive."
+
+  - old: cagents:sales-enablement-specialist
+    new: cagents:sales-strategist
+    type: fold
+    decision: Q8
+    notes: "6 spawns. → sales-strategist mode:enablement (playbooks, battlecards, training). Use mode=enablement."
+
+  - old: cagents:voice-coach
+    new: cagents:editor
+    type: fold
+    decision: Q8
+    notes: "4 spawns. → editor mode:prose-style (voice/rhythm/figurative language). Use mode=prose-style."
+
+  - old: cagents:compliance-officer
+    new: cagents:general-counsel
+    type: fold
+    decision: Q8
+    notes: "6 spawns. → general-counsel mode:compliance (frameworks/audits/risk). Use mode=compliance."
+
+  - old: cagents:predictive-analyst
+    new: cagents:data-scientist
+    type: fold
+    decision: Q8
+    notes: "3 spawns. → data-scientist mode:forecast (predictive models, time series, demand forecasting). Use mode=forecast."
+
+  - old: cagents:character-psychologist
+    new: cagents:worldbuilder
+    type: fold
+    decision: Q8
+    notes: "6 spawns. → worldbuilder mode:character (wound-want-need, arcs, ensemble dynamics). Use mode=character."
+
+  - old: cagents:marketing-ops-specialist
+    new: cagents:marketing-strategist
+    type: fold
+    decision: Q8
+    notes: "3 spawns. → marketing-strategist mode:ops (martech stack, automation, data hygiene). Use mode=ops."
+
+  - old: cagents:performance-analyzer
+    new: cagents:devops-engineer
+    type: fold
+    decision: Q8
+    notes: "5 spawns. → devops-engineer mode:profile (app performance, latency, resource utilization). Use mode=profile."
+
+  - old: cagents:dependency-auditor
+    new: cagents:security-engineer
+    type: fold
+    decision: Q8
+    notes: "5 spawns. → security-engineer mode:harden (dependency/vulnerability audit, controls). Use mode=harden."
+
 # Coverage summary (also asserted by tests/v12/alias-map-coverage.test.js)
 coverage:
   engineering_moves_renames: 7      # Q2 (2) + Q3 (1) + Q4 (2) + Q7 (2)
@@ -329,7 +552,8 @@ coverage:
   lp12_writer_consolidations: 2    # copy-editor, prose-stylist -> editor (mode flag)
   lp13_analyst_consolidations: 2   # literature-review-author, academic-paper-searcher -> scholar (mode flag)
   a3_designer_consolidations: 7    # ux-designer, business-analyst, concept-artist, copywriter, product-designer, research-specialist, instructional-designer (A3 audit — designer-referenced folds; dba deferred, its only ref is an out-of-scope playbook)
-  total_aliases: 33                 # 9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3
+  w2c_legacy_backfill: 33          # REC-07 (audit team_plugin-full-audit_260717_001): 19 Tier1-3 individually specified + 14 Tier-4 batch. dba promoted here (64 spawns contradicted the A3 deferral).
+  total_aliases: 66                 # 33 prior (9 engineering + 13 marketing-sales + 2 LP-12 + 2 LP-13 + 7 A3) + 33 W2-C backfill
 
 # Notes for router consumers
 # - Router fallback semantics: on receiving an old name, log a deprecation warning

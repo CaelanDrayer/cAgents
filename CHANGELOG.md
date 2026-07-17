@@ -10,6 +10,46 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.49.0] - 2026-07-17
+
+**Phase 4 — legacy alias backfill (REC-07)** (audit session
+`team_plugin-full-audit_260717_001`, `outputs/wave-2/fix-agents.md` § 1). The
+highest-frequency legacy `cagents:<old>` names had NO row in
+`scripts/migration/v12-aliases.yaml`, so spawning them silently degraded to
+`general-purpose` (losing the specialist mode) and `session-init-gate.cjs`
+emitted no migration advisory. Backfills the 33 missing rows and adds the
+mechanical resolution guard the audit prescribed.
+
+### Added
+- **33 legacy agent aliases** appended to `scripts/migration/v12-aliases.yaml`
+  (all `decision: Q8`, alias-count 33 → 66). 19 individually specified Tier1-3
+  rows + 14 Tier-4 batch rows, each verified on disk before landing (successor
+  live in `.claude-plugin/plugin.json`; every `mode:` present in the successor's
+  `metadata.supported_modes`). Highlights: `senior-developer` → `tech-lead`
+  (mode: implement, 678 machine-wide spawns), `universal-planner` → `planner`,
+  `universal-validator` → `validator`, `code-reviewer` → `qa-lead`
+  (mode: code-review), `dba` → `backend-developer` (mode: database),
+  `frontend-lead`/`backend-lead` → `tech-lead`, `security-lead` →
+  `security-engineer` (mode: coordinate). `dba` was promoted from the A3
+  deferral because its 64 cross-machine spawns contradicted the earlier
+  "out-of-scope playbook ref only" call.
+- **`tests/migration/alias-map-resolution.test.js`** (40 tests) — the bug-driven
+  regression guard: for EVERY alias asserts the `new:` successor resolves to a
+  live agent in `plugin.json` (real SKILL.md, not `_deprecated/`), and when a
+  `mode_flag: "mode: <value>"` is set, that `<value>` exists in the successor's
+  on-disk `supported_modes`. Also pins `coverage.total_aliases` to the actual
+  array length and the exact 33-row backfill contract. Failing-before /
+  passing-after (the 33 names did not resolve until the rows landed).
+
+### Notes
+- **0 rows skipped** — every mapping in fix-agents.md § 1 pointed at a
+  successor + mode that exists on disk. The `<3-spawn` tail in fix-agents.md
+  (`bi-specialist`, `data-analyst`, etc.) is intentionally NOT backfilled here:
+  it is described as "etc. / by the same archetype rule" with no exact targets,
+  and is outside the 33-row (19 + 14) count the audit specified.
+- `coverage.total_aliases` in `v12-aliases.yaml` updated 33 → 66; new
+  `w2c_legacy_backfill: 33` sub-count added.
+
 ## [12.48.0] - 2026-07-17
 
 **Phase 3 — stall prevention: kill both stall mechanisms + enforce delegation at
