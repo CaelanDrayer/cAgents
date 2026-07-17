@@ -10,6 +10,15 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.44.1] - 2026-07-16
+
+### Changed
+- **`.gitignore` decommented.** Removed all `#` comment lines from `.gitignore`
+  (145 → 96 lines). Purely cosmetic: every ignore pattern and the ordered
+  `cagents-memory/` force-tracked `!` re-inclusion block are unchanged, so ignore
+  behavior is byte-identical (verified via `git check-ignore` on the re-included
+  plugin-source files and on runtime session/log paths).
+
 ## [12.44.0] - 2026-07-16
 
 **Documentation-accuracy sweep** (session `run_docs-cleanup_260716_001`). A pass over
