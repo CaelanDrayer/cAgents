@@ -66,7 +66,7 @@
 | game-writer | execution | Game writing |
 | concept-artist | execution | Concept art direction |
 | animator | execution | Animation direction |
-| music-composer | execution | Music composition |
+| composer | execution | Music composition — game scoring, adaptive/interactive audio, orchestration (was `music-composer`; split out as its own creator agent in v12.55.0 REC-27) |
 | sound-designer | execution | Sound design |
 | ai-writing-detector | execution | AI content detection |
 | ai-writing-rewriter | execution | AI content rewriting |

@@ -18,30 +18,6 @@ cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 For v12 consolidation history and all later release notes, see
 `CHANGELOG.md` and `docs/RELEASE_NOTES.md`.
 
-## Table of Contents
-
-- [Documentation Structure](#documentation-structure)
-- [Version Management](#version-management)
-- [Memory Management](#memory-management)
-- [Project Overview](#project-overview)
-- [CRITICAL: Aggressive Delegation](#critical-aggressive-delegation)
-- [CRITICAL: Automatic Workflow Progression](#critical-automatic-workflow-progression)
-- [Core Infrastructure](#core-infrastructure-tier-1-16-agents)
-- [Aggressive Decomposition](#aggressive-decomposition)
-- [Controller-Centric Architecture](#controller-centric-architecture)
-- [Complexity Tiers](#complexity-tiers)
-- [Workflow Execution](#workflow-execution)
-- [Task Completion Protocol](#task-completion-protocol)
-- [Skills (Commands)](#skills-commands)
-- [Team Mode](#team-mode)
-- [Agent Memory](#agent-memory)
-- [Creating Agents](#creating-agents)
-- [Creating Domains](#creating-domains)
-- [Directory Structure](#directory-structure)
-- [Hooks System](#hooks-system)
-- [Quick Reference](#quick-reference)
-- [Troubleshooting](#troubleshooting)
-
 ## Documentation Structure
 
 - `CLAUDE.md` - Architecture, commands, agents (this file)
@@ -104,18 +80,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Total**: 60 agents across 9 builder-role archetypes (back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
-**Canonical structure — 9 archetypes**:
-| Archetype | Dir | Agents | Capability |
-|-----------|-----|-------:|------------|
-| **Developer** | `developer/` | 8 | Backend, frontend, fullstack, infrastructure, quality (5 branches) |
-| **Operator** | `operator/` | 8 | Support, business-ops, people-ops, marketing-sales, content (5 branches) |
-| **Advisor** | `advisor/` | 4 | Legal, health, education, personal (4 branches) |
-| **Analyst** | `analyst/` | 5 | Data, BI, research, social-science |
-| **Creator** | `creator/` | 3 | Visual artists, audiovisual creators |
-| **Writer** | `writer/` | 4 | Narrative, editorial |
-| **Strategist** | `strategist/` | 3 | Product owners, portfolio managers, planners |
-| **Core** | `core/` | 16 | Pipeline infrastructure (trigger, orchestrator, planner, reviewer, etc.) |
-| **Leadership** | `leadership/` | 9 | C-suite executives (used by /team strategic mode, not directly routable) |
+**Canonical structure — 9 archetypes** (`{archetype}/` dirs; per-archetype counts also in Quick Reference): Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
 
 **Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
@@ -142,15 +107,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-`/run` is a config-driven state machine reading `pipeline_config.yaml`. Each enrichment agent runs sequentially at level 1. Controllers spawn executors and reviewers at level 2 with internal reviewer revision loops (max 2 internal rounds — see controllers.md). The validator outputs PASS/FAIL/REVISE to drive the outer revision routing (max 3 total cycles). The planner produces decomposition and assembles delegation prompts inline; controllers fall back to standard delegation prompts when the planner skips prompt assembly.
-
-**Enrichment Agents** (level 1): orchestrator, planner (absorbs decomposition + delegation-prompt assembly)
-**Coordination Agents** (level 1, ONLY coordinate): controllers (tech-lead, architect, etc.)
-**Execution Agents** (level 2, DO the work): backend-developer, frontend-developer, copywriter, qa-tester, etc.
-**Review Agents** (level 2, via controller): reviewer evaluates against acceptance criteria
-**Validation Agent** (level 1): validator with PASS/FAIL/REVISE output
-
-**Why Event-Driven**: Config-driven state machine replaces hardcoded workflow steps. Revision loops at both levels ensure quality. Pre-enrichment detection enables /team teammate flows. Inline planner-side prompt assembly improves delegation quality.
+`/run` is a config-driven state machine reading `pipeline_config.yaml`: enrichment agents (orchestrator, planner) run sequentially at level 1; controllers spawn executors + reviewers at level 2 with internal reviewer loops (max 2 rounds — see controllers.md); the validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner produces decomposition and assembles delegation prompts inline (controllers fall back to standard prompts otherwise). **Roles**: orchestrator/planner enrich (L1); controllers ONLY coordinate (L1); execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) DO the work (L2); reviewer validates against acceptance criteria (L2); validator gates (L1). This config-driven machine replaces hardcoded steps; revision loops at both levels ensure quality.
 
 ## CRITICAL: Automatic Workflow Progression
 
@@ -166,19 +123,13 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 ## Core Infrastructure (Tier 1: 16 agents)
 
-**Orchestration** (4): `trigger` (entry point), `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer` (universal optimization)
-
-**Team** (3): `team-bootstrap` (team init + lead wrapper used by `/team` skill loop; renamed from `team` in v12.53.0), `team-lead` (controller-style delegate-mode lead pattern), `wave-reviewer` (validates /team wave gates).
-
-**Universal Workflow** (5): `router` (tier 2-4 classification), `planner` (decomposition + controller selection + delegation-prompt assembly), `execution-monitor` (monitor controllers; renamed from `executor` in v12.53.0), `validator` (quality gates with PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
-
-**Review** (1): `reviewer` (PASS/REVISE verdict against acceptance criteria; spawned by controllers and team leads)
-
-**Task Management** (2): `task-state` (CSV-based state, 60-80% savings; includes task-merge mode)
-
-**Coordination** (1): `coordinator` (reusable coordinator for small domains — health, education, personal, arts, trades)
-
-**Logging** (1): `coord-log-writer` (assembles coordination_log.yaml from on-disk artifacts)
+- **Orchestration** (4): `trigger`, `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer`
+- **Team** (3): `team-bootstrap` (team init + lead wrapper, renamed from `team` in v12.53.0), `team-lead` (delegate-mode lead), `wave-reviewer` (validates /team wave gates)
+- **Universal Workflow** (5): `router` (tier classification), `planner` (decomposition + controller selection + prompt assembly), `execution-monitor` (renamed from `executor` in v12.53.0), `validator` (PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
+- **Review** (1): `reviewer` (PASS/REVISE against acceptance criteria)
+- **Task Management** (1): `task-state` (CSV state, 60-80% savings; includes task-merge mode)
+- **Coordination** (1): `coordinator` (reusable controller for small domains — health, education, personal, arts, trades)
+- **Logging** (1): `coord-log-writer` (assembles coordination_log.yaml)
 
 **Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
@@ -202,35 +153,11 @@ Controllers are the coordination hub between planning and execution. See @.claud
 
 **Key Principles**: Controllers ask (not assign), execution agents answer, synthesis drives implementation, adaptive follow-up questions.
 
-**Controllers by Domain**:
-| Domain | Tier 2 | Tier 3 | Tier 4 |
-|--------|--------|--------|--------|
-| **Engineering** | tech-lead | + architect, security-lead | cto + tech-lead + architect |
-| **Creative** | narrative-director | + story-architect, editor | cco + narrative-director |
-| **Business** | operations-manager, product-owner | + strategic-planner, marketing-strategist | cpo + cfo + strategic-planner |
-| **People** | hr-manager | + talent-acquisition-manager | chro + hr-manager |
-| **Service** | customer-success-manager, general-counsel | + support-director, compliance-officer | general-counsel + support-director |
+**Controller selection by tier** (per-domain catalogs in `{domain}/config/domain_overrides.yaml` → `controller_catalog`, matched on tier + domain): tier 2 = 1 primary controller (e.g. tech-lead, narrative-director, marketing-strategist); tier 3 = primary + 1-2 supporting (e.g. architect, security-engineer); tier 4 = 1 executive (cto/cco/cpo/chro) + primary + 2-4 supporting + HITL.
 
-**Discovery**: Planner loads `{domain}/config/domain_overrides.yaml` -> `controller_catalog` -> matches tier + domain
+**Coordinating Phase**: orchestrator spawns the controller with plan.yaml → the controller asks clarifying questions, coordinates work items, tracks completion, and verifies acceptance criteria → it writes `coordination_log.yaml` (`schema_version: "1"`, with `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, `status: completed`). See @.claude/rules/core/controllers.md for the full schema and reviewer loop.
 
-**Coordinating Phase** (between planning and executing):
-1. Orchestrator spawns controller with plan.yaml + decomposition.yaml
-2. Controller reviews decomposition, asks clarifying questions, coordinates work items
-3. Execution agents implement, controller tracks completion and verifies acceptance criteria
-4. Controller writes coordination_log.yaml; orchestrator detects completion
-
-**Coordination Log** (`cagents-memory/sessions/{session_id}/workflow/coordination_log.yaml`):
-```yaml
-schema_version: "1"
-controller: cagents:tech-lead
-objectives: [...]
-questions_asked: [{question, delegated_to, answer}, ...]
-synthesized_solution: {approach, rationale, implementation_steps, risks}
-implementation_tasks: [{task_id, name, assigned_to, agent_id, acceptance_criteria, status}, ...]
-status: completed
-```
-
-**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work item definitions (IDs, descriptions, acceptance criteria, dependencies). `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to). Parsers should read work_items.yaml for structure and task_list.yaml for current status.
+**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work-item definitions (IDs, descriptions, acceptance criteria, dependencies); `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to).
 
 ## Complexity Tiers
 
@@ -265,43 +192,13 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 **Evidence must be specific**: File paths, test results, metrics. No "probably works" or "mostly done".
 
-## CRITICAL: Task Cleanup Protocol
+## CRITICAL: Task Lifecycle (Cleanup + Per-Subagent Visibility)
 
-**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed)` before the agent stops.** Stale in_progress tasks confuse users and clutter the UI.
+**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops** — stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create; before finishing a skill, sweep `TaskList` and resolve all of them. `/run`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end.
 
-**Rules**:
-1. When you create a task via `TaskCreate`, you OWN its lifecycle — mark it `completed` when done
-2. Before stopping or finishing a skill, check `TaskList` and resolve all your tasks
-3. `/run`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end
-4. If a task is no longer needed, use `TaskUpdate(status: deleted)` — never leave it in_progress
+**Every background `Agent`/`Task` spawn MUST have a `TaskCreate` call BEFORE the spawn** (one per spawn when `run_in_background: true`), the subject matching the agent's description, marked `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry and no visibility into the parallel agents; `/run`/`/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
 
-**Anti-patterns** (never do this):
-- Creating a task, doing the work, then stopping without marking it completed
-- Leaving tasks as `in_progress` after the work is committed/pushed
-- Creating tracking tasks that are never updated
-
-## CRITICAL: TaskCreate Per Subagent
-
-**Every background Agent/Task spawn MUST have a corresponding `TaskCreate` call BEFORE the spawn.** This gives the user per-agent visibility in the task list UI.
-
-**Pattern**:
-```
-# 1. Create task FIRST
-TaskCreate({ subject: "WI-1: Fix auth module", description: "..." })
-# 2. Then spawn the agent
-Agent({ description: "WI-1: Fix auth module", ..., run_in_background: true })
-# 3. When agent completes, update task
-TaskUpdate({ taskId: "N", status: "completed" })
-```
-
-**Rules**:
-1. One `TaskCreate` per `Agent`/`Task` call when using `run_in_background: true`
-2. Task subject should match the agent's description for UI clarity
-3. Mark task `completed` when the agent notification arrives
-4. For foreground (blocking) agents, TaskCreate is optional but recommended for long-running work
-5. `/run`, `/team` pipelines MUST create per-subagent tasks — not just top-level orchestration tasks
-
-**Why**: Without per-agent tasks, the user only sees generic orchestration entries (e.g., "◼ [team] Documentation update orchestration") with no visibility into the 4-5 agents actually doing work in parallel.
+**Anti-patterns**: creating a task then stopping without completing it; leaving tasks `in_progress` after work is committed; creating tracking tasks that are never updated.
 
 ## Skills (Commands)
 
@@ -332,10 +229,8 @@ Skill: `.claude/skills/run/SKILL.md` + `reference/`
 N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each teammate is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
-/team Launch new product with campaign          # Cross-domain: auto-strategic mode (eng + business + people)
-/team Restructure engineering team --strategic  # Force strategic mode on
-/team Build user dashboard --dry-run            # Preview wave structure
-/team Build feature --waves 8                   # Force minimum 8 waves
+/team Launch new product with campaign          # Cross-domain: auto-strategic mode
+/team Build feature --dry-run --waves 8 / --strategic   # preview / force waves / force strategic
 /run Build feature --team                       # Team mode via flag
 ```
 Config: `settings.json` (`teammateMode` default `in-process` since CC v2.1.179; `tmux`/`auto` panes are experimental-path only). See `docs/TEAM_MODE.md`.
@@ -347,10 +242,6 @@ Highlights:
 - **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
 - **Improve modes inside /run**: `/improve` is folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
 - **/helper**: Troubleshooting mode (`--troubleshoot`), comparison matrices, migration catalog, strategic-mode migration guidance (`/org X` → `/team X`)
-
-## Team Mode
-
-N-wave parallel team execution via concurrent `Agent()` spawns (teams are implicit; the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so cleanup is automatic). Use `/team` for tier 3+ workflows (40-60% faster). See @.claude/rules/core/teams.md for wave structure, GATE sentinels, display modes, and troubleshooting.
 
 ## Agent Memory
 
@@ -392,19 +283,10 @@ cAgents/
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (43 files: 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
 |   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 60 agents (44 routable + 16 core)
-|   +-- developer/           # Developer archetype (8 agents — backend/frontend/fullstack/infrastructure/quality)
-|   +-- operator/            # Operator archetype (8 agents — support/business-ops/people-ops/marketing-sales/content)
-|   +-- advisor/             # Advisor archetype (4 agents — legal/health/education/personal)
-|   +-- analyst/             # Analyst archetype (5 agents — data, BI, research, social science)
-|   +-- creator/             # Creator archetype (3 agents — visual, audiovisual)
-|   +-- writer/              # Writer archetype (4 agents — narrative, editorial)
-|   +-- strategist/          # Strategist archetype (3 agents — product owners, portfolio, planning)
-|   +-- core/                # Core pipeline infrastructure (16 agents)
-|   +-- leadership/          # Leadership archetype (9 C-suite agents — used by /team strategic mode)
-|   +-- _overlay/            # Legacy router/planner config overlays
-|       +-- people/          # config/domain_overrides.yaml only
-|       +-- shared/          # config/, patterns/, resources/
++-- agents/                  # All 60 agents (44 routable + 16 core) across 9 archetype roots:
+|                            #   developer, operator, advisor, analyst, creator, writer, strategist, core, leadership
+|                            #   (per-archetype counts in § Project Overview + Quick Reference)
+|   +-- _overlay/            # Legacy router/planner config overlays (people/, shared/ — config only)
 +-- scripts/                 # Version sync, validation, CI scripts
 +-- tests/                   # Vitest test suite (hooks + config)
 +-- docs/                    # Project documentation
@@ -421,12 +303,10 @@ cAgents/
 
 **cAgents is standalone. It MUST NOT depend on MCP servers — neither bundled nor consumed.**
 
-This is a load-bearing constraint, not a default. The plugin's value is that it works
-out of the box: install cAgents, get 60 agents and 4 skills with zero external service
-configuration. Coupling any agent or skill to an MCP server (the user must run a Postgres
-MCP, configure a GitHub MCP, etc.) breaks that contract — agents start failing in
-environments where the server isn't present, and the plugin's "install and go" promise
-turns into "install, configure 11 external services, and go."
+This is a load-bearing constraint, not a default: the plugin installs and works out of
+the box with zero external-service configuration. Coupling any agent or skill to an MCP
+server breaks that "install and go" promise. User guidance (users MAY add their own MCP
+servers) and the V11.1.12→V11.2.0 history live in `docs/ARCHITECTURE-HISTORY.md`.
 
 ### Rules
 
@@ -448,93 +328,27 @@ turns into "install, configure 11 external services, and go."
    contract — any future PR that adds `mcp__*` to allowed-tools or adds a non-empty
    `mcpServers` block fails CI.
 
-### What this means for users
-
-Users CAN configure their own MCP servers in their personal `~/.claude/settings.json`
-or project `.mcp.json` — Claude Code supports MCP independently of cAgents. cAgents
-agents simply won't have those tools in their declared `allowed-tools`, so they won't
-call MCP tools. If a user wants MCP-aware agents, they fork the plugin or override
-specific agents in their own setup. cAgents the upstream plugin stays standalone.
-
-### History
-
-V11.1.12 introduced an "MCP consumer pattern (Stage 1)" that violated this contract by
-adding `mcp__*` declarations to 10 agents and an `mcpServers` catalog to `plugin.json`.
-V11.1.14 removed the catalog after Claude Code's plugin validator rejected the
-descriptive shape (`mcpServers: Invalid input`). V11.1.15 fixed the same issue in
-`.mcp.json`. V11.2.0 reverts the consumer-pattern entirely and codifies this contract,
-because the standalone promise is more valuable than the optional integration was.
-
 ## Plugin Architecture
 
-cAgents is distributed as a Claude Code plugin. See `.claude-plugin/plugin.json` for the root manifest.
-
-**Plugin Structure**:
-```
-.claude-plugin/
-├── plugin.json          # Root manifest (agents, skills, hooks, version)
-└── marketplace.json     # Marketplace listing metadata
-```
-
-**Key Manifest Fields**:
-- `agents`: Array of SKILL.md paths (60 agents registered)
-- `skills`: Path to skills directory (`.claude/skills/`)
-- `hooks`: Path to settings.json for hook registration
-- `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
-
-**Plugin Features** (Claude Code):
-- **LSP Servers**: Plugins can provide language servers via `.lsp.json` for IDE-like features
-- **Default Settings**: `settings.json` in plugin root applies defaults; `agent` key configures subagent behavior
-- **Hook Registration**: Hooks declared in `hooks/hooks.json` or referenced via `hooks` field in plugin.json
-- **Marketplace**: Submit via `marketplace.json` with `$schema`, owner, category, and version fields
-- **Multi-Plugin**: Multiple plugins loaded via `--plugin-dir` flags; settings merge with project settings
-- **Worktree Sparse Checkout**: `.claude/settings.json` declares `worktree.sparsePaths` (6 entries — `.claude/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`). `core/` and all 9 archetype roots live under `agents/`, so a single `agents/` entry covers them. When `/team` teammates spawn with `isolation: "worktree"`, only these paths populate the worktree, dramatically reducing checkout time and preventing teammates from modifying out-of-scope files.
+cAgents is distributed as a Claude Code plugin. The root manifest is
+`.claude-plugin/plugin.json` (registers 60 agents + skills + hooks + version);
+`.claude-plugin/marketplace.json` holds the marketplace listing. Plugin features
+(LSP servers, default settings, hook registration, marketplace fields, multi-plugin
+merge) and the full manifest-field detail live in
+**`docs/ARCHITECTURE-HISTORY.md § Plugin Architecture`**. Worktree sparse checkout is
+declared in `.claude/settings.json` (`worktree.sparsePaths`, 6 entries: `.claude/`,
+`cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`) so `/team`
+worktree-isolated teammates only populate the paths they need.
 
 ## Performance Benchmarks
 
-There are TWO classes of figures here, and they must never be conflated:
-
-- **MEASURED (reproducible artifact)** — produced by the perf-corpus runner at
-  `cagents-memory/_system/evals/perf/perf-corpus-runner.cjs`, which emits a
-  machine-readable artifact (`perf-corpus-results.json`) with full provenance
-  (node version, OS, ISO timestamp) and a reproduce command per number. The
-  hook-perf BEFORE baseline is committed-on-disk at
-  `cagents-memory/_system/evals/perf/hook-perf-before.json` (WI-3 microbench,
-  `scripts/benchmarks/hook-perf-microbench.cjs`). See
-  `cagents-memory/_system/evals/perf/README.md` for the manifest. (Note:
-  `cagents-memory/` is git-ignored runtime state, but the runner regenerates
-  these artifacts deterministically on demand, so the paths are reproducible.)
-- **ESTIMATE (no benchmark artifact)** — design-target aspirations with no
-  artifact, methodology, or measurement-date provenance. Treat as targets, NOT
-  validated engineering data. Do NOT cite them as measured.
-
-### Measured (reproducible artifact)
-
-| Metric | Measured value | Artifact + reproduce |
-|--------|----------------|----------------------|
-| **Hook overhead per Write\|Edit** (BEFORE / un-consolidated) | ≈ 6406 ms median across 3 cold-start hooks; `cold_starts_per_write_edit = 3` (secret-detection ≈131 ms, controller-delegation-validator ≈3137 ms, skill-size-monitor ≈3138 ms; the 2 slow hooks linger on an un-unref'd 3 s timer) | `cagents-memory/_system/evals/perf/hook-perf-before.json` · `node scripts/benchmarks/hook-perf-microbench.cjs --scenario before` |
-| **Secret-scan time vs file size** (`scanForSecrets`, 30 iters, in-process `hrtime`) | 10KB ≈0.15 ms · 100KB ≈1.45 ms · 600KB ≈2.06 ms (600KB > 512KB cap ⇒ windowed head+tail scan) | `cagents-memory/_system/evals/perf/perf-corpus-results.json` · `node cagents-memory/_system/evals/perf/perf-corpus-runner.cjs` |
-
-> These two rows are MEASURED with the reproducible artifacts above. The exact
-> ms figures are machine-dependent (the committed baseline: node v20.19.2, linux,
-> 16-core Xeon E5-2643 v4) — re-run the commands to reproduce on your hardware.
-
-### Estimate (no benchmark artifact — aspirational targets, NOT measured)
-
-| Feature | Target (estimate — no benchmark artifact) |
-|---------|-------------------------------------------|
-| **Aggressive Decomposition** | 30+ work items from simple request — estimate, unmeasured |
-| **Controller Pattern** | 30-40% simpler planning, 20-30% fewer tokens — estimate, unmeasured |
-| **Parallel Execution** | 50x speedup (swarm), 80%+ efficiency — estimate, unmeasured |
-| **Task Inventory** | 60-80% context savings for 20+ task workflows — estimate, unmeasured |
-| **Team Mode** | 40-60% execution time reduction for tier 3+ — estimate, unmeasured |
-
-> **Caveat (estimate rows only)**: The five figures above are design-target
-> ESTIMATES with NO benchmark artifact, methodology, or provenance — NOT validated
-> engineering data, and must NOT be presented as measured.
-
-See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
-`cagents-memory/_system/evals/perf/README.md` for the measured-artifact manifest.
+Two classes of figures — **MEASURED** (reproducible artifact from the perf-corpus
+runner with node/OS/timestamp provenance) and **ESTIMATE** (design-target
+aspirations with NO artifact — treat as targets, never cite as measured). They
+must never be conflated. The full measured-vs-estimate tables + provenance live in
+**`docs/ARCHITECTURE-HISTORY.md § Performance Benchmarks`**; detailed tracking in
+`docs/OPTIMIZATION_PROGRESS.md` and the measured-artifact manifest in
+`cagents-memory/_system/evals/perf/README.md`.
 
 ## Quick Reference
 
@@ -549,7 +363,7 @@ See `docs/OPTIMIZATION_PROGRESS.md` for detailed tracking and
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1635+ Vitest tests across 192+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.57.0
+**Version**: 12.58.0
 
 ## Troubleshooting
 

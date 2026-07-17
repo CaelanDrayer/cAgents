@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.57.0"
+  version: "12.58.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -30,7 +30,7 @@ Do nothing else before Step 1 + Step 2a. Create the session directory and write 
 
 ## Lead-Context Discipline (v12.1.0+)
 
-This skill is designed so the lead can complete 5-10 wave workflows without exhausting context. Four disciplines enforce this:
+This skill is designed so the lead can complete 5-10 wave workflows without exhausting context (full team-execution model — wave structure, depth-5 nesting budget, why teammates spawn execution agents directly rather than re-entering `/run` — in @reference/architecture.md). Four disciplines enforce this:
 
 1. **Per-wave decomposition** — planner emits `workflow/work_meta.yaml` (lead reads ONCE) + `workflow/work_items_wave_{K}.yaml` (lead reads only current wave). See @reference/per-wave-decomposition.md.
 2. **Disk-handoff spawn briefs** — lead writes `outputs/wave-{K}/spawn_brief.md` once per wave; each teammate gets a ~80-token pointer prompt. See @reference/spawn-brief-schema.md.

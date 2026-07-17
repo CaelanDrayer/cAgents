@@ -22,7 +22,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 # ---- Derivation -------------------------------------------------------------
-# Active agent entries in plugin.json (derived dynamically; currently 57 after the
+# Active agent entries in plugin.json (derived dynamically; currently 60 after the
 # post-v12.20.0 catalog consolidation — do NOT hardcode, jq reads it live).
 ACTIVE_AGENTS=$(jq -r '.agents | length' .claude-plugin/plugin.json)
 
@@ -102,7 +102,7 @@ report_mismatch() {
 }
 
 # Check 1: CLAUDE.md must say "<ACTIVE_AGENTS> agents" (derived from plugin.json;
-# currently 57) matching derived ACTIVE_AGENTS. This is the load-bearing count
+# currently 60) matching derived ACTIVE_AGENTS. This is the load-bearing count
 # appearing in the Project Overview, Quick Reference, and Plugin Architecture sections.
 #
 # Test-friendly override: CAGENTS_VALIDATE_COUNTS_CLAUDE_MD lets the
@@ -208,7 +208,7 @@ fi
 
 # Check 8: docs/12-FACTOR-COMPLIANCE.md total agent count.
 if [ -f docs/12-FACTOR-COMPLIANCE.md ]; then
-  # The doc should mention "<ACTIVE_AGENTS> agents" (currently 57) matching ACTIVE_AGENTS.
+  # The doc should mention "<ACTIVE_AGENTS> agents" (currently 60) matching ACTIVE_AGENTS.
   # We're permissive: it may say "144 agents across 9 archetypes" or similar.
   if grep -qE "[0-9]+ agents across" docs/12-FACTOR-COMPLIANCE.md && \
      ! grep -qE "\b${ACTIVE_AGENTS} agents\b" docs/12-FACTOR-COMPLIANCE.md; then
@@ -285,7 +285,7 @@ if [ -n "$docs_stale_current" ]; then
 fi
 
 # Check 13 (P2 / A7-03): CLAUDE.md ABSENCE check for a STALE CURRENT agent total.
-# Check 1 above is presence-only — it passes as long as the correct "57 agents"
+# Check 1 above is presence-only — it passes as long as the correct "60 agents"
 # appears once, so a stale DUPLICATE current-total in CLAUDE.md (the historical
 # "Total agents: 251 -> 240" drift class flagged by A7-03) slipped through while CI
 # stayed green. This mirrors the Check 2b (README) and Check 12 (docs/) absence
