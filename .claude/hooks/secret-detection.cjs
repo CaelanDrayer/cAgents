@@ -78,6 +78,9 @@ function appendManifest(manifestPath, entry, sessionId) {
       body = `schema_version: "1"\nsession_id: "${sessionId || '_no-session'}"\nentries:\n`;
     }
     // Append a YAML list entry — keep formatting trivial (no YAML lib).
+    // P5.5: record the .orig backup filename (`orig:`) so secret-restore.cjs can
+    // pair each file_path with ITS OWN backup deterministically, instead of the
+    // legacy highest-mtime guess that content-swaps across >=2 sanitized files.
     const lines = [
       `  - placeholder: "${entry.placeholder}"`,
       `    file_path: "${entry.file_path}"`,
@@ -86,6 +89,7 @@ function appendManifest(manifestPath, entry, sessionId) {
       `    secret_type: "${entry.secret_type}"`,
       `    severity: "${entry.severity}"`,
       `    captured_at: "${entry.captured_at}"`,
+      `    orig: "${entry.orig || ''}"`,
       ''
     ].join('\n');
     fs.writeFileSync(manifestPath, body + lines);
@@ -270,8 +274,13 @@ const DOC_ALLOWLIST_PATHS = [
 // Combined path-skip set used by isPathFalsePositive.
 const FALSE_POSITIVE_PATHS = [...LOCK_FILE_PATHS, ...PLACEHOLDER_FILE_PATHS];
 
+// P5.1: the two broadest markers, /<[^>]+>/ (any HTML-ish tag) and /\.{3,}/
+// (any run of 3+ dots), were DROPPED. Combined with the mere-presence match in
+// the pre-P5.1 isContentFalsePositive, they suppressed a LIVE token that merely
+// sat next to an HTML comment or a "..." run. The retained markers are the
+// narrow, intentional placeholder shapes.
 const FALSE_POSITIVE_CONTENT = [
-  /YOUR[_-]?API[_-]?KEY/i, /REPLACE[_-]?WITH/i, /\$\{[^}]+\}/, /<[^>]+>/, /xxx+/i, /\*{3,}/, /\.{3,}/
+  /YOUR[_-]?API[_-]?KEY/i, /REPLACE[_-]?WITH/i, /\$\{[^}]+\}/, /xxx+/i, /\*{3,}/
 ];
 
 function isPathFalsePositive(filePath) {
@@ -288,10 +297,34 @@ function isTestFilePlaceholder(matchValue) {
   return TEST_PLACEHOLDER_PATTERNS.some(p => p.test(matchValue));
 }
 
+// P5.1: a false-positive marker suppresses ONLY when its match region OVERLAPS
+// the matched secret token's [start,end) region — not merely when it appears
+// somewhere in the ±50-char window. This is what makes `${GITHUB_TOKEN}`
+// (the token IS the placeholder) suppress while a live token merely sitting
+// NEXT TO a `${OTHER}` / HTML comment / "..." run still blocks. This only
+// NARROWS suppression (more tokens block), never widens it — FAIL-CLOSED.
 function isContentFalsePositive(content, match) {
   const idx = content.indexOf(match);
-  const context = content.substring(Math.max(0, idx - 50), Math.min(content.length, idx + match.length + 50));
-  return FALSE_POSITIVE_CONTENT.some(p => p.test(context));
+  if (idx < 0) return false;
+  const tokenStart = idx;
+  const tokenEnd = idx + match.length;
+  const ctxStart = Math.max(0, idx - 50);
+  const ctxEnd = Math.min(content.length, idx + match.length + 50);
+  const context = content.substring(ctxStart, ctxEnd);
+  for (const p of FALSE_POSITIVE_CONTENT) {
+    // Global-flagged clone so we can iterate ALL marker matches in the window.
+    const g = new RegExp(p.source, p.flags.includes('g') ? p.flags : p.flags + 'g');
+    let m;
+    while ((m = g.exec(context)) !== null) {
+      // Guard zero-width matches so exec() cannot loop forever.
+      if (m[0].length === 0) { g.lastIndex++; continue; }
+      const mStart = ctxStart + m.index;
+      const mEnd = mStart + m[0].length;
+      // Overlap iff the marker interval intersects the token interval.
+      if (mStart < tokenEnd && mEnd > tokenStart) return true;
+    }
+  }
+  return false;
 }
 
 function scanForSecrets(content, filePath) {
@@ -448,6 +481,7 @@ async function _scanHandler(input) {
 
       // 3. Append manifest entry per placeholder (hash only — never secret value).
       const capturedAt = new Date().toISOString();
+      const origName = path.basename(origPath);
       for (const p of placeholders) {
         appendManifest(manifestPath, {
           placeholder: p.placeholder,
@@ -456,7 +490,8 @@ async function _scanHandler(input) {
           hash: p.hash,
           secret_type: p.type,
           severity: p.severity,
-          captured_at: capturedAt
+          captured_at: capturedAt,
+          orig: origName   // P5.5: deterministic file_path -> .orig pairing
         }, sessionId);
       }
 

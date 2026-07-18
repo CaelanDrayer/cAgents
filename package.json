@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "12.59.4",
+  "version": "12.60.0",
   "description": "Universal multi-domain agent orchestration framework. 58 agents across 9 archetypes with 4 user skills (/run, /team, /designer, /helper).",
   "type": "module",
   "engines": {
@@ -45,7 +45,6 @@
     ".claude/rules/",
     ".claude/output-styles/",
     ".claude/settings.json",
-    ".claude/settings.full.json",
     ".claude-plugin/",
     "scripts/",
     "CLAUDE.md",
