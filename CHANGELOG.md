@@ -10,6 +10,62 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.59.3] - 2026-07-17
+
+**Audit P3 (HIGH-by-code, safety) — delegation-validator over-block + stale
+controller list.** Session `run_audit-remediation_260717_001` (audit of
+v12.59.0). Patch bump. `.claude/hooks/controller-delegation-validator.cjs` had
+three confirmed defects: (a) it denied whenever ANY controller-tier agent was
+`stopped_at: null` — which is exactly when a controller synchronously awaits its
+executor — so the *executor's* legitimate `src/` write was wrongly DENIED;
+(b) the hardcoded `CONTROLLER_TYPES` list was stale (missed 12 of 26 controllers
+— all 9 leadership agents, `coordinator`, dual-mode `security-engineer`/
+`sales-strategist` — and listed 15 pre-consolidation names that no longer exist);
+(c) `ALLOWED_PATTERNS` used unanchored substrings, so `src/workflow/engine.ts`,
+`lib/coordination_log_writer.ts`, and `src/auth/agent_tree_builder.ts` bypassed
+the deny. Fixed by deriving writer identity + tier at RUNTIME and anchoring the
+allow-patterns. Feedback-loop-first: 4 named regression tests written RED before
+the fix, GREEN after; full existing delegation suites (53 tests) + `npm test`
+(1988 passed) green.
+
+### Fixed
+- **Over-block (a):** new `findActiveWriter()` resolves the *actual writer* — the
+  deepest / most-recently-spawned still-active `agent_tree.yaml` entry (tiebreak
+  `depth` → `spawned_at` → document order; the always-null top-level `root:`
+  block is excluded). The handler denies only when that writer's own tier is
+  controller/infrastructure/support/unresolvable; when the writer is
+  execution-tier the `src/` write is ALLOWED even though a parent controller is
+  `stopped_at: null`.
+- **Stale list (b):** deleted the hardcoded `CONTROLLER_TYPES` array; new
+  `resolveAgentTier()` reads the writer's own `SKILL.md` `metadata.tier` from the
+  archetype/branch path grid, cached in a module-level `Map` (single-writer
+  lookup per invocation, no full-catalog walk). Unresolvable names FAIL SAFE
+  (treated as controller → deny), scoped to the resolved writer so the executor
+  over-block is not reintroduced.
+- **Unanchored allow (c):** `ALLOWED_PATTERNS` drops the bare `/workflow\//`,
+  `/coordination_log/`, `/agent_tree/` substrings; keeps
+  `/(?:^|\/)cagents-memory\//`, `/\.md$/`, `/\.ya?ml$/` — legit workflow yaml/md
+  writes still short-circuit (they end in `.yaml`/`.md`), while `.ts` files that
+  merely contain those words in their path now fall through to HARD-DENY.
+
+### Preserved
+- B1 controller-scoped no-op (no active writer → hook no-ops, never blocks a
+  direct user `src/` edit), FAIL-CLOSED deny for the true controller-write case,
+  the `CAGENTS_DELEGATION_ENFORCEMENT` block/warn/off precedence, and the D1b
+  Write|Edit dispatcher import contract (`handler` export + `CAGENTS_DISPATCH_IMPORT`
+  guard). `findActiveController()` kept + exported (unchanged signature) for
+  `controller-delegation-entry-boundary.test.js`.
+
+### Known residuals (tracked for follow-up, not blocking)
+- Writer resolution is tree-global, not lineage-scoped via the `parent` field —
+  under `/team` concurrent waves a controller's direct `src/` write could be
+  misattributed to an unrelated deeper active executor. This is a pre-existing
+  class of limitation (the old `findActiveController` was also tree-global), not
+  a P3 regression, and requires a controller to already be violating delegation.
+  Candidate follow-up: lineage-aware resolution via `parent`.
+- No automated test yet for the fail-closed unresolvable-writer path (verified
+  correct by direct invocation during review).
+
 ## [12.59.2] - 2026-07-17
 
 **Audit P2 (RED CI, sanity) — unblock 2 tests coupled to git-ignored session
