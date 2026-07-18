@@ -10,6 +10,48 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.59.4] - 2026-07-17
+
+**Audit P4 (MEDIUM/LOW, security) — supply-chain freshness: js-yaml
+GHSA-h67p-54hq-rp68.** Session `run_audit-remediation_260717_001` (audit of
+v12.59.0). Patch bump. `npm audit --omit=dev` reported a moderate
+quadratic-complexity DoS in js-yaml's merge-key handling (advisory
+GHSA-h67p-54hq-rp68, affecting js-yaml `4.0.0`–`4.1.1`). js-yaml is cAgents'
+SOLE runtime dependency; `package.json` already pins `"js-yaml": "^4.1.1"` (a
+production dep), which permits the patched release — so this is a LOCKFILE-ONLY
+change with `package.json` untouched. The local `package-lock.json` was also
+stale: it recorded js-yaml `4.1.1` with `dev: true` (and the root
+`packages[""]` block listed it only under `devDependencies`), disagreeing with
+the manifest, which let the vulnerable version resolve as incorrectly
+dev-classified. Registry was reachable; fixed via `npm install
+--package-lock-only` + `npm audit fix --package-lock-only`. Standalone Contract
+untouched (runtime deps stay exactly `["js-yaml"]`, no `mcpServers`, no
+`mcp__*`). Dev-only vitest CVEs remain out of scope (node_modules is not
+shipped).
+
+### Fixed
+- **Advisory closed (lockfile-only):** `package-lock.json` regenerated so
+  js-yaml is bumped `4.1.1` → `4.3.0` (max satisfying `^4.1.1`, patched) and
+  re-recorded as a PRODUCTION dependency — its `node_modules/js-yaml` entry no
+  longer carries `dev: true`, and root `packages[""].dependencies` now lists
+  js-yaml. `npm audit --omit=dev` now reports **0 vulnerabilities** (was 1
+  moderate). `package.json` unchanged (dependency spec `^4.1.1` preserved).
+
+### Added
+- **Hermetic regression test** `tests/config/supply-chain.test.js` (5 tests):
+  asserts (1) `package.json` declares js-yaml under `dependencies` (committed,
+  always-runs), and — lockfile-shape checks — (2) the lockfile parses, (3) root
+  `packages[""].dependencies` lists js-yaml, (4) `node_modules/js-yaml` is not
+  `dev: true`, (5) the installed version is `>= 4.2.0` (excludes the vulnerable
+  `4.0.0`–`4.1.1` range). Because `package-lock.json` is git-ignored
+  (`.gitignore:2`, never committed), the 4 lockfile-dependent cases use
+  `it.skipIf(!existsSync(LOCKFILE_PATH))` — matching the v12.59.2 (P2)
+  scratch-artifact precedent — so on a clean checkout with no lockfile they
+  skip-with-reason (1 pass / 4 skip) rather than false-fail, while the
+  committed `package.json` check always runs. Regression value is genuine:
+  present-but-old-shaped lockfile (`dev:true` / `4.1.1`) → 3 lockfile tests FAIL
+  (red), fixed → 5 pass (green), absent → skip. `npm test` exit 0 (1993 passed).
+
 ## [12.59.3] - 2026-07-17
 
 **Audit P3 (HIGH-by-code, safety) — delegation-validator over-block + stale
