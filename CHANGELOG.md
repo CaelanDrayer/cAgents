@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.60.1] - 2026-07-17
+
+**Audit residuals R1 (test hygiene) — de-flake `verify-completion-stale-child.test.js > Test 2`.**
+Session `run_audit-residuals_260718_001`, R1 of the 3-item residuals plan
+(`.claude/plans/audit-residuals.md`). PATCH bump (one coherent change; non-sync
+diff = 1 file, well within the ≤5-file tiny-bump cap). Test-harness-only fix —
+the product hook `.claude/hooks/verify-completion.cjs` is untouched. Standalone
+Contract intact (no `mcpServers`, no `mcp__*`). Feedback-loop-first diagnosis
+reproduced the flake RED before the fix; proven 30/30 green under full-core CPU
+saturation; two-stage reviewer PASS with independent 5/5 green.
+
+### Fixed
+- **R1 — Test 2 flake de-flaked under load**
+  (`tests/hooks/verify-completion-stale-child.test.js`, `runStopHook` helper).
+  Confirmed root cause (candidate 1): the helper's `spawnSync('node', …)` had
+  `timeout: 10000`. Under a saturated CI box the node spawn + hook exceeded 10s →
+  `spawnSync` returned `status: null, signal: SIGTERM` with empty stdout →
+  `JSON.parse('')` threw → the old `catch { return {} }` silently yielded `{}`,
+  so Test 2's `expect(result.decision).not.toBe('block')` misleadingly PASSED
+  (`undefined !== 'block'`) while `expect(result.continue).toBe(true)` FAILED
+  (`undefined !== true`) — the exact "only Test 2 fails, only under load"
+  symptom. Fix: (a) raise the spawn timeout to 60000ms (6× headroom for a slow
+  cold-start under load; still bounds a genuine deadlock); (b) make `runStopHook`
+  FAIL LOUDLY — throw with captured `status`/`signal`/`error`/`stderr` on a spawn
+  error, `status === null` (timeout/kill), non-zero exit, or empty/unparseable
+  stdout — instead of swallowing it into `{}`, so a future slow spawn surfaces as
+  a diagnosable error rather than a misleading assertion mismatch. Candidate 2
+  (wall-clock coupling) ruled out — the 60s liveness window vs a 10s-old child is
+  a 50s margin; no injected clock added (YAGNI). Assertions unchanged: Test 1
+  still BLOCKs (2h-old null-stop child + missing coordination_log), Test 2 still
+  does NOT block (fresh 10s child); neither test skipped or weakened. Ships as
+  the now-deterministic behavior of the existing test (bug-driven-testing mandate
+  satisfied by the reproduce-RED-then-green loop).
+
 ## [12.60.0] - 2026-07-17
 
 **Audit P5 (MEDIUM hardening bundle, security) — 5 sub-items.** Session
