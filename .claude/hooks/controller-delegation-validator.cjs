@@ -202,8 +202,15 @@ function resolveAgentTier(bareNameRaw) {
  * fixtures) — per the hooks self-contained rule, js-yaml is required()'d
  * inside a try/catch so a missing node_modules never crashes the hook.
  *
+ * WI-R2: each entry ALSO captures `id` (from `id` or the legacy `agent_id`
+ * fixture spelling) and `parent` (a sentinel string like `pipeline`/`controller`/
+ * `root`, or another entry's `id`). Both are tolerant — an entry lacking them
+ * parses with those fields null. They feed the lineage-scoped ancestor walk in
+ * the handler (see _classifyExecutionWriter); every previously-captured field is
+ * preserved.
+ *
  * @param {string} treeContent
- * @returns {Array<{bare:string, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>|null}
+ * @returns {Array<{bare:string, id:string|null, parent:string|null, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>|null}
  */
 function _parseEntriesViaYaml(treeContent) {
   let yamlLib;
@@ -219,8 +226,11 @@ function _parseEntriesViaYaml(treeContent) {
         if (!bare) return null;
         const rawStopped = a.stopped_at;
         const stopped = !(rawStopped === null || rawStopped === undefined || rawStopped === '' || rawStopped === '~');
+        const rawId = (a.id != null) ? a.id : a.agent_id;
         return {
           bare,
+          id: (rawId != null && rawId !== '') ? String(rawId) : null,
+          parent: (a.parent != null && a.parent !== '') ? String(a.parent) : null,
           stopped,
           depth: typeof a.depth === 'number' ? a.depth : null,
           spawnedAt: a.spawned_at ? String(a.spawned_at) : null,
@@ -242,13 +252,25 @@ function _parseEntriesViaYaml(treeContent) {
  * unavailable) — e.g. the nested `root: {children: [...]}` shape some test
  * fixtures use, which still parses fine as plain text via this scan.
  *
+ * WI-R2: this fallback ALSO captures `id`/`agent_id` and `parent`. Real trees
+ * emit `id:`/`parent:` on lines that can PRECEDE the `cagents_type:` line that
+ * opens a logical entry, so field order is handled via the leading `-`
+ * list-item marker: a `- id:`/`- parent:` line starts a NEW list item and is
+ * buffered for the entry that the next `cagents_type:` opens; a non-dash
+ * continuation `id:`/`parent:` line belongs to the current (already-open)
+ * entry. Tolerant: entries with no id/parent keep those fields null.
+ *
  * @param {string} treeContent
- * @returns {Array<{bare:string, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>}
+ * @returns {Array<{bare:string, id:string|null, parent:string|null, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>}
  */
 function _parseEntriesViaLines(treeContent) {
   const entries = [];
   let current = null;
   let order = 0;
+  // Buffers for id/parent seen on a list-item-opening (`- …`) line BEFORE the
+  // entry's cagents_type line appears; consumed when that entry opens.
+  let pendingId = null;
+  let pendingParent = null;
   const flush = () => {
     if (current && current.bare) entries.push(current);
   };
@@ -256,7 +278,35 @@ function _parseEntriesViaLines(treeContent) {
     const tMatch = line.match(/^\s*-?\s*(?:cagents_type|agent_type)\s*:\s*["']?cagents:([a-zA-Z0-9_\-]+)["']?\s*$/);
     if (tMatch) {
       flush();
-      current = { bare: tMatch[1], stopped: false, depth: null, spawnedAt: null, order: order++ };
+      current = {
+        bare: tMatch[1],
+        id: pendingId,
+        parent: pendingParent,
+        stopped: false,
+        depth: null,
+        spawnedAt: null,
+        order: order++
+      };
+      pendingId = null;
+      pendingParent = null;
+      continue;
+    }
+    // id / agent_id — capture whether it precedes or follows the type line.
+    const idMatch = line.match(/^(\s*)(-?)\s*(?:id|agent_id)\s*:\s*["']?([^"'\n]+?)["']?\s*$/);
+    if (idMatch) {
+      const hasDash = idMatch[2] === '-';
+      const val = idMatch[3].trim();
+      if (!hasDash && current && current.id == null) current.id = val;
+      else pendingId = val; // dash => opens a new item => belongs to the next entry
+      continue;
+    }
+    // parent — same field-order handling.
+    const pMatch = line.match(/^(\s*)(-?)\s*parent\s*:\s*["']?([^"'\n]+?)["']?\s*$/);
+    if (pMatch) {
+      const hasDash = pMatch[2] === '-';
+      const val = pMatch[3].trim();
+      if (!hasDash && current && current.parent == null) current.parent = val;
+      else pendingParent = val;
       continue;
     }
     if (!current) continue;
@@ -300,14 +350,13 @@ function _parseAgentTreeEntries(treeContent) {
  * degrades gracefully to the legacy "last active entry" behavior for older
  * agent_tree.yaml shapes that carry no depth/spawned_at.
  *
- * @param {string} treeContent
- * @returns {string|null} bare agent name of the active writer, or null when
- *   no agent is currently active (a fully-stopped tree, or an empty tree —
- *   both mean this write is either a direct user edit or came after every
- *   spawned agent already finished).
+ * @param {Array} entries parsed agent-tree entries.
+ * @returns {object|null} the winning active ENTRY, or null when no agent is
+ *   currently active (a fully-stopped tree, or an empty tree — both mean this
+ *   write is either a direct user edit or came after every spawned agent
+ *   already finished).
  */
-function findActiveWriter(treeContent) {
-  const entries = _parseAgentTreeEntries(treeContent);
+function _selectActiveWriterEntry(entries) {
   const activeEntries = entries.filter(e => !e.stopped);
   if (activeEntries.length === 0) return null;
 
@@ -329,7 +378,125 @@ function findActiveWriter(treeContent) {
     // Order tiebreak: a later document-order entry wins.
     if (cand.order > best.order) { best = cand; }
   }
-  return best.bare;
+  return best;
+}
+
+/**
+ * @param {string} treeContent
+ * @returns {string|null} bare agent name of the active writer, or null when no
+ *   agent is active. Signature preserved for the direct unit-test imports;
+ *   selection logic is byte-equivalent to the pre-WI-R2 implementation (now
+ *   factored into _selectActiveWriterEntry so the handler can also read the
+ *   winning entry's lineage fields).
+ */
+function findActiveWriter(treeContent) {
+  const best = _selectActiveWriterEntry(_parseAgentTreeEntries(treeContent));
+  return best ? best.bare : null;
+}
+
+/**
+ * Walk `parent` links UP from a writer entry looking for an ACTIVE
+ * controller-tier ancestor. Terminates when the parent is absent, a sentinel /
+ * unknown id (not in idMap — e.g. `pipeline`/`controller`/`root`), a cycle is
+ * detected, or a hop cap is hit.
+ *
+ * @param {object} writerEntry
+ * @param {Map<string,object>} idMap
+ * @returns {boolean} true iff an active controller is an ancestor of writerEntry.
+ */
+function _hasActiveControllerAncestor(writerEntry, idMap) {
+  const seen = new Set();
+  let cursor = writerEntry;
+  let hops = 0;
+  const MAX_HOPS = 100;
+  while (cursor && hops < MAX_HOPS) {
+    hops++;
+    const parentId = cursor.parent;
+    if (parentId == null) break;               // no parent -> lineage terminates
+    const key = String(parentId);
+    if (seen.has(key)) break;                  // cycle guard
+    seen.add(key);
+    const parentEntry = idMap.get(key);
+    if (!parentEntry) break;                    // sentinel/unknown -> terminates
+    if (!parentEntry.stopped && resolveAgentTier(parentEntry.bare) === 'controller') {
+      return true;
+    }
+    cursor = parentEntry;
+  }
+  return false;
+}
+
+/**
+ * Pick a deterministic "offending" controller to name in the deny message when
+ * an execution-tier writer has no active-controller ancestor but an active
+ * controller exists elsewhere: deepest active controller, tie-broken by
+ * document order (later wins), matching _selectActiveWriterEntry's convention.
+ *
+ * @param {Array<object>} activeControllers non-empty list of active controller entries.
+ * @returns {object}
+ */
+function _pickOffendingController(activeControllers) {
+  let best = activeControllers[0];
+  for (let i = 1; i < activeControllers.length; i++) {
+    const cand = activeControllers[i];
+    const bestDepth = best.depth == null ? -1 : best.depth;
+    const candDepth = cand.depth == null ? -1 : cand.depth;
+    if (candDepth > bestDepth) { best = cand; continue; }
+    if (candDepth < bestDepth) { continue; }
+    if (cand.order > best.order) { best = cand; }
+  }
+  return best;
+}
+
+/**
+ * Classify an execution-tier active writer as ALLOW or a fail-closed DENY.
+ * Principle: only DENY when misattribution is PROVABLE — never over-block on
+ * ambiguity. Cases:
+ *   - parent UNRESOLVABLE (absent, or a SENTINEL like pipeline/controller/root,
+ *     or an unknown id not present in the tree): lineage is AMBIGUOUS — we
+ *     cannot prove the executor sits under a different, non-masking controller
+ *     — so fall back to the legacy depth/order heuristic -> ALLOW. This is the
+ *     COMMON production shape (subagent-tracker.cjs::inferParentAgent emits
+ *     `parent: pipeline` for most execution agents), so treating a sentinel as
+ *     "lineage present" would reintroduce the exact P3 over-block (a legitimate
+ *     executor writing src/ while its controller synchronously awaits it).
+ *   - parent RESOLVES to a real entry whose chain reaches an ACTIVE controller:
+ *     legitimate delegated write -> ALLOW (T1/B).
+ *   - parent RESOLVES but its chain reaches NO active controller, and NO active
+ *     controller exists anywhere: B1 no-op -> ALLOW (never block a direct edit).
+ *   - parent RESOLVES to a real entry, its chain reaches NO active controller,
+ *     yet an active controller EXISTS elsewhere: the executor is provably under
+ *     a different (non-masking) lineage while a controller is active elsewhere
+ *     -> the real writer is that controller, misattributed to this executor ->
+ *     FAIL CLOSED (deny/warn), naming that controller.
+ *
+ * @param {object} writerEntry
+ * @param {Array<object>} entries
+ * @returns {{action:'allow'} | {action:'deny', controllerBare:string}}
+ */
+function _classifyExecutionWriter(writerEntry, entries) {
+  const idMap = new Map();
+  for (const e of entries) {
+    if (e.id != null) idMap.set(String(e.id), e);
+  }
+
+  // The fail-closed DENY is eligible ONLY when the writer's parent resolves to
+  // a REAL tree entry (so we can positively establish its lineage). A sentinel
+  // (pipeline/controller/root), an unknown/unresolvable id, or an absent parent
+  // means lineage is AMBIGUOUS — fall back to the legacy depth/order heuristic
+  // and ALLOW, exactly as the no-parent case does. This preserves the P3
+  // over-block fix for the common `parent: pipeline` execution-agent shape.
+  const parentKey = writerEntry.parent != null ? String(writerEntry.parent) : null;
+  if (parentKey == null || !idMap.has(parentKey)) return { action: 'allow' };
+
+  if (_hasActiveControllerAncestor(writerEntry, idMap)) return { action: 'allow' };
+
+  const activeControllers = entries.filter(
+    e => !e.stopped && resolveAgentTier(e.bare) === 'controller'
+  );
+  if (activeControllers.length === 0) return { action: 'allow' }; // B1 no-op
+
+  return { action: 'deny', controllerBare: _pickOffendingController(activeControllers).bare };
 }
 
 // H1 (v12.20.0): entry-scoped active-controller detection, RETAINED for
@@ -433,11 +600,17 @@ async function handler(input) {
   // src/ write. Resolving the actual writer and checking ITS tier fixes that
   // while preserving B1 (no active writer at all -> no-op, never blocks a
   // direct user edit).
-  const activeWriterBare = findActiveWriter(agentTreeContent);
+  // WI-R2: parse the tree ONCE so the handler can read the winning writer's
+  // lineage fields (parent/id), not just its bare name. _selectActiveWriterEntry
+  // selection is byte-equivalent to the pre-WI-R2 findActiveWriter.
+  const treeEntries = _parseAgentTreeEntries(agentTreeContent);
+  const writerEntry = _selectActiveWriterEntry(treeEntries);
 
   // No active writer -> not a delegation violation. The write is either a
   // direct user edit or happened after every spawned agent already finished.
-  if (!activeWriterBare) return null;
+  if (!writerEntry) return null;
+
+  const activeWriterBare = writerEntry.bare;
 
   // Resolve the writer's own tier at runtime (SKILL.md metadata.tier lookup,
   // replacing the stale hardcoded CONTROLLER_TYPES list). FAIL-SAFE: an
@@ -446,9 +619,20 @@ async function handler(input) {
   // NOT reintroduce the "any active controller anywhere -> deny" over-block.
   const writerTier = resolveAgentTier(activeWriterBare);
 
-  // Execution-tier writer: this is the legitimate implementation write the
-  // delegation contract exists to protect, even while an ancestor controller
-  // is still open waiting for it. Always allow.
+  // The name reported in a deny/warn message. Defaults to the resolved writer;
+  // the execution-tier fail-closed branch below can reassign it to an unrelated
+  // active controller when the real writer is ambiguous.
+  let offenderBare = activeWriterBare;
+
+  // Execution-tier writer: normally the legitimate implementation write the
+  // delegation contract exists to protect. WI-R2: but `findActiveWriter` is
+  // tree-GLOBAL, so under /team concurrent waves a CONTROLLER's own illegal
+  // src/ write can be MISATTRIBUTED to an UNRELATED deeper active executor. So
+  // an execution-tier writer is only auto-allowed when lineage confirms it (an
+  // active-controller ancestor, no active controller anywhere, or lineage data
+  // absent -> legacy depth/order heuristic). If no active controller is its
+  // ancestor yet one exists ELSEWHERE, fail closed and treat this as that
+  // controller's violation. See _classifyExecutionWriter.
   //
   // Dual-mode note: security-engineer and sales-strategist declare
   // `tier: controller` (they coordinate in their controller mode). When one of
@@ -458,10 +642,16 @@ async function handler(input) {
   // controller-tier agent should delegate implementation to a pure-execution
   // agent rather than writing src/ itself. This is an accepted, documented
   // residual of tier-based classification, not a bug.
-  if (writerTier === 'execution') return null;
+  if (writerTier === 'execution') {
+    const decision = _classifyExecutionWriter(writerEntry, treeEntries);
+    if (decision.action === 'allow') return null;
+    // Fail closed: reassign the offender to the unrelated active controller so
+    // the existing deny/warn path names it, preserving the message contract.
+    offenderBare = decision.controllerBare;
+  }
 
   const fileName = path.basename(filePath);
-  const activeControllerName = activeWriterBare;
+  const activeControllerName = offenderBare;
 
   // HARD-DENY paths (src/ lib/ components/ app/ services/ middleware/): deny in
   // block mode, warn in warn mode.

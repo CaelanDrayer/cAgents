@@ -531,6 +531,176 @@ describe('controller-delegation-validator.cjs', () => {
     });
   });
 
+  // WI-R2 (audit residuals, FAIL-CLOSED lineage-scoped active-writer):
+  // findActiveWriter resolves the "active writer" as the DEEPEST still-active
+  // agent_tree.yaml entry (tree-GLOBAL, not lineage-scoped). Under /team
+  // concurrent waves, a CONTROLLER writing to src/ directly can be
+  // MISATTRIBUTED to an UNRELATED deeper active executor elsewhere in the tree
+  // — that executor is deepest, resolves to execution-tier, so the pre-fix hook
+  // wrongly ALLOWS the controller's illegal write. The fix walks parent links
+  // UP from the deepest-active executor: it only ALLOWS when a genuinely-active
+  // controller is an ANCESTOR; if no active controller is an ancestor but an
+  // active controller exists ELSEWHERE, the write is fail-closed DENIED.
+  describe('WI-R2: lineage-scoped active-writer (misattribution fail-closed)', () => {
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    // Test A (headline regression, PROVABLE misattribution via REAL cross-lineage):
+    // controller-A (agent-A, tech-lead, ACTIVE, parent pipeline) is the real src/
+    // writer. controller-B (agent-B, tech-lead, STOPPED) is a finished wave's
+    // controller. The deeper active executor (agent-E, backend-developer, parent
+    // = agent-B) is PROVABLY under B, NOT under A — its parent resolves to a real
+    // entry whose chain reaches NO active controller. Tree-global writer
+    // resolution picks the deeper executor (execution-tier) and the pre-fix hook
+    // ALLOWS A's illegal write. Lineage-scoped resolution proves the executor is
+    // not under any active controller while an active controller (A) exists
+    // elsewhere -> FAIL CLOSED -> deny. MUST FAIL against the unmodified hook.
+    //
+    // NOTE (WI-R2 round 2): the executor's parent MUST resolve to a real entry
+    // (agent-B), not a sentinel. A `parent: pipeline` executor is the COMMON
+    // production shape and is deliberately ALLOWED (see the production-sentinel
+    // test below) — denying on a sentinel parent would reintroduce the P3
+    // over-block.
+    const MISATTRIBUTED_CONTROLLER_WRITE = `agents:
+  - id: "agent-A"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+    parent: "pipeline"
+  - id: "agent-B"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T09:00:00Z"
+    stopped_at: "2026-07-17T09:30:00Z"
+    depth: 1
+    parent: "pipeline"
+  - id: "agent-E"
+    cagents_type: "cagents:backend-developer"
+    spawned_at: "2026-07-17T10:05:00Z"
+    stopped_at: null
+    depth: 2
+    parent: "agent-B"
+`;
+
+    it('A: controller src/ write misattributed to a deeper executor of a DIFFERENT (resolvable) lineage is FAIL-CLOSED DENIED', () => {
+      setupTestSession(MISATTRIBUTED_CONTROLLER_WRITE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('CONTROLLER DELEGATION BLOCKED');
+    });
+
+    // Test A2 (P3 guarantee the reviewer caught being broken): the COMMON
+    // PRODUCTION shape. subagent-tracker.cjs::inferParentAgent emits
+    // `parent: pipeline` (a sentinel) for most execution agents. An active
+    // controller (tech-lead, parent pipeline) + a deeper active EXECUTION agent
+    // (backend-developer, parent pipeline — sentinel) is exactly a normal /run
+    // COORDINATED session where the controller is synchronously awaiting its
+    // executor. The executor's src/ write MUST be ALLOWED — a sentinel parent is
+    // AMBIGUOUS lineage, so we fall back to the legacy heuristic and never
+    // over-block. This FAILS on the round-1 hook (denied) and PASSES after the
+    // sentinel fix; HEAD also allows it (net-zero vs HEAD).
+    const PRODUCTION_SENTINEL_PARENT_SHAPE = `agents:
+  - id: "agent-A"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+    parent: "pipeline"
+  - id: "agent-E"
+    cagents_type: "cagents:backend-developer"
+    spawned_at: "2026-07-17T10:05:00Z"
+    stopped_at: null
+    depth: 2
+    parent: "pipeline"
+`;
+
+    it('production sentinel-parent shape: executor src/ write ALLOWED while controller active', () => {
+      setupTestSession(PRODUCTION_SENTINEL_PARENT_SHAPE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.systemMessage).toBeUndefined();
+    });
+
+    // Test B (lineage-present ALLOW): a genuinely delegated executor write —
+    // executor agent-101 has parent: agent-100, and agent-100 (tech-lead) is an
+    // ACTIVE controller ancestor. The ancestor walk finds the active controller
+    // -> ALLOW (continue true, no hookSpecificOutput).
+    const EXECUTOR_UNDER_ACTIVE_CONTROLLER_LINEAGE = `agents:
+  - id: "agent-100"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 2
+    parent: "controller"
+  - id: "agent-101"
+    cagents_type: "cagents:backend-developer"
+    spawned_at: "2026-07-17T10:05:00Z"
+    stopped_at: null
+    depth: 3
+    parent: "agent-100"
+`;
+
+    it('B: executor write is ALLOWED when its parent controller is an active ancestor', () => {
+      setupTestSession(EXECUTOR_UNDER_ACTIVE_CONTROLLER_LINEAGE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.systemMessage).toBeUndefined();
+    });
+
+    // Test C (no-parent fallback ALLOW, back-compat for legacy shapes): an active
+    // controller + a deeper active executor with `depth` but NO `parent` fields.
+    // With lineage data absent, the ancestor walk MUST NOT run — fall back to the
+    // legacy depth/order heuristic (execution-tier deepest writer -> ALLOW).
+    const NO_PARENT_LEGACY_SHAPE = `agents:
+  - agent_id: "agent-200"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+  - agent_id: "agent-201"
+    cagents_type: "cagents:backend-developer"
+    spawned_at: "2026-07-17T10:05:00Z"
+    stopped_at: null
+    depth: 2
+`;
+
+    it('C: no-parent legacy tree falls back to the depth/order heuristic and ALLOWS the executor write', () => {
+      setupTestSession(NO_PARENT_LEGACY_SHAPE);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.systemMessage).toBeUndefined();
+    });
+  });
+
   describe('non-Write/Edit tools — no enforcement', () => {
     it('no-ops for Read tool', () => {
       const result = runHook({
