@@ -372,6 +372,165 @@ describe('controller-delegation-validator.cjs', () => {
     });
   });
 
+  // WI-P3 (audit remediation, session run_audit-remediation_260717_001):
+  // writer-identity resolution + runtime-tier + anchored-allow-list regression
+  // tests. These pin the three bugs fixed alongside this change:
+  //   (a) OVER-BLOCK: enforcement previously fired whenever ANY controller-tier
+  //       agent was still active ANYWHERE in agent_tree.yaml — which is exactly
+  //       the state a controller is in while it is synchronously awaiting its
+  //       own spawned executor (Synchronous Spawning contract, controllers.md).
+  //       The fix resolves the ACTUAL WRITER (the deepest / most-recently
+  //       spawned still-active agent_tree.yaml entry) and only treats the
+  //       write as a controller violation when the WRITER ITSELF resolves to
+  //       controller/infrastructure/support/unresolvable.
+  //   (b) STALE LIST: the previous hardcoded CONTROLLER_TYPES array missed 12
+  //       of 26 controllers (all 9 leadership agents, coordinator, dual-mode
+  //       security-engineer/sales-strategist) and still listed 15 pre-
+  //       consolidation agent names that no longer exist on disk. The fix
+  //       resolves tier at runtime via each agent's own SKILL.md metadata.tier.
+  //   (c) UNANCHORED ALLOW: ALLOWED_PATTERNS previously matched bare
+  //       substrings (`workflow/`, `coordination_log`, `agent_tree`), so an
+  //       implementation file whose PATH merely contained one of those
+  //       substrings bypassed enforcement entirely (e.g. src/workflow/engine.ts,
+  //       lib/coordination_log_writer.ts, src/auth/agent_tree_builder.ts). The
+  //       fix drops those three unanchored patterns in favor of the already-
+  //       sufficient cagents-memory/ + .md$ + .ya?ml$ allow set.
+  describe('WI-P3: writer-identity resolution + runtime tier + anchored allow-list', () => {
+    afterEach(() => {
+      cleanupTestSession();
+    });
+
+    // (a) over-block fix fixture: tech-lead (controller) is still active
+    // (stopped_at: null, depth 2) because it is synchronously awaiting its own
+    // spawned backend-developer executor (also active, stopped_at: null,
+    // depth 3 — deeper, spawned later).
+    const EXECUTOR_ACTIVE_UNDER_ACTIVE_CONTROLLER = `agents:
+  - agent_id: "agent-100"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 2
+    description: "Coordinating auth fix"
+  - agent_id: "agent-101"
+    cagents_type: "cagents:backend-developer"
+    spawned_at: "2026-07-17T10:05:00Z"
+    stopped_at: null
+    depth: 3
+    description: "Implementing auth middleware"
+`;
+
+    it('T1: executor write to src/foo.ts is ALLOWED while its parent controller is active', () => {
+      setupTestSession(EXECUTOR_ACTIVE_UNDER_ACTIVE_CONTROLLER);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.systemMessage).toBeUndefined();
+    });
+
+    // (b) stale-list fix fixtures: `coordinator` (core/) and `cto` (leadership/)
+    // were never in the old hardcoded CONTROLLER_TYPES array, so the pre-fix
+    // hook silently ALLOWED their direct src/ writes. Runtime tier resolution
+    // recognizes both as tier: controller via their own SKILL.md.
+    const ACTIVE_COORDINATOR_ONLY = `agents:
+  - agent_id: "agent-200"
+    cagents_type: "cagents:coordinator"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+    description: "Coordinating personal-domain work"
+`;
+
+    const ACTIVE_CTO_ONLY = `agents:
+  - agent_id: "agent-201"
+    cagents_type: "cagents:cto"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+    description: "Technology strategy oversight"
+`;
+
+    it('T2: a coordinator controller (not in the old hardcoded list) writing to src/foo.ts is DENIED', () => {
+      setupTestSession(ACTIVE_COORDINATOR_ONLY);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    it('T2b: a leadership controller (cto, not in the old hardcoded list) writing to src/foo.ts is DENIED', () => {
+      setupTestSession(ACTIVE_CTO_ONLY);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    // (c) unanchored-allow fix fixture: a single active controller (tech-lead)
+    // writing to paths that merely CONTAIN "workflow/", "coordination_log", or
+    // "agent_tree" as a path substring — none of these are legitimate
+    // workflow-file writes (they are .ts implementation files) and must stay
+    // HARD-DENIED.
+    const ACTIVE_TECH_LEAD_ONLY = `agents:
+  - agent_id: "agent-300"
+    cagents_type: "cagents:tech-lead"
+    spawned_at: "2026-07-17T10:00:00Z"
+    stopped_at: null
+    depth: 1
+    description: "Coordinating auth fix"
+`;
+
+    it.each([
+      ['src/workflow/engine.ts'],
+      ['lib/coordination_log_writer.ts'],
+      ['src/auth/agent_tree_builder.ts'],
+    ])('T3: %s written by an active controller is still DENIED', (relPath) => {
+      setupTestSession(ACTIVE_TECH_LEAD_ONLY);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: `/project/${relPath}`, content: 'export function x() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.hookSpecificOutput).toBeDefined();
+      expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
+    });
+
+    // B1 regression (MUST stay green before AND after this fix): no active
+    // agents at all -> a direct user edit to src/foo.ts is a no-op/allow.
+    const NO_ACTIVE_AGENTS = `agents: []
+`;
+
+    it('T4: no active controller -> direct user edit to src/foo.ts is a no-op/allow', () => {
+      setupTestSession(NO_ACTIVE_AGENTS);
+      const result = runHook({
+        tool_name: 'Write',
+        tool_input: { file_path: '/project/src/foo.ts', content: 'export function foo() {}' }
+      }, {
+        CAGENTS_ACTIVE_SESSION: TEST_SESSION,
+        CAGENTS_DELEGATION_ENFORCEMENT: 'block'
+      });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+  });
+
   describe('non-Write/Edit tools — no enforcement', () => {
     it('no-ops for Read tool', () => {
       const result = runHook({

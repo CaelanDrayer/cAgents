@@ -11,6 +11,21 @@
  * active cAgents session/controller, this hook is a no-op — it NEVER blocks an
  * ordinary direct user edit to src/, services/, etc. outside a cAgents workflow.
  *
+ * WI-P3 (audit remediation, this file): the CONTROLLER-SCOPED gate previously keyed
+ * off "is ANY controller-tier agent still active anywhere in the tree" — which is
+ * exactly the state a controller is in while it is SYNCHRONOUSLY awaiting its own
+ * spawned executor (per the Synchronous Spawning contract in controllers.md, a
+ * controller's `stopped_at` stays null for the whole time its executor is running).
+ * That wrongly HARD-DENIED the executor's own legitimate src/ write. The fix
+ * resolves the ACTIVE WRITER — the deepest (or most-recently-spawned) still-active
+ * agent_tree.yaml entry — and only treats the write as a controller-violation when
+ * the WRITER ITSELF resolves (at runtime, via its SKILL.md `metadata.tier`) to
+ * controller/infrastructure/support/unresolvable. An execution-tier writer is
+ * always allowed, even while an ancestor controller is still active. This also
+ * replaces the previous hardcoded (and stale) CONTROLLER_TYPES allow/deny list with
+ * a runtime SKILL.md lookup, so newly-added or renamed controllers (leadership,
+ * coordinator, dual-mode agents) are recognized without a hook edit.
+ *
  * Modes (CAGENTS_DELEGATION_ENFORCEMENT env var > settings.json > default 'block'):
  *   - block (default): deny controller writes to HARD-DENY paths
  *     (src/ lib/ components/ app/ services/ middleware/); warn on softer paths.
@@ -24,7 +39,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createHook, findActiveSession, safeRead } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, PLUGIN_ROOT } = require('./hook-utils.cjs');
 
 // Resolve enforcement mode: env var > settings.json > default 'block'.
 // B1 (v12.18.0): default is now 'block' (was 'warn'). Because enforcement is
@@ -47,18 +62,6 @@ function getEnforcementMode() {
 
   return 'block';
 }
-
-// Known controller agent types (tier: controller in their SKILL.md)
-const CONTROLLER_TYPES = [
-  'tech-lead', 'architect', 'vp-engineering',  // M-7 (v12.12.2): removed duplicate 'tech-lead' entry
-  'backend-lead', 'frontend-lead', 'infrastructure-lead', 'security-lead', 'qa-lead', 'data-lead',
-  'narrative-director', 'story-architect', 'editor',
-  'operations-manager', 'product-owner', 'strategic-planner', 'marketing-strategist',
-  'hr-manager', 'talent-acquisition-manager',
-  'customer-success-manager', 'general-counsel', 'support-director', 'compliance-officer',
-  'arts-director', 'education-coordinator', 'health-coordinator', 'science-coordinator',
-  'personal-coach-lead', 'trades-coordinator', 'game-producer'
-];
 
 // HARD-DENY implementation paths: the canonical "a controller MUST NOT write
 // here directly" prefixes from CLAUDE.md / delegation.md. B1 (v12.18.0) adds
@@ -91,28 +94,261 @@ const IMPLEMENTATION_PATTERNS = [
   /\.(js|ts|tsx|jsx|py|rs|go|java|rb|php|cs|cpp|c|h)$/
 ];
 
-// Workflow/session files controllers ARE allowed to write
+// Workflow/session files controllers ARE allowed to write.
+// WI-P3 (bug c fix): the previous patterns (/workflow\//, /coordination_log/,
+// /agent_tree/) were UNANCHORED bare substrings, so an implementation file that
+// merely CONTAINED one of those substrings in its path bypassed enforcement
+// entirely — e.g. `src/workflow/engine.ts`, `lib/coordination_log_writer.ts`,
+// `src/auth/agent_tree_builder.ts` all matched `workflow\/`/`coordination_log`/
+// `agent_tree` and slipped past HARD-DENY. Those three bare patterns are
+// dropped. The remaining `cagents-memory/`, `.md`, and `.ya?ml` patterns
+// already cover every LEGITIMATE controller write (plan.yaml, status.yaml,
+// coordination_log.yaml, agent_tree.yaml, and any file under
+// cagents-memory/) because every one of those legitimate paths ends in
+// `.yaml`/`.yml`/`.md` or lives under `cagents-memory/`. `.ya?ml$` also
+// collapses the previous separate `\.yaml$` / `\.yml$` entries into one.
 const ALLOWED_PATTERNS = [
-  /workflow\//, /cagents-memory\//, /coordination_log/, /plan\.yaml/,
-  /status\.yaml/, /agent_tree/, /\.md$/, /\.yaml$/, /\.yml$/
+  /(?:^|\/)cagents-memory\//,
+  /\.md$/,
+  /\.ya?ml$/,
 ];
 
-// H1 (v12.20.0): entry-scoped active-controller detection. Parses agent_tree.yaml
-// line-by-line so the stopped-status determination NEVER crosses an agent entry
-// boundary (the previous `cagents_type:...[\s\S]*?stopped_at:\s*null` regex did,
-// causing false-pos/false-neg HARD-DENYs). An entry's `cagents_type:` line opens a
-// new logical entry; a `stopped_at:` line with a real (non-null, non-empty) value
-// marks THAT entry stopped. An entry is an ACTIVE controller when its own
-// cagents_type is a controller AND its own stopped_at is absent or null. Returns the
-// bare controller name (last active one in document order) or null. Also matches the
-// legacy `agent_type:` field as a fallback for old sessions.
+// ============================================================
+// Runtime tier resolution (WI-P3, bug b fix)
+// ============================================================
+// Replaces the previous hardcoded CONTROLLER_TYPES list (which missed 12 of 26
+// controllers — all 9 leadership agents, `coordinator`, and dual-mode
+// `security-engineer`/`sales-strategist` — and still listed 15 pre-consolidation
+// agent names that no longer exist on disk) with a runtime lookup of each
+// agent's own SKILL.md `metadata.tier` field. This tracks the live catalog
+// automatically: a renamed, added, or consolidated agent is picked up on the
+// next lookup with no hook edit required.
+//
+// Candidate paths are built from the fixed v11.1.0 archetype/branch grid
+// (skill-format.md) rather than a recursive directory walk — the grid is
+// small (~20 combinations) and static, so this is the minimal-solution-ladder
+// rung (cheap fixed lookup beats a repo-wide recursive scan on every write).
+const ARCHETYPES_3LEVEL = {
+  developer: ['backend', 'frontend', 'fullstack', 'infrastructure', 'quality'],
+  operator: ['support', 'business-ops', 'people-ops', 'marketing-sales', 'content'],
+  advisor: ['legal', 'health', 'education', 'personal'],
+};
+const ARCHETYPES_FLAT = ['analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
+
+function _candidateSkillPaths(bareName) {
+  const candidates = [];
+  for (const archetype of Object.keys(ARCHETYPES_3LEVEL)) {
+    for (const branch of ARCHETYPES_3LEVEL[archetype]) {
+      candidates.push(path.join(PLUGIN_ROOT, 'agents', archetype, branch, bareName, 'SKILL.md'));
+    }
+  }
+  for (const archetype of ARCHETYPES_FLAT) {
+    candidates.push(path.join(PLUGIN_ROOT, 'agents', archetype, bareName, 'SKILL.md'));
+  }
+  return candidates;
+}
+
+// Module-level cache: name -> tier ('controller'|'execution'|'infrastructure'|
+// 'support'|null). Avoids re-walking the candidate grid for repeated writes by
+// the same agent within one hook process lifetime.
+const _tierCache = new Map();
+
+/**
+ * Resolve a bare agent name (e.g. "tech-lead", "cagents:backend-developer") to
+ * its declared `metadata.tier` by reading its SKILL.md frontmatter. Returns
+ * null when the agent cannot be found or its frontmatter has no `tier:` field
+ * — callers MUST treat a null result as "unresolved" and apply their own
+ * fail-safe (see handler() below: unresolved is treated as controller-tier for
+ * the deny decision, never silently allowed).
+ *
+ * @param {string} bareNameRaw
+ * @returns {string|null}
+ */
+function resolveAgentTier(bareNameRaw) {
+  if (!bareNameRaw) return null;
+  const bareName = bareNameRaw.replace(/^cagents:/, '');
+  if (_tierCache.has(bareName)) return _tierCache.get(bareName);
+
+  let tier = null;
+  for (const candidate of _candidateSkillPaths(bareName)) {
+    const content = safeRead(candidate);
+    if (!content) continue;
+    // Scope the tier lookup to the frontmatter block (between the first two
+    // `---` lines) so a stray "tier:"-looking word in the SKILL.md body prose
+    // can never be picked up.
+    const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    const frontmatter = fmMatch ? fmMatch[1] : content;
+    const tierMatch = frontmatter.match(/^\s*tier:\s*["']?([a-z]+)["']?/mi);
+    if (tierMatch) {
+      tier = tierMatch[1].toLowerCase();
+      break;
+    }
+  }
+  _tierCache.set(bareName, tier);
+  return tier;
+}
+
+// ============================================================
+// Agent-tree entry parsing + active-writer resolution (WI-P3, bug a fix)
+// ============================================================
+
+/**
+ * Parse agent_tree.yaml via js-yaml when it holds the production flat shape
+ * (`agents: [...]`, as written by subagent-tracker.cjs — each entry carries
+ * `cagents_type`/`agent_type`, `stopped_at`, `depth`, `spawned_at`). Returns
+ * null (triggering the line-based fallback) when js-yaml is unavailable, the
+ * content fails to parse, or the parsed object has no usable `agents` array
+ * (e.g. the nested `root: {children: [...]}` shape used by some test
+ * fixtures) — per the hooks self-contained rule, js-yaml is required()'d
+ * inside a try/catch so a missing node_modules never crashes the hook.
+ *
+ * @param {string} treeContent
+ * @returns {Array<{bare:string, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>|null}
+ */
+function _parseEntriesViaYaml(treeContent) {
+  let yamlLib;
+  try { yamlLib = require('js-yaml'); } catch { return null; }
+  try {
+    const parsed = yamlLib.load(treeContent);
+    if (!parsed || !Array.isArray(parsed.agents)) return null;
+    return parsed.agents
+      .map((a, idx) => {
+        const rawBare = a && (a.cagents_type || a.agent_type);
+        if (!rawBare) return null;
+        const bare = String(rawBare).replace(/^cagents:/, '');
+        if (!bare) return null;
+        const rawStopped = a.stopped_at;
+        const stopped = !(rawStopped === null || rawStopped === undefined || rawStopped === '' || rawStopped === '~');
+        return {
+          bare,
+          stopped,
+          depth: typeof a.depth === 'number' ? a.depth : null,
+          spawnedAt: a.spawned_at ? String(a.spawned_at) : null,
+          order: idx
+        };
+      })
+      .filter(Boolean);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Entry-boundary-safe line-based fallback (mirrors the pre-existing H1 fix in
+ * the former findActiveController): a new logical entry opens on each
+ * `cagents_type:`/`agent_type:` line; `stopped_at:`/`depth:`/`spawned_at:`
+ * lines seen before the NEXT entry opens belong to the entry currently being
+ * parsed. Used when the tree is not the flat `agents:` shape (or js-yaml is
+ * unavailable) — e.g. the nested `root: {children: [...]}` shape some test
+ * fixtures use, which still parses fine as plain text via this scan.
+ *
+ * @param {string} treeContent
+ * @returns {Array<{bare:string, stopped:boolean, depth:number|null, spawnedAt:string|null, order:number}>}
+ */
+function _parseEntriesViaLines(treeContent) {
+  const entries = [];
+  let current = null;
+  let order = 0;
+  const flush = () => {
+    if (current && current.bare) entries.push(current);
+  };
+  for (const line of treeContent.split('\n')) {
+    const tMatch = line.match(/^\s*-?\s*(?:cagents_type|agent_type)\s*:\s*["']?cagents:([a-zA-Z0-9_\-]+)["']?\s*$/);
+    if (tMatch) {
+      flush();
+      current = { bare: tMatch[1], stopped: false, depth: null, spawnedAt: null, order: order++ };
+      continue;
+    }
+    if (!current) continue;
+    const sMatch = line.match(/^\s*stopped_at\s*:\s*(.*)$/);
+    if (sMatch) {
+      const val = sMatch[1].trim().replace(/^["']|["']$/g, '');
+      if (val && val !== 'null' && val !== '~') current.stopped = true;
+      continue;
+    }
+    const dMatch = line.match(/^\s*depth\s*:\s*(\d+)\s*$/);
+    if (dMatch) {
+      current.depth = parseInt(dMatch[1], 10);
+      continue;
+    }
+    const spMatch = line.match(/^\s*spawned_at\s*:\s*["']?([^"'\n]+)["']?\s*$/);
+    if (spMatch) {
+      current.spawnedAt = spMatch[1].trim();
+      continue;
+    }
+  }
+  flush();
+  return entries;
+}
+
+function _parseAgentTreeEntries(treeContent) {
+  if (!treeContent) return [];
+  const viaYaml = _parseEntriesViaYaml(treeContent);
+  if (viaYaml && viaYaml.length) return viaYaml;
+  return _parseEntriesViaLines(treeContent);
+}
+
+/**
+ * Resolve the ACTIVE WRITER: the still-active (stopped_at absent/null) agent
+ * best positioned to be the one actually performing the current write. This
+ * is the deepest active entry (a controller synchronously awaiting its own
+ * spawned executor stays active the whole time — see the Synchronous
+ * Spawning contract in controllers.md — so depth is what distinguishes "the
+ * controller that is merely still open" from "the executor that is actually
+ * writing"), tie-broken by the most recent spawned_at, tie-broken by document
+ * order (later entry wins) when depth/timestamps are absent or tied — this
+ * degrades gracefully to the legacy "last active entry" behavior for older
+ * agent_tree.yaml shapes that carry no depth/spawned_at.
+ *
+ * @param {string} treeContent
+ * @returns {string|null} bare agent name of the active writer, or null when
+ *   no agent is currently active (a fully-stopped tree, or an empty tree —
+ *   both mean this write is either a direct user edit or came after every
+ *   spawned agent already finished).
+ */
+function findActiveWriter(treeContent) {
+  const entries = _parseAgentTreeEntries(treeContent);
+  const activeEntries = entries.filter(e => !e.stopped);
+  if (activeEntries.length === 0) return null;
+
+  let best = activeEntries[0];
+  for (let i = 1; i < activeEntries.length; i++) {
+    const cand = activeEntries[i];
+    const bestDepth = best.depth == null ? -1 : best.depth;
+    const candDepth = cand.depth == null ? -1 : cand.depth;
+    if (candDepth > bestDepth) { best = cand; continue; }
+    if (candDepth < bestDepth) { continue; }
+    // Depth tie (including both-null) -> compare spawned_at.
+    const bestTime = best.spawnedAt ? Date.parse(best.spawnedAt) : NaN;
+    const candTime = cand.spawnedAt ? Date.parse(cand.spawnedAt) : NaN;
+    if (!isNaN(candTime) && !isNaN(bestTime)) {
+      if (candTime > bestTime) { best = cand; continue; }
+      if (candTime < bestTime) { continue; }
+      // Exact timestamp tie -> fall through to document-order tiebreak below.
+    }
+    // Order tiebreak: a later document-order entry wins.
+    if (cand.order > best.order) { best = cand; }
+  }
+  return best.bare;
+}
+
+// H1 (v12.20.0): entry-scoped active-controller detection, RETAINED for
+// back-compat (tests/hooks/controller-delegation-entry-boundary.test.js
+// imports this function directly). WI-P3 changed the type check from the
+// static (and stale) CONTROLLER_TYPES list to a runtime tier resolution via
+// resolveAgentTier(), but the entry-boundary parsing semantics (a new logical
+// entry opens on each `cagents_type:` line; the LAST entry in document order
+// that is both active AND controller-tier wins) are unchanged. The handler()
+// below no longer calls this function — it uses findActiveWriter() + tier
+// resolution instead (see the bug-a fix in the module docblock) — but the
+// function is preserved and exported because it is unit-tested directly.
 function findActiveController(treeContent) {
   if (!treeContent) return null;
   let active = null;
   let currentBare = null;
   let currentStopped = false;
   const flush = () => {
-    if (currentBare && !currentStopped && CONTROLLER_TYPES.includes(currentBare)) {
+    if (currentBare && !currentStopped && resolveAgentTier(currentBare) === 'controller') {
       active = currentBare;
     }
   };
@@ -172,11 +408,11 @@ async function handler(input) {
     // CAGENTS_ACTIVE_SESSION may not propagate to this hook subprocess, so the
     // deterministic chain returns null. Without a fallback the GOVERNANCE gate
     // would SILENTLY FAIL-OPEN: a controller's illegal write to src/ (etc.) would
-    // slip through unchecked because the agent_tree active-controller probe below
+    // slip through unchecked because the agent_tree active-writer probe below
     // never runs. Fall back to the documented opt-in legacy heuristic, which
     // resolves the most-recent session with a non-terminal status.yaml, so the
-    // active-controller check can still fire. If no active session exists (or the
-    // resolved session has no active controller), this remains a no-op — correct
+    // active-writer check can still fire. If no active session exists (or the
+    // resolved session has no active agent), this remains a no-op — correct
     // for an ordinary direct user edit outside any cAgents workflow.
     sessionDir = findActiveSession({ sessionHint: input.session_id, fallbackHeuristic: true });
     if (!sessionDir) return null;
@@ -187,25 +423,45 @@ async function handler(input) {
   const agentTreeContent = safeRead(agentTreePath);
   if (!agentTreeContent) return null;
 
-  // Detect an active controller-type agent (spawned but not stopped).
-  // H1 (v12.20.0): the previous `cagents_type:...[\s\S]*?stopped_at:\s*null`
-  // regex crossed YAML entry boundaries — its non-greedy `[\s\S]*?` would scan
-  // PAST a controller's own entry into LATER entries to find a `stopped_at: null`,
-  // producing both false-positives (a STOPPED controller wrongly flagged active
-  // because a later agent is unstopped) and false-negatives (an active controller
-  // whose entry simply OMITS stopped_at never matches `stopped_at: null`). Both
-  // can wrongly HARD-DENY a legitimate execution-agent src/ write. Fix: scope the
-  // determination to a SINGLE agent_tree entry via a line-based parse (mirrors the
-  // entry-boundary approach in subagent-tracker.cjs). An entry is an ACTIVE
-  // controller when its OWN cagents_type is a controller AND its OWN stopped_at is
-  // absent or null.
-  const activeControllerName = findActiveController(agentTreeContent);
+  // WI-P3 (bug a + b fix): resolve the ACTIVE WRITER (the deepest/most-recent
+  // still-active agent_tree.yaml entry, regardless of type — see
+  // findActiveWriter() docblock) rather than "is any controller-tier agent
+  // active anywhere in the tree". A controller stays `stopped_at: null` for
+  // the entire time it is synchronously awaiting its own spawned executor
+  // (Synchronous Spawning contract, controllers.md), so scanning for "any
+  // active controller" wrongly hard-denied the EXECUTOR's own legitimate
+  // src/ write. Resolving the actual writer and checking ITS tier fixes that
+  // while preserving B1 (no active writer at all -> no-op, never blocks a
+  // direct user edit).
+  const activeWriterBare = findActiveWriter(agentTreeContent);
 
-  // No active controller → not a delegation violation. The write is either a
-  // direct user edit or an execution-agent write, both of which are allowed.
-  if (!activeControllerName) return null;
+  // No active writer -> not a delegation violation. The write is either a
+  // direct user edit or happened after every spawned agent already finished.
+  if (!activeWriterBare) return null;
+
+  // Resolve the writer's own tier at runtime (SKILL.md metadata.tier lookup,
+  // replacing the stale hardcoded CONTROLLER_TYPES list). FAIL-SAFE: an
+  // unresolvable name is treated as controller-tier below (never silently
+  // allowed) — this scope is limited to the resolved writer only, so it does
+  // NOT reintroduce the "any active controller anywhere -> deny" over-block.
+  const writerTier = resolveAgentTier(activeWriterBare);
+
+  // Execution-tier writer: this is the legitimate implementation write the
+  // delegation contract exists to protect, even while an ancestor controller
+  // is still open waiting for it. Always allow.
+  //
+  // Dual-mode note: security-engineer and sales-strategist declare
+  // `tier: controller` (they coordinate in their controller mode). When one of
+  // them is itself the active writer performing a direct src/ write (e.g. in
+  // harden/rep execution mode), writerTier resolves to 'controller' here, so
+  // the write is DENIED — which is correct delegation behavior: a
+  // controller-tier agent should delegate implementation to a pure-execution
+  // agent rather than writing src/ itself. This is an accepted, documented
+  // residual of tier-based classification, not a bug.
+  if (writerTier === 'execution') return null;
 
   const fileName = path.basename(filePath);
+  const activeControllerName = activeWriterBare;
 
   // HARD-DENY paths (src/ lib/ components/ app/ services/ middleware/): deny in
   // block mode, warn in warn mode.
@@ -249,4 +505,11 @@ if (!process.env.CAGENTS_DISPATCH_IMPORT) {
   createHook('ControllerDelegationValidator', handler);
 }
 
-module.exports = { handler, getEnforcementMode, findActiveController, CONTROLLER_TYPES, HARD_DENY_PATTERNS };
+module.exports = {
+  handler,
+  getEnforcementMode,
+  findActiveController,
+  findActiveWriter,
+  resolveAgentTier,
+  HARD_DENY_PATTERNS
+};
