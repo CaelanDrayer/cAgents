@@ -47,14 +47,46 @@ function runStopHook(sid) {
   const r = spawnSync('node', [VERIFY_HOOK], {
     input: payload,
     encoding: 'utf8',
-    timeout: 10000,
+    // 60s (6x the former 10s budget, matching the CAGENTS_SESSION_LIVENESS_MS
+    // convention). verify-completion.cjs does only lightweight fs reads + a YAML
+    // parse and finishes in well under a second unloaded, so 60s is pure headroom
+    // for a slow node cold-start on a fully CPU-saturated CI box — while still
+    // bounding a genuine hook deadlock. The former 10s budget could be crossed
+    // under full-core load: spawnSync then timed out (status: null, signal:
+    // SIGTERM) with empty stdout, JSON.parse('') threw, and the `catch { return {} }`
+    // swallowed it into {}. That made Test 2's `expect(result.decision).not.toBe('block')`
+    // misleadingly PASS (undefined !== 'block') while `expect(result.continue).toBe(true)`
+    // FAILED (undefined !== true) — the exact "only Test 2 fails, only under load" flake.
+    timeout: 60000,
     env: {
       ...process.env,
       CAGENTS_ACTIVE_SESSION: '',
       CAGENTS_SESSION_LIVENESS_MS: String(LIVENESS_MS),
     },
   });
-  try { return JSON.parse(r.stdout); } catch { return {}; }
+
+  // FAIL LOUDLY on any abnormal spawn termination instead of silently returning {}.
+  // verify-completion.cjs (via createHook) ALWAYS exits 0 with a single line of
+  // valid JSON on stdout — even a legitimate `decision: block` verdict is exit-0
+  // JSON — so ANY of the conditions below means the spawn itself misbehaved
+  // (timeout/kill/crash/empty stdout), NOT a real verdict. Throwing a diagnosable
+  // Error (carrying status/signal/error/stderr) surfaces a future slow spawn as a
+  // real failure instead of a misleading assertion mismatch.
+  const diag = () =>
+    `status=${r.status} signal=${r.signal} error=${r.error ? r.error.message : 'none'} ` +
+    `stdout=${JSON.stringify((r.stdout || '').slice(0, 200))} ` +
+    `stderr=${JSON.stringify((r.stderr || '').slice(0, 500))}`;
+
+  if (r.error) throw new Error(`runStopHook: spawnSync errored for ${sid} — ${diag()}`);
+  if (r.status === null) throw new Error(`runStopHook: hook killed (timeout/signal) for ${sid} — ${diag()}`);
+  if (r.status !== 0) throw new Error(`runStopHook: hook exited non-zero for ${sid} — ${diag()}`);
+  if (!r.stdout || !r.stdout.trim()) throw new Error(`runStopHook: hook produced empty stdout for ${sid} — ${diag()}`);
+
+  try {
+    return JSON.parse(r.stdout);
+  } catch (e) {
+    throw new Error(`runStopHook: hook stdout was not valid JSON for ${sid} — ${e.message} — ${diag()}`);
+  }
 }
 
 describe('verify-completion stale-child freshness gate (REC-05; Phase 3 un-skips)', () => {
