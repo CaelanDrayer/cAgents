@@ -10,6 +10,52 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.60.2] - 2026-07-17
+
+**Audit residuals R2 (hardening, security) — lineage-scope the
+controller-delegation-validator's active-writer resolution.** Session
+`run_audit-residuals_260718_001`, R2 of the 3-item residuals plan
+(`.claude/plans/audit-residuals.md`). PATCH bump (one coherent change; non-sync
+diff = 2 files, within the ≤5-file tiny-bump cap). Hook + regression tests only;
+no `src/`. Standalone Contract intact (no `mcpServers`, no `mcp__*`).
+Bug-driven: the misattribution regression test is RED against unmodified HEAD
+(tree-global misattribution ALLOWs) and GREEN after the fix. Two-stage reviewer
+loop: round-1 REVISE caught a sentinel-parent over-block, round-2 fix + fresh
+reviewer PASS (confidence 0.95).
+
+### Fixed
+- **R2 — lineage-scope `findActiveWriter` (fail-closed on resolvable
+  cross-lineage misattribution)** (`.claude/hooks/controller-delegation-validator.cjs`).
+  `findActiveWriter` resolved the active writer as the DEEPEST still-active
+  `agent_tree.yaml` entry (tie-broken by `spawned_at`, then document order) —
+  TREE-GLOBAL, not lineage-scoped. Under `/team` concurrent waves a controller
+  writing to `src/` directly could be misattributed to an unrelated deeper
+  active executor elsewhere in the tree and wrongly ALLOWED. Fix: (a) both
+  agent_tree parsers (`_parseEntriesViaYaml`, `_parseEntriesViaLines`) now also
+  capture each entry's `id` (both `id`/`agent_id` spellings) and `parent`;
+  (b) new `_classifyExecutionWriter` walks `parent` links up from an
+  execution-tier deepest-active writer (cycle guard + `MAX_HOPS=100` +
+  sentinel/absent termination): if a masking active controller is an ANCESTOR of
+  the writer → ALLOW (legitimate delegated write); if the writer's `parent`
+  resolves to a REAL entry whose chain reaches NO active controller while an
+  active controller exists elsewhere → fail-closed DENY (real misattribution);
+  no active controller anywhere → ALLOW (B1 no-op). CRITICAL correctness guard
+  (round-2): a SENTINEL / unresolvable / absent parent (e.g. the common
+  production `parent: pipeline` execution-agent shape emitted by
+  `subagent-tracker.cjs`) is AMBIGUOUS → falls back to the legacy depth/order
+  heuristic → ALLOW, so the fix never over-blocks a legitimate executor `src/`
+  write while its controller synchronously awaits it (preserves the P3 fix).
+  Every P3 behavior preserved: B1 no-op-for-direct-user-edit, runtime
+  `metadata.tier` derivation, anchored allow-patterns, fail-safe-to-controller
+  for unresolvable writers; parser tolerant of shapes with no `parent`/`depth`.
+  Regression tests (`tests/hooks/controller-delegation-validator.test.js`):
+  NEW misattribution test (resolvable cross-lineage — executor under a different
+  real parent, active controller elsewhere → DENY; RED before / GREEN after);
+  NEW production-sentinel test (executor `parent: pipeline` + active controller
+  → ALLOW, pinning the P3 guarantee); NEW no-parent legacy-fallback test; the
+  four original P3 cases (T1 ALLOW, T2/T2b DENY, T3×3 DENY, T4 ALLOW) and all B1
+  cases still pass.
+
 ## [12.60.1] - 2026-07-17
 
 **Audit residuals R1 (test hygiene) — de-flake `verify-completion-stale-child.test.js > Test 2`.**
