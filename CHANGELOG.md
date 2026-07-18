@@ -10,6 +10,30 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.60.3] - 2026-07-17
+
+**Audit residuals R3 (remove) — remove the GitHub Actions CI workflow per
+maintainer directive.** Session `run_audit-residuals_260718_001`, R3 of the
+residuals plan. Removes `.github/workflows/ci.yml` (and the now-empty `.github/`
+directory): this repo runs its quality gate locally (`npm test` +
+`scripts/ci/cagents-ci.sh`) and does not want a hosted GitHub workflow. This
+supersedes the reset R3 that had *fixed* the workflow (unpushed, reset because
+the maintainer wants no workflow at all). PATCH bump (one coherent change;
+non-sync diff = 2 files — deleted `ci.yml` + new guard test — within the ≤5-file
+tiny-bump cap). Standalone Contract intact (no `mcpServers`, no `mcp__*`).
+
+### Added
+- `tests/ci/no-github-workflow.test.js` — bug-driven guard that FAILS if any
+  GitHub Actions workflow is ever re-committed. Checks both `.yml` and `.yaml`
+  via `git ls-files` (tracked source of truth) plus a filesystem read
+  (untracked-but-present). RED while `ci.yml` existed, GREEN after removal.
+
+### Removed
+- `.github/workflows/ci.yml` and the empty `.github/` directory — no hosted CI
+  on this repo. Two-stage reviewer loop PASS (reviewer independently reproduced
+  RED for both `.yml` and `.yaml` and the staged-tracked path; Stage 2 no
+  CRITICAL/HIGH findings).
+
 ## [12.60.2] - 2026-07-17
 
 **Audit residuals R2 (hardening, security) — lineage-scope the
