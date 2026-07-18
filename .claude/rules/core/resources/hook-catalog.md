@@ -56,9 +56,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 **GuardFall hardening (SHIPPED, v12.34.0)**: `bash-validator.cjs` now delegates to a fail-closed tokenize-and-canonicalize library, `.claude/hooks/bash-guard-evaluator.cjs` (require'd, 5 ordered components), which is fed the **RAW** command string and wrapped in its own try/catch → **deny** (an evaluator error denies — the guard no longer fails open). The legacy static denylist is retained as a Stage-2/3 belt, and the most-restrictive verdict wins. This closes the named single-command GuardFall bypass shapes in Classes A–E: quote-removal token-merge (`r''m -rf /`), `$IFS` field-splitting (`rm$IFS-rf$IFS/`), command substitution including inside double-quotes (`$(echo rm) -rf /`), decoder/fetch→interpreter pipes (`base64 --decode | python3`), and the alternative-argv / destructive-flag / sensitive-path-exfil long tail (`dd of=/dev/sda`, `cat ~/.aws/credentials | curl --data-binary @-`). A 35-probe A–E regression corpus gates CI via an `it.each` Vitest suite (`tests/hooks/fixtures/guardfall-corpus.json` + `tests/hooks/bash-guard-guardfall.test.js`). **Belt relaxation + mode override (REC-08/09, v12.50.0)**: the legacy Stage-2/3 belt's OBFUSCATION-class regexes (`python3 -c`, `node -e`, `ruby -e`, `base64|sh`, `eval`, two-step download, …) previously matched `.*` across the whitespace-collapsed RAW string, so an interpreter+keyword appearing only as **quoted data** (an `echo`/`grep` argument, e.g. `echo 'python3 -c "os.system(1)"'` or `grep -rn 'node -e child_process' src/`) was falsely denied. Each obfuscation entry now carries an `obf` command-name list and is confirmed against the evaluator's exported `tokenize` — the flagged interpreter must be a **standalone command word** (not buried in a quoted multi-word token) before the belt denies. This only ever narrows a belt deny to allow (never adds one), so all true positives — including belt-only `env python3 -c …` / `ruby -e '\`…\`'` and the whole evaluator floor — still deny. The new `CAGENTS_BASH_GUARD` env (`block` default / `warn` / `off`, unrecognized → fail-closed `block`; declared in `.claude/settings.json` `env`) downgrades confirmed obfuscation belt denies to `ask` under `warn` (catastrophic literals + the Stage-1 evaluator stay hard-deny, so `rm -rf /` stays denied under `warn`) and skips the belt under `off` (the sound evaluator still runs — catastrophic shapes are never disarmed). See `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.1. **Honest residuals (§7, still OPEN)**: cross-Bash-call sequential payloads (building a payload in one call and executing it in a later one), heredoc-built payloads, runtime-constructed indirection, the command-position single-variable case (`$CMD file`) under bypassPermissions, and not-a-sandbox interiors (Makefile targets, npm scripts) remain uncatchable by any single-string evaluator — do NOT treat these as closed. See `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` for the full threat model, the per-class scorecard, and the complete residual list.
 
-### PreToolUse[Write|Edit]: write-edit-dispatch.cjs
+### PreToolUse[Write|Edit|NotebookEdit]: write-edit-dispatch.cjs
 
-- **Matcher**: `Write|Edit`
+- **Matcher**: `Write|Edit|NotebookEdit`
 - **Purpose**: D1b consolidating dispatcher (v12.19.0, WI-5). A SINGLE PreToolUse[Write|Edit] hook that runs the 3 pure Write|Edit sub-validators in-process, replacing the 3 separate `node run-hook.cjs <name>` cold-start child processes that fired on every Write|Edit pre-v12.19.0. Drops cold-starts per Write|Edit from 3 to 1 (see `scripts/benchmarks/hook-perf-microbench.cjs` and `cagents-memory/_system/evals/perf/hook-perf-{before,after}.json`).
 - **Order (deny-first, short-circuit on first deny)**:
   1. **secret-detection** — SECURITY DENY GATE (runs FIRST, **FAIL-CLOSED**: a throw denies). Blocks writes to protected paths (`/etc/`, `/usr/`, `~/.ssh/`) and files with critical/high/medium secrets (block mode) or sanitizes (sanitize mode). Imported handler from `secret-detection.cjs`.
@@ -156,9 +156,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Updates**: `workflow/agent_tree.yaml` (adds `stopped_at`, `completion_summary`, `duration_seconds`).
 - **Captures**: `last_assistant_message` from SubagentStop input (truncated to 300 chars for audit trail).
 
-### PostToolUse[Write|Edit]: post-write-validator.cjs
+### PostToolUse[Write|Edit|NotebookEdit]: post-write-validator.cjs
 
-- **Matcher**: `Write|Edit`
+- **Matcher**: `Write|Edit|NotebookEdit`
 - **Purpose**: Validate file syntax after successful Write/Edit operations, log all writes to the session file_changes audit trail.
 - **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys, anti-slop patterns, SKILL.md schema.
 - **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status (`status: "warn"` when warnings are detected).
@@ -225,9 +225,9 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 (A2-04) The `prompt-router.cjs` PreToolUse[Agent] registration was DROPPED. It was a documented `return null` no-op ("reserved for future controller-spawn validation") that paid a cold-start on every Agent spawn for nothing. `prompt-router.cjs` remains registered under UserPromptSubmit (see above), where its delegation-reminder + natural-language-routing layers are load-bearing. The `prompt-router.cjs` source still no-ops on `tool_name === 'Agent'` defensively, but it is no longer wired to that event.
 
-### PostToolUse[Write|Edit]: validator-evidence-recheck.cjs
+### PostToolUse[Write|Edit|NotebookEdit]: validator-evidence-recheck.cjs
 
-- **Matcher**: `Write|Edit`
+- **Matcher**: `Write|Edit|NotebookEdit`
 - **Purpose**: Re-verify evidence cited in validation_report.yaml by re-running the cited verification methods (`fs.existsSync`, `grep`, file:line content match) after a write. When claimed evidence does not verify mechanically, mutates the report on disk: downgrades the classification from PASS to FAIL and appends a `recheck:` block listing the failing entries. See `pat-evidence-first-execution.md`.
 - **Output**: Returns `{ continue: true }` (no systemMessage). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), PostToolUse hooks no longer emit systemMessage. The on-disk mutation of validation_report.yaml is the load-bearing side effect; the downgrade message surfaces via `console.error` (stderr → user verbose mode).
 

@@ -10,6 +10,77 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.60.0] - 2026-07-17
+
+**Audit P5 (MEDIUM hardening bundle, security) — 5 sub-items.** Session
+`run_audit-remediation_260717_001` (audit of v12.59.0). MINOR bump: the bundle
+exceeds the >5-file patch non-sync-file cap (5 code/config files + 5 new
+regression tests + 2 CI-forced doc-syncs), and minor bumps are exempt from that
+cap (still require this CHANGELOG entry + 16-location registry agreement). Every
+shipped sub-item ships its own failing-before / passing-after regression test.
+All hooks stay FAIL-CLOSED; the Standalone Contract is untouched (no
+`mcpServers`, no `mcp__*`). Full suite green: `npm test` exit 0 (Test Files 203
+passed | 1 skipped; Tests 2018 passed | 14 skipped). Two-stage reviewer PASS
+(both out-of-set doc-syncs verified CI-necessary against the guard tests, not
+the executor's word).
+
+### Fixed
+- **P5.1 — secret-detection false-positive filter now overlap-scoped**
+  (`.claude/hooks/secret-detection.cjs`). The two broadest markers `/<[^>]+>/`
+  (any HTML-ish tag) and `/\.{3,}/` (any run of ≥3 dots) are DROPPED from
+  `FALSE_POSITIVE_CONTENT`, and `isContentFalsePositive` now requires a retained
+  FP marker to OVERLAP the matched secret token's `[start,end)` region rather
+  than merely appear anywhere in a ±50-char window (fresh global-regex clone per
+  call + zero-width-match guard). A live-shaped token (`ghp_…`/`AKIA…`/`sk-ant-…`)
+  sitting next to an HTML comment, a `...`, or a non-overlapping `${…}` is now
+  BLOCKED; a token that IS itself `${…}` stays suppressed. Change only NARROWS
+  suppression → strictly more blocking, still FAIL-CLOSED. Regression:
+  `tests/hooks/secret-detection-fp-overlap.test.js`.
+- **P5.5 — deterministic multi-file sanitize restore**
+  (`.claude/hooks/secret-detection.cjs` + `.claude/hooks/secret-restore.cjs`).
+  In sanitize mode (`CAGENTS_SECRET_MODE=sanitize`) the manifest writer now
+  records each `.orig` filename per entry (`orig:`), and `secret-restore.cjs`
+  pairs `file_path → .orig` DETERMINISTICALLY from that field instead of picking
+  the highest-mtime `.orig` across all backups — fixing a content-swap when ≥2
+  files were sanitized. Back-compat mtime fallback retained for pre-fix
+  manifests; restore still never blocks (`{continue:true}`) and single-file /
+  session-id-binding paths are untouched. Regression:
+  `tests/hooks/secret-restore-multifile.test.js`.
+
+### Changed
+- **P5.2 — `Bash(git *)` auto-approve narrowed to an explicit safe-git
+  allowlist** (`.claude/settings.json`, `.claude/settings.full.json`). The
+  over-broad `Bash(git *)` allow entry is replaced in BOTH files with 15
+  explicit safe verbs (`git status`, `git diff:*`, `git log:*`, `git show:*`,
+  `git add:*`, `git commit:*`, `git push`, `git branch`, `git branch:*`,
+  `git checkout:*`, `git merge:*`, `git stash:*`, `git rev-parse:*`,
+  `git ls-files:*`, `git check-ignore:*`). `git -c …`, `git config`, `git clone`,
+  and alias forms now fall through to a prompt (none match a `git <subcommand>`
+  prefix); the local tiny-bump+merge workflow verbs stay auto-approved.
+  Regression: `tests/config/git-allowlist-narrowing.test.js`.
+- **P5.4 — PreToolUse + PostToolUse `Write|Edit` matchers broadened to
+  `Write|Edit|NotebookEdit`** (`.claude/settings.json`, BOTH matchers), so the
+  secret-detection / delegation gates and the post-write validators cover
+  notebook-cell writes. Regression: `tests/config/notebookedit-matcher.test.js`.
+
+### Removed
+- **P5.3 — `.claude/settings.full.json` un-shipped from npm** (`package.json`
+  `files[]`). The file is retained on disk but no longer published, so a
+  consumer can no longer copy it over `settings.json` and re-introduce the
+  removed `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` flag + v9 hook wiring.
+  Regression: `tests/config/settings-full-unshipped.test.js`.
+
+### Notes
+- Two out-of-P5-set doc-syncs were required to keep CI green and are direct
+  consequences of the changes above (verified against the guard tests):
+  `.claude/rules/core/resources/hook-catalog.md` (3 matcher headings
+  `Write|Edit` → `Write|Edit|NotebookEdit`, forced by
+  `hooks-md-event-mapping.test.js` via P5.4) and `CLAUDE.md` (test-count claim
+  `1650+/195+` → `1682+/202+`, forced by the Q-009 freshness guard
+  `claude-md-counts-current.test.js` after adding 5 regression files).
+- No optional sub-item was deferred — P5.4 and P5.5 both landed cleanly with
+  solid red→green regression tests.
+
 ## [12.59.4] - 2026-07-17
 
 **Audit P4 (MEDIUM/LOW, security) — supply-chain freshness: js-yaml

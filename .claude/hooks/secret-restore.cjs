@@ -74,9 +74,14 @@ function parseManifest(manifestPath) {
     const placeholderMatch = block.match(/placeholder:\s*"?([^"\n]+)"?/);
     const filePathMatch = block.match(/file_path:\s*"?([^"\n]+)"?/);
     const hashMatch = block.match(/hash:\s*"?([^"\n]+)"?/);
+    // P5.5: `orig` records the .orig backup filename for deterministic pairing.
+    // Absent on pre-P5.5 manifests (and on `orig: ""`) — restore falls back to
+    // the legacy mtime behavior in that case.
+    const origMatch = block.match(/orig:\s*"?([^"\n]+)"?/);
     if (placeholderMatch) entry.placeholder = placeholderMatch[1].trim();
     if (filePathMatch) entry.file_path = filePathMatch[1].trim();
     if (hashMatch) entry.hash = hashMatch[1].trim();
+    if (origMatch) entry.orig = origMatch[1].trim();
     if (entry.placeholder && entry.file_path) entries.push(entry);
   }
   return { sessionId, entries };
@@ -141,19 +146,36 @@ createHook('SecretRestore', async (input) => {
   const filePathsToRestore = [...new Set(entries.map(e => e.file_path))];
 
   for (const filePath of filePathsToRestore) {
-    // Find any .orig file — for the current implementation, each file_path
-    // has exactly one .orig per sanitize-event. We pick the most recent.
     let candidateOrig = null;
-    let candidateMtime = 0;
-    for (const origFile of backedUpFiles) {
-      const fullOrigPath = path.join(backupDir, origFile);
-      try {
-        const stat = fs.statSync(fullOrigPath);
-        if (stat.mtimeMs > candidateMtime) {
-          candidateMtime = stat.mtimeMs;
-          candidateOrig = fullOrigPath;
-        }
-      } catch { /* skip */ }
+
+    // P5.5: deterministic pairing. Prefer the .orig filename this file_path
+    // recorded in the manifest (`orig` field). This fixes the content-swap bug
+    // where >=2 sanitized files were paired by highest-mtime instead of by
+    // identity, so file A could be restored with file B's original content.
+    const entryWithOrig = entries.find(e => e.file_path === filePath && e.orig);
+    if (entryWithOrig) {
+      const recordedName = path.basename(entryWithOrig.orig);
+      const recordedPath = path.join(backupDir, recordedName);
+      if (backedUpFiles.includes(recordedName) && fs.existsSync(recordedPath)) {
+        candidateOrig = recordedPath;
+      }
+    }
+
+    // Back-compat fallback: a pre-P5.5 manifest (no `orig` field) OR a recorded
+    // .orig that went missing. Pick the highest-mtime remaining .orig (the
+    // legacy single-file behavior — correct when there is exactly one .orig).
+    if (!candidateOrig) {
+      let candidateMtime = 0;
+      for (const origFile of backedUpFiles) {
+        const fullOrigPath = path.join(backupDir, origFile);
+        try {
+          const stat = fs.statSync(fullOrigPath);
+          if (stat.mtimeMs > candidateMtime) {
+            candidateMtime = stat.mtimeMs;
+            candidateOrig = fullOrigPath;
+          }
+        } catch { /* skip */ }
+      }
     }
 
     if (!candidateOrig) {
