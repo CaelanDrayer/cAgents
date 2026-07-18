@@ -45,18 +45,30 @@ function runHook(input, extraEnv = {}) {
   const proc = spawnSync('node', [HOOK_PATH], {
     input: payload,
     encoding: 'utf8',
-    timeout: 5000,
+    // 60000 (was 5000): spawnSync does NOT throw on timeout — it returns
+    // status:null/empty-stdout, and the parse below silently yielded null. The
+    // per-test `expect(proc.status).toBe(0)` already fails loud on a timeout, but
+    // a 5s budget under full-core CI saturation could be crossed → red under load.
+    // Raise the budget and FAIL LOUD (with diagnostics) on abnormal termination.
+    timeout: 60000,
     env: {
       ...process.env,
       CAGENTS_SESSION_ID: fakeSessionId,
       ...extraEnv,
     },
   });
+  // session-init-gate.cjs (PreToolUse[Agent] via createHook) ALWAYS exits 0 with
+  // one JSON line on stdout, so any abnormal termination is a spawn misfire.
+  const diag = () => `status=${proc.status} signal=${proc.signal} error=${proc.error ? proc.error.message : 'none'} stdout=${JSON.stringify((proc.stdout || '').slice(0, 200))} stderr=${JSON.stringify((proc.stderr || '').slice(0, 500))}`;
+  if (proc.error) throw new Error(`aliases runHook: spawnSync errored — ${diag()}`);
+  if (proc.status === null) throw new Error(`aliases runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (proc.status !== 0) throw new Error(`aliases runHook: hook exited non-zero — ${diag()}`);
+  if (!proc.stdout || !proc.stdout.trim()) throw new Error(`aliases runHook: empty stdout — ${diag()}`);
   let parsed;
   try {
-    parsed = JSON.parse((proc.stdout || '').trim());
-  } catch {
-    parsed = null;
+    parsed = JSON.parse(proc.stdout.trim());
+  } catch (e) {
+    throw new Error(`aliases runHook: stdout not valid JSON — ${e.message} — ${diag()}`);
   }
   return { proc, parsed };
 }

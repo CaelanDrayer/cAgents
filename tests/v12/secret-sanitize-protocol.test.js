@@ -30,7 +30,11 @@ function runHook(hookPath, input, env = {}) {
   const result = spawnSync('node', [hookPath], {
     input: inputJson,
     encoding: 'utf8',
-    timeout: 5000,
+    // 60000 (was 5000): spawnSync does NOT throw on timeout — on a killed spawn
+    // `lines[lines.length-1] || '{}'` silently yielded {} (a misleading verdict
+    // fed to `.hookSpecificOutput.permissionDecision`/`.continue` assertions).
+    // Raise the budget and FAIL LOUD on abnormal termination instead.
+    timeout: 60000,
     env: {
       ...process.env,
       NODE_ENV: 'test',
@@ -39,13 +43,21 @@ function runHook(hookPath, input, env = {}) {
       ...env
     }
   });
+  // secret-detection.cjs / secret-restore.cjs (via createHook) ALWAYS exit 0 with
+  // one JSON line on stdout (a deny verdict is exit-0 JSON too), so any abnormal
+  // termination is a spawn misfire.
+  const diag = () => `status=${result.status} signal=${result.signal} error=${result.error ? result.error.message : 'none'} stdout=${JSON.stringify((result.stdout || '').slice(0, 200))} stderr=${JSON.stringify((result.stderr || '').slice(0, 500))}`;
+  if (result.error) throw new Error(`secret-sanitize runHook: spawnSync errored — ${diag()}`);
+  if (result.status === null) throw new Error(`secret-sanitize runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (result.status !== 0) throw new Error(`secret-sanitize runHook: hook exited non-zero — ${diag()}`);
   // Parse last JSON line of stdout (hooks emit exactly one JSON line).
   const lines = (result.stdout || '').trim().split('\n').filter(Boolean);
-  const lastLine = lines[lines.length - 1] || '{}';
+  if (lines.length === 0) throw new Error(`secret-sanitize runHook: empty stdout — ${diag()}`);
+  const lastLine = lines[lines.length - 1];
   try {
     return JSON.parse(lastLine);
-  } catch {
-    return { _rawStdout: result.stdout, _stderr: result.stderr };
+  } catch (e) {
+    throw new Error(`secret-sanitize runHook: last stdout line not valid JSON — ${e.message} — ${diag()}`);
   }
 }
 

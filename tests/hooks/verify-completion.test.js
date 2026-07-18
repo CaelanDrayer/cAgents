@@ -11,9 +11,16 @@ const TEST_SESSION = 'run_20260101_000001_test_vc';
 const TEST_SESSION_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION);
 
 function runHook(input, envOverrides = {}) {
+  // timeout 60000 (was 5000): under full-core CI saturation a node cold-start +
+  // the hook's fs/YAML work could exceed a 5s budget, execSync then throws
+  // ETIMEDOUT and the whole test file goes red under load (green in isolation).
+  // 60s is pure headroom (the hook finishes in well under a second unloaded)
+  // while still bounding a genuine deadlock. execSync already fails loud on
+  // timeout/non-zero (its thrown Error carries stdout/stderr/status), so no
+  // extra throw-guard is needed here.
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
+    { encoding: 'utf8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, ...envOverrides } }
   );
   return JSON.parse(result.trim());
@@ -60,7 +67,7 @@ describe('verify-completion.cjs', () => {
     try {
       const result = execSync(
         `printf '%s' '${JSON.stringify({ session_id: 'nonexistent_session_999' }).replace(/'/g, "'\\''")}' | CLAUDE_PROJECT_DIR="${tmpDir}" node "${HOOK_PATH}"`,
-        { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+        { encoding: 'utf8', timeout: 60000, stdio: ['pipe', 'pipe', 'pipe'] } // 60000 (was 5000): headroom under CI saturation; execSync fails loud on timeout
       );
       const parsed = JSON.parse(result.trim());
       expect(parsed.continue).toBe(true);

@@ -35,11 +35,24 @@ function runHook(input, env = {}) {
   const proc = spawnSync('node', [HOOK_PATH], {
     input: payload,
     encoding: 'utf8',
-    timeout: 5000,
+    // 60000 (was 5000): spawnSync does NOT throw on timeout. This file asserts on
+    // MEMORY.md side-effects, so a killed (timed-out) hook that wrote nothing made
+    // the "does NOT append" test's `expect(after).toBe(before)` SPURIOUSLY PASS
+    // (the hook never ran). Raise the budget and FAIL LOUD so a timeout can never
+    // masquerade as "correctly did nothing".
+    timeout: 60000,
     env: { ...process.env, ...env },
   });
-  let parsed = null;
-  try { parsed = JSON.parse((proc.stdout || '').trim()); } catch { /* hook may write malformed if crashed */ }
+  // subagent-stop-tracker.cjs (SubagentStop via createHook) ALWAYS exits 0 with
+  // one JSON line on stdout, so any abnormal termination is a spawn misfire.
+  const diag = () => `status=${proc.status} signal=${proc.signal} error=${proc.error ? proc.error.message : 'none'} stdout=${JSON.stringify((proc.stdout || '').slice(0, 200))} stderr=${JSON.stringify((proc.stderr || '').slice(0, 500))}`;
+  if (proc.error) throw new Error(`subagent-stop runHook: spawnSync errored — ${diag()}`);
+  if (proc.status === null) throw new Error(`subagent-stop runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (proc.status !== 0) throw new Error(`subagent-stop runHook: hook exited non-zero — ${diag()}`);
+  if (!proc.stdout || !proc.stdout.trim()) throw new Error(`subagent-stop runHook: empty stdout — ${diag()}`);
+  let parsed;
+  try { parsed = JSON.parse(proc.stdout.trim()); }
+  catch (e) { throw new Error(`subagent-stop runHook: stdout not valid JSON — ${e.message} — ${diag()}`); }
   return { proc, parsed };
 }
 
