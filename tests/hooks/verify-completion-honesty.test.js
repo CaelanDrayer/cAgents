@@ -52,9 +52,23 @@ function runStopHook(sid) {
   const r = spawnSync('node', [VERIFY_HOOK], {
     input: payload,
     encoding: 'utf8',
-    timeout: 10000,
+    // 60000 (was 10000): spawnSync does NOT throw on timeout. On a killed spawn
+    // the hook never writes its status.yaml/report/summary mutations, so this
+    // file's file-content `.not.toMatch(...)` absence assertions (e.g. Test E's
+    // `.not.toMatch(/pipeline_state:\s*incomplete/)`) could SPURIOUSLY PASS.
+    // safeJson's former catch→{} was the same swallow. Raise the budget and FAIL
+    // LOUD on abnormal termination.
+    timeout: 60000,
     env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
   });
+  // verify-completion.cjs (Stop via createHook) ALWAYS exits 0 with one JSON line
+  // on stdout (a decision:block verdict is exit-0 JSON too), so any abnormal
+  // termination is a spawn misfire, not a verdict.
+  const diag = () => `status=${r.status} signal=${r.signal} error=${r.error ? r.error.message : 'none'} stdout=${JSON.stringify((r.stdout || '').slice(0, 200))} stderr=${JSON.stringify((r.stderr || '').slice(0, 500))}`;
+  if (r.error) throw new Error(`runStopHook: spawnSync errored for ${sid} — ${diag()}`);
+  if (r.status === null) throw new Error(`runStopHook: hook killed (timeout/signal) for ${sid} — ${diag()}`);
+  if (r.status !== 0) throw new Error(`runStopHook: hook exited non-zero for ${sid} — ${diag()}`);
+  if (!r.stdout || !r.stdout.trim()) throw new Error(`runStopHook: empty stdout for ${sid} — ${diag()}`);
   return { json: safeJson(r.stdout), status: r.status };
 }
 
@@ -64,14 +78,27 @@ function runSessionEnd(sid) {
   const r = spawnSync('node', [TEAM_STOP_HOOK], {
     input: payload,
     encoding: 'utf8',
-    timeout: 10000,
+    // 60000 (was 10000): a killed (timed-out) team-stop never writes
+    // execution_summary.yaml, so Test D's file assertions could go silently wrong.
+    // Raise the budget and FAIL LOUD on abnormal termination.
+    timeout: 60000,
     env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
   });
+  // team-stop.cjs (SessionEnd via createHook) exits 0; a null/non-zero status or a
+  // spawn error means the hook was killed/crashed, not that it finished normally.
+  const diag = () => `status=${r.status} signal=${r.signal} error=${r.error ? r.error.message : 'none'} stderr=${JSON.stringify((r.stderr || '').slice(0, 500))}`;
+  if (r.error) throw new Error(`runSessionEnd: spawnSync errored for ${sid} — ${diag()}`);
+  if (r.status === null) throw new Error(`runSessionEnd: hook killed (timeout/signal) for ${sid} — ${diag()}`);
+  if (r.status !== 0) throw new Error(`runSessionEnd: hook exited non-zero for ${sid} — ${diag()}`);
   return { status: r.status };
 }
 
+// FAIL LOUD on unparseable stdout instead of laundering it to {} (a {} that would
+// let a `.json`-based assertion silently pass). runStopHook's empty-stdout guard
+// already runs first, so on the happy path this receives valid JSON.
 function safeJson(s) {
-  try { return JSON.parse(s); } catch { return {}; }
+  try { return JSON.parse(s); }
+  catch (e) { throw new Error(`verify-completion-honesty safeJson: stdout not valid JSON — ${e.message} — stdout=${JSON.stringify((s || '').slice(0, 200))}`); }
 }
 
 function readYaml(dir, rel) {

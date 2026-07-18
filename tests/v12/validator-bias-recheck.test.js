@@ -60,13 +60,24 @@ function runHook(stdinPayload) {
   const result = spawnSync('node', [HOOK_PATH], {
     input: JSON.stringify(stdinPayload),
     encoding: 'utf8',
-    timeout: 5000,
+    // 60000 (was 5000): spawnSync does NOT throw on timeout — it returns
+    // status:null/empty-stdout, and `JSON.parse(stdout||'{}')` then silently
+    // yields {} — which `expect(result.parsed).toBeTruthy()` (below) spuriously
+    // PASSES. Raise the budget and FAIL LOUD on abnormal termination.
+    timeout: 60000,
   });
-  let parsed = null;
+  // validator-evidence-recheck.cjs (via createHook) ALWAYS exits 0 with one JSON
+  // line on stdout, so any abnormal termination is a spawn misfire, not a verdict.
+  const diag = () => `status=${result.status} signal=${result.signal} error=${result.error ? result.error.message : 'none'} stdout=${JSON.stringify((result.stdout || '').slice(0, 200))} stderr=${JSON.stringify((result.stderr || '').slice(0, 500))}`;
+  if (result.error) throw new Error(`validator-bias runHook: spawnSync errored — ${diag()}`);
+  if (result.status === null) throw new Error(`validator-bias runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (result.status !== 0) throw new Error(`validator-bias runHook: hook exited non-zero — ${diag()}`);
+  if (!result.stdout || !result.stdout.trim()) throw new Error(`validator-bias runHook: empty stdout — ${diag()}`);
+  let parsed;
   try {
-    parsed = JSON.parse(result.stdout || '{}');
-  } catch {
-    parsed = null;
+    parsed = JSON.parse(result.stdout);
+  } catch (e) {
+    throw new Error(`validator-bias runHook: stdout not valid JSON — ${e.message} — ${diag()}`);
   }
   return {
     stdout: result.stdout,

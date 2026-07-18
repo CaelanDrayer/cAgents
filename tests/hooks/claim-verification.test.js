@@ -43,13 +43,24 @@ function runHook(reportPath, tmpDir) {
   const result = spawnSync('node', [HOOK_PATH], {
     input: JSON.stringify(payload),
     encoding: 'utf8',
-    timeout: 8000,
+    // 60000 (was 8000): spawnSync does NOT throw on timeout — it returns
+    // status:null/SIGTERM with empty stdout, and `JSON.parse(stdout||'{}')` then
+    // silently yields {} (a misleading value that lets `.not.toMatch(/^recheck:/)`
+    // on the unmodified report spuriously PASS). Raise the budget and FAIL LOUD.
+    timeout: 60000,
   });
-  let parsed = null;
+  // validator-evidence-recheck.cjs (PostToolUse via createHook) ALWAYS exits 0
+  // with one JSON line on stdout, so any abnormal termination is a spawn misfire.
+  const diag = () => `status=${result.status} signal=${result.signal} error=${result.error ? result.error.message : 'none'} stdout=${JSON.stringify((result.stdout || '').slice(0, 200))} stderr=${JSON.stringify((result.stderr || '').slice(0, 500))}`;
+  if (result.error) throw new Error(`claim-verification runHook: spawnSync errored — ${diag()}`);
+  if (result.status === null) throw new Error(`claim-verification runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (result.status !== 0) throw new Error(`claim-verification runHook: hook exited non-zero — ${diag()}`);
+  if (!result.stdout || !result.stdout.trim()) throw new Error(`claim-verification runHook: empty stdout — ${diag()}`);
+  let parsed;
   try {
-    parsed = JSON.parse(result.stdout || '{}');
-  } catch {
-    parsed = null;
+    parsed = JSON.parse(result.stdout);
+  } catch (e) {
+    throw new Error(`claim-verification runHook: stdout not valid JSON — ${e.message} — ${diag()}`);
   }
   return { parsed, stdout: result.stdout, stderr: result.stderr, status: result.status };
 }

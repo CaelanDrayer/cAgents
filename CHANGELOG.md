@@ -10,6 +10,37 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.61.0] - 2026-07-18
+
+**Audit residuals R4 — systemically de-flake hook-test spawn helpers.** Extends
+R1 (v12.60.1) from one file to all affected files. Several hook tests ran a hook
+via `spawnSync`/`execSync` with a tight timeout (5s/8s/10s) and swallowed a
+timeout / empty / partial result into a misleading value (`{}` / `null` /
+`undefined`), so under full-suite CPU load the spawn was killed (`status: null`,
+SIGTERM) and the misleading value produced a **false assertion failure** (or, for
+absence assertions, a **false pass**) instead of a clear error. Fix (harness-only,
+no product-hook changes): raise the spawn budget to 60000ms and make each helper
+**fail loudly** — throw with captured `status`/`signal`/`error`/`stdout`/`stderr`
+on spawn error, `status === null` (timeout/kill), non-zero exit, or empty/
+unparseable stdout. This makes `npm test` / `scripts/ci/cagents-ci.sh` reliably
+green under CPU load. **No test assertion, expected value, or intent was changed,
+and no test was skipped** (independently reviewed, two stages). Absence assertions
+(`.not.toMatch(...)`) are now backstopped by a loud throw before they run, closing
+a latent false-pass gap.
+
+### Changed
+- Hardened spawn helpers (timeout → 60000ms + throw-on-empty/timeout) in 10 test
+  files: `tests/hooks/claim-verification.test.js`,
+  `tests/hooks/controller-delegation-validator.test.js`,
+  `tests/hooks/learning-store-integrity.test.js`,
+  `tests/hooks/secret-restore-multifile.test.js`,
+  `tests/hooks/verify-completion.test.js`,
+  `tests/hooks/verify-completion-honesty.test.js`,
+  `tests/v12/aliases-runtime-resolution.test.js`,
+  `tests/v12/secret-sanitize-protocol.test.js`,
+  `tests/v12/subagent-stop-memory-write.test.js`,
+  `tests/v12/validator-bias-recheck.test.js`.
+
 ## [12.60.3] - 2026-07-17
 
 **Audit residuals R3 (remove) — remove the GitHub Actions CI workflow per

@@ -45,12 +45,24 @@ function runHook(hookPath, input, env = {}) {
   const result = spawnSync('node', [hookPath], {
     input: JSON.stringify(input),
     encoding: 'utf8',
-    timeout: 5000,
+    // 60000 (was 5000): spawnSync does NOT throw on timeout — on a killed spawn
+    // `lines[lines.length-1] || '{}'` silently yielded {} (a misleading verdict
+    // fed to `.hookSpecificOutput`/`.continue` assertions). Raise the budget and
+    // FAIL LOUD on abnormal termination instead.
+    timeout: 60000,
     env: { ...process.env, NODE_ENV: 'test', VITEST: 'true', CAGENTS_HOOK_DEDUP_DISABLE: '1', ...env },
   });
+  // secret-detection.cjs / secret-restore.cjs (via createHook) ALWAYS exit 0 with
+  // one JSON line on stdout (a deny verdict is exit-0 JSON too), so any abnormal
+  // termination is a spawn misfire.
+  const diag = () => `status=${result.status} signal=${result.signal} error=${result.error ? result.error.message : 'none'} stdout=${JSON.stringify((result.stdout || '').slice(0, 200))} stderr=${JSON.stringify((result.stderr || '').slice(0, 500))}`;
+  if (result.error) throw new Error(`secret-restore runHook: spawnSync errored — ${diag()}`);
+  if (result.status === null) throw new Error(`secret-restore runHook: hook killed (timeout/signal) — ${diag()}`);
+  if (result.status !== 0) throw new Error(`secret-restore runHook: hook exited non-zero — ${diag()}`);
   const lines = (result.stdout || '').trim().split('\n').filter(Boolean);
-  try { return JSON.parse(lines[lines.length - 1] || '{}'); }
-  catch { return { _rawStdout: result.stdout, _stderr: result.stderr }; }
+  if (lines.length === 0) throw new Error(`secret-restore runHook: empty stdout — ${diag()}`);
+  try { return JSON.parse(lines[lines.length - 1]); }
+  catch (e) { throw new Error(`secret-restore runHook: last stdout line not valid JSON — ${e.message} — ${diag()}`); }
 }
 
 describe('P5.5: deterministic multi-file sanitize restore', { timeout: 30000 }, () => {

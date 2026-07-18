@@ -50,7 +50,11 @@ function runHook(input, env = {}) {
   clearDedupFiles();
   const result = execSync(`node "${HOOK_PATH}"`, {
     encoding: 'utf8',
-    timeout: 5000,
+    // timeout 60000 (was 5000): under full-core CI saturation a node cold-start
+    // could exceed a 5s budget → execSync throws ETIMEDOUT → red under load,
+    // green in isolation. 60s is headroom while still bounding a deadlock.
+    // execSync already fails loud on timeout/non-zero, so no extra guard needed.
+    timeout: 60000,
     input: JSON.stringify(input),
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { ...process.env, ...env }
