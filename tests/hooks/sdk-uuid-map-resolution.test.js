@@ -3,7 +3,7 @@
  *
  * Covers the WI-1/WI-2/WI-5 primitives added to .claude/hooks/hook-utils.cjs:
  *   - upsertSdkSessionMap(uuid, sessionDir)  (writer: pointer + marker, idempotent, guarded)
- *   - resolveSdkUuidToSession(uuid)          (reader: live->dir; terminal/missing->reap+null)
+ *   - resolveSdkUuidToSession(uuid)          (reader: live->dir; terminal-but-present->preserve+null; missing-dir->reap+null)
  *   - findActiveSession(uuid)                (map-first: UUID hint -> map hit deterministic)
  *   - removeSdkPointer(uuid) / _pruneSdkMap() (GC / registry size bound)
  *
@@ -179,19 +179,24 @@ describe('SDK-UUID map resolution (FIX-1 / WI-7 / OBJ-1)', () => {
     expect(existsSync(utils._sdkPointerPath(UUID_A))).toBe(true);
   });
 
-  it('resolveSdkUuidToSession returns null AND lazy-reaps the pointer for a TERMINAL target', () => {
+  it('resolveSdkUuidToSession returns null but PRESERVES the pointer for a present-but-terminal target', () => {
     // Upsert while the target is LIVE so the pointer survives upsert-time prune.
     makeNonTerminalSession(sessionsDir, SID_A);
     utils.upsertSdkSessionMap(UUID_A, DIR_A);
     const pointerPath = utils._sdkPointerPath(UUID_A);
     expect(existsSync(pointerPath)).toBe(true);
 
-    // Now the owning session finishes (pipeline_state: VALIDATED == terminal).
+    // The owning session reads terminal (pipeline_state: VALIDATED) but its DIRECTORY
+    // is still present — a transient revision-cycle / mid-rewrite window.
     finalizeSession(sessionsDir, SID_A);
 
     const resolved = utils.resolveSdkUuidToSession(UUID_A);
-    expect(resolved).toBeNull();                       // does NOT return the dead session
-    expect(existsSync(pointerPath)).toBe(false);       // LAZY REAP: pointer unlinked
+    expect(resolved).toBeNull();                       // resolution GATE unchanged: terminal -> miss
+    // WI-2 (run_session-init-gate-flake_260723_001): a present-but-terminal pointer is
+    // NOT reaped — reaping a LIVE pointer on a transient terminal read is the root cause
+    // of the session-init-gate false-DENY. Only a genuinely-MISSING dir is reaped (next
+    // test). removeSdkPointer (SessionEnd) still explicitly unlinks it on finalization.
+    expect(existsSync(pointerPath)).toBe(true);        // PRESERVED across the terminal window
   });
 
   it('resolveSdkUuidToSession returns null AND lazy-reaps the pointer for a MISSING target dir', () => {
@@ -208,7 +213,7 @@ describe('SDK-UUID map resolution (FIX-1 / WI-7 / OBJ-1)', () => {
     expect(existsSync(pointerPath)).toBe(false);       // LAZY REAP on missing target
   });
 
-  it('GC: after finalizing N sessions, _pruneSdkMap / removeSdkPointer leave no dead pointers', () => {
+  it('GC: _pruneSdkMap reaps missing-dir + preserves present-but-terminal; removeSdkPointer clears the rest', () => {
     const U1 = '11111111-1111-1111-1111-111111111111';
     const U2 = '22222222-2222-2222-2222-222222222222';
     const U3 = '33333333-3333-3333-3333-333333333333';
@@ -225,19 +230,26 @@ describe('SDK-UUID map resolution (FIX-1 / WI-7 / OBJ-1)', () => {
     // Three live sessions -> three pointers.
     expect(livePointerCount(mapDir)).toBe(3);
 
-    // Finalize S1 (terminal), remove S2's dir (missing); keep S3 live.
+    // S1 goes terminal-but-PRESENT (transient window); S2's dir is removed (missing);
+    // S3 stays live.
     finalizeSession(sessionsDir, S1);
     rmSync(D2, { recursive: true, force: true });
 
     utils._pruneSdkMap();
-    // Only the live session's pointer survives — bounded to live.
-    expect(existsSync(utils._sdkPointerPath(U1))).toBe(false); // terminal -> pruned
+    // WI-2 (run_session-init-gate-flake_260723_001): _pruneSdkMap reaps ONLY
+    // genuinely-MISSING-dir pointers. A present-but-terminal pointer is PRESERVED so a
+    // concurrent upsert-time prune cannot destroy a sibling's LIVE pointer (the reap
+    // that caused the session-init-gate false-DENY).
+    expect(existsSync(utils._sdkPointerPath(U1))).toBe(true);  // terminal-but-present -> kept
     expect(existsSync(utils._sdkPointerPath(U2))).toBe(false); // missing  -> pruned
     expect(existsSync(utils._sdkPointerPath(U3))).toBe(true);  // live     -> kept
-    expect(livePointerCount(mapDir)).toBe(1);
+    expect(livePointerCount(mapDir)).toBe(2);
 
-    // Explicit finalization unlink (removeSdkPointer) removes the last one; idempotent.
-    utils.removeSdkPointer(U3);
+    // Explicit finalization unlink (removeSdkPointer, the SessionEnd GC layer) clears a
+    // pointer regardless of terminal state; idempotent.
+    utils.removeSdkPointer(U1);   // terminal-but-present -> explicitly removed at SessionEnd
+    utils.removeSdkPointer(U3);   // live -> explicitly removed at its SessionEnd
+    expect(existsSync(utils._sdkPointerPath(U1))).toBe(false);
     expect(existsSync(utils._sdkPointerPath(U3))).toBe(false);
     expect(livePointerCount(mapDir)).toBe(0);
     expect(() => utils.removeSdkPointer(U3)).not.toThrow(); // repeat = no-op

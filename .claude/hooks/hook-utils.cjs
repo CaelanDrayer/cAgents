@@ -420,8 +420,14 @@ function _pruneSdkMap() {
     const target = safeRead(pointerPath);
     if (!target) continue;
     const sessionId = target.trim();
-    if (sessionId && _tryResolveCandidate(sessionsDir, sessionId)) continue; // still live
-    // Dead pointer (missing OR terminal target) — unlink under lock.
+    if (sessionId && _tryResolveCandidate(sessionsDir, sessionId)) continue; // still live (present + non-terminal)
+    // ponytail (WI-2, session run_session-init-gate-flake_260723_001): ALSO keep a
+    // present-but-terminal pointer. A concurrent session's upsert-time prune must not
+    // reap a sibling that is momentarily terminal-but-PRESENT (revision-cycle /
+    // mid-rewrite window) — that is the same destructive reap that causes the
+    // session-init-gate false-DENY (WI-1). Prune ONLY genuinely-MISSING-dir pointers.
+    if (sessionId && fs.existsSync(path.join(sessionsDir, sessionId))) continue; // present-but-terminal — preserve
+    // Genuinely-dead (missing-dir) pointer — unlink under lock.
     try {
       withFileLock(pointerPath, () => {
         try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
@@ -472,9 +478,12 @@ function upsertSdkSessionMap(sdkUuid, sessionDir) {
 /**
  * Resolve an SDK UUID to its owning cAgents session dir via the persisted map.
  * Returns the session dir for a live/non-terminal target, or null on a miss
- * (no pointer) OR a dead target. LAZY REAP (WI-5 part 1): when the pointer's
- * target is terminal or missing, unlink the pointer and return a miss so a
- * reused/dead UUID can never mis-resolve to a stale session.
+ * (no pointer) OR a dead target. LAZY REAP (WI-5 part 1; narrowed WI-2,
+ * run_session-init-gate-flake_260723_001): a terminal target still resolves to a
+ * MISS (null) so a reused/dead UUID never mis-resolves — but the pointer is only
+ * unlinked when the target session DIRECTORY is genuinely MISSING from disk. A
+ * present-but-terminal target (transient revision-cycle / mid-rewrite window) keeps
+ * its LIVE pointer so the deterministic map survives the transient terminal read.
  *
  * @param {string} sdkUuid - SDK transcript UUID.
  * @returns {string|null} Owning session dir, or null.
@@ -489,12 +498,24 @@ function resolveSdkUuidToSession(sdkUuid) {
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   const dir = _tryResolveCandidate(sessionsDir, sessionId);
   if (dir) return dir; // live / non-terminal hit
-  // LAZY REAP: target terminal or missing → unlink pointer, return miss.
-  try {
-    withFileLock(pointerPath, () => {
-      try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
-    });
-  } catch { /* fail-open */ }
+  // Resolution GATE unchanged: a terminal target still returns a MISS (null) below,
+  // so a reused/dead UUID can never mis-resolve to a stale session.
+  //
+  // ponytail (WI-2, session run_session-init-gate-flake_260723_001): LAZY REAP only
+  // a pointer whose target session DIRECTORY is genuinely MISSING from disk — NOT one
+  // that is merely present-but-terminal. A TRANSIENT terminal read (a revision-cycle
+  // VALIDATED/failed window, or a mid-rewrite status.yaml) must NOT destroy the LIVE
+  // pointer: doing so collapses the session off the deterministic v12.32.0 SDK-UUID
+  // map onto the unreliable env-var + legacy-heuristic path and produces the
+  // intermittent session-init-gate false-DENY (WI-1). Present-but-terminal => preserve
+  // the pointer + return a miss; missing-dir => reap (GC / bounded-registry invariant).
+  if (!fs.existsSync(path.join(sessionsDir, sessionId))) {
+    try {
+      withFileLock(pointerPath, () => {
+        try { fs.unlinkSync(pointerPath); } catch { /* already gone */ }
+      });
+    } catch { /* fail-open */ }
+  }
   return null;
 }
 

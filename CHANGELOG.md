@@ -10,6 +10,44 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.61.1] - 2026-07-23
+
+**Fix intermittent session-init-gate Phase-1 false-DENY — destructive lazy-reap
+of a LIVE SDK-UUID map pointer.** Session `run_session-init-gate-flake_260723_001`.
+The `PreToolUse[Agent]` session-presence gate (`session-init-gate.cjs`, dispatched
+by `agent-dispatch.cjs`) intermittently hard-DENIED an Agent spawn with "no active
+session". Root cause: `resolveSdkUuidToSession` (and its helper `_pruneSdkMap`) in
+`.claude/hooks/hook-utils.cjs` treated *any* non-live read of a pointer's target
+`status.yaml` as grounds to unlink the SDK-UUID → session pointer. A transient or
+legitimate terminal read of `status.yaml` (a race window, or a momentarily
+terminal-looking state) therefore destroyed a pointer whose session directory was
+still present and LIVE — so the very next lookup missed, `findActiveSession`
+returned null, and the presence gate fired a false-DENY. The failure was
+load-dependent and non-deterministic, which is why it surfaced as flake rather
+than a hard break.
+
+### Fixed
+- `.claude/hooks/hook-utils.cjs` — narrowed the SDK-UUID map reap in
+  `resolveSdkUuidToSession` + `_pruneSdkMap` to unlink a pointer ONLY when its
+  target session DIRECTORY is genuinely missing on disk. A transient/terminal
+  `status.yaml` read no longer destroys a pointer to a still-present session, so a
+  LIVE pointer survives and the presence gate no longer false-DENIES. The three
+  concurrency invariants are unchanged: the resolution gate still refuses to
+  resolve a UUID hint to a sibling session, the presence gate still DENIES when no
+  session directory exists, and the three-layer GC (lazy reap on lookup, explicit
+  SessionEnd unlink, opportunistic prune on upsert) still bounds the registry —
+  the reap is now dir-existence-gated instead of status-state-gated.
+
+### Added
+- `tests/hooks/session-init-gate-flake-regression.test.js` — bug-driven regression
+  (RED→GREEN, 5 cases) pinning that a LIVE-but-transiently-terminal pointer
+  survives the reap and that a genuinely-missing-dir pointer is still unlinked.
+  RED before the `hook-utils.cjs` fix, GREEN after.
+
+### Changed
+- `tests/hooks/sdk-uuid-map-resolution.test.js` — updated to reflect the
+  dir-existence-gated reap semantics.
+
 ## [12.61.0] - 2026-07-18
 
 **Audit residuals R4 — systemically de-flake hook-test spawn helpers.** Extends
