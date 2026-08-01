@@ -10,6 +10,44 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.62.1] - 2026-07-31
+
+**bash-guard fail-closed soft-fail**: an un-parseable Bash command now downgrades
+to a confirmation `ask` instead of a hard `deny`, while the catastrophic floor is
+preserved in every mode. Fixes a real false positive — a legitimate
+`git commit -m "$(cat <<'EOF' … the model's unit … EOF)"` was hard-denied because
+the apostrophe inside the `$(...)` heredoc body desynced the quote-aware but
+heredoc-unaware tokenizer (`unbalanced command substitution` → fail-closed deny).
+
+### Fixed
+- `bash-guard-evaluator.cjs` now tags a **tokenize/canonicalize** failure with
+  `failClosed: true` (new `DF()` sentinel) so the calling hook can distinguish
+  "I could not PARSE this benign-looking command" from "I PROVED this command is
+  destructive". An evaluator **defect** (a component throwing, or `evaluate()`
+  itself throwing) stays a plain hard deny — machinery-broken fails hard; only an
+  input-parse failure is soft. Proven-destructive Classes A–E (which tokenize
+  successfully, incl. `r''m -rf /`) are unchanged and still hard-deny.
+- `bash-validator.cjs` no longer hard-short-circuits on a fail-closed deny. It
+  defers to the raw-string catastrophic belt (`BLOCKED_STRINGS` +
+  `BLOCKED_REGEXES` — no parse needed) and, only if the belt AND the HITL patterns
+  are all silent, downgrades to a one-keystroke `ask`. The belt is forced to run
+  for fail-closed input **even under `CAGENTS_BASH_GUARD=off`** (where the sound
+  evaluator floor is unavailable), so a catastrophic literal (`rm -rf /`, fork
+  bomb, `mkfs`, `sudo`, exfil) in an un-parseable command still hard-denies in
+  `block`, `warn`, AND `off`.
+
+### Added
+- Regression coverage: a `fail-closed soft-fail` describe block in
+  `tests/hooks/bash-guard-guardfall.test.js` (11 rows) — evaluator `failClosed`-flag
+  assertions, full-hook ask-not-deny rows for the reported heredoc-apostrophe shape,
+  catastrophic-floor-holds-in-all-modes deny rows, and no-collateral benign/destructive
+  rows. Failing before the fix, passing after.
+
+### Docs
+- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.3 (soft-fail design + why it does not
+  weaken the deny-not-ask rule) and §7.6 (the honest `bypassPermissions` residual).
+- `.claude/rules/core/resources/hook-catalog.md` PreToolUse[Bash] — soft-fail note.
+
 ## [12.62.0] - 2026-07-25
 
 **Combined bump shipping two independent efforts under one release:** (a) the

@@ -493,6 +493,17 @@ function buildCanonical(segments) {
 // ── verdict sentinels (internal) ────────────────────────────────────────────
 function D(reason) { return { kind: 'deny', reason }; }
 function A(reason) { return { kind: 'ask', reason }; }
+// DF — a FAIL-CLOSED deny: the evaluator could not *parse* the input (un-tokenizable
+// / un-canonicalizable), so it can prove NEITHER safety NOR destruction. It is still
+// a deny at the evaluator level (the pure-library contract stays conservative), but
+// it carries `failClosed: true` so the calling hook can distinguish "I couldn't
+// analyze this benign-looking command" from "I PROVED this command is destructive".
+// bash-validator.cjs uses the flag to soft-fail an un-analyzable command to a
+// confirmation `ask` (after the catastrophic raw-string belt still hard-denies any
+// known-destructive literal) instead of hard-blocking it. This does NOT apply to an
+// evaluator DEFECT (a component throwing, or evaluate() itself throwing) — those stay
+// hard denies (machinery-broken = fail hard), only an input-parse failure is soft.
+function DF(reason) { return { kind: 'deny', reason, failClosed: true }; }
 
 // ── fork bomb (raw pre-check — tokenization would mangle :(){...};: ) ────────
 function isForkBomb(raw) {
@@ -878,12 +889,17 @@ function evaluateInternal(command, depth) {
   if (isForkBomb(command)) return D('fork bomb detected');
 
   let segments;
+  // DF (not D): a lex failure means the input could not be PARSED — a benign
+  // command with an apostrophe/unbalanced quote inside a heredoc or $(...) lands
+  // here just as a malformed-destructive one would. Tag it failClosed so the hook
+  // can soft-fail it to `ask` (the raw-string catastrophic belt still hard-denies
+  // any real `rm -rf /` / fork-bomb / exfil literal in the same string).
   try { segments = tokenize(command).segments; }
-  catch (e) { return D('un-tokenizable command (fail-closed): ' + (e && e.message || 'lex error')); }
+  catch (e) { return DF('un-tokenizable command (fail-closed): ' + (e && e.message || 'lex error')); }
 
   let canon;
   try { canon = buildCanonical(segments); }
-  catch (e) { return D('canonicalization failure (fail-closed)'); }
+  catch (e) { return DF('canonicalization failure (fail-closed)'); }
 
   const components = [
     () => checkVariableExpansion(segments),
@@ -915,7 +931,14 @@ function evaluate(command) {
   catch (e) { return { deny: true, reason: 'evaluator failure (fail-closed): ' + (e && e.message || 'unknown') }; }
 
   if (!res) return null;
-  if (res.kind === 'deny') return { deny: true, reason: res.reason || 'blocked destructive command' };
+  if (res.kind === 'deny') {
+    const out = { deny: true, reason: res.reason || 'blocked destructive command' };
+    // Surface the fail-closed (couldn't-parse) marker so the hook can soft-fail
+    // an un-analyzable command to `ask` rather than hard-deny. Provably-destructive
+    // denies (no failClosed) stay hard denies.
+    if (res.failClosed) out.failClosed = true;
+    return out;
+  }
   if (res.kind === 'ask') {
     return {
       hookSpecificOutput: {

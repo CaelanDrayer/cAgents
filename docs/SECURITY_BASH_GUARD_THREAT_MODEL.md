@@ -328,6 +328,59 @@ direction), never *under*-analyze. Verified by a dedicated
 destructive-before-comment / multi-line deny rows + mid-word/quoted-`#`
 literal-preservation rows).
 
+### 5.3 Fail-closed soft-fail — un-parseable input → `ask`, not hard `deny` (v12.62.1)
+
+A follow-up to §5.2, driven by a false-positive report: a legitimate
+`git commit -m "$(cat <<'EOF' … EOF)"` whose heredoc body contained a prose
+apostrophe (`the model's unit`) was **hard-denied**. The `#`-comment fix (§5.2)
+only covered a **trailing** comment; this shape is different — the apostrophe sits
+inside a `$(...)` **heredoc body**. The lexer is quote-aware but heredoc-unaware,
+so `extractParen` treated the heredoc body as shell, the stray `'` flipped it into
+single-quote mode, paren matching desynced, it threw `unbalanced command
+substitution`, and the fail-closed evaluator (§5 component 1) denied the entire
+benign command.
+
+**Design tension.** §5 is emphatic that un-tokenizable → `deny` (fail-closed) is
+deliberate, because an `ask` auto-resolves to *allow* under `bypassPermissions`.
+But §5 also reserves `ask` for "genuinely-unknowable-but-commonly-benign" cases —
+and an un-**parseable** command is exactly that: the evaluator can prove *neither*
+safety *nor* destruction. The resolution distinguishes **"I proved this is
+destructive"** (still `deny`) from **"I couldn't parse this benign-looking
+command"** (now a soft `ask`), while keeping a hard floor under the latter.
+
+**Closed by** (two layers):
+
+1. **Evaluator tags the parse failure** — `bash-guard-evaluator.cjs` returns
+   `{ deny: true, failClosed: true }` for a **tokenize / canonicalize** failure
+   (`DF()`), versus a plain `{ deny: true }` for a proven-destructive verdict. An
+   evaluator **defect** (a component throwing, or `evaluate()` itself throwing)
+   stays a **plain hard deny** — machinery-broken fails hard; only an input-parse
+   failure is soft. `evaluate()` still returns a deny (the pure-library contract
+   stays conservative); the flag is advisory to the hook.
+2. **Hook soft-fails after the belt** — `bash-validator.cjs` no longer
+   hard-short-circuits on a fail-closed deny. It **defers to the raw-string
+   catastrophic belt** (`BLOCKED_STRINGS` + `BLOCKED_REGEXES`) — which needs no
+   parse and still hard-denies any real `rm -rf /` / fork bomb / `mkfs` / `sudo` /
+   exfil literal in the same string — and, only if the belt **and** the HITL
+   patterns are all silent, downgrades to a one-keystroke confirmation `ask`.
+
+**Catastrophic floor holds in ALL modes.** The belt is normally skipped under
+`CAGENTS_BASH_GUARD=off` (§5.1), but for **fail-closed input the belt is forced to
+run even under `off`** — because the sound evaluator floor is *unavailable* for a
+command it cannot parse, so the belt is the only floor left. A fail-closed `rm -rf
+/` therefore denies under `block`, `warn`, **and** `off`.
+
+**Why this is not a weakening of the deny-not-ask rule.** The §5 rule sends
+*proven* bypass classes (A–E, which tokenize *successfully* and canonicalize to a
+destructive argv) to `deny` — and those are **unchanged**: Class A `r''m -rf /`
+tokenizes fine and still denies. This change only affects input the evaluator
+**cannot parse at all**, which was never a "proven" bypass class. The residual it
+introduces is stated honestly in §7.6. Verified by a dedicated
+`fail-closed soft-fail` describe block in
+`tests/hooks/bash-guard-guardfall.test.js` (evaluator `failClosed`-flag rows +
+full-hook ask-not-deny rows + catastrophic-floor-in-all-modes deny rows +
+no-collateral benign/destructive rows).
+
 ---
 
 ## 6. Test harness & CI gate (implemented)
@@ -381,6 +434,22 @@ These gaps remain open by construction; each is stated, not absorbed:
    `$PATH`, or follow symlinks. Poisoned Makefile/npm-script *interiors* are
    invisible to it (§2) — an argument for the compensating controls in §8. A user
    who removes/disables the hook loses it entirely.
+6. **Un-parseable + belt-missed + destructive, under `bypassPermissions`** (v12.62.1,
+   §5.3). A command the evaluator cannot tokenize now soft-fails to `ask` instead of
+   `deny`. The raw-string catastrophic belt still hard-denies the known-catastrophic
+   literals (`rm -rf /`, fork bomb, `dd if=/dev/zero`, `mkfs`, `sudo`, exfil) even
+   when un-parseable, in every mode. The residual: a command that is *simultaneously*
+   (a) un-parseable, (b) destructive only in a way the belt misses (e.g. a subpath
+   `rm -rf /etc`, which the sound evaluator catches on parse but the belt does not),
+   and (c) obfuscated into un-tokenizability, downgrades from `deny` to `ask` — which
+   **auto-resolves to allow under `bypassPermissions`**. This overlaps residuals #2
+   (heredoc-built) and #3 (runtime-constructed indirection): all require the attacker
+   to defeat the parser. Mitigated by §8's "no auto-yes on untrusted content" control
+   (which makes the `ask` actually protective) and, for interactive runs, by the human
+   confirming the `ask`. The pre-v12.62.1 behavior (hard-deny on any parse failure)
+   traded this narrow residual for a common, painful false positive (benign heredocs /
+   multi-line commit messages hard-blocked); §5.3 rebalances toward the false-positive
+   fix while keeping the catastrophic floor.
 
 One refinement shipped beyond the base design: an `$IFS`-obfuscated **read of a
 sensitive credential path** now escalates to **deny** rather than ask (a
