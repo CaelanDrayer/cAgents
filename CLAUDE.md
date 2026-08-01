@@ -92,7 +92,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **Zero Tolerance**: `/run` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
 
-**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for cross-domain strategic requests, `/team` (with auto-strategic mode) MUST still spawn C-suite teammates in Wave 0/1 and synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
+**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for cross-domain strategic requests, `/team` (with auto-strategic mode) MUST still spawn C-suite subagents in Wave 0/1 and synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
@@ -226,7 +226,7 @@ State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestr
 Skill: `.claude/skills/run/SKILL.md` + `reference/`
 
 ### /team - N-Wave Parallel Team Execution
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (teammates: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each teammate is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (subagents: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K subagents as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Parallelism comes from both concurrent per-wave subagent calls and each subagent recursively spawning its own subagents (depth 5) — a subagent needing another specialty spawns it downward rather than routing sideways through the lead. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each wave subagent is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
 /team Launch new product with campaign          # Cross-domain: auto-strategic mode
@@ -263,7 +263,7 @@ cagents-memory/
 
 **Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/teammate (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` teammates reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` wave subagents reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Creating Agents / Domains
 
@@ -338,7 +338,7 @@ merge) and the full manifest-field detail live in
 **`docs/ARCHITECTURE-HISTORY.md § Plugin Architecture`**. Worktree sparse checkout is
 declared in `.claude/settings.json` (`worktree.sparsePaths`, 6 entries: `.claude/`,
 `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`) so `/team`
-worktree-isolated teammates only populate the paths they need.
+worktree-isolated subagents only populate the paths they need.
 
 ## Performance Benchmarks
 
@@ -362,8 +362,8 @@ must never be conflated. The full measured-vs-estimate tables + provenance live 
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1682+ Vitest tests across 202+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.61.1
+**Tests**: `npm test` runs 1704+ Vitest tests across 207+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.62.0
 
 ## Troubleshooting
 

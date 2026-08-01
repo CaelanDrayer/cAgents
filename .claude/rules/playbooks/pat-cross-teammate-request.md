@@ -15,6 +15,26 @@ allowed-tools: Read Write Edit Bash
 
 # Pattern: Cross-Teammate Request (v12.14.0)
 
+> ## Status: LEGACY / EXPERIMENTAL — demoted in v12.62.0
+>
+> **This pattern belongs to the OPTIONAL experimental named-background-teammate path
+> (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) only. It is OBSOLETE under the DEFAULT
+> subagent execution model.** Its founding premise — "Claude Code forbids nested
+> teams, so a teammate needing help must route sideways through the lead" — is no
+> longer true: since Claude Code 2.1.172 subagents spawn their own subagents up to
+> 5 levels deep.
+>
+> **New canonical guidance under the default subagent model**: a wave subagent that
+> needs another specialty simply spawns that specialist as its OWN downward
+> sub-subagent (nesting to depth 5) and collects the result synchronously
+> (`run_in_background: false`). There is no sideways `peer_request`, no
+> lead-as-router hop, and no `SendMessage` round-trip on the default path — the
+> subagent delegates downward directly. Use this downward-spawn approach for all
+> default `/team` waves. The `peer_request` / `SendMessage` machinery below is
+> retained ONLY for the experimental named-teammate path, where teammates are
+> long-lived named background agents that genuinely cannot spawn peers and so must
+> route through the fixed lead.
+
 A teammate in a `/team` wave sometimes needs help from another teammate. Claude Code forbids nested teams (teammates cannot spawn sub-teams), forbids teammate-to-teammate direct messaging (the lead is fixed), and the cAgents aggressive-delegation rule forbids the lead from executing implementation work itself. This pattern resolves the gap: teammate A emits a structured `peer_request`, the lead routes it via a 4-branch decision tree, and the requested work happens through a peer or a fresh spawn — never through the lead's own hands.
 
 ## The peer_request schema

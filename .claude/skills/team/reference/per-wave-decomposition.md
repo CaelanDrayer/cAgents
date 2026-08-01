@@ -72,7 +72,7 @@ Wave 0 init:
 Entering Wave K:
   Read work_items_wave_{K}.yaml → know this wave's WIs
   Write spawn_brief.md (see spawn-brief-schema.md)
-  Spawn teammates with ~80-token pointer prompts
+  Spawn subagents with ~80-token pointer prompts
 
 Exiting Wave K:
   Spawn cagents:wave-reviewer → 1-line verdict

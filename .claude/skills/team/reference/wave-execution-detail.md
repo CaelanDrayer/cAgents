@@ -2,9 +2,9 @@
 
 Per-wave spawn cycle, monitoring, gate flow, and inter-wave coordination details for /team.
 
-## Step 5: Execute Waves 1..N-1 — Spawn Teammates Per Wave
+## Step 5: Execute Waves 1..N-1 — Spawn Subagents Per Wave
 
-This is the core execution loop. For EACH wave, spawn a fresh round of teammates, wait for completion, validate the gate, then proceed to the next wave.
+This is the core execution loop. For EACH wave, spawn a fresh round of subagents, collect their results, validate the gate, then proceed to the next wave. Each wave subagent can itself spawn its own subagents (depth 5) for any specialty it needs, so parallelism compounds beyond the per-wave fan-out.
 
 ```
 for each wave K from 1 to N-1:
@@ -13,52 +13,52 @@ for each wave K from 1 to N-1:
       "=== WAVE {K}/{N-1}: {wave_description} ==="
       List work items in this wave
 
-  5b. Spawn teammates for wave K IN PARALLEL:
+  5b. Spawn subagents for wave K IN PARALLEL:
 ```
 
 ### Worktree Isolation (Recommended)
 
-When teammates modify overlapping files, use `isolation: "worktree"` in the Task call to give each teammate an isolated git worktree. This prevents file conflicts during parallel execution.
+When subagents modify overlapping files, use `isolation: "worktree"` in the Task call to give each subagent an isolated git worktree. This prevents file conflicts during parallel execution.
 
 ```
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
-  team_name: "{team_name}",
+  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",   # EXPERIMENTAL named-teammate path only — omit on the default path
+  team_name: "{team_name}",                  # EXPERIMENTAL only — accepted-but-ignored (teams are implicit)
   isolation: "worktree",
   ...
 })
 ```
 
 **When to use worktree isolation**:
-- Multiple teammates editing the same files (e.g., package.json, shared configs)
-- Teammates running tests that produce temp files
-- Any wave with 3+ teammates modifying code files
+- Multiple subagents editing the same files (e.g., package.json, shared configs)
+- Subagents running tests that produce temp files
+- Any wave with 3+ subagents modifying code files
 
 **When worktree is unnecessary**:
-- Teammates writing to separate output directories (e.g., SESSION_DIR/outputs/task-N/)
+- Subagents writing to separate output directories (e.g., SESSION_DIR/outputs/task-N/)
 - Documentation-only waves where files don't overlap
 - Research/analysis waves that only read files
 
 **Merge coordination after worktree waves**:
-After all teammates in a worktree-isolated wave complete, the lead must merge:
+After all subagents in a worktree-isolated wave complete, the lead must merge:
 1. Check for merge conflicts: `git diff` between worktrees
 2. If no conflicts: merge automatically (fast-forward)
-3. If conflicts: resolve by preferring the teammate whose work item has higher priority
+3. If conflicts: resolve by preferring the subagent whose work item has higher priority
 4. Run guard command (npm test, lint) after merge to catch integration issues
 
 ### --members Batching
 
-If wave K has more work items than the `--members` cap (default: 5), batch them into sub-waves. Each sub-wave spawns up to `--members` teammates in parallel, waits for all to complete, then spawns the next batch. Every work item gets its own dedicated teammate — never collapse multiple tasks into a single teammate.
+If wave K has more work items than the `--members` cap (default: 5), batch them into sub-waves. Each sub-wave spawns up to `--members` subagents in parallel, waits for all to complete, then spawns the next batch. Every work item gets its own dedicated subagent — never collapse multiple tasks into a single subagent.
 
 ```
 items_in_wave = work_items_for_wave_K
 batch_size = members_cap  # from --members flag, default 5
 for batch in chunk(items_in_wave, batch_size):
   for each work_item in batch:
-    Agent({...})  # one teammate per item
+    Agent({...})  # one subagent per item
   # Wait for batch to complete before spawning next batch
-  # Apply early shutdown (5c-1) as each teammate finishes
+  # (experimental path only) apply early shutdown (5c-1) as each teammate finishes
 ```
 
 ### Controller Resolution (Once Per Wave)
@@ -93,25 +93,26 @@ CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
 
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
-  team_name: "{team_name}",
+  run_in_background: false,                   # DEFAULT: synchronous, lead collects results together
+  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",    # EXPERIMENTAL named-teammate path only — omit on the default path
+  team_name: "{team_name}",                   # EXPERIMENTAL only — accepted-but-ignored (teams are implicit)
   description: "Wave {K} - Execute TASK-{N}: <short description>",
   prompt: "<see reference/teammate-spawning-template.md for full prompt>"
 })
 ```
 
-See `reference/teammate-spawning-template.md` for the full teammate spawn prompt template including self-registration block.
+See `reference/teammate-spawning-template.md` for the full subagent spawn prompt template including self-registration block.
 
 ### 5c. Monitor Wave K Progress
 
-- Wait for teammate messages (they arrive automatically)
+- Default path: the wave subagents return synchronously; the lead collects all results together. Experimental named-teammate path: wait for teammate messages (they arrive automatically).
 - Periodically check TaskList to see progress
-- If a teammate flags an issue: course-correct if needed
-- Track per-teammate timeout: if no progress after 5 minutes, consider recovery
+- If a subagent flags an issue: course-correct if needed
+- Track per-subagent timeout: if no progress after 5 minutes, consider recovery
 
-### 5c-1. Early Individual Shutdown (Resource Optimization)
+### 5c-1. Early Individual Shutdown (Resource Optimization) — Experimental Path Only
 
-When a teammate reports completion (via SendMessage), shut it down IMMEDIATELY rather than waiting for the entire wave to finish:
+**On the DEFAULT path this is unnecessary — synchronous wave subagents just return their result, so there is nothing to shut down early.** On the EXPERIMENTAL named-teammate path only, when a teammate reports completion (via SendMessage), shut it down IMMEDIATELY rather than waiting for the entire wave to finish:
 
 ```
 On receiving "TASK-{N} complete" from w{K}-task-{N}-{type}:
@@ -126,13 +127,13 @@ On receiving "TASK-{N} complete" from w{K}-task-{N}-{type}:
 
 This frees resources (tmux panes, context windows) as soon as each teammate finishes.
 
-### 5c-2. Automatic Teammate Failure Recovery
+### 5c-2. Automatic Subagent Failure Recovery
 
 See `reference/fallback-and-error-recovery.md` for the full recovery chain (RETRY → SIMPLIFY → ESCALATE).
 
 ### 5d-pre. Write child_controllers.yaml Manifest
 
-After all wave K teammates complete (or are marked blocked), append controller entries to `${SESSION_DIR}/workflow/child_controllers.yaml`. See `reference/parent-session-extraction.md` for format.
+After all wave K subagents complete (or are marked blocked), append controller entries to `${SESSION_DIR}/workflow/child_controllers.yaml`. See `reference/parent-session-extraction.md` for format.
 
 ### 5d. Validate GATE-K
 
@@ -141,11 +142,11 @@ When all wave K items complete (or are blocked):
 - Check quality gate criteria based on wave type (see `reference/gate-validation-protocol.md`)
 - If gate passes: Mark GATE-K task as completed (unblocks wave K+1)
 - If gate fails but blocked items exist: Apply partial pass — mark gate as conditionally passed with noted gaps; proceed with degraded scope
-- If gate fails without blocked items: Report issues, spawn fix-up teammates, re-validate
+- If gate fails without blocked items: Report issues, spawn fix-up subagents, re-validate
 
-### 5e. Shut Down Remaining Wave K Teammates
+### 5e. Shut Down Remaining Wave K Subagents — Experimental Path Only
 
-Most teammates should already be shut down via early individual shutdown (5c-1). Send shutdown to any that remain:
+**On the DEFAULT path there is nothing to shut down — synchronous wave subagents have already returned.** On the EXPERIMENTAL named-teammate path only: most teammates should already be shut down via early individual shutdown (5c-1). Send shutdown to any that remain:
 
 ```
 SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", content: "Wave {K} complete." })
@@ -190,14 +191,14 @@ If FAIL without partial results: Report issues with evidence. Suggest `/run --re
 Each wave's outputs are available to subsequent waves via the shared session directory:
 
 ```
-Wave 1 teammate (TASK-01):
+Wave 1 subagent (TASK-01):
   Completes -> writes outputs/task-01/api_spec.yaml
   TaskUpdate(TASK-01, completed)
-  SendMessage(lead, "TASK-01 done")
+  Returns result to lead ("TASK-01 done")
 
 Lead validates GATE-1 -> marks complete -> unblocks wave 2
 
-Wave 2 teammate (TASK-03, depends on TASK-01):
+Wave 2 subagent (TASK-03, depends on TASK-01):
   Reads outputs/task-01/api_spec.yaml from session dir
   Builds on wave 1 outputs
   Writes outputs/task-03/implementation/
@@ -205,7 +206,7 @@ Wave 2 teammate (TASK-03, depends on TASK-01):
 
 ### Intra-Wave Parallelism
 
-Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedBy` for any intra-wave dependencies.
+Within a single wave, all subagents run in parallel. Use TaskUpdate `addBlockedBy` for any intra-wave dependencies.
 
 ### Task Dependencies
 
@@ -213,9 +214,9 @@ Within a single wave, all teammates run in parallel. Use TaskUpdate `addBlockedB
 - **Intra-wave**: Set via TaskUpdate `addBlockedBy` based on decomposition dependency graph
 - Dependencies auto-unblock via TaskList
 
-### Teammate Autonomy
+### Subagent Autonomy
 
-- Teammates flag issues to lead via SendMessage but continue working
+- Subagents surface issues to the lead (via their returned result on the default path, or SendMessage on the experimental named-teammate path) but continue working
 - Lead can course-correct if needed but doesn't block progress
 - All enrichment always runs (consistency over speed)
-- Teammates within a wave operate independently
+- Subagents within a wave operate independently

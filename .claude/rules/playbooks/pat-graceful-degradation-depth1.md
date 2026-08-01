@@ -82,8 +82,9 @@ NOT degrade.
 > **Historical framing.** Before v12.17.0, the depth-1 stripping was documented
 > as applying uniformly across all spawning skills and all agent types:
 >
-> - **All spawning skills**: `/run` (controllers at depth-1), `/team` (teammates
->   at depth-1, including C-suite agents in Wave 0/1 of strategic mode). The
+> - **All spawning skills**: `/run` (controllers at depth-1), `/team` (subagents
+>   at depth-1 [historically labeled "teammates"], including C-suite agents in
+>   Wave 0/1 of strategic mode). The
 >   v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced the
 >   stripping under `/run` — a controller spawned by `/run` at depth-1 received
 >   "Agent is not available inside subagents." on attempting
@@ -167,8 +168,8 @@ controller/lead aggregates self-validation YAMLs at the wave or session gate.
 > - `run_improve-team-context_260521_001` (v12.1.0 spike confirming /run depth-1 stripping)
 >
 > Lead direct execution per W6 W2 completed in ~25 minutes vs. the projected
-> 1.5-hour teammate path, demonstrating that direct execution was often *faster*
-> than spawning teammates for mechanical work.
+> 1.5-hour subagent path, demonstrating that direct execution was often *faster*
+> than spawning subagents for mechanical work.
 
 **v12.17.0 verification (deep nesting confirmed live — stripping gone):**
 

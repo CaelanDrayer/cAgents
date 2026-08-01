@@ -46,7 +46,7 @@ const CORPUS_PATH = join(REPO_ROOT, 'tests', 'hooks', 'fixtures', 'guardfall-cor
 const PACKAGE_JSON_PATH = join(REPO_ROOT, 'package.json');
 const HOOK_PATH = join(REPO_ROOT, '.claude', 'hooks', 'bash-validator.cjs');
 
-const { evaluate } = require(EVALUATOR_PATH);
+const { evaluate, tokenize } = require(EVALUATOR_PATH);
 const corpus = JSON.parse(readFileSync(CORPUS_PATH, 'utf8'));
 
 /**
@@ -369,6 +369,91 @@ describe('P1 wrapper-bypass (bash-validator hook)', () => {
 
   it('ALLOWS a benign nice-wrapped test run -- nice npm test', () => {
     expect(hookVerdict('nice npm test')).toBe('allow');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// #-comment tokenization — false-positive fix (session run_bash-guard-comment_).
+//
+// The lexer modeled quotes, $-expansions, backticks, substitution, and redirects
+// but had NO '#'-comment handling. Bash ignores a word that begins with '#' and
+// everything after it on the line, so a stray apostrophe/quote INSIDE a trailing
+// comment (e.g. `... # this won't work`) was read as an OPENING single quote,
+// scanned to EOF, threw 'unterminated single quote', and the evaluator
+// fail-closed the whole BENIGN command to DENY. This is a pure over-block: the
+// reported trigger was a legitimate `CAGENTS_ROOT="…"  # …plugin's root…`
+// invocation being hard-denied.
+//
+// Fix: tokenize() treats a '#' at a WORD BOUNDARY (curToken === null) as the
+// start of a comment (ignored to end-of-line), exactly as bash does. This is
+// SOUND, not a bypass: bash never runs text after a word-start '#', and
+// everything BEFORE the '#' is still fully tokenized — so a destructive command
+// preceding a comment still denies. A '#' mid-word (foo#bar, a URL fragment)
+// stays literal, matching bash.
+//
+// These are false-positive-fix + no-regression guards (evaluator-level), NOT a
+// new GuardFall bypass class, so they live here rather than in the pinned
+// 57-probe corpus.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('#-comment tokenization false-positive fix (bash-guard-evaluator)', () => {
+  const APOS = String.fromCharCode(39); // ' — avoid an unbalanced quote in source
+  function verdict(command) {
+    return actualVerdictLabel(evaluate(command));
+  }
+
+  // ---- the reported false positive: benign command + trailing comment -> allow
+  it('ALLOWS the reported CAGENTS_ROOT assign with a trailing apostrophe comment (was DENY)', () => {
+    const cmd =
+      'CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"'
+      + '  # resolve the plugin' + APOS + 's root directory';
+    expect(() => tokenize(cmd)).not.toThrow();
+    expect(verdict(cmd)).toBe('null');
+  });
+
+  it('ALLOWS a simple command with a trailing comment containing an apostrophe', () => {
+    expect(verdict('echo hi # this won' + APOS + 't work')).toBe('null');
+  });
+
+  it('ALLOWS a full-line comment that contains an apostrophe', () => {
+    expect(verdict('# don' + APOS + 't run this yet')).toBe('null');
+  });
+
+  it('ALLOWS a shebang line (word-start # comment)', () => {
+    expect(verdict('#!/usr/bin/env bash')).toBe('null');
+  });
+
+  it('ALLOWS a trailing comment with an unbalanced double-quote (not only single quotes)', () => {
+    expect(verdict('ls -la  # a stray " quote in the note')).toBe('null');
+  });
+
+  // ---- SECURITY: a comment must NOT let a destructive command through ----
+  it('STILL DENIES a destructive command that precedes a trailing comment', () => {
+    expect(verdict('rm -rf / # cleanup step')).toBe('deny');
+    expect(verdict('rm -rf /etc  # remove config')).toBe('deny');
+  });
+
+  it('STILL DENIES a destructive command on a line AFTER a comment line (multi-line)', () => {
+    expect(verdict('echo prepping # note to self\nrm -rf /')).toBe('deny');
+  });
+
+  // ---- a '#' inside quotes is literal data, never a comment ----
+  it('treats a # inside single quotes as literal data (benign grep for a shebang)', () => {
+    expect(verdict('grep ' + APOS + '#!/bin/sh' + APOS + ' file')).toBe('null');
+  });
+
+  // ---- mid-word '#' stays literal (matches bash) — a tokenize-level property ----
+  it('does NOT split a word at a mid-word # (foo#bar is one token; URL fragments preserved)', () => {
+    const words = (cmd) => tokenize(cmd).segments[0].argv.map((t) => t.canon);
+    expect(words('echo foo#bar')).toEqual(['echo', 'foo#bar']);
+    expect(words('curl https://example.com/p#frag')).toEqual(['curl', 'https://example.com/p#frag']);
+    expect(words('grep a#b file')).toEqual(['grep', 'a#b', 'file']);
+  });
+
+  it('starts a comment only at a word boundary, not after a partial word', () => {
+    // `x''#y` -> the '' opens a token, so '#' is literal -> one word x#y (bash agrees)
+    expect(tokenize('x' + APOS + APOS + '#y').segments[0].argv.map((t) => t.canon)).toEqual(['x#y']);
+    // leading-whitespace '#' IS a comment (word boundary) -> segment is empty
+    expect(tokenize('   # just a comment').segments.length).toBe(0);
   });
 });
 

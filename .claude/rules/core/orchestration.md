@@ -95,7 +95,7 @@ See `orchestration-reference.md` for format and schemas.
 
 ## /team Integration
 
-Wave 0 (Lead): all enrichment. Waves 1-N (Teammates): each runs `/run --session` detecting pre-enrichment. Final wave (Lead): integration + final validation.
+Wave 0 (Lead): all enrichment. Waves 1-N (subagents): each runs `/run --session` detecting pre-enrichment. Final wave (Lead): integration + final validation.
 
 ## Signal File Intervention
 

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.61.1"
+  version: "12.62.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -16,11 +16,11 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, Tas
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
-You are a thin event loop. Your job: init session, run enrichment (Wave 0), then for each wave K: write spawn brief, spawn teammates, spawn `cagents:wave-reviewer`, mark gate. Finalize: spawn integration controller, spawn `cagents:coord-log-writer`, validate, cleanup.
+You are a thin event loop. Your job: init session, run enrichment (Wave 0), then for each wave K: write spawn brief, spawn wave subagents, spawn `cagents:wave-reviewer`, mark gate. Finalize: spawn integration controller, spawn `cagents:coord-log-writer`, validate, cleanup. Parallelism comes from both concurrent per-wave subagent calls and each subagent recursively spawning its own subagents (depth 5) — a subagent needing another specialty spawns it downward rather than routing sideways through the lead.
 
 **You are a delegator, not a doer.** Agent tool only. Never implement work items yourself.
 
-**Domain-agnostic — NOT software-only.** `/team` parallelizes ANY multi-part work: a cross-domain product launch, a multi-deliverable client engagement (e.g. three SOWs + a price quote), a legal-marketing-finance initiative, a multi-chapter manuscript. The wave/teammate/gate machinery is domain-neutral coordination — never refuse or redirect a non-technical request because the pipeline "looks engineering-focused." Spawn the right domain controllers (`operations-manager`, `marketing-strategist`, `general-counsel`, `account-manager`, etc.), not just `tech-lead`.
+**Domain-agnostic — NOT software-only.** `/team` parallelizes ANY multi-part work: a cross-domain product launch, a multi-deliverable client engagement (e.g. three SOWs + a price quote), a legal-marketing-finance initiative, a multi-chapter manuscript. The wave/subagent/gate machinery is domain-neutral coordination — never refuse or redirect a non-technical request because the pipeline "looks engineering-focused." Spawn the right domain controllers (`operations-manager`, `marketing-strategist`, `general-counsel`, `account-manager`, etc.), not just `tech-lead`.
 
 See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract.
 
@@ -30,10 +30,10 @@ Do nothing else before Step 1 + Step 2a. Create the session directory and write 
 
 ## Lead-Context Discipline (v12.1.0+)
 
-This skill is designed so the lead can complete 5-10 wave workflows without exhausting context (full team-execution model — wave structure, depth-5 nesting budget, why teammates spawn execution agents directly rather than re-entering `/run` — in @reference/architecture.md). Four disciplines enforce this:
+This skill is designed so the lead can complete 5-10 wave workflows without exhausting context (full team-execution model — wave structure, depth-5 nesting budget, why wave subagents spawn execution agents directly rather than re-entering `/run` — in @reference/architecture.md). Four disciplines enforce this:
 
 1. **Per-wave decomposition** — planner emits `workflow/work_meta.yaml` (lead reads ONCE) + `workflow/work_items_wave_{K}.yaml` (lead reads only current wave). See @reference/per-wave-decomposition.md.
-2. **Disk-handoff spawn briefs** — lead writes `outputs/wave-{K}/spawn_brief.md` once per wave; each teammate gets a ~80-token pointer prompt. See @reference/spawn-brief-schema.md.
+2. **Disk-handoff spawn briefs** — lead writes `outputs/wave-{K}/spawn_brief.md` once per wave; each subagent gets a ~80-token pointer prompt. See @reference/spawn-brief-schema.md.
 3. **Delegated gate validation** — `cagents:wave-reviewer` runs the 7-check protocol against on-disk evidence and returns a 1-line verdict. Lead never reads raw gate evidence.
 4. **Delegated final assembly** — `cagents:coord-log-writer` builds `coordination_log.yaml` from on-disk artifacts and returns a 1-line confirmation. Lead never re-reads N waves of WI status.
 
@@ -57,11 +57,11 @@ Wave 0 (Lead, sequential):
   planner → work_meta.yaml + work_items_wave_{K}.yaml per wave
   (legacy work_items.yaml also written during v12.1.x for back-compat)
 
-Waves 1..N-1 (Teammates, parallel per wave):
+Waves 1..N-1 (Subagents, parallel per wave):
   Lead writes outputs/wave-{K}/spawn_brief.md (once)
-  Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message,
+  Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
     run_in_background: false (synchronous — lead collects all wave results together)
-  Each teammate: controller-agent delegates to execution agent via Agent (direct-execution fallback only if Agent absent at nesting ceiling)
+  Each wave subagent: controller-agent delegates to execution agent via Agent (direct-execution fallback only if Agent absent at nesting ceiling)
   Lead spawns cagents:wave-reviewer → 1-line GATE-K verdict
   Mark gate, drop wave from active reads, advance
 
@@ -81,10 +81,10 @@ Strategic mode prepends three coordination waves (C-suite analysis → objection
 
 ```
 Wave 0 (Lead): orchestrator + planner + router
-Wave 1 (Teammates, parallel): C-suite analysis (one teammate per assigned C-suite role from csuite-mapping.md)
+Wave 1 (Subagents, parallel): C-suite analysis (one subagent per assigned C-suite role from csuite-mapping.md)
 Wave 2 (Lead): Objection phase — peer reads + two-phase deliberation
 Wave 3 (Lead): Brief synthesis → outputs/strategic/strategic_brief.yaml
-Wave 4..N-1 (Teammates, parallel per wave): per-domain dispatch driven by domain_assignments
+Wave 4..N-1 (Subagents, parallel per wave): per-domain dispatch driven by domain_assignments
 Wave N (Lead): integration + validation (unchanged)
 ```
 
@@ -111,7 +111,7 @@ After Wave 0 enrichment completes (Step 2d), read `enriched_context.universal_ro
 
 ## Step 2 — Wave 0 Enrichment
 
-**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `$MEM/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. Anchor ALL session writes to an ABSOLUTE project root (REC-20) — never a relative `cagents-memory/…` literal, which a cwd-drifted teammate would nest under a parent session dir (the CWD-leak). Define once and reuse `$MEM`:
+**2a.** Initialize session. If `CAGENTS_SESSION_ID` set: use verbatim. Else: generate slug, scan `$MEM/sessions/` for next NNN, compose `SESSION_ID="team_{slug}_{YYMMDD}_{NNN}"`. Anchor ALL session writes to an ABSOLUTE project root (REC-20) — never a relative `cagents-memory/…` literal, which a cwd-drifted subagent would nest under a parent session dir (the CWD-leak). Define once and reuse `$MEM`:
 
 ```bash
 CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -164,13 +164,13 @@ For each wave K:
 
 **5b.** Write `outputs/wave-{K}/spawn_brief.md` per @reference/spawn-brief-schema.md schema.
 
-**5c. (DEFAULT — concurrent Agent waves, works in every harness).** Spawn ALL wave-K teammates as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently), each with `run_in_background: false`. Synchronous spawning is required — subagents are background-by-default since v2.1.198, so `run_in_background: false` is what makes the lead receive all wave results together before it validates GATE-K. Use ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each teammate is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. There is no team to create — teams are implicit. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
+**5c. (DEFAULT — concurrent Agent waves, works in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently), each with `run_in_background: false`. Synchronous spawning is required — subagents are background-by-default since v2.1.198, so `run_in_background: false` is what makes the lead receive all wave results together before it validates GATE-K. Use ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each wave subagent is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`; it can recursively spawn its own subagents (depth 5) for any specialty it needs. There is no team to create — teams are implicit. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
 
 **5c-EXPERIMENTAL (OPTIONAL — named background teammates + panes).** Only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })` (the team forms implicitly; any `team_name` arg is accepted-but-ignored) and coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name, v2.1.77) plus the shared Task list. `teammateMode` (default `in-process` since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-path only. This path is harness-variable — if the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path in 5c.
 
-**5d.** Monitor wave K via TaskList + teammate messages. Early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown.
+**5d.** Monitor wave K via TaskList. On the DEFAULT path the wave subagents return synchronously (nothing to shut down). On the EXPERIMENTAL named-teammate path only, monitor teammate messages and early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown.
 
-**5d-i.** Peer-request routing: if an inbound `SendMessage(type=peer_request)` arrives OR a new file appears at `outputs/wave-{K}/peer_requests/REQ-*.yaml`, read ONLY the new REQ file (lead-context discipline) and apply the 4-branch decision tree: RELAY (SendMessage to peer), SPAWN (fresh Agent), PROMOTE (append to `work_items_wave_{K+1}.yaml`), or REJECT (SendMessage requester with rationale). Update REQ-N.yaml `status` field after each routing decision. The lead NEVER executes the requested work itself — aggressive-delegation invariant. See @.claude/rules/playbooks/pat-cross-teammate-request.md.
+**5d-i. (LEGACY — experimental-named-teammate-path only.)** Obsolete under the default subagent model, where a subagent needing another specialty spawns it downward as its own sub-subagent instead of routing a request sideways through the lead. Retained only for the experimental named-teammate path: if an inbound `SendMessage(type=peer_request)` arrives OR a new file appears at `outputs/wave-{K}/peer_requests/REQ-*.yaml`, read ONLY the new REQ file (lead-context discipline) and apply the 4-branch decision tree: RELAY (SendMessage to peer), SPAWN (fresh Agent), PROMOTE (append to `work_items_wave_{K+1}.yaml`), or REJECT (SendMessage requester with rationale). Update REQ-N.yaml `status` field after each routing decision. The lead NEVER executes the requested work itself — aggressive-delegation invariant. See @.claude/rules/playbooks/pat-cross-teammate-request.md.
 
 **5e.** When all wave-K WIs are completed (TaskList), spawn `cagents:wave-reviewer`:
 ```
@@ -212,7 +212,7 @@ Read 1-line confirmation only.
 
 ## Step 7 — Cleanup
 
-1. On the DEFAULT path, synchronous (`run_in_background: false`) teammates have already returned — there is nothing to shut down and no team to delete (teams are implicit; cleanup is automatic). Do NOT call `TeamDelete`. Only on the EXPERIMENTAL named-background-teammate path: `SendMessage({type:"shutdown_request",...})` any teammates still running.
+1. On the DEFAULT path, synchronous (`run_in_background: false`) wave subagents have already returned — there is nothing to shut down and no team to delete (teams are implicit; cleanup is automatic). Do NOT call `TeamDelete`. Only on the EXPERIMENTAL named-background-teammate path: `SendMessage({type:"shutdown_request",...})` any teammates still running.
 2. Mark initial orchestration TaskCreate completed.
 3. Finalize lead entry in `agent_tree.yaml` (`stopped_at`, `completion_summary`, `duration_seconds`).
 4. **Task cleanup (HARD GATE)**: `TaskList` → mark all `in_progress`/`pending` completed → `TaskList` → verify zero outstanding before stopping.
@@ -226,15 +226,15 @@ Read 1-line confirmation only.
 ## Key Rules
 
 1. Teams are implicit — never call `TeamCreate`/`TeamDelete` (removed in Claude Code v2.1.178). There is nothing to create; cleanup is automatic at session end.
-2. DEFAULT: spawn ALL wave-K teammates as CONCURRENT `Agent()` calls in ONE message, `run_in_background: false` (works in every harness). Named background teammates + tmux/iTerm2 panes are an OPTIONAL EXPERIMENTAL path gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — fall back to the default if unavailable.
-3. One spawn cycle per wave (fresh teammates each wave).
-4. All teammates within a wave run in parallel.
+2. DEFAULT: spawn ALL wave-K subagents as CONCURRENT `Agent()` calls in ONE message, `run_in_background: false` (works in every harness). Named background teammates + tmux/iTerm2 panes are an OPTIONAL EXPERIMENTAL path gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — fall back to the default if unavailable.
+3. One spawn cycle per wave (fresh subagents each wave).
+4. All subagents within a wave run in parallel.
 5. Gate validation via `cagents:wave-reviewer` — never inline 7-check in lead.
 6. Maximize waves.
-7. Teammates ARE controller agents that spawn execution agents directly via Agent (CC ≥ 2.1.172 retains Agent up to 5 levels deep; graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only when Agent is verifiably absent at the nesting ceiling or on a regressed harness).
+7. Wave subagents ARE controller agents that spawn execution agents directly via Agent, and can recursively spawn their own subagents up to depth 5 — a subagent needing another specialty spawns it downward rather than routing sideways through the lead (CC ≥ 2.1.172 retains Agent up to 5 levels deep; graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only when Agent is verifiably absent at the nesting ceiling or on a regressed harness).
 8. Lead does Wave 0 + final wave.
 9. Never ask permission between waves.
-10. Never just create tasks without spawning teammates.
+10. Never just create tasks without spawning subagents.
 11. Final coordination_log written by `cagents:coord-log-writer`, not lead.
 
 ## Session Hierarchy

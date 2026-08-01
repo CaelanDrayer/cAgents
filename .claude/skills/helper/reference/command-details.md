@@ -218,7 +218,7 @@ review → optimize pipeline with a shared baseline and synthesized
 
 ### What It Does
 
-`/team` decomposes a large task into parallelizable work items and runs them simultaneously using Claude Code's built-in agent teams. Each teammate is a separate Claude Code instance that executes its work item via `/run` (full orchestration per item). With tmux split panes, all teammates are visible at once. It provides shared task lists and inter-agent messaging for coordination.
+`/team` decomposes a large task into parallelizable work items and runs them simultaneously as concurrent-Agent waves. Each subagent is a separate Claude Code instance that executes its work item via `/run` (full orchestration per item). With tmux split panes (experimental named-teammate path only), all subagents are visible at once. It provides shared task lists and inter-agent messaging for coordination.
 
 ### When to Use /team
 
@@ -250,7 +250,7 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 [Team Creation] Creates agent team + shared task list
   |
   v
-[Parallel Execution in tmux split panes]
+[Parallel Execution in tmux split panes -- experimental named-teammate path]
   Pane 0: Team Lead (coordinates, monitors)
   Pane 1: Teammate -> /run "Implement Google OAuth"     -> Complete
   Pane 2: Teammate -> /run "Implement GitHub OAuth"     -> Complete
@@ -299,7 +299,7 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 ### Integration
 
 - **After /designer**: Design a feature, then build with team for speed
-- **Uses /run internally**: Every teammate runs `/run` for full orchestration per item
+- **Uses /run internally**: Every subagent runs `/run` for full orchestration per item
 - **Alternative to /run**: For parallelizable tasks, `/team` replaces `/run`
 - **Shortcut**: `/run --team` is equivalent to `/team`
 
@@ -315,7 +315,7 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 
 ## /org - REMOVED in v12.2.0 (absorbed into /team strategic mode)
 
-`/org` was removed in v12.2.0. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — is now handled by `/team` strategic mode. The 12 leadership agents (CEO, CTO, CCO, CRO, CFO, COO, CHRO, CMO, CSO, CPO, CLO, VP-Engineering) are preserved and act as Wave 0/1 teammates inside `/team` when strategic mode is engaged.
+`/org` was removed in v12.2.0. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, dependency-ordered per-domain dispatch — is now handled by `/team` strategic mode. The 12 leadership agents (CEO, CTO, CCO, CRO, CFO, COO, CHRO, CMO, CSO, CPO, CLO, VP-Engineering) are preserved and act as Wave 0/1 subagents inside `/team` when strategic mode is engaged.
 
 ### Migration Table
 

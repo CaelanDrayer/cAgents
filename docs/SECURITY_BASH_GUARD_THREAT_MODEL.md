@@ -292,6 +292,42 @@ untouched, so the 35-probe corpus verdicts and every true positive are preserved
   `env`-wrapped interpreter, `ruby -e` backtick) is no longer belt-caught — use it
   only in trusted, non-ingested-content workflows.
 
+### 5.2 Tokenizer completeness — `#`-comment handling (v12.61.2)
+
+A follow-up to the shipped tokenizer, driven by a false-positive report: a
+legitimate `CAGENTS_ROOT="…"  # resolve the plugin's root` invocation was
+**hard-denied**. The lexer (§5 component 1) modeled quotes, `$`-expansions,
+backticks, command substitution, and redirects but had **no `#`-comment
+handling**. Bash ignores a word that begins with `#` and everything after it on
+the line, so an apostrophe/quote *inside a trailing comment* (`# … plugin's
+root`, `# this won't work`) was read as an **opening** single quote, scanned to
+end-of-input, threw `unterminated single quote`, and the fail-closed evaluator
+denied the entire benign command.
+
+**Closed by**: `tokenize()` now treats a `#` at a **word boundary**
+(`curToken === null` — start-of-input, or right after unquoted whitespace / a
+control or redirect operator) as the start of a comment, ignored to end-of-line,
+exactly as bash does. A `#` in the *middle* of a word (`foo#bar`, a URL
+fragment, `$VAR#suffix`) stays literal, and a `#` inside quotes remains literal
+data — both matching bash.
+
+**Why this is a completeness fix, not a weakening of the fail-closed contract**:
+the tokenize-failure → deny rule (§5 component 1) is unchanged and still correct
+for genuinely un-analyzable input. This change only makes the lexer *model a
+construct it previously choked on*, so benign commands are no longer
+mis-classified as un-tokenizable. It introduces **no bypass**: bash never
+executes text after a word-start `#`, so the guard still inspects exactly the
+argv bash runs — everything **before** the `#` is fully tokenized and analyzed,
+so a destructive command preceding a trailing comment (`rm -rf / # cleanup`) or
+on a later line after a comment line still **denies**. The word-boundary
+condition (`curToken === null`) is a faithful proxy for bash's own word-start
+rule, so the tokenizer can only ever *over-*analyze relative to bash (the safe
+direction), never *under*-analyze. Verified by a dedicated
+`#-comment tokenization` describe block in
+`tests/hooks/bash-guard-guardfall.test.js` (false-positive-allow rows +
+destructive-before-comment / multi-line deny rows + mid-word/quoted-`#`
+literal-preservation rows).
+
 ---
 
 ## 6. Test harness & CI gate (implemented)
