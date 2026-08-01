@@ -127,7 +127,7 @@ This is the cross-domain context pass — each agent objects with full visibilit
 
 ## Wave N — Integration
 
-**Owner**: Strategic-mode lead (lead-internal work, no teammate spawn).
+**Owner**: Strategic-mode lead (lead-internal work, no subagent spawn).
 
 **Inputs**: All per-domain outputs from Wave 3..N-1 plus the strategic_brief.yaml.
 

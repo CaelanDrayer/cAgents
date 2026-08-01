@@ -4,7 +4,7 @@
 > (`cagents:ceo`, `cagents:cto`, `cagents:cfo`, `cagents:cmo`, `cagents:coo`,
 > `cagents:chro`, `cagents:cco`, `cagents:cro`, `cagents:cpo`). These live in
 > `agents/leadership/` and are the only agents strategic mode spawns as Wave 0/1
-> teammates. The `general-counsel` entry below is a domain *controller* the
+> subagents. The `general-counsel` entry below is a domain *controller* the
 > service domain routes to — not a 10th C-suite seat. There is no `clo`/`cso`
 > C-suite agent on disk.
 
@@ -138,7 +138,7 @@ Objection phase: ALL agents read ALL domain_analysis_*.yaml files
 
 ### Constraint
 
-C-suite peers in the same wave cannot message each other directly (the lead is fixed; there is no teammate-to-teammate messaging). All cross-pollination is FILE-BASED only:
+C-suite peers in the same wave do not message each other directly — subagents coordinate downward (they spawn helper subagents), not sideways to peers. All cross-pollination is FILE-BASED only:
 - Agent A writes `domain_analysis_A.yaml`
 - Agent B reads `domain_analysis_A.yaml` as input
 - No message-based coordination between C-suite peers (dependency ordering across waves, not in-wave messaging, carries peer context)

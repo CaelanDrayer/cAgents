@@ -38,7 +38,7 @@ function parseCommandFlags(commandString) {
 | `--confidence <N>` | Number | Set detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
 | `--team` | Boolean | Use parallel team execution via Agent Teams | false | `/run Build feature --team` |
 | `--resume <id>` | String | Resume an interrupted workflow session | none | `/run --resume run_20260207_143022` |
-| `--session <dir>` | String | Pre-enriched session directory (used by /team teammates) | none | `/run Implement feature --session cagents-memory/sessions/team_xyz_260512_001` |
+| `--session <dir>` | String | Pre-enriched session directory (used by /team subagents) | none | `/run Implement feature --session cagents-memory/sessions/team_xyz_260512_001` |
 | `--brief <path>` | String | Strategic brief (path to brief YAML; produced by /team strategic mode in v12.2.0+ or by pre-v12.2.0 /org) | none | `/run Launch product --brief cagents-memory/sessions/team_xyz/outputs/strategic_brief.yaml` |
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/run --analytics` |
 | `--analytics domain` | String | Show per-domain analytics breakdown | none | `/run --analytics domain` |

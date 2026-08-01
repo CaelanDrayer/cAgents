@@ -10,6 +10,90 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.62.0] - 2026-07-25
+
+**Combined bump shipping two independent efforts under one release:** (a) the
+/team teammate→subagent execution-model reframe, and (b) a pre-existing
+bash-guard hardening fix (a `#`-comment tokenizer false-positive that
+hard-denied benign commands). The two efforts are unrelated; they are grouped
+here because both were in flight for the same 12.62.0 cut.
+
+**(a) Reframe the /team DEFAULT execution model's unit of parallelism from
+"teammate" to "subagent"** (session `team_teammate-to-subagent_260725_001`).
+Now that subagents can themselves spawn subagents (Claude Code 2.1.172+,
+verified to depth 5), the wave unit is simply a subagent — a plain concurrent
+`Agent()` call that returns a result AND recursively spawns its own subagents.
+This is a SEMANTIC reframe, not a blind find-replace: every Claude Code
+API/feature identifier that legitimately names the experimental "teammate"
+feature is preserved.
+
+### Changed
+- Reframed the /team DEFAULT execution model's unit of parallelism from
+  "teammate" to "subagent" (session team_teammate-to-subagent_260725_001).
+  A wave unit is now a plain concurrent Agent() subagent call that both
+  returns a result AND recursively spawns its own subagents (CC 2.1.172+,
+  depth 5). The positive thesis: parallelism comes from BOTH concurrent
+  per-wave subagent calls AND downward recursive nesting — a subagent
+  needing another specialty spawns it as its own sub-subagent instead of
+  routing sideways. Swept ~40 default-model surfaces across .claude/rules/,
+  .claude/skills/ (team/run/helper), CLAUDE.md, and playbooks.
+- Demoted to explicit LEGACY/EXPERIMENTAL (not deleted): the named-
+  background-teammate path (Agent({name, run_in_background:true}) +
+  SendMessage + tmux/iTerm2 panes), the peer_request / cross-teammate
+  machinery (pat-cross-teammate-request.md), and SendMessage-as-default
+  coordination. The peer_request founding premise ("CC forbids nested
+  teams") is obsolete under downward nesting; the playbook records the new
+  canonical downward-spawn guidance.
+
+### Preserved
+- The entire /team parallel model: waves, GATE sentinels, within-wave
+  parallelism, synchronous spawning (run_in_background:false), depth-5
+  nesting, wave-reviewer/coord-log-writer gating, "maximize waves".
+- All Claude Code API/feature identifiers (teammateMode, --teammate-mode,
+  TeammateIdle/TaskCompleted hooks, TeamCreate/TeamDelete removal history)
+  and the 8 team/hook .cjs files (no code edits).
+
+### Testing
+- Added tests/v12/teammate-to-subagent-reframe.test.js asserting the
+  default unit is "subagent", the experimental/peer_request machinery is
+  labeled legacy (not deleted), and KEEP-list concepts survive.
+
+**(b) Fix a GuardFall bash-guard false-positive — a trailing `#` comment
+hard-denied a benign command** (pre-existing change-set, unrelated to the
+reframe above). A legitimate `CAGENTS_ROOT="…"  # resolve the plugin's root`
+invocation was blocked with `un-tokenizable command (fail-closed): unterminated
+single quote`. Root cause: the `bash-guard-evaluator.cjs` lexer modeled quotes,
+`$`-expansions, backticks, command substitution, and redirects but had **no
+`#`-comment handling**. Bash ignores a word-start `#` and everything after it on
+the line, so an apostrophe inside a trailing comment (`# … plugin's root`) was
+read as an *opening* single quote, scanned to end-of-input, threw `unterminated
+single quote`, and the fail-closed evaluator denied the whole benign command.
+
+### Fixed (bash-guard hardening)
+- `.claude/hooks/bash-guard-evaluator.cjs` — `tokenize()` now treats a `#` at a
+  **word boundary** (`curToken === null`) as the start of a comment, ignored to
+  end-of-line, exactly as bash does. A mid-word `#` (`foo#bar`, a URL fragment,
+  `$VAR#suffix`) stays literal, and a `#` inside quotes remains literal data —
+  both matching bash. This is a tokenizer **completeness** fix, not a weakening
+  of the fail-closed contract (§5.1/§7): the tokenize-failure → deny rule is
+  unchanged, and there is **no bypass** — bash never runs text after a word-start
+  `#`, so everything before the `#` is still fully tokenized and a destructive
+  command preceding a comment (`rm -rf / # cleanup`) or on a line after a comment
+  line still **denies**.
+
+### Tests (bash-guard hardening)
+- `tests/hooks/bash-guard-guardfall.test.js` — added a `#-comment tokenization`
+  describe block (13 rows): false-positive-allow rows (the reported command,
+  apostrophe/unbalanced-quote trailing comments, full-line comment, shebang),
+  security no-regression rows (destructive-before-comment + multi-line deny), and
+  mid-word / quoted-`#` literal-preservation rows. Failing-before / passing-after
+  per the bug-driven-testing mandate. The pinned 57-probe corpus count is
+  unchanged (these are non-corpus regression rows).
+
+### Docs (bash-guard hardening)
+- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` — new §5.2 recording the
+  `#`-comment tokenizer-completeness fix and why it introduces no bypass.
+
 ## [12.61.1] - 2026-07-23
 
 **Fix intermittent session-init-gate Phase-1 false-DENY — destructive lazy-reap

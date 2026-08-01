@@ -36,7 +36,7 @@ Before marking ANY gate (GATE-0, GATE-1, ...) as complete, the team lead MUST ru
 | # | Check | What It Verifies | Failure Action |
 |---|-------|-----------------|----------------|
 | 1 | Task Completion | All wave tasks marked completed in TaskList | HOLD — wait for remaining tasks |
-| 2 | Evidence Presence | Every completed task has non-empty evidence | HOLD — request evidence from teammate |
+| 2 | Evidence Presence | Every completed task has non-empty evidence | HOLD — request evidence from subagent |
 | 3 | Evidence Specificity | Evidence cites file:line, not vague descriptions | WARN — request re-verification |
 | 4 | Acceptance Criteria Coverage | Every acceptance criterion has matching evidence | FAIL — task not actually complete |
 | 5 | Contract Fulfillment | All inter-wave contracts have artifacts | HOLD — contract provider must deliver |

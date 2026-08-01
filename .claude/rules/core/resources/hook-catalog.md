@@ -147,7 +147,7 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports `general-purpose` for plugin agents.
 - **subagent-tracker.cjs — SDK-UUID map writer (v12.32.0, PRIMARY)**: after it CONFIDENTLY resolves the owning session (via env-var / promptHint / `session.sdk_id` marker — NOT via the new UUID map, to avoid circularity, and NEVER via the newest-session heuristic, which would reintroduce the concurrency bug), it calls `upsertSdkSessionMap(input.session_id, sessionDir)`. That writes the per-session marker `sessions/{id}/session.sdk_id` (the SDK UUID) AND the global pointer `cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id), each an atomic per-UUID file mutated under `withFileLock`, with an opportunistic prune on upsert. Idempotent and fail-open — a map-write failure never blocks the spawn. This is the robust primary writer path (the skill-layer `session.sdk_id` write is best-effort secondary).
-- **team-start.cjs**: Initializes team monitoring directories and metrics files. **Serves the EXPERIMENTAL named-background-teammate path only** (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); it is a no-op on the default concurrent-Agent wave model, which needs no per-teammate monitoring dirs. Remains registered under `SubagentStart`; event name unchanged.
+- **team-start.cjs**: Initializes team monitoring directories and metrics files. **Serves the EXPERIMENTAL named-background-teammate path only** (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); it is a no-op on the default concurrent-Agent wave model, which needs no per-teammate monitoring dirs — it is not part of the default subagent model. Remains registered under `SubagentStart`; event name unchanged.
 
 ### SubagentStop: subagent-stop-tracker.cjs
 
@@ -183,14 +183,14 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 
 ### TeammateIdle: teammate-idle-handler.cjs
 
-- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent wave model.
+- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent subagent-wave model (not part of the default subagent model).
 - **Purpose**: Cleanly stop idle teammates when all work is done; surface available work via stderr.
 - **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items are completed, causing the teammate to stop cleanly instead of lingering idle.
 - **Logic**: All work items completed → `{ continue: false, stopReason }` (NEW-TURN-SAFE shutdown signal); available work → `{ continue: true }` (no systemMessage) with item list logged to `console.error`; otherwise → pass-through (null). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), the available-work branch no longer emits systemMessage — teammates self-claim by reading TaskList / task_list.yaml directly.
 
 ### TaskCompleted: team-task-complete.cjs
 
-- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent wave model.
+- **Serves the EXPERIMENTAL named-teammate path only** — no-op on the default concurrent-Agent subagent-wave model (not part of the default subagent model).
 - **Purpose**: Update `task_list.yaml` status, check dependency unblocking, stop teammate when all done.
 - **Input fields**: `task_id`, `task_subject`, `task_description`, `teammate_name`, `team_name` (Claude Code API).
 - **V10.5.0**: Refactored to `createHook()`. Returns `{ continue: false, stopReason }` when all work items completed (NEW-TURN-SAFE shutdown signal). Per the thinking-block-immutability contract (run_team-thinking-400_260531_001), newly-unblocked items are no longer announced via systemMessage; teammates discover them by reading TaskList / task_list.yaml directly.

@@ -317,14 +317,16 @@ Team mode uses Claude Code's built-in agent teams for parallel execution.
 
 #### The Basic Idea
 
-Instead of running work items one after another (sequential), team mode runs them simultaneously in separate Claude Code instances (parallel). Each teammate executes their work item via `/run`, getting full orchestration quality per item.
+Instead of running work items one after another (sequential), team mode runs them simultaneously as concurrent subagents (parallel). Each subagent executes their work item via `/run`, getting full orchestration quality per item.
 
 #### Display Modes
 
+Split-pane display (tmux/iTerm2) is available only via the experimental named-teammate path; the default concurrent-Agent subagent model runs in-process.
+
 | Mode | How It Looks | Requirements |
 |------|-------------|--------------|
-| **tmux** | Each teammate in a visible split pane. All panes visible at once in a tiled layout. | tmux installed |
-| **in-process** | All teammates in the main terminal. Navigate with Shift+Up/Down. | None |
+| **tmux** | Each teammate in a visible split pane. All panes visible at once in a tiled layout. | tmux installed (experimental named-teammate path) |
+| **in-process** | All subagents in the main terminal. Navigate with Shift+Up/Down. | None |
 | **auto** (default) | tmux if inside a tmux session, otherwise in-process. | None |
 
 #### When It Helps
@@ -339,7 +341,9 @@ Instead of running work items one after another (sequential), team mode runs the
 - Fewer than 3 work items
 - Simple tier 2 tasks
 
-#### Communication
+#### Communication (experimental named-teammate path)
+
+On the default concurrent-Agent subagent model the lead collects each wave's results synchronously, so no inter-agent messaging is required. The mechanisms below apply to the experimental named-teammate path:
 
 - Team lead coordinates via **SendMessage** (direct messages and broadcasts)
 - Shared **TaskList** tracks work item status

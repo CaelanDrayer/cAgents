@@ -9,8 +9,8 @@ Minimum Claude Code version table, env var propagation rules, and hook input sch
 | Feature | Version | Notes |
 |---------|---------|-------|
 | `TeamCreate` / `TeamDelete` | **REMOVED in 2.1.178** | Do NOT call. Agent teams are now implicit — nothing to create, cleanup is automatic at session end. |
-| Concurrent `Agent()` waves (DEFAULT model) | any | Spawn all wave-K teammates as concurrent `Agent()` calls in one message; works in every harness. |
-| Subagent nesting to depth 5 | 2.1.172 | Teammates retain `Agent` and spawn execution agents + reviewers up to 5 levels deep. |
+| Concurrent `Agent()` waves (DEFAULT model) | any | Spawn all wave-K subagents as concurrent `Agent()` calls in one message; works in every harness. |
+| Subagent nesting to depth 5 | 2.1.172 | Subagents retain `Agent` and spawn execution agents + reviewers up to 5 levels deep. |
 | `Agent({ run_in_background })` background-by-default | 2.1.198 | Subagents run in background unless `run_in_background: false`; the default wave path uses `false` for synchronous collection. |
 | `SendMessage` (direct + broadcast) | 2.1.69 | Named-teammate communication (experimental path). |
 | `TaskCreate` / `TaskUpdate` / `TaskList` / `TaskGet` | 2.1.69 | Shared task list coordination (present). |
@@ -28,7 +28,7 @@ The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env var is set in `.claude/settings.j
 
 ## Model-Agnostic Spawning
 
-All teammate Task calls use `subagent_type: "cagents:{name}"` which is routed by Claude Code's model routing layer. No hardcoded model assumptions exist in team hooks or spawning templates. Teammates run on whatever model Claude Code assigns based on `model_routing.yaml` and environment configuration.
+All subagent Task calls use `subagent_type: "cagents:{name}"` which is routed by Claude Code's model routing layer. No hardcoded model assumptions exist in team hooks or spawning templates. Subagents run on whatever model Claude Code assigns based on `model_routing.yaml` and environment configuration.
 
 ## Hook Input Schema Stability
 

@@ -149,8 +149,8 @@ Canonical source: `.claude/skills/_MODE_REGISTRY.md` § /team.
 | `--template <id>` | String | Use a named team template (fullstack-app, etc.) | auto-match | `/team Build app --template fullstack-app` |
 | `--no-template` | Boolean | Force flat execution, skip template selection | false | `/team Build feature --no-template` |
 | `--waves <N>` | Number | Force minimum number of waves | per tier | `/team Build feature --waves 8` |
-| `--dry-run` | Boolean | Display wave structure without spawning teammates | false | `/team Build feature --dry-run` |
-| `--members <N>` | Number | Target teammate count per wave | 5 | `/team Build system --members 4` |
+| `--dry-run` | Boolean | Display wave structure without spawning subagents | false | `/team Build feature --dry-run` |
+| `--members <N>` | Number | Target subagent count per wave | 5 | `/team Build system --members 4` |
 | `--teammate-mode <mode>` | String | Display mode: auto/tmux/in-process | auto | `/team Build app --teammate-mode tmux` |
 
 ---

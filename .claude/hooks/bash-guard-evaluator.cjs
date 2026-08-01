@@ -351,6 +351,24 @@ function tokenize(command) {
     if (c === ' ' || c === '\t') { endToken(); i++; continue; }
     if (c === '\n' || c === '\r') { endSegment(';'); i++; continue; }
 
+    // '#' begins a comment ONLY at a word boundary — bash ignores a word that
+    // begins with '#' and everything after it on that line. We are at a word
+    // boundary exactly when no token is currently being accumulated
+    // (curToken === null, i.e. we're right after start-of-input, whitespace, or
+    // a control/redirect operator). A '#' in the MIDDLE of a word (foo#bar, a
+    // URL fragment, $VAR#suffix) stays literal, matching bash. Modeling the
+    // comment here prevents a stray quote/apostrophe INSIDE a trailing comment
+    // (e.g. `... # this won't work`) from being misread as an unterminated
+    // single quote and fail-closing the whole benign command to DENY. Skipping
+    // it is also SOUND, not a bypass: bash never executes text after a
+    // word-start '#', so the guard still inspects exactly the argv bash runs —
+    // everything BEFORE the '#' is fully tokenized and analyzed as usual. Leave
+    // i on the terminating '\n' so the newline handler above closes the segment.
+    if (c === '#' && curToken === null) {
+      while (i < len && str[i] !== '\n') i++;
+      continue;
+    }
+
     // backslash escape (unquoted)
     if (c === '\\') {
       const nx = str[i + 1];

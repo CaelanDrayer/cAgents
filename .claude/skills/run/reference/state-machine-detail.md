@@ -63,7 +63,7 @@ while current_state is not terminal (VALIDATED):
 
 The verify-completion.cjs hook, post-compact-restore.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip the status.yaml update, hooks see stale state and cannot detect mid-pipeline stops.
 
-## Pre-Enrichment Detection (for /team teammate flows)
+## Pre-Enrichment Detection (for /team subagent flows)
 
 If `--session` was provided, check which enrichment files already exist:
 - `enriched_context.yaml` exists -> skip INIT, start from ORCHESTRATED

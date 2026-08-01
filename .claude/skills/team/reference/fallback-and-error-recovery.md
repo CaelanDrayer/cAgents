@@ -1,6 +1,6 @@
 # Fallback and Error Recovery
 
-Mandatory /run fallback for non-team-suitable requests, automatic teammate failure recovery, and the /run vs /team decision.
+Mandatory /run fallback for non-team-suitable requests, automatic subagent failure recovery, and the /run vs /team decision.
 
 ## Fallback (MANDATORY)
 
@@ -22,13 +22,13 @@ This ensures every /team invocation produces a result — either via team execut
 
 The /team skill MUST always either execute as a team OR delegate to /run. There is no third option.
 
-## Automatic Teammate Failure Recovery
+## Automatic Subagent Failure Recovery
 
-If a teammate fails (task stuck, error reported, or timeout), apply the recovery chain (max 2 retries per work item):
+If a subagent fails (task stuck, error reported, or timeout), apply the recovery chain (max 2 retries per work item):
 
 ### Recovery Chain
 
-**1. RETRY**: Spawn replacement teammate with error context:
+**1. RETRY**: Spawn replacement subagent with error context:
 
 ```
 Agent({
@@ -45,7 +45,7 @@ Agent({
 
 **2. SIMPLIFY**: If retry fails, break the work item into sub-items:
 - Create TASK-{N}a (core implementation) and TASK-{N}b (edge cases + testing)
-- Spawn separate teammates for each sub-item
+- Spawn separate subagents for each sub-item
 
 **3. ESCALATE**: If simplify also fails, mark the work item as blocked:
 
@@ -67,10 +67,10 @@ recovery_metrics:
 
 ## Error Handling
 
-### Teammate Failure (Lead-Side)
+### Subagent Failure (Lead-Side)
 
 - Send status query via SendMessage
-- If unresponsive: spawn replacement teammate
+- If unresponsive: spawn replacement subagent
 - Reassign work item
 
 ### Deadlock Detection

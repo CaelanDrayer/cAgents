@@ -45,7 +45,7 @@ Before generating a new SESSION_ID, check `process.env.CAGENTS_SESSION_ID`:
 
 **Anchor session paths to an ABSOLUTE project root, not a relative `cagents-memory/…`
 literal.** A relative path resolves against the *current working directory*, and a
-nested `/run` (or a `/team` teammate) can run with its cwd inside a parent session
+nested `/run` (or a `/team` subagent) can run with its cwd inside a parent session
 dir — a relative write then nests a whole `cagents-memory/` tree under that session
 (the CWD-leak, REC-20). Anchor once and derive everything from `$MEM`:
 

@@ -3,7 +3,7 @@
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "in-process",
-  "$comment_teammateMode": "Reliability-first default: 'in-process' (the Claude Code default since v2.1.179). The shipped cAgents DEFAULT /team model is concurrent-Agent waves, which do NOT use tmux panes. tmux/iterm2 panes are an EXPERIMENTAL-path opt-in ONLY (named background teammates), gated on CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and a harness that supports interactive agent teams; users who want panes set teammateMode to 'tmux' manually.",
+  "$comment_teammateMode": "Reliability-first default: 'in-process' (the Claude Code default since v2.1.179). The shipped cAgents DEFAULT /team model is concurrent-Agent subagent waves, which do NOT use tmux panes. tmux/iterm2 panes are an EXPERIMENTAL-path opt-in ONLY (named background teammates), gated on CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and a harness that supports interactive agent teams; users who want panes set teammateMode to 'tmux' manually.",
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CAGENTS_VERSION": "9.18.0"

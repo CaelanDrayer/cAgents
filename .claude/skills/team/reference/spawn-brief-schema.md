@@ -1,20 +1,20 @@
 # Spawn Brief Schema — Per-Wave Disk-Handoff Spawn Prompts
 
-Reduces per-teammate spawn prompt token cost from ~600 tokens to ~80 tokens by writing the shared wave context to disk ONCE per wave and passing each teammate a pointer.
+Reduces per-subagent spawn prompt token cost from ~600 tokens to ~80 tokens by writing the shared wave context to disk ONCE per wave and passing each subagent a pointer.
 
 ## The Problem (CI-3 from enriched_context)
 
-`teammate-spawning-template.md` is the prompt template each Agent() call inlines. With 5-7 teammates per wave × 5-7 waves, the lead's tool-call history accumulates 25-49 large spawn prompts, each carrying repeated role boilerplate, self-registration scripts, and shared session paths. That bloat lives in the lead's context for the entire run.
+`teammate-spawning-template.md` is the prompt template each Agent() call inlines. With 5-7 subagents per wave × 5-7 waves, the lead's tool-call history accumulates 25-49 large spawn prompts, each carrying repeated role boilerplate, self-registration scripts, and shared session paths. That bloat lives in the lead's context for the entire run.
 
 ## The Solution
 
-For each wave K, the lead writes ONE `spawn_brief.md` file containing the role description, shared context, acceptance envelope, and self-validation instructions. Each teammate spawn then passes a short prompt that points to the brief plus the teammate's specific WI row.
+For each wave K, the lead writes ONE `spawn_brief.md` file containing the role description, shared context, acceptance envelope, and self-validation instructions. Each subagent spawn then passes a short prompt that points to the brief plus the subagent's specific WI row.
 
 ## Brief File Location
 
 `${SESSION_DIR}/outputs/wave-{K}/spawn_brief.md`
 
-Written once per wave before any teammate is spawned.
+Written once per wave before any subagent is spawned.
 
 ## Brief Schema
 
@@ -22,7 +22,7 @@ Written once per wave before any teammate is spawned.
 # Wave {K} Spawn Brief
 
 ## Role
-You are a teammate executing work in wave {K} of the pipeline. Your job is to deliver ONE work item, self-validate, and write outputs. The lead reads only your self-validation status and 1-line summary.
+You are a subagent executing work in wave {K} of the pipeline. Your job is to deliver ONE work item, self-validate, and write outputs. The lead reads only your self-validation status and 1-line summary.
 
 ## Shared Context
 - SESSION_DIR: {SESSION_DIR}
@@ -53,15 +53,16 @@ On CC ≥ 2.1.172 the Agent tool is normally present on your surface (subagents 
 Append your entry to `${SESSION_DIR}/workflow/agent_tree.yaml` on start. See `.claude/skills/team/reference/teammate-spawning-template.md` § Self-Registration for the snippet.
 ```
 
-## Short Spawn Prompt (per teammate)
+## Short Spawn Prompt (per subagent)
 
-The lead spawns each teammate with this ~80-token prompt:
+The lead spawns each subagent with this ~80-token prompt (`run_in_background: false` on the default path):
 
 ```javascript
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",
-  team_name: "{team_name}",
+  run_in_background: false,                    // DEFAULT: synchronous, lead collects results together
+  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",     // EXPERIMENTAL named-teammate path only — omit on the default path
+  team_name: "{team_name}",                    // EXPERIMENTAL only — accepted-but-ignored (teams are implicit)
   description: "Wave {K} — TASK-{N}: {short_description}",
   prompt: `Read {SESSION_DIR}/outputs/wave-{K}/spawn_brief.md for role and acceptance envelope.
 Your WI: {SESSION_DIR}/workflow/work_items_wave_{K}.yaml row {N}.
@@ -91,7 +92,7 @@ In `work_items_wave_{K}.yaml`, each row must carry these fields (so the spawn pr
 | Per-spawn prompt tokens | ~600 | ~80 |
 | Per-wave brief writes | 0 | 1 |
 | Tokens saved per spawn | — | ~520 |
-| 5-wave × 5-teammate run | ~15K spawn tokens | ~2K spawn tokens + 5×(~400 brief) = ~4K |
+| 5-wave × 5-subagent run | ~15K spawn tokens | ~2K spawn tokens + 5×(~400 brief) = ~4K |
 | Net savings | — | ~11K (~73%) |
 
 ## Schema Required Fields

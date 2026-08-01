@@ -85,14 +85,14 @@ org_* session (level 0)     <- /org created this; no new sessions of this type a
   team_* session (level 1)  <- /team creates this, parent_session_id = org_*
 ```
 
-There is no `team_* -> team_* -> run_*` chain. /team teammates spawn execution agents directly via Agent tool rather than invoking /run as a Skill — by design for cost and clarity, not because of a harness limit (CC ≥ 2.1.172 supports subagent nesting up to 5 levels deep; a nested /run is technically possible but duplicates Wave 0 enrichment and wastes tokens). As a result, controller work is tracked at the `team_*` session level, not in separate child sessions. Strategic mode (v12.2.0+) extends this by running per-domain dispatch as additional waves *inside* the same team_* session, instead of launching separate child team_* sessions per domain (which is how pre-v12.2.0 `/org` -> `/team` chains worked).
+There is no `team_* -> team_* -> run_*` chain. /team subagents spawn execution agents directly via Agent tool rather than invoking /run as a Skill — by design for cost and clarity, not because of a harness limit (CC ≥ 2.1.172 supports subagent nesting up to 5 levels deep; a nested /run is technically possible but duplicates Wave 0 enrichment and wastes tokens). As a result, controller work is tracked at the `team_*` session level, not in separate child sessions. Strategic mode (v12.2.0+) extends this by running per-domain dispatch as additional waves *inside* the same team_* session, instead of launching separate child team_* sessions per domain (which is how pre-v12.2.0 `/org` -> `/team` chains worked).
 
 ## Controller Tracking
 
-Controllers spawned as /team teammates do NOT create their own sessions. Instead, their work is tracked at the session level via:
+Controllers spawned as /team subagents do NOT create their own sessions. Instead, their work is tracked at the session level via:
 
 1. **`workflow/agent_tree.yaml`** — Each spawned controller gets an entry with `spawned_at`, `stopped_at`, `completion_summary`, and `duration_seconds`. This is the authoritative agent audit trail.
-2. **`workflow/coordination_log.yaml`** — Written by each controller teammate after completing its wave work items. Contains objectives, questions_asked, synthesized_solution, and implementation_tasks.
+2. **`workflow/coordination_log.yaml`** — Written by each controller subagent after completing its wave work items. Contains objectives, questions_asked, synthesized_solution, and implementation_tasks.
 3. **`workflow/child_controllers.yaml`** — Written by /team lead after each wave (see Step 5d-pre). Maps work items to the controllers that handled them.
 
 ## child_controllers.yaml Format

@@ -150,7 +150,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 26. **playbooks/pat-concurrent-session-hooks.md** — Pattern: concurrent-session hook contract (deterministic session resolution)
 27. **playbooks/pat-context-budget-tiers.md** — Pattern: advisory PEAK/GOOD/DEGRADING/POOR self-monitored context bands (proactive checkpoint before forced compaction)
 28. **playbooks/pat-controller-coordination-protocol.md** — Pattern: canonical 8-step controller coordination protocol (extracted from ~42 controller SKILL.md files)
-29. **playbooks/pat-cross-teammate-request.md** — Pattern: cross-teammate `peer_request` routing in `/team`
+29. **playbooks/pat-cross-teammate-request.md** — LEGACY (experimental-named-teammate path only): cross-teammate `peer_request` routing in `/team`; obsolete under the default subagent model, where a subagent needing another specialty spawns it downward.
 30. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
 31. **playbooks/pat-feedback-loop-first-debugging.md** — Pattern: build a tight reproduction loop and show it RED before hypothesizing; ranked repro ladder + tagged-debug cleanup
 32. **playbooks/pat-gate-taxonomy.md** — Pattern: four checkpoint types (Pre-flight / Revision / Escalation / Abort) + stall-detection rule
@@ -179,7 +179,7 @@ The rules in this directory support the four current skills shipped by cAgents. 
 | Skill | Purpose |
 |-------|---------|
 | `/run` | Single-domain task execution. Improve modes via keyword router: `/run improve X` → `--mode full`; `/run review X` or `/run audit X` → `--mode review`; `/run optimize X` → `--mode optimize`. |
-| `/team` | Parallel multi-agent execution with wave-based quality gates. Auto-enables strategic mode for cross-domain requests (12 leadership agents act as Wave 0/1 teammates). |
+| `/team` | Parallel multi-agent execution with wave-based quality gates. Auto-enables strategic mode for cross-domain requests (12 leadership agents act as Wave 0/1 subagents). |
 | `/designer` | Interactive design exploration via guided Q&A (exempt from auto-proceed). |
 | `/helper` | Command guide and skill recommender. |
 

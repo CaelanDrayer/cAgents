@@ -70,7 +70,7 @@ The description is for ROUTING, not documentation. Process details belong in the
 | Bad (process summary) | Good (routing signal) |
 |----------------------|----------------------|
 | "4-phase methodology: investigation, analysis, testing, implementation with escalation rules" | "Use when bugs resist quick fixes or root cause is unclear. Systematic debugging with escalation after 3 failed attempts." |
-| "Creates tasks, spawns teammates, validates gates, integrates results" | "Use when 3+ work items can run in parallel for 40-60% faster completion." |
+| "Creates tasks, spawns subagents, validates gates, integrates results" | "Use when 3+ work items can run in parallel for 40-60% faster completion." |
 
 ## Applying CSO to Existing Agents
 

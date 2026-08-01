@@ -318,7 +318,7 @@ guard_chain_result:
 
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Controllers and teammates spawned at depth 1 **retain the `Agent` tool** and CAN spawn execution agents (and those execution agents can spawn deeper sub-agents, within the 5-level ceiling). Delegation is the expected behavior at every level — a controller normally still has `Agent` at depth 1 and MUST delegate.
+**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Controllers and subagents spawned at depth 1 **retain the `Agent` tool** and CAN spawn execution agents (and those execution agents can spawn deeper sub-agents, within the 5-level ceiling). Delegation is the expected behavior at every level — a controller normally still has `Agent` at depth 1 and MUST delegate.
 
 **Graceful degradation is a DEFENSIVE FALLBACK**, not the expected depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting failure for a missing `Agent` tool, an agent MUST verify the tool is actually absent. When `Agent` is verifiably absent, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
 

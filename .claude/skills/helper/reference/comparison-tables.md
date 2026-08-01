@@ -19,7 +19,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Output** | Implementation + report | Design document + artifacts | Findings, optimizations, before/after metrics | Aggregated results | Cross-domain integrated deliverable | Recommendation |
 | **Domains** | All 9 archetypes | All (software/business/creative) | All (code, docs, content, infra, content) | All (delegates to /run) | All (sequential /team per domain) | n/a |
 | **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | None (inline) | None (inline) |
-| **Agent count** | 57 available | 1+ (designer + specialists) | Specialists per mode | Multiple teammates | C-suite + /team per domain | n/a |
+| **Agent count** | 57 available | 1+ (designer + specialists) | Specialists per mode | Multiple subagents | C-suite + /team per domain | n/a |
 
 ## When-to-Use Decision Matrix
 
@@ -91,7 +91,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Minimum complexity** | Tier 2 (any request) | Any | Any | Tier 3 (3+ work items) | Any (auto-routes simple) |
 | **Maximum complexity** | Tier 4 (expert + HITL) | Any | Tier 4 (CRITICAL findings hand off to /run) | Tier 4 | Tier 4 (multi-domain) |
 | **Scope** | Single task | Single design | Single target (or `--scope` for `--mode full`) | Multiple parallel tasks | Multi-domain coordinated |
-| **Parallelism** | No (sequential) | No (interactive) | Yes (specialist groups + opportunity scanners) | Yes (teammates) | Yes (/team per domain) |
+| **Parallelism** | No (sequential) | No (interactive) | Yes (specialist groups + opportunity scanners) | Yes (subagents) | Yes (/team per domain) |
 | **Resumable** | Yes (--resume flag + waypoints) | Yes (--resume flag) | Yes (session waypoints) | No | Yes (--resume, per-domain) |
 
 ## Performance Characteristics
@@ -101,7 +101,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Startup time** | Fast (seconds) | Fast (immediate Q&A) | Fast (seconds) | Medium (team setup) | Medium (C-suite analysis) |
 | **Execution time** | Varies by task | 15-45 min (interactive) | 3-20 min | 40-60% faster than /run | 25-60 min (multi-domain) |
 | **Token efficiency** | Standard | Context-conscious | Parallel (efficient) | Higher (multiple contexts) | High (C-suite + /team) |
-| **Context usage** | None (inline) | Main (for Q&A) | Fork (separate) | Fork (per teammate) | Fork (C-suite + /team) |
+| **Context usage** | None (inline) | Main (for Q&A) | Fork (separate) | Fork (per subagent) | Fork (C-suite + /team) |
 
 ## V10 → V11 Migration Quick Reference
 

@@ -95,7 +95,7 @@ still explicitly collected via `SendMessage` — never spawned-and-forgotten. Se
 
 As of v12.17.0, subagents retain the `Agent` tool and can spawn their own
 subagents up to 5 levels deep (Claude Code ≥ 2.1.172). Delegation is the
-expected behavior at every level — a controller or teammate spawned at
+expected behavior at every level — a controller or subagent spawned at
 depth 1 normally still has `Agent` and MUST delegate.
 
 Graceful degradation is a DEFENSIVE FALLBACK, not the expected depth-1

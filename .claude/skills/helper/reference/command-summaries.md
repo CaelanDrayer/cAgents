@@ -60,7 +60,7 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 ## /team - Parallel Team Execution
 
-**What**: A parallel execution layer that decomposes large tasks into work items and runs them simultaneously using Claude Code's built-in agent teams. Each teammate executes their work item via `/run` in their own context (with optional tmux split pane display). Think of it as "/run but parallel for big tasks."
+**What**: A parallel execution layer that decomposes large tasks into work items and runs them simultaneously as concurrent-Agent waves. Each subagent executes their work item via `/run` in their own context (with optional tmux split pane display via the experimental named-teammate path). Think of it as "/run but parallel for big tasks."
 
 **When to use**:
 - Large features with 3+ independent components
@@ -70,10 +70,10 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Key flags**: `--dry-run` (preview team composition), `--members <N>` (limit team size), `--lead <agent>` (specify team lead), `--teammate-mode tmux|in-process` (display mode), `--display` (show team communication)
 
-**Workflow**: Decompose -> Create Team -> Spawn Teammates -> Parallel /run per item -> Aggregate Results
+**Workflow**: Decompose -> Create Team -> Spawn Subagents -> Parallel /run per item -> Aggregate Results
 
 ## /org - REMOVED in v12.2.0
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 teammates.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 subagents.
 
 **Migration**: `/org X` -> `/team X` (strategic mode auto-enables for multi-domain). Force-enable via `--strategic`; force-disable via `--no-strategic`. See `command-details.md` § /org for the full migration table.

@@ -130,8 +130,8 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ## /team Troubleshooting
 
-### 1. Teammates not spawning
-- **Symptom**: Team created but no teammates appear
+### 1. Named teammates not spawning (experimental named-teammate path only)
+- **Symptom**: Team created but no named teammates appear (does not affect the default concurrent-Agent subagent waves, which need no env var)
 - **Likely cause**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set to "1" in environment
 - **Check**: Verify `.claude/settings.json` env section has the variable
 - **Fix**: Add `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"` to settings.json env
@@ -142,10 +142,10 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Check**: This is expected behavior -- /team requires 3+ parallelizable work items
 - **Fix**: If the task truly has parallel components, be more specific in the request
 
-### 3. Teammate context exhaustion
-- **Symptom**: Teammate stops mid-task or produces incomplete output
-- **Likely cause**: Work item is too complex for a single teammate's context window
-- **Check**: Read the teammate's output in the session outputs directory
+### 3. Subagent context exhaustion
+- **Symptom**: Subagent stops mid-task or produces incomplete output
+- **Likely cause**: Work item is too complex for a single subagent's context window
+- **Check**: Read the subagent's output in the session outputs directory
 - **Fix**: Break the work item into smaller sub-items for the next attempt
 
 ### 4. GATE validation failing
@@ -174,7 +174,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ### 3. Domain execution timeout
 - **Symptom**: One per-domain wave takes much longer than others
-- **Likely cause**: Complex domain with many work items or teammate failures
+- **Likely cause**: Complex domain with many work items or subagent failures
 - **Check**: Read the wave's task list and team manifest in the session directory
 - **Fix**: Use `/team --resume team_{id}` to resume, which will skip completed waves (replaces pre-v12.2.0 `/org --resume org_{id}`)
 

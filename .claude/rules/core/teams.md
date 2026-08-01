@@ -21,56 +21,58 @@ Guidelines for parallel team execution in cAgents using concurrent-Agent waves.
 
 ## Overview
 
-**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires. Teams are **implicit** — the lead does NOT create a team. For each wave, the lead spawns all wave teammates as **concurrent `Agent()` calls issued in one message**, run synchronously (`run_in_background: false`) so it collects every wave result together, validates the GATE, then proceeds. Each teammate is a controller agent that delegates to execution agents directly via the Agent tool. More waves = better quality gating.
+**Core Architecture**: `/team` decomposes the request into work items across as many waves as the work requires. Teams are **implicit** — the lead does NOT create a team. For each wave, the lead spawns all wave subagents as **concurrent `Agent()` calls issued in one message**, run synchronously (`run_in_background: false`) so it collects every wave result together, validates the GATE, then proceeds. Each wave subagent is a controller agent that delegates to execution agents directly via the Agent tool. More waves = better quality gating.
+
+> Parallelism now comes from BOTH: (a) concurrent `Agent()` subagent calls per wave, AND (b) each wave subagent recursively spawning its OWN subagents (up to 5 levels deep). A subagent that needs a different specialty spawns that specialist as its own subagent (downward nesting) rather than routing a request sideways through the lead — this removes the lead-as-router bottleneck and the SendMessage/peer_request overhead. "Teammate" was the label for a wave unit under the now-demoted named-teammate feature; the wave unit is simply a subagent.
 
 Team Mode enables N-wave parallel execution with:
 - **Maximum wave decomposition**: /team breaks the request into work items across 3-10 waves (more waves preferred)
 - **Concurrent-Agent wave spawn**: For each wave, the lead issues all wave-K `Agent()` calls in ONE assistant message (multiple tool uses in a single message run concurrently), synchronously (`run_in_background: false`)
-- **Implicit teams**: No `TeamCreate`/`TeamDelete` — the team exists as the set of concurrently-spawned teammates; cleanup is automatic at session end
+- **Implicit teams**: No `TeamCreate`/`TeamDelete` — the team exists as the set of concurrently-spawned subagents; cleanup is automatic at session end
 - **GATE sentinel quality checks**: Lead validates between waves before proceeding
-- **Coordination tools**: `Agent` (spawn teammates), `SendMessage` (lead↔teammate messaging), `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet` (task visibility + gate-sentinel dependencies)
+- **Coordination tools**: `Agent` (spawn subagents), `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet` (task visibility + gate-sentinel dependencies); `SendMessage` (lead↔named-teammate messaging — **experimental-path only**, not used on the default subagent-wave path)
 - **Display**: `teammateMode` defaults to `in-process` (v2.1.179); tmux/iTerm2 split panes are an EXPERIMENTAL-path option
-- **Every work item via controller**: Teammates ARE controllers that spawn execution agents directly via Agent tool
+- **Every work item via controller**: Wave subagents ARE controllers that spawn execution agents directly via Agent tool
 - **Shared task lists**: Built-in TaskCreate/TaskList at `~/.claude/tasks/{team-name}/`
-- **Strategic Mode (v12.2.0+)**: For cross-domain requests, `/team` auto-enables strategic mode (Wave 0/1/2 = C-suite deliberation, Wave 3..N = per-domain dispatch). Auto-detection is driven by `router.domain_count >= 2`. Users can override with `--strategic` (force enable) or `--no-strategic` (force disable). The 9 leadership agents (CEO/CTO/CFO/CMO/COO/CHRO/CCO/CRO/CPO) act as Wave 0/1 teammates. See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation, and examples.
-- **Independent contexts**: Each teammate has its own context window
+- **Strategic Mode (v12.2.0+)**: For cross-domain requests, `/team` auto-enables strategic mode (Wave 0/1/2 = C-suite deliberation, Wave 3..N = per-domain dispatch). Auto-detection is driven by `router.domain_count >= 2`. Users can override with `--strategic` (force enable) or `--no-strategic` (force disable). The 9 leadership agents (CEO/CTO/CFO/CMO/COO/CHRO/CCO/CRO/CPO) act as Wave 0/1 subagents. See `.claude/skills/team/reference/strategic-mode.md` for the full protocol, brief schema, escalation, and examples.
+- **Independent contexts**: Each subagent has its own context window
 
-## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
+## CRITICAL: Wave Subagents ARE Controllers That Spawn Execution Agents Directly
 
-**This is the principle of team mode, and it is unconditionally true.** Teammates do NOT implement work items directly. Each teammate is spawned as a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. As of Claude Code 2.1.172 / cAgents v12.17.0, a teammate spawned at depth 1 reliably retains the `Agent` tool and spawns its execution agents and reviewer normally.
+**This is the principle of team mode, and it is unconditionally true.** Wave subagents do NOT implement work items directly. Each wave subagent is spawned as a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. As of Claude Code 2.1.172 / cAgents v12.17.0, a subagent spawned at depth 1 reliably retains the `Agent` tool and spawns its execution agents and reviewer normally.
 
 ```
-Teammate (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
+Subagent (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
   -> backend-developer implements work item
   -> Agent(cagents:reviewer) validates against acceptance criteria
   -> PASS or REVISE (max 2 rounds)
 ```
 
-Teammates MAY also spawn deeper sub-agents within the 5-level nesting budget (skill loop = depth 0; the 5 levels are the subagent generations beneath it) when a work item genuinely warrants it — a teammate's execution agent can spawn its own helper sub-agent, and so on, up to the ceiling.
+Wave subagents MAY also spawn deeper sub-agents within the 5-level nesting budget (skill loop = depth 0; the 5 levels are the subagent generations beneath it) when a work item genuinely warrants it — a subagent's execution agent can spawn its own helper sub-agent, and so on, up to the ceiling.
 
-**Teammates spawn execution agents DIRECTLY rather than re-entering /run via the Skill tool.** As of CC 2.1.172 a nested `/run` from a teammate is technically possible within the depth budget, but it is avoided **by design for cost and clarity**: re-entering the full /run pipeline (orchestrator + planner + controller + validator) for a single wave's work items duplicates enrichment the lead already did in Wave 0 and burns extra context and tokens. Spawn the execution agent directly instead.
+**Wave subagents spawn execution agents DIRECTLY rather than re-entering /run via the Skill tool.** As of CC 2.1.172 a nested `/run` from a subagent is technically possible within the depth budget, but it is avoided **by design for cost and clarity**: re-entering the full /run pipeline (orchestrator + planner + controller + validator) for a single wave's work items duplicates enrichment the lead already did in Wave 0 and burns extra context and tokens. Spawn the execution agent directly instead.
 
 **Anti-patterns (NEVER DO):**
-- Telling a teammate to invoke /run — re-entering the full pipeline duplicates Wave 0 enrichment and wastes tokens; spawn execution agents directly instead (by design for cost/clarity, NOT a harness limit)
+- Telling a subagent to invoke /run — re-entering the full pipeline duplicates Wave 0 enrichment and wastes tokens; spawn execution agents directly instead (by design for cost/clarity, NOT a harness limit)
 - Having the team lead do implementation work
-- Having teammates implement work items directly instead of spawning execution agents *(except the Nesting-Ceiling fallback below, when the `Agent` tool is verifiably absent)*
-- Having teammates answer questions directly instead of delegating *(except when `Agent` is verifiably absent)*
+- Having wave subagents implement work items directly instead of spawning execution agents *(except the Nesting-Ceiling fallback below, when the `Agent` tool is verifiably absent)*
+- Having wave subagents answer questions directly instead of delegating *(except when `Agent` is verifiably absent)*
 
 ## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
-**Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to **5 levels deep** (skill loop = depth 0). The `Agent` tool is present at every level from depth 1 through depth 5, so teammate controllers reliably spawn execution agents and reviewers — delegation is the expected behavior at every level.
+**Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to **5 levels deep** (skill loop = depth 0). The `Agent` tool is present at every level from depth 1 through depth 5, so subagent controllers reliably spawn execution agents and reviewers — delegation is the expected behavior at every level.
 
 **Graceful degradation is a DEFENSIVE FALLBACK**, not the expected depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting **ceiling** (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Verify the tool is actually absent before degrading; on CC ≥ 2.1.172 `Agent` is normally present at depths 1-4. The fallback applies to all spawning skills and all agent types: when `Agent` is verifiably absent, degrade to direct execution + self-validation rather than failing.
 
 See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, the ceiling/regression scope, and the historical pre-v12.17.0 depth-1 context.
 
-## CRITICAL: Spawn Wave Teammates, Not Just Tasks
+## CRITICAL: Spawn Wave Subagents, Not Just Tasks
 
-**The most common failure mode is creating tasks without spawning real teammates.** There is no `TeamCreate` step (the tool was removed in 2.1.178 — teams are implicit). For each wave the `/team` lead MUST execute BOTH steps:
+**The most common failure mode is creating tasks without spawning real subagents.** There is no `TeamCreate` step (the tool was removed in 2.1.178 — teams are implicit). For each wave the `/team` lead MUST execute BOTH steps:
 1. **TaskCreate** -- create the wave's work items as shared tasks (visibility + gate-sentinel dependencies)
-2. **Spawn wave teammates via concurrent `Agent()` calls in ONE message** -- issue all wave-K `Agent()` calls together, synchronously (`run_in_background: false`). Each `Agent()` call is a real teammate (a controller agent). Multiple tool uses in a single message run concurrently, giving true within-wave parallelism.
+2. **Spawn wave subagents via concurrent `Agent()` calls in ONE message** -- issue all wave-K `Agent()` calls together, synchronously (`run_in_background: false`). Each `Agent()` call is a real subagent (a controller agent). Multiple tool uses in a single message run concurrently, giving true within-wave parallelism.
 
-Both steps are required. Creating tasks without spawning teammates to execute them is the primary bug that causes /team to "never spin out team members." The team is implicit — it IS the set of teammates you spawn; nothing needs to be created first.
+Both steps are required. Creating tasks without spawning subagents to execute them is the primary bug that causes /team to "never spin out team members." The team is implicit — it IS the set of subagents you spawn; nothing needs to be created first.
 
 ## Execution Pipeline
 
@@ -83,16 +85,16 @@ Both steps are required. Creating tasks without spawning teammates to execute th
     Step 4: Execute Wave 0 (enrichment + bootstrap) -- lead does this sequentially
     |
     Step 5: FOR EACH Wave K (1 to N-1):
-    |   +-- Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message,
+    |   +-- Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
     |   |   synchronously (run_in_background: false), so the lead collects every
     |   |   wave-K result together before proceeding:
-    |   |   +-- Agent(teammate 1, controller): Agent(execution agent) -> Agent(reviewer) --> result
-    |   |   +-- Agent(teammate 2, controller): Agent(execution agent) -> Agent(reviewer) --> result
-    |   |   +-- Agent(teammate 3, controller): Agent(execution agent) -> Agent(reviewer) --> result
+    |   |   +-- Agent(subagent 1, controller): Agent(execution agent) -> Agent(reviewer) --> result
+    |   |   +-- Agent(subagent 2, controller): Agent(execution agent) -> Agent(reviewer) --> result
+    |   |   +-- Agent(subagent 3, controller): Agent(execution agent) -> Agent(reviewer) --> result
     |   |                    (concurrent within wave -- one message, multiple Agent() tool uses)
     |   +-- Review wave-K results + TaskList status
     |   +-- Validate GATE-K when all wave-K items complete
-    |   +-- Proceed to wave K+1 (AUTOMATIC) — spent teammates end automatically; no TeamDelete
+    |   +-- Proceed to wave K+1 (AUTOMATIC) — spent subagents end automatically; no TeamDelete
     |
     Step 6: Execute final wave (integration + validation) -- lead does this
     Step 7: Report results (cleanup is automatic at session end — no TeamDelete)
@@ -106,16 +108,16 @@ Both steps are required. Creating tasks without spawning teammates to execute th
 
 ## Team Coordination Mechanism (Implicit Teams)
 
-Teams in cAgents are **implicit** — formed by the teammates the lead spawns, not created by an API call. The mechanism uses these callable tools:
+Teams in cAgents are **implicit** — formed by the subagents the lead spawns, not created by an API call. The mechanism uses these callable tools:
 
 | Tool | Purpose |
 |------|---------|
-| **Agent** | Spawn a teammate (a controller agent). Concurrent `Agent()` calls in one message = a parallel wave. This is how a "team" comes into existence — there is no separate create step. |
+| **Agent** | Spawn a subagent (a controller agent). Concurrent `Agent()` calls in one message = a parallel wave. This is how a "team" comes into existence — there is no separate create step. |
 | **TaskCreate** | Create work items as shared tasks |
 | **TaskUpdate** | Update task status, set owner, manage dependencies |
 | **TaskList** | View all tasks and their status |
 | **TaskGet** | Read full task details |
-| **SendMessage** | Direct messaging between lead and teammates (auto-resumes a stopped named teammate — experimental path) |
+| **SendMessage** | Direct lead↔named-teammate messaging — **experimental-path only** (auto-resumes a stopped named teammate). Not used on the default subagent-wave path, which collects results synchronously. |
 
 > **Removed in 2.1.178 — do not call**: `TeamCreate` (create team) and
 > `TeamDelete` (clean up team). Teams are now implicit and cleanup is automatic
@@ -125,7 +127,7 @@ Teams in cAgents are **implicit** — formed by the teammates the lead spawns, n
 Key behaviors:
 - Concurrent `Agent()` calls in a single message run in parallel — that IS the wave
 - With `run_in_background: false`, the lead receives all wave results together (synchronous collection)
-- Teammate messages arrive automatically (no polling)
+- Named-teammate messages arrive automatically, no polling (**experimental path only** — the default subagent-wave path collects results synchronously)
 - File-lock based task claiming prevents race conditions
 - Shared task list at `~/.claude/tasks/{team-name}/` (populated by TaskCreate)
 
@@ -190,10 +192,11 @@ Per-session: `claude --teammate-mode in-process`
 
 ## OPTIONAL: Experimental Named-Background-Teammate Path
 
-> **EXPERIMENTAL / harness-variable. NOT the default.** Use ONLY when
+> **EXPERIMENTAL / harness-variable. NOT the default — this path is not part of
+> the default subagent-wave model.** Use ONLY when
 > `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive
 > agent teams. If the feature is unavailable, you MUST fall back to the DEFAULT
-> concurrent-Agent wave path above — never fail the wave.
+> concurrent-Agent subagent-wave path above — never fail the wave.
 
 The DEFAULT concurrent-Agent wave model (synchronous `Agent()` calls, one message
 per wave) is reliability-first and works in every harness. This experimental path
@@ -261,11 +264,11 @@ disqualified:
 3. TaskCreate -- create ALL work items + GATE sentinels with wave dependencies IMMEDIATELY
 4. Execute wave 0 (enrichment + bootstrap) sequentially
 5. FOR EACH wave K (1 to N-1):
-   a. Spawn ALL wave-K teammates as CONCURRENT Agent() calls in ONE message,
+   a. Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
       synchronously (run_in_background: false)
    b. Collect wave-K results together; review TaskList status
    c. Validate GATE-K when all wave-K items complete
-   d. Mark GATE-K complete -> proceed to wave K+1 (spent teammates end automatically)
+   d. Mark GATE-K complete -> proceed to wave K+1 (spent subagents end automatically)
 6. Execute final wave (integration + validation) sequentially
 7. Report results (cleanup automatic at session end — no TeamDelete)
 ```
@@ -279,9 +282,9 @@ disqualified:
 | 3 | 5 | 5-7 |
 | 4 | 6 | 6-10 |
 
-### Wave Teammate Spawn (implicit team — no TeamCreate)
+### Wave Subagent Spawn (implicit team — no TeamCreate)
 
-There is no team-creation call. The lead spawns a wave by issuing all wave-K `Agent()` calls in ONE message, synchronously. The set of concurrent teammates IS the team.
+There is no team-creation call. The lead spawns a wave by issuing all wave-K `Agent()` calls in ONE message, synchronously. The set of concurrent subagents IS the team.
 
 ```javascript
 // One message, multiple Agent() tool uses = one concurrent wave.
@@ -315,9 +318,9 @@ TaskCreate({
 TaskUpdate({ taskId: "3", addBlockedBy: ["1"] })
 ```
 
-### Teammate Communication
+### Subagent Communication
 
-Teammates are spawned as controller agents via Agent tool (not via SendMessage). Each teammate receives its work item prompt directly in the Task call. Communication between lead and teammates uses SendMessage for status updates and shutdown requests:
+Wave subagents are spawned as controller agents via the Agent tool (not via SendMessage). Each subagent receives its work item prompt directly in the `Agent()` call, and the lead collects its result synchronously (`run_in_background: false`) — **no SendMessage is needed on the default subagent-wave path**. The rest of this subsection describes the **experimental named-teammate path only**, where the lead↔named-teammate SendMessage channel handles status updates and shutdown requests:
 
 ```javascript
 // Broadcast update (use sparingly)
@@ -349,6 +352,15 @@ SendMessage({
 Update the teammate lifecycle expectations accordingly: teammates that finish a wave and stop are NOT gone — they can be re-activated via SendMessage for follow-up work items.
 
 ## Cross-Teammate Request Pattern
+
+> **LEGACY — experimental-named-teammate-path only; OBSOLETE under the default
+> subagent model.** This pattern's founding premise (Claude Code forbids nested
+> teams, so a teammate that needs help must route a request *sideways* through
+> the lead) is obsolete under the default subagent-wave model. A wave subagent
+> that needs another specialty simply spawns that specialist as its OWN downward
+> sub-subagent (depth-5 nesting) — there is **no peer_request, no sideways peer
+> messaging, and no lead-as-router hop** on the default path. The protocol below
+> is retained only for the experimental named-background-teammate path.
 
 A teammate sometimes needs help from another teammate. Claude Code forbids nested teams and direct teammate-to-teammate messaging (the lead is fixed), and the aggressive-delegation rule forbids the lead from executing implementation work itself. The `peer_request` protocol resolves the gap: teammate A emits a structured request, the lead routes it via a 4-branch decision tree, and the requested work happens through a peer or a fresh spawn — never through the lead's own hands.
 
@@ -385,7 +397,7 @@ See @.claude/rules/playbooks/pat-cross-teammate-request.md for the canonical sch
 ### Cleanup
 
 Cleanup is **automatic** — there is no `TeamDelete` call (the tool was removed in
-2.1.178). Synchronously-spawned wave teammates end when they return their result;
+2.1.178). Synchronously-spawned wave subagents end when they return their result;
 any remaining implicit team state is torn down at session end. The lead does not
 manage team teardown.
 
@@ -400,11 +412,11 @@ Team leads ONLY coordinate. They NEVER implement.
 
 ```yaml
 allowed_actions:
-  - Spawn wave teammates via concurrent Agent() calls (run_in_background: false)
-  - Distribute work items to teammates via TaskCreate / SendMessage
+  - Spawn wave subagents via concurrent Agent() calls (run_in_background: false)
+  - Distribute work items to subagents via TaskCreate (SendMessage is experimental-path only)
   - Monitor task list progress via TaskList
-  - Request status from teammates via SendMessage
-  - Synthesize teammate outputs
+  - Request status from named teammates via SendMessage (experimental path only)
+  - Synthesize subagent outputs
   - Write coordination_log.yaml
   # Cleanup is automatic at session end — no TeamDelete call (removed in 2.1.178)
 
@@ -417,9 +429,9 @@ prohibited_actions:
 
 ### Work Distribution Strategies
 
-**Self-Claiming (Preferred)**: Teammates check TaskList and claim available tasks after completing current work. Built-in file-lock prevents race conditions.
+**Self-Claiming (Preferred)**: Subagents check TaskList and claim available tasks after completing current work. Built-in file-lock prevents race conditions.
 
-**Direct Assignment**: Lead assigns tasks to specific teammates via TaskUpdate (set owner) and SendMessage.
+**Direct Assignment**: Lead assigns tasks to specific subagents via TaskUpdate (set owner) and SendMessage.
 
 ## Shared Task List
 
@@ -478,9 +490,9 @@ Built-in resources (managed by Claude Code):
 
 ## Error Handling
 
-### Teammate Failure
+### Subagent Failure
 - Send status query via SendMessage
-- If unresponsive: spawn replacement teammate
+- If unresponsive: spawn replacement subagent
 - Reassign work item
 
 ### Deadlock Detection
@@ -533,12 +545,12 @@ Waves are delivery phases enforced via TaskCreate dependencies (gate sentinel ta
 | Type | Executor | Description |
 |------|----------|-------------|
 | `bootstrap` | Lead (sequential) | Foundation setup, contracts, scaffolding |
-| `research` | Teammates (parallel) | Analysis, information gathering |
-| `design` | Teammates (parallel) | Architecture decisions, interface definitions |
-| `implementation` | Teammates (parallel) | Core build work |
-| `supporting` | Teammates (parallel) | Secondary features, integrations |
-| `testing` | Teammates (parallel) | QA, security, validation |
-| `documentation` | Teammates (parallel) | Docs, cleanup, optimization |
+| `research` | Wave subagents (parallel) | Analysis, information gathering |
+| `design` | Wave subagents (parallel) | Architecture decisions, interface definitions |
+| `implementation` | Wave subagents (parallel) | Core build work |
+| `supporting` | Wave subagents (parallel) | Secondary features, integrations |
+| `testing` | Wave subagents (parallel) | QA, security, validation |
+| `documentation` | Wave subagents (parallel) | Docs, cleanup, optimization |
 | `integration` | Lead (sequential) | Merge, final testing, polish |
 
 Not all wave types are needed for every request, but prefer MORE granular waves over fewer consolidated ones. If work items span multiple concerns (e.g., research AND implementation), split them into separate waves.
@@ -615,7 +627,7 @@ When flat execution is used, the system behaves as a simple parallel distributio
 ## Integration Points
 
 - **trigger + router + planner**: Available for routing and planning (used by /run, optionally by /team via `mode: team_planning_only`)
-- **`/team` skill loop**: Decomposes the request directly and executes waves by spawning teammates as concurrent `Agent()` calls (implicit teams — no TeamCreate). The standalone `team-trigger` agent was removed in v12.0.0 — this work is now inlined in the `/team` SKILL.md.
+- **`/team` skill loop**: Decomposes the request directly and executes waves by spawning subagents as concurrent `Agent()` calls (implicit teams — no TeamCreate). The standalone `team-trigger` agent was removed in v12.0.0 — this work is now inlined in the `/team` SKILL.md.
 - **controller delegate-mode wrapper**: The `/team` lead applies the delegate-mode pattern directly to its chosen controller, validates gates, and tracks contracts (the standalone `team-lead-adapter` agent was removed in v12.0.0 — this is now an inline pattern in `/team`)
 - **orchestrator**: Detects team mode, routes appropriately
 - **Hooks**: team-start.cjs, team-stop.cjs, team-task-complete.cjs, teammate-idle-handler.cjs

@@ -47,8 +47,8 @@ other 3 user skills.
 | Flag / Mode | Type | Description | Trigger phrases |
 |-------------|------|-------------|-----------------|
 | (default) | mode | N-wave parallel team execution | "team", "parallel", "multi-part" |
-| `--dry-run` | flag | Display wave structure without spawning teammates | "preview team" |
-| `--members <N>` | flag | Target teammate count per wave (default 5) | — |
+| `--dry-run` | flag | Display wave structure without spawning subagents | "preview team" |
+| `--members <N>` | flag | Target subagent count per wave (default 5) | — |
 | `--teammate-mode auto\|tmux\|in-process` | flag | Display mode for teammates | — |
 | `--waves <N>` | flag | Force minimum wave count (default per tier) | "use 8 waves" |
 | `--template <id>` | flag | Use a named team template (fullstack-app, etc.) | — |

@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.61.1"
+  version: "12.62.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -116,7 +116,7 @@ Special flag handling:
 
 **ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
 
-**ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/run` (or a `/team` teammate) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
+**ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/run` (or a `/team` subagent) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
 
 ```bash
 CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -172,7 +172,7 @@ Proceed to Step 3.
 
 This is the core loop -- spawn pipeline agents one state at a time, advance via completion events.
 
-**3a. Pre-enrichment detection** (for /team teammate flows): If `--session` was provided, check which enrichment files exist and skip already-completed states. See @reference/state-machine-detail.md.
+**3a. Pre-enrichment detection** (for /team subagent flows): If `--session` was provided, check which enrichment files exist and skip already-completed states. See @reference/state-machine-detail.md.
 
 **3b. Route domain and tier inline** before spawning the orchestrator. Domain detection uses `{domain}/config/domain_overrides.yaml` -> `router_keywords` array. See @reference/domain-coverage.md for the full domain table.
 
@@ -325,7 +325,7 @@ For team mode, after completing routing + planning inline, delegate to `/team`:
 Skill({ skill: "team", args: "{request} --session {SESSION_DIR}" })
 ```
 
-The /team skill handles decomposition into work items, team creation, and parallel execution. Each teammate invokes `/run --session {SESSION_DIR}` which detects pre-enrichment and picks up from the appropriate state.
+The /team skill handles decomposition into work items, team creation, and parallel execution. Each subagent invokes `/run --session {SESSION_DIR}` which detects pre-enrichment and picks up from the appropriate state.
 
 If `--dry-run` with `--team`: Display plan summary and team composition, then STOP.
 

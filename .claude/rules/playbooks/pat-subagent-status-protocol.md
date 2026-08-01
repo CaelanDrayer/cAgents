@@ -44,7 +44,9 @@ blocker: null                   # For BLOCKED: describe the blocking factor
 
 ### NEEDS_CONTEXT extension: requested_peer (v12.14.0+)
 
-In `/team` mode, NEEDS_CONTEXT can carry an optional `requested_peer` field pointing the lead to the teammate best positioned to provide the missing information. When set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) rather than escalating to the user. When `requested_peer` is absent, NEEDS_CONTEXT retains its prior meaning — need user/external input — fully back-compatible.
+> **LEGACY — experimental named-teammate path only.** The `requested_peer` / `peer_request` extension belongs to the demoted experimental named-background-teammate path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). Under the DEFAULT subagent model it is obsolete: a wave subagent that needs another specialty spawns that specialist as its OWN downward sub-subagent (nesting to depth 5) rather than routing a `requested_peer` sideways through the lead. Retained for the experimental path; see `pat-cross-teammate-request.md`.
+
+In `/team` mode (experimental named-teammate path), NEEDS_CONTEXT can carry an optional `requested_peer` field pointing the lead to the named teammate best positioned to provide the missing information. When set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) rather than escalating to the user. When `requested_peer` is absent, NEEDS_CONTEXT retains its prior meaning — need user/external input — fully back-compatible. On the default subagent path this extension does not apply — the subagent spawns its own helper subagent downward.
 
 ```yaml
 status: NEEDS_CONTEXT
@@ -63,7 +65,7 @@ The on-disk `peer_request` artifact at `peer_request_ref` is the canonical contr
 |--------|-------------------|
 | **DONE** | Proceed to reviewer loop (Stage 1: spec compliance) |
 | **DONE_WITH_CONCERNS** | Read concerns. If concerns affect acceptance criteria: request clarification. If concerns are informational: note in coordination_log and proceed to review. Never silently ignore concerns. |
-| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. **In `/team` mode**: if `requested_peer` is set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) per @.claude/rules/playbooks/pat-cross-teammate-request.md. |
+| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. **In `/team` mode (experimental named-teammate path only)**: if `requested_peer` is set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) per @.claude/rules/playbooks/pat-cross-teammate-request.md. On the default subagent path there is no `requested_peer` — the subagent spawns its own helper subagent downward. |
 | **BLOCKED** | Assess the blocker. If resolvable: resolve and re-dispatch. If not resolvable: mark work item as blocked in coordination_log, document the blocker, and continue with other work items. |
 
 ## Escalation ladder for BLOCKED
