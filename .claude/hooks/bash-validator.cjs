@@ -287,13 +287,27 @@ createHook('BashValidator', async (input) => {
     console.error('[BashValidator] evaluator threw — fail-closed deny:', e && e.message);
     return { deny: true, reason: 'bash-guard-evaluator error (fail-closed)' };
   }
-  // Most-restrictive: an evaluator deny short-circuits immediately.
+  // Most-restrictive: a PROVABLY-destructive evaluator deny short-circuits
+  // immediately. A FAIL-CLOSED deny (evalVerdict.failClosed — the evaluator could
+  // not PARSE the command, e.g. an apostrophe/unbalanced quote inside a heredoc or
+  // $(...)) does NOT hard-block: we defer to the raw-string catastrophic belt below
+  // (which needs no parse and still hard-denies any real rm -rf / / fork-bomb /
+  // exfil literal), and if the belt + HITL patterns are all silent we soft-fail to
+  // a confirmation `ask` at the tail. This keeps benign-but-unparseable commands
+  // (multi-line commit messages, complex quoting) from being hard-denied while the
+  // catastrophic floor is preserved. See docs/SECURITY_BASH_GUARD_THREAT_MODEL.md §5.3.
+  let evalFailClosed = false;
   if (evalVerdict && evalVerdict.deny) {
-    console.error(`[BashValidator] BLOCKED (evaluator): ${evalVerdict.reason}`);
-    return evalVerdict;
+    if (evalVerdict.failClosed) {
+      evalFailClosed = true;
+      console.error(`[BashValidator] evaluator could not parse command (fail-closed): ${evalVerdict.reason} — deferring to catastrophic belt; will soft-fail to ask if the belt is silent`);
+    } else {
+      console.error(`[BashValidator] BLOCKED (evaluator): ${evalVerdict.reason}`);
+      return evalVerdict;
+    }
   }
-  // An evaluator ask verdict is held until after the legacy BLOCKED (deny)
-  // checks below — deny > ask — then returned before the legacy HITL loop.
+  // A (non-fail-closed) evaluator ask verdict is held until after the legacy
+  // BLOCKED (deny) checks below — deny > ask — then returned before the HITL loop.
 
   // ── STAGE 2/3: legacy belt on the whitespace-collapsed copy ───────────────
   const command = rawCommand.replace(/\t/g, ' ').replace(/\s+/g, ' ');
@@ -303,7 +317,14 @@ createHook('BashValidator', async (input) => {
   // catastrophic shape (fork bomb, rm -rf /, dd, mkfs, exfil, Class A–E …), so
   // 'off' relaxes only the redundant legacy belt, never the sound floor. The
   // HITL loop and the evaluator's `ask` verdict below still surface under 'off'.
-  if (guardMode !== 'off') {
+  //
+  // EXCEPTION — fail-closed input: when the evaluator could NOT parse the command
+  // (evalFailClosed), the sound Stage-1 floor is UNAVAILABLE for it, so the belt is
+  // the ONLY remaining catastrophic floor. Run the belt for such input even under
+  // 'off' — otherwise an un-parseable `rm -rf /` / fork bomb would soft-fail to ask
+  // (→ auto-allow under bypassPermissions) with no floor at all. This is what makes
+  // the "catastrophic literals hard-denied in all modes" guarantee true.
+  if (guardMode !== 'off' || evalFailClosed) {
     // Check for blocked string patterns (literal catastrophic shapes — always raw)
     for (const pattern of BLOCKED_STRINGS) {
       if (command.includes(pattern)) {
@@ -373,14 +394,41 @@ createHook('BashValidator', async (input) => {
     }
   }
 
-  // Legacy belt fully silent: surface the evaluator's ask verdict, if any
+  // Legacy belt fully silent: surface a genuine evaluator ASK verdict, if any
   // (ask > null — an evaluator ask must not be dropped just because no legacy
-  // pattern matched).
-  if (evalVerdict) {
-    const evalReason = evalVerdict.hookSpecificOutput &&
-      evalVerdict.hookSpecificOutput.permissionDecisionReason;
+  // pattern matched). A FAIL-CLOSED deny has no hookSpecificOutput and is handled
+  // by the soft-fail block below, NOT here — returning it here would re-introduce
+  // the hard block we are deferring.
+  if (evalVerdict && evalVerdict.hookSpecificOutput) {
+    const evalReason = evalVerdict.hookSpecificOutput.permissionDecisionReason;
     console.error(`[BashValidator] WARNING (evaluator): ${evalReason}`);
     return evalVerdict;
+  }
+
+  // Fail-closed soft-fail: the evaluator could not parse this command, but the
+  // catastrophic belt (raw-string rm -rf / / fork-bomb / mkfs / sudo / exfil …) and
+  // the HITL patterns were all silent — so it matched NOTHING known-destructive.
+  // Rather than hard-deny an un-analyzable-but-benign-looking command (the common
+  // cause is an apostrophe or unbalanced quote inside a heredoc / $(...), e.g. a
+  // multi-line git commit message), downgrade to a one-keystroke confirmation `ask`.
+  // Caveat (documented residual, threat-model §7.6): an `ask` auto-resolves to allow
+  // under bypassPermissions, so a command that is BOTH un-parseable AND destructive-
+  // in-a-way-only-the-evaluator-would-catch (a belt-missed subpath like rm -rf /etc,
+  // obfuscated into un-tokenizability) would auto-allow there. The catastrophic
+  // literals remain hard-denied by the belt in all modes.
+  if (evalFailClosed) {
+    const reason =
+      'The command safety guard could not fully parse this command (commonly an ' +
+      'apostrophe or unbalanced quote inside a heredoc or $(...)). It did not match ' +
+      'any known-destructive pattern. Confirm the command is safe before approving.';
+    console.error(`[BashValidator] WARNING (fail-closed soft-fail → ask): ${evalVerdict.reason}`);
+    return {
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'ask',
+        permissionDecisionReason: reason
+      }
+    };
   }
 
   return null;

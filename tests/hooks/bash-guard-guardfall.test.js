@@ -457,6 +457,102 @@ describe('#-comment tokenization false-positive fix (bash-guard-evaluator)', () 
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Fail-closed soft-fail — un-parseable command downgrades to ASK, not hard DENY
+// (session run_bash-guard-softfail_260731_001).
+//
+// Reported false positive: a legitimate `git commit -m "$(cat <<'EOF' … EOF)"`
+// whose heredoc body contained a prose apostrophe (`the model's unit`) was
+// HARD-DENIED. The tokenizer is quote-aware but heredoc-UNAWARE, so the apostrophe
+// inside the heredoc body flipped extractParen into single-quote mode, desynced
+// paren matching, threw 'unbalanced command substitution', and the fail-closed
+// evaluator denied the entire benign command.
+//
+// Fix (two layers): (1) the evaluator tags an un-PARSEABLE deny with
+// `failClosed: true` (an evaluator DEFECT/throw stays a plain hard deny); (2) the
+// bash-validator hook no longer hard-short-circuits on a fail-closed deny — it
+// defers to the raw-string catastrophic belt (which needs no parse and still
+// hard-denies rm -rf / / fork bomb / exfil) and, if the belt + HITL are silent,
+// downgrades to a one-keystroke confirmation `ask`. The catastrophic floor holds
+// in ALL guard modes (the belt is forced to run for fail-closed input even under
+// CAGENTS_BASH_GUARD=off, where the sound evaluator floor is unavailable).
+// See docs/SECURITY_BASH_GUARD_THREAT_MODEL.md §5.3 + §7.6.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('fail-closed soft-fail (un-parseable → ask, catastrophic floor preserved)', () => {
+  const q = String.fromCharCode(39);   // ' — keep this source file balanced
+  const nl = String.fromCharCode(10);
+  const RMRF = 'rm -rf /';
+  const FORKBOMB = ':(){ :|:& };:';
+
+  // The exact reported shape: an apostrophe inside a $(...) heredoc body.
+  const HEREDOC_APOS =
+    'git commit -m "$(cat <<' + q + 'EOF' + q + nl +
+    'release notes: the model' + q + 's unit of work' + nl +
+    'EOF' + nl + ')"';
+  // Minimal reduction: an unbalanced apostrophe inside $(...).
+  const SUBST_APOS = 'echo "$(echo don' + q + 't)"';
+
+  // ---- evaluator level: un-parseable input is tagged failClosed ----
+  it('evaluate() tags an un-parseable heredoc-apostrophe deny with failClosed:true', () => {
+    const r = evaluate(HEREDOC_APOS);
+    expect(r, 'must be a deny at the evaluator level (conservative library)').toBeTruthy();
+    expect(r.deny).toBe(true);
+    expect(r.failClosed, 'un-parseable input must carry failClosed:true').toBe(true);
+  });
+
+  it('evaluate() tags the minimal $(echo don\'t) deny with failClosed:true', () => {
+    const r = evaluate(SUBST_APOS);
+    expect(r.deny).toBe(true);
+    expect(r.failClosed).toBe(true);
+  });
+
+  it('a PROVABLY-destructive deny is NOT failClosed (rm -rf / tokenizes fine)', () => {
+    const r = evaluate(RMRF);
+    expect(r.deny).toBe(true);
+    expect(r.failClosed, 'a proven-destructive deny must not be soft').toBeUndefined();
+  });
+
+  // ---- hook level: the false positive now ASKS instead of DENYING ----
+  it('ALLOWS-to-ASK the reported heredoc-apostrophe commit (was hard DENY)', () => {
+    expect(hookVerdict(HEREDOC_APOS)).toBe('ask');
+  });
+
+  it('ASKS for the minimal unbalanced-apostrophe $(...) (was hard DENY)', () => {
+    expect(hookVerdict(SUBST_APOS)).toBe('ask');
+  });
+
+  it('the fail-closed soft-fail holds under warn AND off', () => {
+    expect(hookVerdict(HEREDOC_APOS, 'warn')).toBe('ask');
+    expect(hookVerdict(HEREDOC_APOS, 'off')).toBe('ask');
+  });
+
+  // ---- SECURITY: the catastrophic floor survives even when un-parseable ----
+  it('STILL DENIES an un-parseable command carrying rm -rf / (belt floor)', () => {
+    expect(hookVerdict(RMRF + ' "$(echo oops')).toBe('deny');
+  });
+
+  it('STILL DENIES an un-parseable command carrying a fork bomb (belt floor)', () => {
+    expect(hookVerdict(FORKBOMB + ' "$(echo x')).toBe('deny');
+  });
+
+  it('the catastrophic floor holds for un-parseable input in ALL modes (incl. off)', () => {
+    expect(hookVerdict(RMRF + ' "$(echo oops', 'block')).toBe('deny');
+    expect(hookVerdict(RMRF + ' "$(echo oops', 'warn')).toBe('deny');
+    // off skips the belt for PARSEABLE input, but a fail-closed command forces the
+    // belt to run (the only floor left) — so a catastrophic literal still denies.
+    expect(hookVerdict(RMRF + ' "$(echo oops', 'off')).toBe('deny');
+  });
+
+  // ---- no collateral: benign + genuinely-destructive verdicts unchanged ----
+  it('does not perturb a benign parseable command (git status → allow)', () => {
+    expect(hookVerdict('git status')).toBe('allow');
+  });
+
+  it('does not weaken a parseable destructive command (rm -rf / → deny)', () => {
+    expect(hookVerdict(RMRF)).toBe('deny');
+  });
+});
+
 describe('standalone contract (bash-guard-evaluator must add zero dependencies)', () => {
   it('package.json dependencies keys deep-equal exactly ["js-yaml"]', () => {
     const pkg = require(PACKAGE_JSON_PATH);
