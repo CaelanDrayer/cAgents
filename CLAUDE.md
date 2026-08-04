@@ -336,9 +336,12 @@ cAgents is distributed as a Claude Code plugin. The root manifest is
 (LSP servers, default settings, hook registration, marketplace fields, multi-plugin
 merge) and the full manifest-field detail live in
 **`docs/ARCHITECTURE-HISTORY.md § Plugin Architecture`**. Worktree sparse checkout is
-declared in `.claude/settings.json` (`worktree.sparsePaths`, 6 entries: `.claude/`,
-`cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/`) so `/team`
-worktree-isolated subagents only populate the paths they need.
+declared in `.claude/settings.json` (`worktree.sparsePaths`, 7 entries: `.claude/`,
+`.claude-plugin/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`,
+`docs/`) so `/team` worktree-isolated subagents only populate the paths they
+need. `.claude-plugin/` was added in v12.62.2 — without it, a worktree-isolated
+subagent's checkout lacks `plugin.json`, causing `session-init-gate.cjs` to
+misread every agent as unregistered (see CHANGELOG v12.62.2).
 
 ## Performance Benchmarks
 
@@ -363,7 +366,7 @@ must never be conflated. The full measured-vs-estimate tables + provenance live 
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1704+ Vitest tests across 207+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.62.1
+**Version**: 12.62.2
 
 ## Troubleshooting
 

@@ -126,3 +126,103 @@ describe('session-init-gate.cjs', () => {
     expect(result.hookSpecificOutput.permissionDecision).toBe('deny');
   });
 });
+
+describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 regression)', () => {
+  // Root cause (v12.62.2): loadRegisteredAgents() returned an EMPTY Set — not a
+  // distinct "cannot verify" signal — whenever .claude-plugin/plugin.json could
+  // not be found at PROJECT_ROOT. That is exactly what happens inside a /team
+  // worktree-isolated subagent, because `.claude-plugin/` was missing from
+  // `worktree.sparsePaths` in .claude/settings.json (only `.claude/`,
+  // `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/` were
+  // checked out). An empty Set made aliasLookup() treat EVERY `cagents:<name>`
+  // spawn — including fully valid, currently-registered agents such as
+  // architect/scholar/product-owner (and, empirically, all 60 catalog agents)
+  // — as "not a registered agent", because it could not distinguish "the
+  // catalog is empty" from "the catalog could not be read".
+  //
+  // BEFORE FIX: a PROJECT_ROOT with no .claude-plugin/plugin.json (this test's
+  // tmpDir, mirroring the worktree's incomplete sparse checkout) makes every
+  // one of these names — including architect/scholar/product-owner — receive
+  // the false "is not a registered agent" advisory. Verified via git-stash:
+  // reverting session-init-gate.cjs to HEAD~1 (pre-fix) and re-running this
+  // block fails both catalog assertions below with non-empty falsePositives.
+  // AFTER FIX: loadRegisteredAgents() returns `null` (not an empty Set) when
+  // the manifest is absent, and aliasLookup() treats `null` as "cannot verify
+  // — stay silent" instead of "confirmed unregistered".
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = join(tmpdir(), 'cagents-test-sig-manifest-absent-' + Date.now());
+    mkdirSync(tmpDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered when the manifest is absent (worktree-sparse-checkout simulation)', () => {
+    for (const name of ['architect', 'scholar', 'product-owner']) {
+      const result = runHook(
+        { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `run_test-manifest-absent-${name}_260801_001` }
+      );
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage || '').not.toMatch(/is not a registered agent/);
+    }
+  });
+
+  it('does NOT flag ANY agent from the live catalog as unregistered when the manifest is absent (whole-catalog guard, catches future catalog drift)', () => {
+    // 60 agents x one spawnSync'd node process each ⇒ needs more than the 5s
+    // vitest default. Timeout raised via the third `it()` argument below.
+    const manifestPath = join(process.cwd(), '.claude-plugin', 'plugin.json');
+    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const names = [];
+    for (const rel of manifest.agents) {
+      if (typeof rel !== 'string') continue;
+      const m = rel.match(/\/([a-zA-Z0-9_\-]+)\/SKILL\.md$/) || rel.match(/\/([a-zA-Z0-9_\-]+)\.md$/);
+      if (m) names.push(m[1]);
+    }
+    // Sanity: the live catalog should have a substantial number of agents —
+    // if this drops to 0 the test below would vacuously pass, so guard it.
+    expect(names.length).toBeGreaterThan(0);
+
+    const falsePositives = [];
+    for (const name of names) {
+      const result = runHook(
+        { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `run_test-manifest-absent-catalog-${name}_260801_001` }
+      );
+      if ((result.systemMessage || '').includes('is not a registered agent')) {
+        falsePositives.push(name);
+      }
+    }
+    expect(falsePositives).toEqual([]);
+  }, 30000);
+
+  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered at the real project root (manifest present)', () => {
+    for (const name of ['architect', 'scholar', 'product-owner']) {
+      const result = runHook(
+        { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
+        { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: `run_test-real-root-${name}_260801_001` }
+      );
+      expect(result.continue).toBe(true);
+      expect(result.systemMessage || '').not.toMatch(/is not a registered agent/);
+    }
+  });
+
+  it('still emits a legitimate advisory for a genuinely unknown name when the manifest IS present (no over-correction)', () => {
+    const result = runHook(
+      { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:totally-made-up-agent-xyz' } },
+      { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: 'run_test-unknown-agent_260801_001' }
+    );
+    expect(result.continue).toBe(true);
+    expect(result.systemMessage || '').toMatch(/not a registered agent|Did you mean/);
+  });
+
+  it('worktree.sparsePaths in .claude/settings.json includes .claude-plugin/ (data-completeness root cause)', () => {
+    const settingsPath = join(process.cwd(), '.claude', 'settings.json');
+    const settings = JSON.parse(require('fs').readFileSync(settingsPath, 'utf8'));
+    const sparsePaths = (settings.worktree && settings.worktree.sparsePaths) || [];
+    expect(sparsePaths).toContain('.claude-plugin/');
+  });
+});
