@@ -51,17 +51,31 @@ const { createHook, findActiveSession, AGENT_MEMORY_DIR, PROJECT_ROOT, denyWithR
 
 /**
  * Lazily load the set of registered agent leaf names from the plugin manifest.
- * Returns Set<string> of bare agent names (e.g. 'tech-lead', 'planner').
+ *
+ * Returns Set<string> of bare agent names (e.g. 'tech-lead', 'planner') when the
+ * manifest was found and parsed. Returns `null` — NOT an empty Set — when the
+ * manifest could not be located at all (e.g. a /team worktree-isolated subagent
+ * whose sparse checkout doesn't happen to include `.claude-plugin/`, or any other
+ * environment where the plugin root differs from the manifest's actual location).
+ * `null` is a distinct "cannot verify" signal from a legitimately-empty catalog:
+ * callers MUST treat `null` as "skip the advisory" rather than "every name is
+ * unregistered" — an absent source of truth is not evidence of non-membership.
+ * See the "Phase 2 registered-agent advisory (v12.62.2 regression)" describe
+ * block in tests/hooks/session-init-gate.test.js for the regression this
+ * distinction fixes (root cause: v12.62.2).
  */
 let _registeredAgentsCache = null;
 function loadRegisteredAgents(rootDir) {
-  if (_registeredAgentsCache) return _registeredAgentsCache;
+  if (_registeredAgentsCache !== null) return _registeredAgentsCache;
   const manifestPath = path.join(rootDir, '.claude-plugin', 'plugin.json');
-  const set = new Set();
   if (!fs.existsSync(manifestPath)) {
-    _registeredAgentsCache = set;
-    return set;
+    // Do NOT cache `null` — a later call in the same process (e.g. once the
+    // manifest becomes available) should re-check rather than being pinned to
+    // "unavailable" forever. In practice each hook invocation is a fresh
+    // process, so this only matters for in-process test harnesses.
+    return null;
   }
+  const set = new Set();
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const agents = Array.isArray(manifest.agents) ? manifest.agents : [];
@@ -74,7 +88,9 @@ function loadRegisteredAgents(rootDir) {
       else if (m2) set.add(m2[1]);
     }
   } catch {
-    // fall through with empty set
+    // Manifest exists but failed to parse — fall through with empty set (this
+    // IS a legitimate "zero registered agents" signal, distinct from "file
+    // absent", so it is still cached and used normally below).
   }
   _registeredAgentsCache = set;
   return set;
@@ -186,6 +202,11 @@ function aliasLookup(subagentType, rootDir) {
   const name = m[1];
 
   const registered = loadRegisteredAgents(rootDir);
+  // Manifest not found at all (distinct from "found but empty") — we cannot
+  // verify registration status one way or the other, so stay silent rather
+  // than assert a false "not a registered agent" claim. See loadRegisteredAgents
+  // JSDoc above.
+  if (registered === null) return null;
   // Already a current, registered name — nothing to do.
   if (registered.has(name)) return null;
 

@@ -10,6 +10,55 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.62.2] - 2026-08-03
+
+**session-init-gate false "not registered" advisory**: fixes a false-positive
+governance warning where legitimate, catalogued agents (e.g. `cagents:architect`,
+`cagents:scholar`, `cagents:product-owner`) were flagged by
+`session-init-gate.cjs` as `is not a registered agent` even though all three are
+active entries in `.claude-plugin/plugin.json`'s `agents[]` array.
+
+**Root cause**: `loadRegisteredAgents()` builds its "registered agent" set by
+reading `.claude-plugin/plugin.json` from `PROJECT_ROOT`. When that file cannot
+be found, the function returned an **empty `Set`** — indistinguishable from "the
+catalog genuinely has zero agents" — so `aliasLookup()` treated every
+`cagents:<name>` spawn as unregistered. The file goes missing precisely inside a
+`/team` worktree-isolated subagent: `.claude/settings.json`'s
+`worktree.sparsePaths` (the git sparse-checkout allowlist for isolated
+teammate/subagent worktrees) listed `.claude/`, `cagents-memory/_system/`,
+`agents/`, `scripts/`, `tests/`, `docs/` but **not** `.claude-plugin/`, so a
+worktree-isolated worktree's checkout never contained the plugin manifest that
+`session-init-gate.cjs` needs. Reproduced end-to-end with a simulated sparse
+worktree (only the 6 declared paths + root `CLAUDE.md` present): **all 60**
+catalog agents — not just the 3 observed — were flagged as unregistered,
+confirming the failure mode is catalog-wide, not specific to these 3 names.
+
+### Fixed
+- `.claude/settings.json`: added `.claude-plugin/` to `worktree.sparsePaths` (6
+  → 7 entries) so a `/team` worktree-isolated subagent's sparse checkout
+  includes the plugin manifest `session-init-gate.cjs` reads.
+- `.claude/hooks/session-init-gate.cjs`: `loadRegisteredAgents()` now returns
+  `null` — not an empty `Set` — when `.claude-plugin/plugin.json` cannot be
+  found, and `aliasLookup()` treats `null` as "cannot verify, stay silent"
+  rather than "confirmed unregistered". This is a defense-in-depth fix
+  independent of the sparse-checkout cause: an advisory hook that cannot read
+  its source of truth must not assert a false claim about it, regardless of
+  *why* the manifest is unavailable (missing sparse path, permissions, partial
+  checkout, etc.).
+- `CLAUDE.md` / `docs/ARCHITECTURE-HISTORY.md`: updated the `worktree.sparsePaths`
+  entry counts and lists from 6 to 7 entries.
+
+### Added
+- `tests/hooks/session-init-gate.test.js`: new `describe` block (6 tests) pinning
+  this regression — asserts `cagents:architect` / `cagents:scholar` /
+  `cagents:product-owner` are never flagged, asserts this holds for **every**
+  agent in the live `.claude-plugin/plugin.json` catalog (60 agents, so future
+  catalog drift is caught automatically) under both a manifest-absent
+  (worktree-sparse-checkout simulation) and manifest-present environment, and
+  asserts `worktree.sparsePaths` contains `.claude-plugin/`. Verified
+  failing-before (all 60 catalog agents flagged) / passing-after via a
+  pre-fix/post-fix diff of `session-init-gate.cjs`.
+
 ## [12.62.1] - 2026-07-31
 
 **bash-guard fail-closed soft-fail**: an un-parseable Bash command now downgrades
