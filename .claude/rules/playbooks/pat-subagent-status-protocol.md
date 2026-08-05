@@ -1,4 +1,15 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
+  - ".claude/rules/core/execution.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/core/resources/execution-self-validation.md"
+  - "agents/**"
+  - ".claude/skills/**"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
+  - "tests/v12/peer-request-pattern.test.js"
+  - "tests/v12/playbook-extraction-cohesion.test.js"
 name: pat-subagent-status-protocol
 description: "Pattern: execution agents report completion via one of four standardized statuses (DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED) and controllers route per the status; free-form completion messages are not acceptable."
 license: MIT

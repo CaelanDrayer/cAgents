@@ -30,13 +30,13 @@ For v12 consolidation history and all later release notes, see
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See @.claude/rules/core/version-registry.md for the canonical list (16 locations).
+**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See `.claude/rules/core/version-registry.md` for the canonical list (16 locations).
 
 **Version Format**: `major.minor.patch` — patch (bug fix), minor (feature), major (breaking)
 
 ## Memory Management
 
-**Claude Code Memory Hierarchy**: 6-tier system. See @.claude/rules/memory/agent-memory.md for full details.
+**Claude Code Memory Hierarchy**: 6-tier system. See `.claude/rules/memory/agent-memory.md` for full details.
 
 | Memory Type | Location | Shared With |
 |-------------|----------|-------------|
@@ -145,7 +145,7 @@ Users state outcomes, not requirements. The planner unpacks everything needed.
 
 ## Controller-Centric Architecture
 
-Controllers are the coordination hub between planning and execution. See @.claude/rules/core/controllers.md for detailed patterns.
+Controllers are the coordination hub between planning and execution. See `.claude/rules/core/controllers.md` for detailed patterns.
 
 **Pattern**: Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers -> Controller -> Synthesized Solution -> Implementation
 
@@ -155,7 +155,7 @@ Controllers are the coordination hub between planning and execution. See @.claud
 
 **Controller selection by tier** (per-domain catalogs in `{domain}/config/domain_overrides.yaml` → `controller_catalog`, matched on tier + domain): tier 2 = 1 primary controller (e.g. tech-lead, narrative-director, marketing-strategist); tier 3 = primary + 1-2 supporting (e.g. architect, security-engineer); tier 4 = 1 executive (cto/cco/cpo/chro) + primary + 2-4 supporting + HITL.
 
-**Coordinating Phase**: orchestrator spawns the controller with plan.yaml → the controller asks clarifying questions, coordinates work items, tracks completion, and verifies acceptance criteria → it writes `coordination_log.yaml` (`schema_version: "1"`, with `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, `status: completed`). See @.claude/rules/core/controllers.md for the full schema and reviewer loop.
+**Coordinating Phase**: orchestrator spawns the controller with plan.yaml → the controller asks clarifying questions, coordinates work items, tracks completion, and verifies acceptance criteria → it writes `coordination_log.yaml` (`schema_version: "1"`, with `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, `status: completed`). See `.claude/rules/core/controllers.md` for the full schema and reviewer loop.
 
 **Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work-item definitions (IDs, descriptions, acceptance criteria, dependencies); `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to).
 
@@ -186,7 +186,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 ## Task Completion Protocol
 
-**MANDATORY**: 100% completion with verified evidence. See @.claude/rules/quality/completion.md.
+**MANDATORY**: 100% completion with verified evidence. See `.claude/rules/quality/completion.md`.
 
 **Enforced by**: Controllers (acceptance criteria), executor (coordination_log), validator (quality gates), orchestrator (phase validation)
 
@@ -245,7 +245,7 @@ Highlights:
 
 ## Agent Memory
 
-**Full Structure**: See @.claude/rules/memory/agent-memory.md
+**Full Structure**: See `.claude/rules/memory/agent-memory.md`
 
 ```
 cagents-memory/
@@ -263,11 +263,11 @@ cagents-memory/
 
 **Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` wave subagents reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See @.claude/rules/core/teams.md and @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` wave subagents reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
 
 ## Creating Agents / Domains
 
-See @.claude/rules/core/skill-format.md and @.claude/rules/core/execution.md for full agent authoring guidelines.
+See `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md` for full agent authoring guidelines.
 
 **Quick steps**: Choose tier + archetype (+ branch if 3-level) → create `{archetype}/{branch?}/{agent-name}/SKILL.md` with YAML frontmatter → run `bash scripts/sync-agents.sh` → test with `bash scripts/ci/validate-agents.sh`.
 
@@ -278,7 +278,7 @@ cAgents/
 +-- CLAUDE.md                # Main project memory (this file)
 +-- .claude/
 |   +-- skills/              # Skills (run, team, designer, helper)
-|   +-- hooks/               # 33 .cjs files (25 registered hooks + 5 dispatched sub-validators + utils + launcher + bash-guard-evaluator library)
+|   +-- hooks/               # 34 .cjs files (26 registered hooks + 5 dispatched sub-validators + utils + launcher + bash-guard-evaluator library)
 |   +-- output-styles/       # Output-style files
 |   +-- plans/               # Saved execution plans
 |   +-- rules/               # Modular rules (43 files: 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
@@ -297,7 +297,7 @@ cAgents/
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs). See @.claude/rules/core/hooks.md for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs). See `.claude/rules/core/hooks.md` for full documentation.
 
 ## Standalone Contract (V11.2.0+)
 
@@ -360,13 +360,13 @@ must never be conflated. The full measured-vs-estimate tables + provenance live 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`.
 **Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
-**Hooks**: 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
+**Hooks**: 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
 **Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
 **Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
 **Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
-**Tests**: `npm test` runs 1737+ Vitest tests across 209+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.63.0
+**Tests**: `npm test` runs 1755+ Vitest tests across 211+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.64.0
 
 ## Troubleshooting
 

@@ -1,9 +1,20 @@
 ---
 paths:
+  - ".claude/rules/quality/completion.md"
+  - ".claude/rules/quality/resources/validation-checklist-active.md"
+  - ".claude/rules/quality/validation-framework.md"
+  - ".claude/rules/playbooks/pat-evidence-first-execution.md"
   - "agents/core/validator/**"
   - "agents/core/planner/**"
-  - ".claude/skills/run/**"
-  - "cagents-memory/sessions/**/workflow/**"
+  - "agents/core/reviewer/**"
+  - "agents/core/wave-reviewer/**"
+  - ".claude/skills/run/SKILL.md"
+  - ".claude/hooks/verify-completion.cjs"
+  - ".claude/hooks/validator-evidence-recheck.cjs"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/workflow/validation_report.yaml"
+  - "cagents-memory/sessions/**/workflow/execution_summary.yaml"
+  - "cagents-memory/sessions/**/workflow/completion_summary.yaml"
 ---
 
 # Task Completion Protocol

@@ -1,10 +1,17 @@
 ---
 paths:
+  - ".claude/rules/core/teams.md"
+  - ".claude/rules/playbooks/pat-cross-teammate-request.md"
   - "agents/core/team-*/**"
+  - "agents/core/wave-reviewer/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/team-*.cjs"
   - ".claude/hooks/teammate-*.cjs"
-  - "cagents-memory/sessions/team_*/**"
+  - "cagents-memory/_system/templates/teams/**"
+  - "cagents-memory/sessions/team_*/team/**"
+  - "tests/hooks/team-*.test.js"
+  - "tests/hooks/teammate-*.test.js"
+  - "tests/v12/*team*.test.js"
 ---
 
 # Team Coordination Patterns

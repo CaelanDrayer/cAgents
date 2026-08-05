@@ -1,3 +1,19 @@
+---
+paths:
+  - ".claude/rules/core/delegation.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/core/teams.md"
+  - "agents/**"
+  - ".claude/skills/**"
+  - ".claude/hooks/prompt-router.cjs"
+  - ".claude/hooks/controller-delegation-validator.cjs"
+  - ".claude/hooks/verify-completion.cjs"
+  - ".claude/hooks/post-compact-restore.cjs"
+  - "cagents-memory/sessions/**/workflow/plan.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/workflow/agent_tree.yaml"
+---
+
 # Aggressive Delegation Contract
 
 The canonical home of the cAgents aggressive-delegation rule, its

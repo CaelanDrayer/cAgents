@@ -10,6 +10,107 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.64.0] - 2026-08-05
+
+**R2 of the load-cut program** (session `team_load-cut-program_260804_001`,
+work orders WO-03 + WO-04). Ships the four-surface load cut and the two O(work)
+bounds the cut provably does not deliver. **Minor, not patch**: the non-sync diff
+spans 30+ files against the tiny-bump guard's patch-only cap of 5.
+
+**WO-03's four surfaces are atomic** — all four land in this release. A subset
+would have delivered an unknown fraction between 0% and 65%, unmeasurable from
+inside.
+
+### Changed
+
+- **(a) `CLAUDE.md` `@`-imports neutralized** — 11 `@.claude/rules/…`
+  occurrences across 9 lines. Each `@` sigil was stripped and the path kept as
+  inline code, so the reader keeps the map while the automatic load dies. Those
+  9 target files measure **147,808 B**; the 8 that also carry a `paths:`
+  predicate measure **136,800 B** (excluding
+  `pat-graceful-degradation-depth1.md`, counted under surface (c)). Both figures
+  are re-measured on disk at R2 and run ~80 B above the program brief's
+  147,728 / 136,720, the drift traced to R1's `hooks.md` edit.
+
+- **(b) 8 dual-path `paths:` predicates rewritten** — `core/version-registry`,
+  `memory/agent-memory`, `core/controllers`, `quality/completion`, `core/teams`,
+  `core/skill-format`, `core/execution`, `core/hooks`. Without this, (a) moves
+  zero bytes: each file had a second delivery channel whose predicate
+  (`**/agents/**/*.md`, `.claude/skills/**`) was an unconditional load wearing a
+  costume. Aggregate match-set selections fall ~51%. Stated precisely: **5
+  narrowed, 3 widened-but-scoped** — `hooks.md`, `teams.md`, and
+  `version-registry.md` gained companion docs and test dirs. The saving on all 8
+  comes from removing the unconditional import, not from shrinking the
+  predicate.
+
+- **(c) 17 `paths:` predicates added** — every `.claude/rules/**.md` that
+  previously had no `paths:` key and therefore loaded unconditionally into every
+  agent spawn: `core/delegation`, the 3 `core/resources/*`, the 11
+  `playbooks/pat-*` plus `playbooks/README`, and
+  `quality/resources/validation-checklist-active`. **150,894 B** re-measured
+  (the brief stated 146,231). This surface is larger than the import surface and
+  the original migration review missed it entirely; `hook-catalog.md` alone is
+  42,738 B. All 43 files under `.claude/rules/` are now path-gated.
+
+  Sets (b) and (c) are disjoint: 8 + 17 = **25 frontmatter blocks**.
+
+### Added
+
+- **(d) `.claude/hooks/role-manifest-injector.cjs`** — a `SubagentStart` hook,
+  registered third in the existing array alongside `subagent-tracker` and
+  `team-start`. Hooks can only ADD context and never un-load it, so this is what
+  restores per role what (a)–(c) removed: it resolves the spawned agent's role
+  from `subagent_type` and returns an L1 pointer index into `.claude/rules/**`
+  rather than the rule bodies. Fail-open — it can never block a spawn.
+
+- **The memory-layout stanza (~600 tokens), in every role bundle.** No role
+  bundle admitted `memory/agent-memory.md`, so the cut would have removed the
+  map at the exact moment it made the territory the only channel. The stanza is
+  defined **once** as a shared constant and concatenated unconditionally by the
+  single `buildRoleBundle()` assembly site, so a future contributor adding a
+  bundle inherits it without knowing it exists. `tests/hooks/role-manifest-injector.test.js`
+  checks the *complement* — it iterates every key in the bundle map plus unknown,
+  empty, `null`, and `undefined` roles.
+
+- **`tests/v12/rules-paths-present.test.js`** — asserts every
+  `.claude/rules/**/*.md` carries a non-empty top-level `paths:` list, so a new
+  rules file cannot silently reopen surface (c). Asserts presence and structure,
+  never magnitude, and hardcodes no total.
+
+- **WO-04: two O(work) bounds.** The load cut moves the fixed floor only; these
+  two roles have a term that scales with the size of the work, which no floor
+  reduction of any magnitude reaches.
+  - **`/team` lead** — a numeric report cap (**at most 12 lines, each at most 15
+    words**; two bounds, since a line count alone is satisfiable by twelve
+    paragraph-length lines) plus an explicit **12-entry default-deny read
+    whitelist** scoped to the artifact namespace. The cap binds the `Agent()`
+    **return value** on the default path; the prior `SendMessage`-based bound was
+    experimental-path-only machinery and did not exist on the default path.
+  - **`/designer`** — checkpoint-restart with a stated, evaluable trigger,
+    replacing "outgrows its context": **ARM** at the DEGRADING context band or 30
+    questions since the last restart, **FIRE** at the next natural seam, never
+    mid-exchange. New `reference/checkpoint-restart.md`.
+
+- **Live falsifier dispositioned: NO.** An independent reviewer with no stake in
+  shipping the cap found the `/team` lead's fan-in is **not** bounded by the load
+  cut alone, so WO-04's first half stands. All four WO-03 surfaces act on the
+  fixed floor; fan-in is O(k·N) over k reports × N waves and is generated text
+  transported as a return value — there is no path to predicate on and no import
+  to remove, so `paths:`/`@`-import mechanisms cannot reach that term even in
+  principle. Recorded caveat: the cap bounds the per-report constant and the
+  whitelist removes the discretionary-read term, but total fan-in still tracks
+  work-item count — **attenuated, not eliminated**.
+
+### Notes
+
+- Per the program's standing user rulings, this release adds **no automated size
+  check, CI token gate, or blocking threshold** anywhere, including in its tests;
+  publishes no reduction figure outside this repository; and removes no instance
+  of the word `aggressive`. The superseded 96,336 B figure appears in no landed
+  artifact.
+- Hook counts move 33 → 34 `.cjs` files and 25 → 26 unique registered hooks
+  across the 16 documented count sites.
+
 ## [12.63.0] - 2026-08-03
 
 **R1 of the load-cut program** (session `team_load-cut-program_260804_001`,

@@ -4,7 +4,7 @@ This is a high-level summary. The canonical per-hook detail (matchers, inputs, o
 
 ## Architecture
 
-CJS-only hooks built with the `createHook()` factory pattern. **32 `.cjs` files = 24 unique registered hooks across 18 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
+CJS-only hooks built with the `createHook()` factory pattern. **34 `.cjs` files = 26 unique registered hooks across 18 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
 
 Two consolidating dispatchers run the sub-validators in-process (one node cold-start instead of one per sub-validator):
 
@@ -24,9 +24,10 @@ Two consolidating dispatchers run the sub-validators in-process (one node cold-s
 | ConfigChange | config-change-logger.cjs | Log config changes |
 | PermissionRequest | permission-handler.cjs | Log permission requests for HITL audit |
 | PostToolUse[Write\|Edit] | post-write-validator.cjs, validator-evidence-recheck.cjs | Validate JSON/YAML syntax, re-verify cited evidence |
+| PostToolUse[Agent\|Task] | spawn-footprint.cjs | Record per-spawn token footprint (diagnostic only; never blocks) |
 | PostToolUseFailure | tool-failure-tracker.cjs | Track failures, detect patterns |
 | Notification | notification.cjs | Log notifications |
-| SubagentStart | subagent-tracker.cjs, team-start.cjs | Log spawns, initialize team monitoring |
+| SubagentStart | subagent-tracker.cjs, team-start.cjs, role-manifest-injector.cjs | Log spawns, initialize team monitoring, inject the spawned role's rules pointer index + memory-layout stanza |
 | SubagentStop | subagent-stop-tracker.cjs | Log completion, capture summaries + duration |
 | Stop | verify-completion.cjs, goal-evaluator-logger.cjs, secret-restore.cjs | Verify completion, capture /goal reasons, restore sanitized secrets |
 | StopFailure | stop-failure-handler.cjs | Save recovery state |

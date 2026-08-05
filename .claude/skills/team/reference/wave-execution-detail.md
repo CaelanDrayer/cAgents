@@ -103,6 +103,42 @@ Agent({
 
 See `reference/teammate-spawning-template.md` for the full subagent spawn prompt template including self-registration block.
 
+### 5b-i. Report Cap — Why 12 Lines and 15 Words
+
+The lead's per-wave loads are bounded by the four lead-context disciplines. Its **fan-in** is not: k subagent reports x N waves grows with the size of the work, so no reduction elsewhere bounds it. The cap in `SKILL.md` § Wave Report Cap and Lead Read Whitelist is what keeps each report's share of it small.
+
+The arithmetic it is sized against:
+
+| Quantity | Value |
+|----------|-------|
+| Subagent waves | wave count minus 2 (the first and last waves are lead-sequential) |
+| Reports per wave | one per work item — `--members` (default 5) caps how many run concurrently per batch, not how many report |
+| Illustrative tier-4 shape (10 waves, 5 WIs per wave) | 8 subagent waves x 5 = 40 reports |
+| Ceiling per report | 12 lines x 15 words = 180 words, roughly 250 tokens |
+| Fan-in at that shape | roughly 10K tokens |
+| Typical tier 3 (6 waves, 4 WIs per wave) | 16 reports, roughly 4K tokens at the ceiling |
+
+These are illustrative shapes, not ceilings. Reports per wave tracks the work-item count, which the planner's decomposition drives — a 60-to-100-work-item tier-4 program produces 60-to-100 reports. The cap's job is to make each report cheap, not to make the count small; nothing here bounds the count.
+
+Twelve lines is the smallest count that still carries what the lead acts on — status, WI id, a one-sentence outcome, the artifact pointer, and any blocker. The 15-word bound exists because a line count alone is satisfiable by twelve paragraph-length lines; without it the cap is decorative.
+
+Nothing measures this. No hook counts lines, no CI stage checks a report, and no threshold blocks a wave. The cap holds because it is written into the spawn brief the subagent reads and into the lead contract, and for no other reason.
+
+### 5b-ii. Lead Read Whitelist — Default-Deny
+
+`SKILL.md` § Wave Report Cap and Lead Read Whitelist enumerates the twelve artifacts the lead may read. Everything else in the session is denied by default. The denied set that matters most in the wave loop:
+
+| Denied | Who reads it instead |
+|--------|----------------------|
+| `outputs/wave-{K}/task-{N}/**` — any subagent work product | `cagents:reviewer` inside the wave subagent; `cagents:wave-reviewer` at the gate |
+| `workflow/gate_validations/**` | `cagents:wave-reviewer` writes it; the lead reads only the 1-line verdict |
+| `outputs/integration/integrated_outputs.yaml` | `cagents:coord-log-writer`; the lead reads `integration_summary.md` |
+| `workflow/coordination_log.yaml` | `cagents:coord-log-writer` writes it |
+| `work_items_wave_{J}.yaml` for J other than the current K | the wave-J subagents, in wave J |
+| any repository file under review | the execution agent that owns the work item |
+
+Every row has the same shape: the artifact has an owner, and the owner is not the lead. A lead that opens one of these to check the work has taken back delegated verification and reintroduced the fan-in term in the same move.
+
 ### 5c. Monitor Wave K Progress
 
 - Default path: the wave subagents return synchronously; the lead collects all results together. Experimental named-teammate path: wait for teammate messages (they arrive automatically).

@@ -1,7 +1,26 @@
 ---
 paths:
-  - "**/agents/**/*.md"
-  - ".claude/skills/**"
+  - ".claude/rules/core/execution.md"
+  - ".claude/rules/core/resources/execution-self-validation.md"
+  - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
+  - ".claude/rules/playbooks/pat-minimal-solution-ladder.md"
+  - ".claude/rules/playbooks/pat-graceful-degradation-depth1.md"
+  - "agents/analyst/**"
+  - "agents/creator/**"
+  - "agents/advisor/education/**"
+  - "agents/advisor/health/**"
+  - "agents/advisor/personal/**"
+  - "agents/developer/backend/**"
+  - "agents/developer/frontend/**"
+  - "agents/developer/infrastructure/devops-engineer/**"
+  - "agents/operator/marketing-sales/marketing-analyst/**"
+  - "agents/operator/support/technical-writer/**"
+  - "agents/strategist/game-designer/**"
+  - "agents/writer/ai-writing-editor/**"
+  - "agents/writer/worldbuilder/**"
+  - "agents/core/reviewer/**"
+  - "agents/core/wave-reviewer/**"
+  - "agents/core/coord-log-writer/**"
   - "cagents-memory/sessions/**/workflow/work_items.yaml"
 ---
 

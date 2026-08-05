@@ -1,4 +1,14 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-evidence-first-execution.md"
+  - ".claude/rules/quality/completion.md"
+  - ".claude/rules/core/resources/execution-self-validation.md"
+  - "agents/**"
+  - ".claude/hooks/validator-evidence-recheck.cjs"
+  - "cagents-memory/sessions/**/workflow/validation_report.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
+  - "tests/v12/playbook-extraction-cohesion.test.js"
 name: pat-evidence-first-execution
 description: "Pattern: controllers require specific, verifiable evidence from execution agents (file paths, line numbers, test output, measured metrics) instead of vague claims like 'looks correct'."
 license: MIT

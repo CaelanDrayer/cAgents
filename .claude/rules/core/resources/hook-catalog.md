@@ -1,3 +1,17 @@
+---
+paths:
+  - ".claude/rules/core/resources/hook-catalog.md"
+  - ".claude/rules/core/hooks.md"
+  - ".claude/rules/playbooks/pat-concurrent-session-hooks.md"
+  - ".claude/hooks/**"
+  - ".claude/settings*.json"
+  - "cagents-memory/_system/config/hooks.yaml"
+  - "scripts/lint-hooks.cjs"
+  - "tests/hooks/**"
+  - "tests/regressions/hooks-md-event-mapping.test.js"
+  - "docs/SECURITY_BASH_GUARD_THREAT_MODEL.md"
+---
+
 # Hook Catalog Detail
 
 Per-hook detail for the active cAgents hook system. The parent `.claude/rules/core/hooks.md` keeps the architecture overview + factory + I/O contract; this catalog carries the per-hook purpose, matchers, inputs, outputs, and side effects.
@@ -143,11 +157,16 @@ Per-hook detail for the active cAgents hook system. The parent `.claude/rules/co
 - **Output**: Always returns `{continue: true}`. Never blocks.
 - **Protocol doc**: `.claude/hooks/SECRET-SANITIZE.md`.
 
-### SubagentStart: subagent-tracker.cjs + team-start.cjs
+### SubagentStart: subagent-tracker.cjs + team-start.cjs + role-manifest-injector.cjs
 
 - **subagent-tracker.cjs**: Logs agent spawns to `workflow/agent_tree.yaml` and global audit log (`_system/logs/agent_spawns.log`). Includes fallback session discovery for the race condition where `status.yaml` hasn't been written yet. Injects `additionalContext` asking cAgents agents to self-register their `cagents:{name}` type, since Claude Code's `agent_type` field reports `general-purpose` for plugin agents.
 - **subagent-tracker.cjs — SDK-UUID map writer (v12.32.0, PRIMARY)**: after it CONFIDENTLY resolves the owning session (via env-var / promptHint / `session.sdk_id` marker — NOT via the new UUID map, to avoid circularity, and NEVER via the newest-session heuristic, which would reintroduce the concurrency bug), it calls `upsertSdkSessionMap(input.session_id, sessionDir)`. That writes the per-session marker `sessions/{id}/session.sdk_id` (the SDK UUID) AND the global pointer `cagents-memory/_system/sdk_session_map/{uuid}` (content = owning session_id), each an atomic per-UUID file mutated under `withFileLock`, with an opportunistic prune on upsert. Idempotent and fail-open — a map-write failure never blocks the spawn. This is the robust primary writer path (the skill-layer `session.sdk_id` write is best-effort secondary).
 - **team-start.cjs**: Initializes team monitoring directories and metrics files. **Serves the EXPERIMENTAL named-background-teammate path only** (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`); it is a no-op on the default concurrent-Agent wave model, which needs no per-teammate monitoring dirs — it is not part of the default subagent model. Remains registered under `SubagentStart`; event name unchanged.
+- **role-manifest-injector.cjs**: Injects a per-role context bundle into every spawned agent. Added by WO-03 surface (d) (session `team_load-cut-program_260804_001`) as the RESTORATION half of the same work order's load cut: surfaces (a)(b)(c) narrowed the unconditionally-loaded `.claude/rules/**` context (CLAUDE.md `@`-imports + `paths:` predicates) so a spawn no longer eats every rule file, and because a hook can only ADD context, never un-load it, this hook hands the spawned role back a compact pointer instead of the bulk.
+- **role-manifest-injector.cjs — resolution**: `extractAgentName()` reads the base name out of `agent_type` / `subagent_type` / `tool_input.subagent_type` (matching `cagents:{name}`), falling back to a `cagents:{name}` reference inside the description or prompt. `resolveRole()` maps that name to one of five role keys via the `LEADERSHIP` / `REVIEW` / `PIPELINE` / `CONTROLLER` name sets, in that precedence order; any unlisted `cagents:*` name is an `execution` agent, and an absent or non-cAgents type gets the `default` key.
+- **role-manifest-injector.cjs — bundle shape**: `buildRoleBundle()` is the SINGLE assembly point. It selects the role's pointer text from `ROLE_POINTERS` (an L1 index naming the `.claude/rules/**` files that matter for that role, which the agent then `Read`s on demand — pointers only, never rule content) and UNCONDITIONALLY concatenates `MEMORY_LAYOUT_STANZA`, which is defined exactly once and never copied into a role pointer. Because there is no other code path that emits a bundle, a future contributor adding a key to `ROLE_POINTERS` inherits the stanza — and the fallback key does too — without needing to know it exists. The stanza is a digest of `.claude/rules/memory/agent-memory.md` + `agent-memory-reference.md`: without it, an agent would be asked to write session artifacts into `cagents-memory/` with no description of the layout.
+- **Output**: `{"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": "<role bundle>"}}`.
+- **NEVER blocks — fail-open**: purely additive. `SubagentStart` cannot block in any case (see `.claude/rules/core/hooks.md` § Exit Codes), and the handler additionally wraps its own body in try/catch → `null` (→ `{"continue": true}`) on top of `createHook()`'s own catch, so a defect degrades to no injection rather than a failed spawn. It writes no files and reads no session state. Reverting it is deleting its single registration in `.claude/settings.json`.
 
 ### SubagentStop: subagent-stop-tracker.cjs
 

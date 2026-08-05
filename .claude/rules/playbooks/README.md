@@ -1,4 +1,10 @@
 ---
+paths:
+  - ".claude/rules/playbooks/**"
+  - "scripts/audit-agents.mjs"
+  - "tests/v12/playbook-frontmatter-valid.test.js"
+  - "tests/v12/playbook-extraction-cohesion.test.js"
+  - "cagents-memory/_knowledge/agent-audit-*.md"
 name: playbooks-index
 description: "Index and conventions for reusable agent guidance playbooks. Playbooks extract duplicated guidance blocks out of agent SKILL.md files so multiple agents can share a single canonical source."
 license: MIT

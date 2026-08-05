@@ -1,14 +1,18 @@
 ---
 paths:
+  - ".claude/rules/core/hooks.md"
+  - ".claude/rules/core/resources/hook-catalog.md"
   - ".claude/hooks/**"
   - ".claude/settings*.json"
+  - "scripts/lint-hooks.cjs"
+  - "tests/hooks/**"
 ---
 
 # cAgents Hook System
 
-33 .cjs files = 25 unique registered hooks across 18 event types, plus 5 dispatched sub-validators and 3 non-hook utilities. See the Architecture section below and @resources/hook-catalog.md for per-hook detail.
+34 .cjs files = 26 unique registered hooks across 18 event types, plus 5 dispatched sub-validators and 3 non-hook utilities. See the Architecture section below and @resources/hook-catalog.md for per-hook detail.
 
-> **Count generator (A2-11, v12.x)**: the counts (33 / 25 / 18) are derivable
+> **Count generator (A2-11, v12.x)**: the counts (34 / 26 / 18) are derivable
 > from disk by `scripts/lint-hooks.cjs`, which counts `.cjs` files, parses
 > `.claude/settings.json` for unique registered hook names + event keys, and
 > asserts the inventory is internally consistent
@@ -21,7 +25,7 @@ paths:
 
 cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
 
-- **CJS hooks** (`.claude/hooks/`): 33 `.cjs` files = 25 unique registered hooks + 5 dispatched sub-validators (run in-process by `write-edit-dispatch.cjs` + `agent-dispatch.cjs`) + 3 non-hook utilities: `hook-utils.cjs`, `run-hook.cjs` launcher, and `bash-guard-evaluator.cjs` (pure GuardFall evaluator library `require`'d by `bash-validator.cjs`; neither registered nor dispatched — v12.34.0). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output). (`eval-runner.cjs` is a standalone CLI, relocated to `scripts/` in A2-10 — no longer counted under `.claude/hooks/`.)
+- **CJS hooks** (`.claude/hooks/`): 34 `.cjs` files = 26 unique registered hooks + 5 dispatched sub-validators (run in-process by `write-edit-dispatch.cjs` + `agent-dispatch.cjs`) + 3 non-hook utilities: `hook-utils.cjs`, `run-hook.cjs` launcher, and `bash-guard-evaluator.cjs` (pure GuardFall evaluator library `require`'d by `bash-validator.cjs`; neither registered nor dispatched — v12.34.0). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output). (`eval-runner.cjs` is a standalone CLI, relocated to `scripts/` in A2-10 — no longer counted under `.claude/hooks/`.)
 - **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0 / D1b): a single deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in-process — `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED. This replaced three separate `Write|Edit` registrations, cutting cold-start node spawns per Write|Edit from 3 → 1.
 - **Agent dispatcher** (`agent-dispatch.cjs`, A2-12): a single deny-first PreToolUse[Agent] entry that runs two sub-validators in-process — `session-init-gate.cjs` (session-presence DENY gate, fail-CLOSED) and `model-routing-advisor.cjs` (advisory, fail-OPEN). This replaced three separate `Agent` registrations (the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op was dropped in A2-04), cutting cold-start node spawns per Agent spawn from 3 → 1. `approval-gate.cjs` was deleted in A2-02 (structurally dead — its `_data/policies/` dir + `AGENT_MEMORY_DIR` env never existed in production).
 - **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
@@ -33,7 +37,7 @@ The V9.5 refactoring eliminated the dual shell+JS architecture that caused recur
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 25 unique registered hooks across 18 of these events (plus 5 sub-validators dispatched in-process: 3 by `write-edit-dispatch.cjs`, 2 by `agent-dispatch.cjs`). Six events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use. (`ConfigChange` was wired in v12.7.0 LP-17.)
+Claude Code supports 24 hook event types. cAgents implements 26 unique registered hooks across 18 of these events (plus 5 sub-validators dispatched in-process: 3 by `write-edit-dispatch.cjs`, 2 by `agent-dispatch.cjs`). Six events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use. (`ConfigChange` was wired in v12.7.0 LP-17.)
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
@@ -46,7 +50,7 @@ Claude Code supports 24 hook event types. cAgents implements 25 unique registere
 | `PostToolUse` | After tool execution | `post-write-validator.cjs`, `validator-evidence-recheck.cjs`, `spawn-footprint.cjs` (Agent) | Validate JSON/YAML syntax, audit file changes, re-verify cited evidence, record spawn token footprints (diagnostic only) |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
 | `Notification` | Status notification | `notification.cjs` | Log and track |
-| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs` | Log spawns, initialize team monitoring |
+| `SubagentStart` | Subagent spawned | `subagent-tracker.cjs`, `team-start.cjs`, `role-manifest-injector.cjs` | Log spawns, initialize team monitoring, inject the spawned role's rules pointer index + memory-layout stanza |
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration |
 | `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs`, `secret-restore.cjs` | Verify completion; capture `/goal` reasons; restore sanitized secrets |
 | `StopFailure` | Claude fails to stop cleanly | `stop-failure-handler.cjs` | Save recovery state |

@@ -32,17 +32,21 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     expect(content).toContain('skill-size-monitor.cjs');
   });
 
-  it('hooks.md count claim is current (33 .cjs / 25 unique registered + 5 dispatched)', () => {
+  it('hooks.md count claim is current (34 .cjs / 26 unique registered + 5 dispatched)', () => {
     // A2-12 added agent-dispatch.cjs (consolidating the PreToolUse[Agent] hooks
     // session-init-gate + model-routing-advisor into 2 dispatched sub-validators),
     // A2-02 deleted approval-gate.cjs, and A2-10 relocated eval-runner.cjs to scripts/.
     // v12.34.0 added bash-guard-evaluator.cjs (pure require'd library, 3rd utility).
-    // Count: 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators
+    // WO-01 added spawn-footprint.cjs (PostToolUse[Agent|Task] diagnostic recorder) and
+    // WO-03 surface (d) added role-manifest-injector.cjs (SubagentStart role bundle),
+    // both registered — hence 26 unique registered, not 24.
+    // Count: 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators
     // (3 Write|Edit via write-edit-dispatch + 2 Agent via agent-dispatch) + hook-utils.cjs
     // + run-hook.cjs + bash-guard-evaluator.cjs.
+    // Disk-derivable: `node scripts/lint-hooks.cjs` must report the same triple.
     const content = readFileSync(HOOKS_MD, 'utf8');
-    expect(content).toContain('33 .cjs files');
-    expect(content).toContain('25 unique');
+    expect(content).toContain('34 .cjs files');
+    expect(content).toContain('26 unique');
   });
 
   it('every .cjs hook in .claude/hooks/ is mentioned in hooks.md', () => {

@@ -1,3 +1,17 @@
+---
+paths:
+  - ".claude/rules/core/resources/controller-validation-checklist.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/playbooks/pat-gate-taxonomy.md"
+  - "agents/**"
+  - ".claude/skills/**"
+  - "cagents-memory/sessions/**/workflow/plan.yaml"
+  - "cagents-memory/sessions/**/workflow/work_items.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "scripts/ci/validate-planner-output.cjs"
+  - "tests/v12/planner-output-schema.test.js"
+---
+
 # Controller Validation Checklist Reference
 
 Detailed specifications for pre-execution and mid-execution validation checks run by controllers.
