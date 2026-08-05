@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.62.2"
+  version: "12.63.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -210,6 +210,12 @@ Design sessions can run 30-60+ questions. The designer MUST:
 
 See @reference/session-resilience.md for full details.
 
+### The Size Rule and /designer's One Exception
+
+The main-session size rule (see @.claude/rules/core/delegation.md § The Size Rule) admits only content whose size does not grow with the size of the work — user turns, routing decisions, fixed-size reports. /designer is a declared exception **in one respect only**: it carries **user turns**, which have no alternative channel — a question cannot be answered on disk. That exception is bounded by **checkpoint-restart**, not by exclusion: Q&A is written to phase files and waypoints as it forms, and a session that outgrows its context restarts from the latest waypoint rather than carrying its whole history forward.
+
+Everything else the size rule excludes stays excluded here. Design reasoning, artifact bodies, evidence, and raw research output do not belong in the designer's context — that is why research agents write to `question_prep/` and why `design_document.md` is assembled from disk. /designer is not broadly exempt; see @reference/rules.md rule 34.
+
 ## Rules
 
 See @reference/behavioral-rules.md for the 28-rule summary cluster, and @reference/rules.md for the canonical full behavioral contract.
@@ -223,6 +229,7 @@ Top-priority rules:
 6. MUST batch 2-4 related questions per AskUserQuestion call
 7. Write files incrementally — never hold full design in memory
 8. NEVER self-terminate: refinement is the default loop. Surface build/export/stop options ONLY when the user explicitly says they are done; otherwise keep proposing refinements
+9. The size rule's exception for /designer covers user turns only, bounded by checkpoint-restart — everything else it excludes stays excluded
 
 ## Configuration References
 

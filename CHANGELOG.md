@@ -10,6 +10,85 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.63.0] - 2026-08-03
+
+**R1 of the load-cut program** (session `team_load-cut-program_260804_001`,
+work orders WO-01 + WO-02). Ships the spawn-footprint measurement instrument and
+adopts the O(1) size rule as doctrine. **Minor, not patch**: the combined
+non-sync diff is 12 files against the tiny-bump guard's patch-only cap of 5, so
+R1 was reclassified per the program brief's standing instruction rather than
+forced through as a patch.
+
+### Added
+
+- **`.claude/hooks/spawn-footprint.cjs`** (WO-01, I-1) — a `PostToolUse[Agent]`
+  hook that records the delivered token footprint of every spawned agent into
+  `workflow/spawn_footprints.yaml` and into the matching
+  `implementation_tasks` entry of `coordination_log.yaml`, satisfying the
+  `token_count.input` capture that `.claude/rules/core/controllers.md`
+  § Task Result Metadata has specified since CC 2.1.30 but that had **0 of 22**
+  coordination logs and 0 hook/script references actually implementing it.
+
+  The event choice was established empirically rather than assumed:
+  `SubagentStop` — the event that already tracks agents, and the intuitive
+  home — carries **no token data at all**. The payload lives on
+  `PostToolUse[Agent].tool_response.usage`. Recording `usage.input_tokens`
+  alone would also have been misleading: that field is the *uncached* slice and
+  measures 1–2 tokens. `token_count.input` is therefore the explicit sum of
+  uncached + `cache_read` + `cache_creation`, stored beside all three
+  components so it cannot be misread as a raw API field.
+
+  **Diagnostic only.** It never blocks, denies, fails a build, or gates a
+  merge, and fails open on every path. Revertible by deleting the single
+  registration at `.claude/settings.json:163-170`.
+
+- **Delivery census** (WO-01, I-2) — 26 spawn rows covering both spawn shapes
+  (11 session-only, 15 workflow-file-touching), each naming the rule files
+  present in that spawn's own context, collected from real spawns rather than
+  from a from-disk model. Two measured findings: read-only agents (`Explore`,
+  `Plan`) receive **0** rule files at spawn while full-tool agents receive 26;
+  and touching a single file raises delivery further (26→28, and 26→32 when the
+  file is `skills/run/SKILL.md`) — 9,982 → 34,332 delivered tokens for the same
+  agent type.
+
+- **`.claude/rules/core/delegation.md` § The Size Rule** (WO-02) — the
+  constraint governing main-session content, stated as a **size class rather
+  than a token count**: the main session may carry only content whose size does
+  not grow with the size of the work (user turns, routing decisions,
+  fixed-size reports), and never design reasoning, artifact bodies, evidence,
+  work-product content, or unbounded tool results.
+
+  Rationale recorded alongside it: a token count was demonstrably satisfiable
+  three different ways by three different artifacts, and no one caught the
+  disagreement. A size class cannot be — an artifact either grows with the work
+  or it does not, which is a property of the artifact rather than a number
+  someone can claim to have met.
+
+- **`/designer`'s declared exception** (WO-02) — written into its own contract
+  at `.claude/skills/designer/SKILL.md` and `reference/rules.md` rule 34,
+  scoped to **user turns only** (which have no alternative channel) and bounded
+  by **checkpoint-restart** rather than by exclusion. Stated explicitly as
+  *not* a broad exemption.
+
+- Regression tests: `tests/hooks/spawn-footprint.test.js` and
+  `tests/regressions/size-rule-doctrine.test.js`.
+
+### Notes
+
+- **No gate was added, by design.** Per the program's standing user ruling,
+  this release introduces no automated size check, CI token gate, or blocking
+  threshold anywhere. Sizing rests on instruction quality. The instrument
+  measures; it does not judge. `spawn-footprint.test.js` pins this by asserting
+  the hook source contains no `permissionDecision`, `deny`, `decision:`,
+  `threshold`, or `MAX_*(TOKEN|SIZE|LIMIT|BUDGET)`.
+- The removal half of the size-rule sweep found **nothing to remove**: the
+  constraint had never been stated as a token count in `.claude/rules`,
+  `.claude/skills`, or `CLAUDE.md`. Recorded as a vacuous pass rather than
+  dressed up as a cleanup.
+- Hook inventory moves 32→33 `.cjs` files and 24→25 registered hooks across the
+  same 18 event types; the count guards in `hooks.md`, `hook-catalog.md`,
+  `CLAUDE.md` and the `settings.json` `$comment` were updated to match.
+
 ## [12.62.2] - 2026-08-03
 
 **session-init-gate false "not registered" advisory**: fixes a false-positive
