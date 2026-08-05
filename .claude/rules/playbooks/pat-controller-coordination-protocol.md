@@ -1,4 +1,12 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-controller-coordination-protocol.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/core/delegation.md"
+  - "agents/**"
+  - ".claude/skills/**"
+  - "cagents-memory/sessions/**/workflow/plan.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
 name: pat-controller-coordination-protocol
 description: "Pattern: the canonical 8-step controller coordination protocol — read plan, break into questions, delegate to execution agents via the Agent tool, TaskCreate for visibility, collect, synthesize, write coordination_log.yaml, never self-implement. Referenced by every C-suite and *-lead/controller agent in place of a duplicated inline block."
 license: MIT

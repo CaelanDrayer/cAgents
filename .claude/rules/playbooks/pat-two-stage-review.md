@@ -1,4 +1,15 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-two-stage-review.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/quality/completion.md"
+  - ".claude/rules/playbooks/pat-minimal-solution-ladder.md"
+  - "agents/**"
+  - ".claude/skills/**"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/workflow/review_report.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
+  - "tests/v12/playbook-extraction-cohesion.test.js"
 name: pat-two-stage-review
 description: "Pattern: every reviewer loop runs two ordered stages — Stage 1 spec compliance (binary PASS/REVISE on acceptance criteria) before Stage 2 code quality (severity-tagged findings). No code quality review begins until spec compliance passes."
 license: MIT

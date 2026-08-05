@@ -1,4 +1,15 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-context-budget-tiers.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/memory/agent-memory.md"
+  - "agents/**"
+  - ".claude/skills/run/**"
+  - ".claude/skills/team/**"
+  - ".claude/hooks/pre-compact-save.cjs"
+  - ".claude/hooks/post-compact-restore.cjs"
+  - "cagents-memory/sessions/**/waypoints/**"
+  - "cagents-memory/sessions/**/workflow/plan.yaml"
 name: pat-context-budget-tiers
 description: "ADVISORY pattern (self-reported, not hook-enforced): a long-running controller or /team lead self-monitors its context fill across four bands — PEAK / GOOD / DEGRADING / POOR — changing read-depth and delegation aggressiveness BEFORE forced compaction, checkpointing a waypoint at DEGRADING, and treating vague phrasing in its own output as an early-warning signal."
 license: MIT

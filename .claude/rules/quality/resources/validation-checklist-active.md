@@ -1,3 +1,26 @@
+---
+paths:
+  - ".claude/rules/quality/resources/validation-checklist-active.md"
+  - ".claude/rules/quality/completion.md"
+  - ".claude/rules/quality/validation-framework.md"
+  - ".claude/rules/core/controllers.md"
+  - "agents/core/validator/**"
+  - "agents/core/reviewer/**"
+  - "agents/core/wave-reviewer/**"
+  - "agents/core/planner/**"
+  - ".claude/skills/run/**"
+  - ".claude/skills/team/**"
+  - ".claude/hooks/subagent-stop-tracker.cjs"
+  - ".claude/hooks/post-write-validator.cjs"
+  - ".claude/hooks/verify-completion.cjs"
+  - ".claude/hooks/post-compact-restore.cjs"
+  - "cagents-memory/sessions/**/workflow/agent_tree.yaml"
+  - "cagents-memory/sessions/**/workflow/file_changes.log"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "tests/regressions/validation-checklist-active.test.js"
+  - "tests/v12/validation-layers-consistent.test.js"
+---
+
 # Active Validation Checklist (5 checks)
 
 Phase-4 cross-cutting validation checks that are currently **enforced** by cAgents hooks. These checks run automatically throughout every workflow regardless of agent behavior, because they are wired into hook-based automation rather than agent prompts.

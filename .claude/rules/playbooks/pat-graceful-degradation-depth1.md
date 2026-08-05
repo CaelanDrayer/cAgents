@@ -1,4 +1,18 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-graceful-degradation-depth1.md"
+  - ".claude/rules/core/execution.md"
+  - ".claude/rules/core/controllers.md"
+  - ".claude/rules/core/teams.md"
+  - ".claude/rules/core/delegation.md"
+  - "agents/**"
+  - ".claude/skills/run/**"
+  - ".claude/skills/team/**"
+  - ".claude/hooks/verify-completion.cjs"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
+  - "tests/v12/deep-nesting-enablement.test.js"
+  - "tests/hooks/verify-completion-graceful-degradation.test.js"
 name: pat-graceful-degradation-depth1
 description: "Pattern: Nesting-Ceiling Degradation — a defensive fallback for when the Agent (and TodoWrite/TaskUpdate) tools are genuinely absent, i.e. at the actual nesting ceiling (a subagent at depth 5 cannot spawn depth 6) or if a harness regresses. REPOSITIONED in v12.17.0: deep subagent nesting is now the default on Claude Code 2.1.172+, so this is no longer the expected depth-1 behavior."
 license: MIT

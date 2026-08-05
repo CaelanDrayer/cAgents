@@ -1,15 +1,17 @@
 ---
 paths:
-  - "agents/developer/**/SKILL.md"
-  - "agents/operator/**/SKILL.md"
-  - "agents/advisor/**/SKILL.md"
-  - "agents/analyst/**/SKILL.md"
-  - "agents/creator/**/SKILL.md"
-  - "agents/writer/**/SKILL.md"
-  - "agents/strategist/**/SKILL.md"
-  - "agents/core/**/SKILL.md"
-  - "agents/leadership/**/SKILL.md"
-  - ".claude/skills/**"
+  - ".claude/rules/core/skill-format.md"
+  - ".claude/rules/core/progressive-disclosure.md"
+  - "agents/**/SKILL.md"
+  - ".claude/skills/**/SKILL.md"
+  - ".claude/rules/playbooks/README.md"
+  - "scripts/scaffold-agent.sh"
+  - "scripts/sync-agents.sh"
+  - "scripts/lint-agents.sh"
+  - "scripts/ci/validate-agents.sh"
+  - "tests/skills/skill-structure.test.js"
+  - "tests/agents/**"
+  - "tests/agent_linting/**"
 ---
 
 # SKILL.md Agent and Skill Format Specification

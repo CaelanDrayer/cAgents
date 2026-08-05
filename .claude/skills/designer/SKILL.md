@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.63.0"
+  version: "12.64.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -116,6 +116,7 @@ Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both 
 - **Ambiguity scoring** (4-dimension clarity score, readiness gate < 20% to enter Specification): see @reference/ambiguity-scoring.md
 - **Behavioral rules** (the 28 rules summary): see @reference/behavioral-rules.md
 - **Long session resilience** (incremental writes, context monitoring, waypoints, resume protocol): see @reference/session-resilience.md
+- **Checkpoint-restart** (the ARM/FIRE trigger bounding the size-rule exception, the `pre_restart` waypoint, and the three user-continuity rules): see @reference/checkpoint-restart.md
 
 ## 6-Phase Workflow
 
@@ -212,7 +213,7 @@ See @reference/session-resilience.md for full details.
 
 ### The Size Rule and /designer's One Exception
 
-The main-session size rule (see @.claude/rules/core/delegation.md § The Size Rule) admits only content whose size does not grow with the size of the work — user turns, routing decisions, fixed-size reports. /designer is a declared exception **in one respect only**: it carries **user turns**, which have no alternative channel — a question cannot be answered on disk. That exception is bounded by **checkpoint-restart**, not by exclusion: Q&A is written to phase files and waypoints as it forms, and a session that outgrows its context restarts from the latest waypoint rather than carrying its whole history forward.
+The main-session size rule (see @.claude/rules/core/delegation.md § The Size Rule) admits only content whose size does not grow with the size of the work — user turns, routing decisions, fixed-size reports. /designer is a declared exception **in one respect only**: it carries **user turns**, which have no alternative channel — a question cannot be answered on disk. That exception is bounded by **checkpoint-restart**, not by exclusion: Q&A is written to phase files and waypoints as it forms, and the restart arms when the designer's context reaches the DEGRADING band or 30 questions accumulate since the last restart, then fires at the next phase gate, continuation gate, or synthesis confirmation — never mid-question, so the new segment resumes from the latest waypoint rather than carrying its whole history forward. See @reference/checkpoint-restart.md for the trigger, the restart protocol, and the three continuity rules that keep the conversation unbroken across the seam.
 
 Everything else the size rule excludes stays excluded here. Design reasoning, artifact bodies, evidence, and raw research output do not belong in the designer's context — that is why research agents write to `question_prep/` and why `design_document.md` is assembled from disk. /designer is not broadly exempt; see @reference/rules.md rule 34.
 

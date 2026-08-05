@@ -30,6 +30,24 @@ const ALLOWED_TOP_LEVEL = new Set([
   'name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools'
 ]);
 
+// The rules-loader predicate. Top-level `paths:` is NOT an Agent-Skills-spec
+// field — it is the live path-conditional-load predicate read by the rules
+// loader (see .claude/rules/memory/agent-memory.md "Path-Specific Rules", and
+// all 43 files under .claude/rules/ which carry it, including README.md and
+// skill-format.md themselves). Playbooks live under .claude/rules/, so they are
+// rules files and MUST be able to declare it. `metadata.paths` is NOT a
+// substitute: skill-format.md documents it as declarative-only with
+// routing-boost ingestion deferred to v2, so moving `paths` under `metadata`
+// would silently un-gate these 12 playbooks and load them unconditionally.
+// Scoped to the rules tree so a genuine .claude/skills/ spec violation still fails.
+const RULES_LOADER_TOP_LEVEL = new Set(['paths']);
+
+function isAllowedTopLevel(key, absFile) {
+  if (ALLOWED_TOP_LEVEL.has(key)) return true;
+  const rel = path.relative(REPO_ROOT, absFile).split(path.sep).join('/');
+  return rel.startsWith('.claude/rules/') && RULES_LOADER_TOP_LEVEL.has(key);
+}
+
 function listPlaybookFiles(dir) {
   const out = [];
   if (!fs.existsSync(dir)) return out;
@@ -87,7 +105,7 @@ describe('WI-8 (v12.4.0): playbook frontmatter spec-compliance', () => {
       const keys = parseTopLevelKeys(content);
       if (keys === null) continue;
       for (const k of keys) {
-        if (!ALLOWED_TOP_LEVEL.has(k)) {
+        if (!isAllowedTopLevel(k, f)) {
           offenders.push({ file: path.relative(REPO_ROOT, f), key: k });
         }
       }

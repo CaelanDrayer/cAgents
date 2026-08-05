@@ -1,3 +1,20 @@
+---
+paths:
+  - ".claude/rules/core/resources/execution-self-validation.md"
+  - ".claude/rules/core/execution.md"
+  - ".claude/rules/quality/completion.md"
+  - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
+  - "agents/**"
+  - ".claude/skills/run/**"
+  - ".claude/skills/team/**"
+  - ".claude/hooks/verify-completion.cjs"
+  - "cagents-memory/sessions/**/workflow/work_items.yaml"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
+  - "tests/hooks/self-validation-recheck.test.js"
+  - "tests/v12/validation-honesty-contract.test.js"
+---
+
 # Execution Agent Self-Validation Protocol
 
 5 agent-self-reported checks (verifier hook deferred to a future bump) for execution agents before reporting DONE or DONE_WITH_CONCERNS status.

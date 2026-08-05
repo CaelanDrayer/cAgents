@@ -22,7 +22,7 @@ Written once per wave before any subagent is spawned.
 # Wave {K} Spawn Brief
 
 ## Role
-You are a subagent executing work in wave {K} of the pipeline. Your job is to deliver ONE work item, self-validate, and write outputs. The lead reads only your self-validation status and 1-line summary.
+You are a subagent executing work in wave {K} of the pipeline. Your job is to deliver ONE work item, self-validate, and write outputs. The lead reads only your capped report — see Report Contract below.
 
 ## Shared Context
 - SESSION_DIR: {SESSION_DIR}
@@ -35,6 +35,9 @@ You are a subagent executing work in wave {K} of the pipeline. Your job is to de
 
 ## Acceptance Envelope
 Each WI has acceptance_criteria in work_items_wave_{K}.yaml. You MUST address every criterion with file:line evidence in your self-validation.
+
+## Report Contract
+What you return to the lead MUST be at most 12 lines, each at most 15 words. Put full detail in `${SESSION_DIR}/outputs/wave-{K}/task-{N}/` and cite the path; never inline the content. Report: status, WI id, one-sentence outcome, artifact path, and any blocker or concern. No narrative, no recap of what you read, no restatement of the acceptance criteria.
 
 ## Self-Validation Instructions
 Before reporting DONE, run the 5 hook-verifiable checks from `.claude/rules/core/resources/execution-self-validation.md`:
@@ -67,7 +70,7 @@ Agent({
   prompt: `Read {SESSION_DIR}/outputs/wave-{K}/spawn_brief.md for role and acceptance envelope.
 Your WI: {SESSION_DIR}/workflow/work_items_wave_{K}.yaml row {N}.
 Execute, self-validate, write to outputs/wave-{K}/task-{N}/.
-On done: TaskUpdate({taskId:'{task_id}', status:'completed'}) and SendMessage 1-line summary.`
+On done: TaskUpdate({taskId:'{task_id}', status:'completed'}). Return at most 12 lines, at most 15 words each, per the brief's Report Contract.`
 })
 ```
 
@@ -103,6 +106,7 @@ brief_schema:
     - role                        # 1 paragraph
     - shared_context              # SESSION_DIR, SESSION_ID, wave, prior outputs, plan, per-wave WIs
     - acceptance_envelope         # pointer to per-WI acceptance_criteria
+    - report_contract              # 12-line / 15-word return cap
     - self_validation_instructions # 5-check protocol pointer
   optional_sections:
     - wave_specific_constraints   # e.g., "only modify files under src/auth/"

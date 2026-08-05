@@ -1,8 +1,22 @@
 ---
 paths:
-  - "cagents-memory/**"
-  - ".claude/hooks/**"
-  - ".claude/skills/**"
+  - ".claude/rules/memory/**"
+  - "cagents-memory/_system/**"
+  - "cagents-memory/_knowledge/**"
+  - "cagents-memory/sessions/*/status.yaml"
+  - "cagents-memory/sessions/*/waypoints/**"
+  - ".claude/skills/run/reference/session-schema.md"
+  - ".claude/hooks/hook-utils.cjs"
+  - ".claude/hooks/session-catchup.cjs"
+  - ".claude/hooks/session-init-gate.cjs"
+  - ".claude/hooks/subagent-tracker.cjs"
+  - ".claude/hooks/pre-compact-save.cjs"
+  - ".claude/hooks/post-compact-restore.cjs"
+  - ".claude/hooks/team-stop.cjs"
+  - ".claude/rules/playbooks/pat-concurrent-session-hooks.md"
+  - "tests/hooks/find-active-session-deterministic.test.js"
+  - "tests/hooks/session-catchup-liveness.test.js"
+  - "tests/v12/concurrent-sessions-no-crosswrite.test.js"
 ---
 
 # Agent Memory Structure

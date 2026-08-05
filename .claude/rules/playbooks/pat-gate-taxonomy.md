@@ -1,4 +1,14 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-gate-taxonomy.md"
+  - ".claude/rules/core/resources/controller-validation-checklist.md"
+  - ".claude/rules/playbooks/pat-two-stage-review.md"
+  - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
+  - "agents/**"
+  - ".claude/skills/team/**"
+  - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
+  - "cagents-memory/sessions/**/workflow/validation_report.yaml"
+  - "cagents-memory/sessions/**/gate_validations/**"
 name: pat-gate-taxonomy
 description: "Pattern: every cAgents quality checkpoint reduces to one of four named types — Pre-flight, Revision, Escalation, Abort — each defined by what triggers it, what happens on failure, and who resumes; plus the stall-detection rule (escalate immediately when the finding count does not shrink between reviewer rounds)."
 license: MIT

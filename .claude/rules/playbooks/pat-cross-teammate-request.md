@@ -1,4 +1,15 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-cross-teammate-request.md"
+  - ".claude/rules/core/teams.md"
+  - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
+  - ".claude/skills/team/**"
+  - "agents/core/team-lead/**"
+  - "agents/core/team-bootstrap/**"
+  - "agents/core/wave-reviewer/**"
+  - "cagents-memory/sessions/team_*/**"
+  - "tests/v12/peer-request-pattern.test.js"
+  - "tests/v12/teammate-to-subagent-reframe.test.js"
 name: pat-cross-teammate-request
 description: "Pattern: a /team teammate asks the lead to ask another teammate to do work via a named peer_request schema on disk + SendMessage; the lead applies a 4-branch routing decision tree (RELAY, SPAWN, PROMOTE, REJECT) and never executes the requested work itself."
 license: MIT

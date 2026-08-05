@@ -1,10 +1,16 @@
 ---
 paths:
-  - "**/*plugin.json"
-  - "**/*marketplace.json"
-  - "**/package.json"
-  - "CLAUDE.md"
+  - ".claude/rules/core/version-registry.md"
   - "scripts/sync-versions.sh"
+  - "scripts/ci/validate-versions.sh"
+  - ".claude-plugin/plugin.json"
+  - ".claude-plugin/marketplace.json"
+  - "package.json"
+  - "CHANGELOG.md"
+  - "docs/RELEASE_NOTES.md"
+  - "tests/rules/version-registry-structure.test.js"
+  - "tests/regressions/version-registry-canonical.test.js"
+  - "tests/v12/version-registry-no-org-slot.test.js"
 ---
 
 # Version Registry

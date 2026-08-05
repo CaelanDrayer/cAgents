@@ -1,4 +1,15 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-minimal-solution-ladder.md"
+  - ".claude/rules/core/execution.md"
+  - ".claude/rules/playbooks/pat-two-stage-review.md"
+  - "agents/**"
+  - ".claude/skills/run/**"
+  - "scripts/**"
+  - ".claude/hooks/**"
+  - "tests/**"
+  - "cagents-memory/sessions/**/workflow/work_items.yaml"
+  - "cagents-memory/sessions/**/outputs/**"
 name: pat-minimal-solution-ladder
 description: "Pattern: a minimalism counterweight to cAgents' aggressive-decomposition bias. Before writing new code or adding a work item, walk a six-rung ladder (YAGNI -> stdlib -> native platform feature -> existing dependency -> one-liner -> minimum viable change) and only write new code when every cheaper rung fails. Use in execution agents and reviewer Stage-2."
 license: MIT

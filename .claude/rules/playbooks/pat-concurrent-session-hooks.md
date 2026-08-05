@@ -1,4 +1,12 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-concurrent-session-hooks.md"
+  - ".claude/rules/core/hooks.md"
+  - ".claude/rules/core/resources/hook-catalog.md"
+  - ".claude/rules/memory/agent-memory.md"
+  - ".claude/hooks/**"
+  - "tests/hooks/**"
+  - "tests/v12/concurrent-sessions-no-crosswrite.test.js"
 name: pat-concurrent-session-hooks
 description: "Pattern: how cAgents hooks resolve their session deterministically under two concurrent same-directory sessions, and the four invariants every hook author must satisfy."
 license: MIT

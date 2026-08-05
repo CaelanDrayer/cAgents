@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.63.0"
+  version: "12.64.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -38,6 +38,14 @@ This skill is designed so the lead can complete 5-10 wave workflows without exha
 4. **Delegated final assembly** — `cagents:coord-log-writer` builds `coordination_log.yaml` from on-disk artifacts and returns a 1-line confirmation. Lead never re-reads N waves of WI status.
 
 If you find yourself loading more than the current wave's WIs, OR re-reading prior waves' outputs in lead context, STOP — that is the failure mode this refactor exists to prevent.
+
+## Wave Report Cap and Lead Read Whitelist
+
+The four disciplines above bound what you load per wave. These two bound your **fan-in** — the k subagent reports x N waves that grow with the size of the work. Per @.claude/rules/core/delegation.md § The Size Rule, a term that grows with the work does not belong in the main session. The report cap bounds what each report costs you; the whitelist removes the discretionary-read term outright. Together they attenuate the fan-in — they do not make it constant, because the report count still tracks the work-item count.
+
+**Report cap.** What a wave subagent returns to you MUST be **at most 12 lines, each at most 15 words**. Everything longer goes to `outputs/wave-{K}/task-{N}/` on disk and the report carries a pointer, never the content. Two bounds, not one: a line count alone is satisfiable by twelve paragraph-length lines. Twelve short lines carry status, WI id, a one-sentence outcome, the artifact pointer, and any blocker — and leave no room for narrative. Restate this cap in every `spawn_brief.md` you write.
+
+**Read whitelist — default-deny.** You MAY read ONLY: (1) `workflow/work_meta.yaml`, once; (2) `workflow/plan.yaml` for `controller_assignment`, tier, and domain; (3) the `universal_router.domain_count` field of `enriched_context.yaml`; (4) `workflow/work_items_wave_{K}.yaml` for the CURRENT wave K only; (5) the capped wave-subagent reports; (6) `cagents:wave-reviewer`'s 1-line GATE verdict; (7) `outputs/integration/integration_summary.md`; (8) the 1-line replies from `cagents:validator` and `cagents:coord-log-writer`; (9) `TaskList` / `TaskGet` status; (10) files you authored yourself (`spawn_brief.md`, `status.yaml`, `instruction.yaml`, your own metrics and summary files); (11) `outputs/wave-{K}/peer_requests/REQ-*.yaml` — the newly-arrived REQ file only, experimental path (Step 5d-i); (12) your own entry in `workflow/agent_tree.yaml`. **Everything else in the session is DENIED by default** — including `outputs/wave-{K}/task-{N}/**` (any subagent work product, `self-validation.yaml` included), `workflow/gate_validations/**`, `outputs/integration/integrated_outputs.yaml`, `workflow/coordination_log.yaml`, any `work_items_wave_{J}.yaml` where J is not the current K, any prior wave's outputs, and any repository file under review. This whitelist governs reads; writes this contract directs you to make — the Step 4 task_id write-back, the Step 5d-i PROMOTE append, your Step 7 finalization — are not reads and are not restricted by it. Opening a subagent's artifact to check its work is the reviewer's job, not yours. Doing it produces the fan-in blowup these two statements exist to prevent, and it violates the delegation contract at the same time — verification is delegated work like any other.
 
 ## Wave Count
 
@@ -90,16 +98,7 @@ Wave N (Lead): integration + validation (unchanged)
 
 Single-domain (`domain_count <= 1`) and tier-2 requests skip the strategic prefix and run the standard wave loop directly.
 
-**Step 1 update**: Before extracting flags from `$ARGUMENTS`, read `router.domain_count` from the orchestrator output. When `domain_count >= 2` AND `--no-strategic` absent: set internal `strategic_mode = true` and plan the Wave 0/1/2/3 strategic prefix. Otherwise: `strategic_mode = false`, proceed with standard waves.
-
-**Flag overrides:**
-
-| Flag | Effect |
-|------|--------|
-| `--strategic` | Force-enable strategic mode regardless of `domain_count` (useful for single-domain requests that warrant C-suite framing). |
-| `--no-strategic` | Force-disable strategic mode regardless of `domain_count` (skip the C-suite prefix, dispatch directly). |
-
-When neither flag is present, auto-detection from `domain_count` decides.
+**Flag overrides:** `--strategic` force-enables the prefix regardless of `domain_count`; `--no-strategic` force-disables it. With neither flag, `domain_count` decides.
 
 See @reference/strategic-mode.md for the full wave-by-wave machinery (C-suite dependency ordering, two-phase deliberation, escalation chain). See @reference/strategic-brief-format.md for the `strategic_brief.yaml` schema and validation protocol. See @reference/csuite-deliberation.md, @reference/csuite-mapping.md, @reference/strategic-cross-domain.md, @reference/strategic-escalation.md, and @reference/strategic-examples.md for supporting detail.
 
@@ -162,13 +161,13 @@ For each wave K:
 
 **5a.** Read `workflow/work_items_wave_{K}.yaml` (ONLY this wave's file).
 
-**5b.** Write `outputs/wave-{K}/spawn_brief.md` per @reference/spawn-brief-schema.md schema.
+**5b.** Write `outputs/wave-{K}/spawn_brief.md` per @reference/spawn-brief-schema.md schema. The brief MUST carry the report cap (at most 12 lines, at most 15 words per line) as a Report Contract section.
 
 **5c. (DEFAULT — concurrent Agent waves, works in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently), each with `run_in_background: false`. Synchronous spawning is required — subagents are background-by-default since v2.1.198, so `run_in_background: false` is what makes the lead receive all wave results together before it validates GATE-K. Use ~80-token pointer prompts (per @reference/spawn-brief-schema.md § Short Spawn Prompt). Each wave subagent is `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`; it can recursively spawn its own subagents (depth 5) for any specialty it needs. There is no team to create — teams are implicit. See @reference/teammate-spawning-template.md for self-registration and isolation/worktree.
 
 **5c-EXPERIMENTAL (OPTIONAL — named background teammates + panes).** Only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })` (the team forms implicitly; any `team_name` arg is accepted-but-ignored) and coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name, v2.1.77) plus the shared Task list. `teammateMode` (default `in-process` since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-path only. This path is harness-variable — if the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path in 5c.
 
-**5d.** Monitor wave K via TaskList. On the DEFAULT path the wave subagents return synchronously (nothing to shut down). On the EXPERIMENTAL named-teammate path only, monitor teammate messages and early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown.
+**5d.** Monitor wave K via TaskList. On the DEFAULT path the wave subagents return synchronously (nothing to shut down). On the EXPERIMENTAL named-teammate path only, monitor teammate messages and early-shutdown completed teammates per @reference/wave-execution-detail.md § Early Shutdown. Collect only the capped reports — do not open any `outputs/wave-{K}/task-{N}/` artifact to verify a subagent's work.
 
 **5d-i. (LEGACY — experimental-named-teammate-path only.)** Obsolete under the default subagent model, where a subagent needing another specialty spawns it downward as its own sub-subagent instead of routing a request sideways through the lead. Retained only for the experimental named-teammate path: if an inbound `SendMessage(type=peer_request)` arrives OR a new file appears at `outputs/wave-{K}/peer_requests/REQ-*.yaml`, read ONLY the new REQ file (lead-context discipline) and apply the 4-branch decision tree: RELAY (SendMessage to peer), SPAWN (fresh Agent), PROMOTE (append to `work_items_wave_{K+1}.yaml`), or REJECT (SendMessage requester with rationale). Update REQ-N.yaml `status` field after each routing decision. The lead NEVER executes the requested work itself — aggressive-delegation invariant. See @.claude/rules/playbooks/pat-cross-teammate-request.md.
 

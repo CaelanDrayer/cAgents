@@ -1,4 +1,14 @@
 ---
+paths:
+  - ".claude/rules/playbooks/pat-feedback-loop-first-debugging.md"
+  - ".claude/rules/core/execution.md"
+  - "agents/developer/**"
+  - "agents/core/self-correct/**"
+  - ".claude/skills/run/**"
+  - ".claude/hooks/**"
+  - "scripts/**"
+  - "tests/**"
+  - "cagents-memory/sessions/**/outputs/**"
 name: pat-feedback-loop-first-debugging
 description: "Pattern: for any bug-fix work item, build a tight (fast, deterministic, sharp-signal) reproduction loop and show it RED before hypothesizing; walk a 10-strategy ranked ladder for the loop; state 3-5 falsifiable ranked hypotheses before testing any; tag temporary instrumentation [DEBUG-<hash>] and grep-clean it before reporting DONE."
 license: MIT
