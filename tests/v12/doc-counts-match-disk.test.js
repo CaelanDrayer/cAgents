@@ -183,13 +183,13 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // (session-init-gate + model-routing-advisor) into one dispatcher; approval-gate.cjs
     // was deleted (A2-02) and eval-runner.cjs relocated to scripts/ (A2-10).
     // v12.34.0 added bash-guard-evaluator.cjs, a pure require'd library (3rd utility). Net:
-    // 32 .cjs files = 24 unique registered + 5 dispatched sub-validators + 3 utilities
+    // 33 .cjs files = 25 unique registered + 5 dispatched sub-validators + 3 utilities
     // (hook-utils.cjs, run-hook.cjs, bash-guard-evaluator.cjs).
-    expect(output, 'derive-only should print hook_files=32').toMatch(
-      /hook_files[=:]\s*32/
+    expect(output, 'derive-only should print hook_files=33').toMatch(
+      /hook_files[=:]\s*33/
     );
-    expect(output, 'derive-only should print registered_hooks=24').toMatch(
-      /registered_hooks[=:]\s*24/
+    expect(output, 'derive-only should print registered_hooks=25').toMatch(
+      /registered_hooks[=:]\s*25/
     );
   });
 });

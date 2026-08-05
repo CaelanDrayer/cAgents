@@ -1,9 +1,11 @@
 # Aggressive Delegation Contract
 
-The canonical home of the cAgents aggressive-delegation rule and its
-Rationalization Kill List. `/run` and `/team` reference this file via
+The canonical home of the cAgents aggressive-delegation rule, its
+Rationalization Kill List, and the size rule governing what the main
+session may carry. `/run` and `/team` reference this file via
 `@.claude/rules/core/delegation.md`. Hooks (`prompt-router.cjs`,
-`controller-delegation-validator.cjs`) enforce it.
+`controller-delegation-validator.cjs`) enforce the delegation rule; the
+size rule is doctrine and is not mechanically enforced.
 
 ## The Rule
 
@@ -45,6 +47,43 @@ The zero-exception rule is a deliberate design choice, not an oversight:
 coordinating through agents is cheap enough that adding a "small-task"
 carve-out would buy little and cost the consistency that makes the
 pipeline predictable, so the exception simply does not exist.
+
+## The Size Rule
+
+Delegation moves the work off the main session. This rule states what may
+remain there.
+
+> The main session may carry only content whose size does not grow with
+> the size of the work — user turns, routing decisions, fixed-size
+> reports. It MUST NOT carry design reasoning, artifact bodies, evidence,
+> work-product content, or unbounded tool results.
+
+The test is a size class, not a budget. Never ask "how many tokens is
+this?" — ask "does this grow when the work grows?" A routing decision is
+the same size for a one-file fix and a twelve-wave program, so it may sit
+in the main session. Design rationale, an evidence list, and a raw `grep`
+result each grow with the work, so they go to disk and the main session
+carries a pointer in their place.
+
+`/designer` is a declared exception in one respect only: it carries user
+turns, which have no alternative channel, and is bounded by
+checkpoint-restart rather than by exclusion. That exception is written
+into its own contract — see `.claude/skills/designer/reference/rules.md`
+rule 34. No other command has one.
+
+### Why a size class and not a token count
+
+The constraint used to be carried as a token count. A token count was
+demonstrably satisfiable three different ways by three different
+artifacts, and no one caught the disagreement. A size class cannot be:
+an artifact either grows with the work or it does not, and that is a
+property of the artifact rather than a number someone can claim to have
+met.
+
+Nothing measures this rule and nothing blocks on it — no threshold, no CI
+gate, no warning. It holds on instruction quality alone. Any future
+proposal to add a size check, a token gate, or a blocking threshold has
+already been considered and rejected.
 
 ## Controller-Side Corollary
 
