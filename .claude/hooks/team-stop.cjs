@@ -54,6 +54,67 @@ const _normTerminal = (s) => (typeof _normalizeTerminalState === 'function' ? _n
 // {sessionDir}/session.sdk_id marker written by the map-writer hooks (WI-3/WI-4).
 const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
+/**
+ * Liveness guard for the Phase 2 terminal-status stamp.
+ *
+ * BUG THIS FIXES: Phase 2 used to rewrite `phase: completed` +
+ * `pipeline_state: VALIDATED` UNCONDITIONALLY for the resolved team_* session.
+ * SessionEnd fires when a CLAUDE CODE session ends, but a `/team` program can
+ * span many Claude Code sessions across days — so ending any one of them
+ * stamped a still-mid-flight program terminal. A terminal phase makes
+ * `findActiveSession()` return null, which makes `session-init-gate.cjs`
+ * hard-deny EVERY subsequent Agent spawn. The failure is silent and total.
+ *
+ * Observed 5 times in `team_load-cut-program_260804_001` (its status.yaml
+ * carries `terminal_reset_recurrences: 5` plus per-occurrence notes); two
+ * recurrences were pinned to the moment immediately after a merge, i.e. a
+ * Claude Code session ending while the program was mid-wave. It was once
+ * misdiagnosed as "the Agent tool is absent at depth 3".
+ *
+ * This mirrors the two positive signals of `sessionActivelyWorking()` in
+ * `verify-completion.cjs`. It is deliberately a LOCAL copy rather than a shared
+ * import: that function depends on two further local helpers in the repo's most
+ * test-covered hook, and hoisting all three to hook-utils.cjs to fix a
+ * teardown-ordering bug would be a refactor well past the minimum viable change
+ * (see `.claude/rules/playbooks/pat-minimal-solution-ladder.md`, rung 6). The
+ * REC-04 0-child gate is intentionally NOT copied: a team session that spawned
+ * nothing is finished, not mid-flight, and must still be stamped terminal.
+ *
+ * Fails toward stamping (returns false) on any error, preserving prior behavior
+ * whenever liveness cannot be established.
+ *
+ * @param {string} sessionDir - resolved team session directory
+ * @param {string} statusContent - already-read status.yaml contents
+ * @returns {boolean} true when the session looks mid-flight
+ */
+function teamSessionActivelyWorking(sessionDir, statusContent) {
+  try {
+    // (i) A running child agent: `stopped_at: null` inside the child `agents:`
+    //     region. The top-level `root:` block is excluded — its stopped_at is
+    //     null for the whole open session and would match everything.
+    const treeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+    if (treeContent) {
+      const parts = treeContent.split(/^agents:/m);
+      if (parts.length > 1 && /stopped_at:\s*null/.test(parts[1])) return true;
+    }
+
+    // (ii) A fresh heartbeat: last_updated_at inside the liveness window.
+    if (statusContent) {
+      const hb = statusContent.match(/last_updated_at:\s*"?([^"\n]+)"?/);
+      if (hb) {
+        const livenessMs = parseInt(process.env.CAGENTS_SESSION_LIVENESS_MS || '60000', 10);
+        const hbMs = Date.parse(hb[1]);
+        if (!isNaN(hbMs) && (Date.now() - hbMs) < livenessMs) return true;
+      }
+    }
+
+    return false;
+  } catch (e) {
+    console.error(`[SessionStop] teamSessionActivelyWorking error (treating as not-working): ${e.message}`);
+    return false;
+  }
+}
+
 // =============================================================================
 // P1-4: Pattern Extractor Runtime Wiring (24h throttle)
 // =============================================================================
@@ -470,6 +531,20 @@ createHook('SessionEnd', async (input) => {
   }
   let agentTreeSessionDir = null;
 
+  // ORDERING (load-bearing): capture the liveness verdict BEFORE Phase 1 runs.
+  // cleanupAgentTree() rewrites every `stopped_at: null` to a timestamp, which
+  // DESTROYS the running-child signal Phase 2's terminal-state guard depends on.
+  // Reading it afterwards would see a tree this same hook just marked finished
+  // and conclude the session is idle. Pinned by
+  // tests/hooks/team-stop-liveness-guard.test.js.
+  let activelyWorkingAtEntry = false;
+  if (anySession) {
+    activelyWorkingAtEntry = teamSessionActivelyWorking(
+      anySession,
+      safeRead(path.join(anySession, 'status.yaml')),
+    );
+  }
+
   if (anySession) {
     agentTreeSessionDir = anySession;
     const cleanedCount = cleanupAgentTree(anySession, now);
@@ -577,9 +652,35 @@ createHook('SessionEnd', async (input) => {
   let statusContent = safeRead(statusFile);
   if (statusContent) {
     const success = metrics.items_total > 0 ? (metrics.items_completed === metrics.items_total) : true;
+
+    // LIVENESS GUARD: never stamp terminal state on a session that is still
+    // mid-flight. SessionEnd fires per Claude Code session, but a /team program
+    // can span many of them — see teamSessionActivelyWorking() for the full
+    // failure mode (5 recorded recurrences) and why this guard exists.
+    //
+    // Prefer the verdict captured at handler entry (before Phase 1 rewrote every
+    // `stopped_at: null`); re-checking here would only ever see the heartbeat,
+    // because this hook already erased the running-child signal. The re-check is
+    // the fallback for when Phase 1 resolved a different session than Phase 2.
+    const activelyWorking = activelyWorkingAtEntry
+      || teamSessionActivelyWorking(teamSessionDir, statusContent);
+
+    if (activelyWorking) {
+      // Fill the null placeholders only; leave phase/pipeline_state alone so the
+      // deny gate stays disarmed and the next wave can still spawn agents.
+      console.error(
+        `[SessionStop] ${path.basename(teamSessionDir)} is still actively working ` +
+        `(running child agent or fresh heartbeat) — leaving phase/pipeline_state untouched. ` +
+        `Metrics were finalized; terminal state is not this hook's to assert on a live session.`,
+      );
+      summary += `**Status**: left non-terminal — session still actively working\n`;
+    } else {
+      statusContent = statusContent
+        .replace(/^phase:\s*\w+/m, 'phase: completed')
+        .replace(/^pipeline_state:\s*\S+/m, 'pipeline_state: VALIDATED');
+    }
+
     statusContent = statusContent
-      .replace(/^phase:\s*\w+/m, 'phase: completed')
-      .replace(/^pipeline_state:\s*\S+/m, 'pipeline_state: VALIDATED')
       .replace(/completed_at:\s*null/, `completed_at: "${now}"`)
       .replace(/result:\s*null/, `result: ${success ? 'success' : 'partial'}`);
     try { fs.writeFileSync(statusFile, statusContent); } catch (e) {

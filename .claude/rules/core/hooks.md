@@ -131,7 +131,7 @@ createHook('MyHook', async (input) => {
 
 **Factory handles**:
 
-- stdin reading with 3-second timeout
+- stdin reading with a fallback deadline (`STDIN_FALLBACK_MS`, 2000 ms). It MUST stay strictly below the smallest registered hook `timeout` in `.claude/settings.json` — at 3000 ms it tied `PreToolUse[Agent]`/`UserPromptSubmit` (`timeout: 3`) and the harness cancelled those hooks before they could emit a verdict. Pinned by `tests/hooks/stdin-fallback-below-hook-timeout.test.js`.
 - JSON parsing with graceful fallback to `{}`
 - Try-catch wrapping (errors produce `{"continue": true}`)
 - Result transformation (`deny` shorthand -> full hookSpecificOutput)
