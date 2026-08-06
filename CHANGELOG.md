@@ -10,6 +10,64 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.64.1] - 2026-08-05
+
+**Measurement-only release** (session `team_load-cut-program_260804_001`, work
+order WO-05). No behavior changed and no code changed. Its entire content is a
+number and a correction. WO-05 re-measured the v12.64.0 four-surface load cut
+against the v12.62.2 baseline. **The measured reduction in delivered rule content
+is zero.**
+
+### Measured
+
+- **Delivery census: 260 → 260 documents, 0.0%.** 10 real spawned agents
+  self-reported their own injected context, across `/run`, `/team` and
+  `/designer`, both spawn shapes. Every row: **26 documents before, 26 after**.
+  Restricted to the `.claude/rules/` tree the figure is 24 → 24, also 0.0%. The
+  baseline value was withheld from every reporting agent, so the convergence is
+  unanchored.
+
+- **Harness token ground truth: 848,602 → 837,551 = −11,051, 1.3%.** Aggregate
+  `token_count.input` from the `usage` object recorded by `spawn-footprint.cjs`,
+  across six like-for-like agent types. This is an **upper bound** — the post-cut
+  probes carried far shorter prompts than the pre-cut census spawns, a bias that
+  flatters the cut — so the realised cut is ≤1.3% and plausibly nearer zero.
+
+- **Zero-rule control: 9,545 → 10,466, +921 tokens (+9.6%).** A `Plan` spawn
+  receives no rule documents in either era, and carried a shorter prompt
+  post-cut, yet its delivered tokens rose. This isolates surface (d), the
+  `role-manifest-injector`, as net-additive load.
+
+### Changed
+
+- **The v12.64.0 "~51%" match-set figure is superseded as a load figure.** The
+  v12.64.0 entry states "Aggregate match-set selections fall ~51%". That
+  statement is accurate about what it measures — how many repo files each
+  `paths:` glob selects — but it must not be read as a load reduction, and this
+  release exists to say so. A bracketed pointer to this entry was appended at
+  that sentence; nothing else in the v12.64.0 entry was altered.
+
+  **Mechanism.** Project rules are delivered to an agent spawn **unconditionally
+  at spawn time**, and a `paths:` predicate does not gate that spawn-time
+  injection. Narrowing a predicate changed which file *touches* trigger a later
+  conditional re-injection; it changed nothing about what arrives at spawn. An
+  analytic match-set count was never a proxy for delivered load, and measurement
+  has now falsified it as one.
+
+### Notes
+
+- **By-product measured.** A consumer-project spawn receives no rule body
+  content: the project-rules channel is project-relative and `plugin.json`
+  declares no rules surface. The `role-manifest-injector` hook nonetheless ships
+  with the plugin and fires unconditionally, injecting roughly 844–1,034 tokens
+  of pointer index per spawn in which **100% of the cited `.claude/rules/…`
+  paths do not exist**.
+
+- The `spawn-footprint` recorder had silently logged nothing since wave 1: this
+  session's SDK-transcript-UUID pointer had been reaped from
+  `_system/sdk_session_map/`, so `findActiveSession` returned null. Repaired as
+  runtime state only; no tracked file changed.
+
 ## [12.64.0] - 2026-08-05
 
 **R2 of the load-cut program** (session `team_load-cut-program_260804_001`,
@@ -37,7 +95,8 @@ inside.
   `core/skill-format`, `core/execution`, `core/hooks`. Without this, (a) moves
   zero bytes: each file had a second delivery channel whose predicate
   (`**/agents/**/*.md`, `.claude/skills/**`) was an unconditional load wearing a
-  costume. Aggregate match-set selections fall ~51%. Stated precisely: **5
+  costume. Aggregate match-set selections fall ~51% [superseded as a load figure
+  — see 12.64.1: measured delivered-load reduction is 0%]. Stated precisely: **5
   narrowed, 3 widened-but-scoped** — `hooks.md`, `teams.md`, and
   `version-registry.md` gained companion docs and test dirs. The saving on all 8
   comes from removing the unconditional import, not from shrinking the
