@@ -10,6 +10,56 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.64.2] - 2026-08-06
+
+Two silent-failure hook bugs, each pinned by a new regression test, plus the
+CLAUDE.md size cut that the R2 load-cut work left unfinished.
+
+### Fixed
+
+- **`readStdin()` fallback deadline tied the smallest registered hook timeout.**
+  `STDIN_FALLBACK_MS` was 3000 ms while `PreToolUse[Agent]` and
+  `UserPromptSubmit` are both registered with `timeout: 3` (= 3000 ms). Equal
+  deadlines are a guaranteed race and the harness won it: over a 14-day
+  transcript window, 68 `PreToolUse:Agent` and 13 `UserPromptSubmit` runs were
+  cancelled at 3010–3063 ms, producing **no verdict at all**. The signature was
+  bimodal — 369 `PreToolUse:Write|Edit` runs under 500 ms and 36 at ≥3 s, with
+  nothing between. Dropped to 2000 ms so the slow path finishes inside every
+  registered budget. Not a semantic change: a timed-out read resolves to `{}`
+  and every dispatcher returns `{"continue": true}` for an empty payload — same
+  outcome, delivered cleanly and ~1 s sooner. Pinned by
+  `tests/hooks/stdin-fallback-below-hook-timeout.test.js`, which asserts the
+  constant stays strictly below the smallest `timeout` in `.claude/settings.json`.
+
+- **`team-stop.cjs` stamped terminal state on live `/team` programs.** Phase 2
+  rewrote `phase: completed` + `pipeline_state: VALIDATED` unconditionally.
+  SessionEnd fires per *Claude Code session*, but a `/team` program can span many
+  of them — so ending any one session stamped a mid-flight program terminal. A
+  terminal phase makes `findActiveSession()` return null, which makes
+  `session-init-gate.cjs` hard-deny every subsequent Agent spawn: silent and
+  total. Observed 5 times in `team_load-cut-program_260804_001`, twice
+  immediately after a merge, and once misdiagnosed as "the Agent tool is absent
+  at depth 3". Added `teamSessionActivelyWorking()` — a local mirror of the two
+  positive signals in `verify-completion.cjs`'s `sessionActivelyWorking()`
+  (running child agent, fresh heartbeat) — and the verdict is captured **at
+  handler entry**, before Phase 1's `cleanupAgentTree()` rewrites every
+  `stopped_at: null` and destroys the running-child signal. When live, metrics
+  are still finalized but `phase`/`pipeline_state` are left untouched. Fails
+  toward stamping on any error, preserving prior behavior. Pinned by
+  `tests/hooks/team-stop-liveness-guard.test.js`.
+
+### Changed
+
+- **CLAUDE.md trimmed** of content a session can reconstruct with `ls` or that
+  is already resident elsewhere: the directory-structure tree, the generic
+  6-tier memory table, the per-agent role glosses (each agent's frontmatter
+  carries its own), and the redundant Quick Reference rows. The `/run`, `/team`,
+  `/designer` and `/helper` surface detail moved verbatim to
+  `.claude/rules/core/orchestration.md` § Skill Surface Reference, whose `paths`
+  scope now covers all four skill dirs plus `_MODE_REGISTRY.md` — so it loads
+  when you work on a skill instead of in every session. Disk-pinned counts are
+  unchanged.
+
 ## [12.64.1] - 2026-08-05
 
 **Measurement-only release** (session `team_load-cut-program_260804_001`, work

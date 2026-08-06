@@ -2,6 +2,9 @@
 paths:
   - ".claude/skills/run/**"
   - ".claude/skills/team/**"
+  - ".claude/skills/designer/**"
+  - ".claude/skills/helper/**"
+  - ".claude/skills/_MODE_REGISTRY.md"
   - "cagents-memory/_system/config/pipeline_config.yaml"
   - "agents/core/**"
 ---
@@ -150,6 +153,42 @@ This prevents redundant implementation and builds on existing work.
 3. **Revision-capable**: Controller-level (2 rounds, LP-27) and pipeline-level (3 cycles)
 4. **Controllers coordinate, don't execute**: Question-based delegation
 5. **Signal-interruptible**: PAUSE/STOP signals before each transition
+
+---
+
+## Skill Surface Reference
+
+> Migrated verbatim from `CLAUDE.md` § Skills (Commands) so it loads when you are
+> working on a skill rather than in every session. The one-line skill descriptions
+> stay resident via each `SKILL.md` frontmatter; this is the detail behind them.
+
+### /run - Event-Driven Pipeline Engine
+State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner — the planner produces decomposition + delegation prompts inline), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). Adaptive pipeline (tier 2 fast path skips orchestrator), domain/tier confirmation display, execution analytics (`--analytics`). Controllers fall back to standard delegation prompts when the planner skips prompt assembly.
+```bash
+/run Fix auth bug              # -> Engineering (tier 2: tech-lead)
+/run Write fantasy story       # -> Creative (tier 2: narrative-director)
+/run Plan Q4 campaign          # -> Business (tier 3: marketing-strategist)
+/run Design game mechanics     # -> Business (tier 2: game-designer)
+```
+Skill: `.claude/skills/run/SKILL.md` + `reference/`
+
+### /team - N-Wave Parallel Team Execution
+N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (subagents: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K subagents as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Parallelism comes from both concurrent per-wave subagent calls and each subagent recursively spawning its own subagents (depth 5) — a subagent needing another specialty spawns it downward rather than routing sideways through the lead. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each wave subagent is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+```bash
+/team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
+/team Launch new product with campaign          # Cross-domain: auto-strategic mode
+/team Build feature --dry-run --waves 8 / --strategic   # preview / force waves / force strategic
+/run Build feature --team                       # Team mode via flag
+```
+Config: `settings.json` (`teammateMode` default `in-process` since CC v2.1.179; `tmux`/`auto` panes are experimental-path only). See `docs/TEAM_MODE.md`.
+
+### /designer, /helper
+Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
+
+Highlights:
+- **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
+- **Improve modes inside /run**: `/improve` is folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
+- **/helper**: Troubleshooting mode (`--troubleshoot`), comparison matrices, migration catalog, strategic-mode migration guidance (`/org X` → `/team X`)
 
 ---
 

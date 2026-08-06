@@ -20,13 +20,12 @@ For v12 consolidation history and all later release notes, see
 
 ## Documentation Structure
 
-- `CLAUDE.md` - Architecture, commands, agents (this file)
-- `README.md` - Quick start
-- `docs/` - Project documentation (66 `.md` files recursive; 42 top-level entries — including ARCHITECTURE.md, SKILLS.md, TEAM_MODE.md, RELEASE_NOTES.md, etc.)
-- `archive/docs/` - Historical documentation (local only)
-- `cagents-memory/` - Runtime state (excluded from git)
+Non-obvious pointers only — the rest of the tree is discoverable with `ls`:
+
 - `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only)
 - `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
+- `archive/docs/` - Historical documentation (local only, not in git)
+- `cagents-memory/` - Runtime state (excluded from git)
 
 ## Version Management
 
@@ -36,22 +35,9 @@ For v12 consolidation history and all later release notes, see
 
 ## Memory Management
 
-**Claude Code Memory Hierarchy**: 6-tier system. See `.claude/rules/memory/agent-memory.md` for full details.
+**Claude Code Memory Hierarchy**: standard 6-tier system. See `.claude/rules/memory/agent-memory.md` for cAgents-specific detail, and `/memory` for what is loaded right now.
 
-| Memory Type | Location | Shared With |
-|-------------|----------|-------------|
-| **Managed policy** | OS-level paths | All users in org |
-| **Project** | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Team via git |
-| **Project Rules** | `./.claude/rules/*.md` | Team via git |
-| **User** | `~/.claude/CLAUDE.md` | Just you |
-| **Project Local** | `./CLAUDE.local.md` (auto-gitignored) | Just you |
-| **Auto Memory** | `~/.claude/projects/<project>/memory/` | Just you |
-
-**Loading Order**: Managed -> User -> Project -> Project Rules -> Project Local (later = higher priority)
-**Auto Memory**: First 200 lines of MEMORY.md loaded at session start. Toggle with `/memory` or `autoMemoryEnabled` setting.
-**Recursive Lookup**: CLAUDE.md files found recursively up directory tree. Child directory CLAUDE.md files load on demand.
-
-**Rules Structure** (`.claude/rules/`):
+**Rules Structure** (`.claude/rules/` — Modular rules (43 files); every file is `paths`-scoped, so rules load on demand rather than every session):
 ```
 core/           # orchestration, controllers, execution, hooks, teams, etc. (13 top-level + 3 resources/)
 domains/        # engineering, grow, operate, people, serve (5 files)
@@ -61,8 +47,6 @@ quality/        # completion, validation-framework, implicit-discovery (5 top-le
 playbooks/      # pat-* reusable patterns (11 pat-* + README = 12 files)
 ```
 Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 resources/.
-
-**Import Syntax**: Use `@path/to/file` to include external content. View loaded files: `/memory`
 
 ## Project Overview
 
@@ -123,13 +107,15 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 ## Core Infrastructure (Tier 1: 16 agents)
 
-- **Orchestration** (4): `trigger`, `orchestrator` (context enrichment), `hitl` (human escalation), `optimizer`
-- **Team** (3): `team-bootstrap` (team init + lead wrapper, renamed from `team` in v12.53.0), `team-lead` (delegate-mode lead), `wave-reviewer` (validates /team wave gates)
-- **Universal Workflow** (5): `router` (tier classification), `planner` (decomposition + controller selection + prompt assembly), `execution-monitor` (renamed from `executor` in v12.53.0), `validator` (PASS/FAIL/REVISE), `self-correct` (adaptive recovery)
-- **Review** (1): `reviewer` (PASS/REVISE against acceptance criteria)
-- **Task Management** (1): `task-state` (CSV state, 60-80% savings; includes task-merge mode)
+Grouping only — each agent's own role is in its frontmatter (already resident in the agent listing):
+
+- **Orchestration** (4): `trigger`, `orchestrator`, `hitl`, `optimizer`
+- **Team** (3): `team-bootstrap`, `team-lead`, `wave-reviewer`
+- **Universal Workflow** (5): `router`, `planner`, `execution-monitor`, `validator`, `self-correct`
+- **Review** (1): `reviewer`
+- **Task Management** (1): `task-state`
 - **Coordination** (1): `coordinator` (reusable controller for small domains — health, education, personal, arts, trades)
-- **Logging** (1): `coord-log-writer` (assembles coordination_log.yaml)
+- **Logging** (1): `coord-log-writer`
 
 **Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
@@ -215,33 +201,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-### /run - Event-Driven Pipeline Engine
-State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner — the planner produces decomposition + delegation prompts inline), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). Adaptive pipeline (tier 2 fast path skips orchestrator), domain/tier confirmation display, execution analytics (`--analytics`). Controllers fall back to standard delegation prompts when the planner skips prompt assembly.
-```bash
-/run Fix auth bug              # -> Engineering (tier 2: tech-lead)
-/run Write fantasy story       # -> Creative (tier 2: narrative-director)
-/run Plan Q4 campaign          # -> Business (tier 3: marketing-strategist)
-/run Design game mechanics     # -> Business (tier 2: game-designer)
-```
-Skill: `.claude/skills/run/SKILL.md` + `reference/`
-
-### /team - N-Wave Parallel Team Execution
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (subagents: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K subagents as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Parallelism comes from both concurrent per-wave subagent calls and each subagent recursively spawning its own subagents (depth 5) — a subagent needing another specialty spawns it downward rather than routing sideways through the lead. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each wave subagent is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
-```bash
-/team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
-/team Launch new product with campaign          # Cross-domain: auto-strategic mode
-/team Build feature --dry-run --waves 8 / --strategic   # preview / force waves / force strategic
-/run Build feature --team                       # Team mode via flag
-```
-Config: `settings.json` (`teammateMode` default `in-process` since CC v2.1.179; `tmux`/`auto` panes are experimental-path only). See `docs/TEAM_MODE.md`.
-
-### /designer, /helper
-Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
-
-Highlights:
-- **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
-- **Improve modes inside /run**: `/improve` is folded into `/run` via a first-word keyword router. `/run improve X` -> `--mode full`. `/run review X` or `/run audit X` -> `--mode review`. `/run optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/run`. See `.claude/skills/run/reference/improve-mode.md` for the keyword router contract
-- **/helper**: Troubleshooting mode (`--troubleshoot`), comparison matrices, migration catalog, strategic-mode migration guidance (`/org X` → `/team X`)
+**Per-skill detail** (pipeline internals, wave model, strategic mode, improve-mode keyword router, /designer behavior) lives in `.claude/rules/core/orchestration.md` § Skill Surface Reference. That file is `paths`-scoped to `.claude/skills/**`, so it loads when you work on a skill instead of in every session.
 
 ## Agent Memory
 
@@ -270,30 +230,6 @@ cagents-memory/
 See `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md` for full agent authoring guidelines.
 
 **Quick steps**: Choose tier + archetype (+ branch if 3-level) → create `{archetype}/{branch?}/{agent-name}/SKILL.md` with YAML frontmatter → run `bash scripts/sync-agents.sh` → test with `bash scripts/ci/validate-agents.sh`.
-
-## Directory Structure
-
-```
-cAgents/
-+-- CLAUDE.md                # Main project memory (this file)
-+-- .claude/
-|   +-- skills/              # Skills (run, team, designer, helper)
-|   +-- hooks/               # 34 .cjs files (26 registered hooks + 5 dispatched sub-validators + utils + launcher + bash-guard-evaluator library)
-|   +-- output-styles/       # Output-style files
-|   +-- plans/               # Saved execution plans
-|   +-- rules/               # Modular rules (43 files: 37 top-level across 6 categories + 2 READMEs (root + playbooks/) + 4 in resources/)
-|   +-- settings.json        # Hook registration + permissions + env
-+-- agents/                  # All 60 agents (44 routable + 16 core) across 9 archetype roots:
-|                            #   developer, operator, advisor, analyst, creator, writer, strategist, core, leadership
-|                            #   (per-archetype counts in § Project Overview + Quick Reference)
-|   +-- _overlay/            # Legacy router/planner config overlays (people/, shared/ — config only)
-+-- scripts/                 # Version sync, validation, CI scripts
-+-- tests/                   # Vitest test suite (hooks + config)
-+-- docs/                    # Project documentation
-+-- _archive/                # Closed migration outputs, deprecated buckets, archived docs
-+-- .claude-plugin/          # Root manifest
-+-- cagents-memory/          # Runtime state (git-ignored)
-```
 
 ## Hooks System
 
@@ -336,9 +272,8 @@ cAgents is distributed as a Claude Code plugin. The root manifest is
 (LSP servers, default settings, hook registration, marketplace fields, multi-plugin
 merge) and the full manifest-field detail live in
 **`docs/ARCHITECTURE-HISTORY.md § Plugin Architecture`**. Worktree sparse checkout is
-declared in `.claude/settings.json` (`worktree.sparsePaths`, 7 entries: `.claude/`,
-`.claude-plugin/`, `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`,
-`docs/`) so `/team` worktree-isolated subagents only populate the paths they
+declared in `.claude/settings.json` (`worktree.sparsePaths`) so `/team`
+worktree-isolated subagents only populate the paths they
 need. `.claude-plugin/` was added in v12.62.2 — without it, a worktree-isolated
 subagent's checkout lacks `plugin.json`, causing `session-init-gate.cjs` to
 misread every agent as unregistered (see CHANGELOG v12.62.2).
@@ -355,18 +290,15 @@ must never be conflated. The full measured-vs-estimate tables + provenance live 
 
 ## Quick Reference
 
-**Skills**: `/run`, `/team`, `/designer`, `/helper` (in `.claude/skills/`; removed skills — `/review`, `/optimize`, `/context`, `/debug`, `/improve`, `/org` — see `docs/MIGRATION-V11.md` and CHANGELOG)
-**Built-in**: `/memory`, `/init` (Claude Code native)
+Counts below are pinned to disk by `scripts/ci/validate-counts.sh` and
+`tests/regressions/claude-md-counts-current.test.js` — keep them, and re-derive
+rather than hand-edit. Everything else in this file that a session could
+reconstruct with `ls` has been removed deliberately.
+
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
-**Domain Overlay (legacy routing/config only)**: 2 dirs (`people/`, `shared/`) hold `config/domain_overrides.yaml` — no SKILL.md files. The other 11 legacy domains (engineering, creative, business, growth, service, science, health, education, personal, arts, trades) were deleted and consolidated into `cagents-memory/_system/config/routing.yaml`.
-**Key Files**: `CLAUDE.md`, `.claude/skills/*/SKILL.md`, `.claude/rules/*.md`, `people/config/domain_overrides.yaml`, `shared/config/domain_overrides.yaml`, `cagents-memory/_system/config/routing.yaml`, `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/session-schema.md` (internal-only session YAML contract since v12.6.0)
-**Hooks**: 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Critical**: 100% task completion required, aggressive decomposition mandatory (tier 2+)
-**Team Mode**: `/team` or `/run --team` for 40-60% faster tier 3+ via N-wave parallel execution (maximize waves)
-**Pipeline**: 5-state pipeline with two execution paths (fast/standard — `fast` skips the orchestrator for tier-2-clear requests), revision routing (FAIL/REVISE), reviewer loops
 **Tests**: `npm test` runs 1755+ Vitest tests across 211+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.64.1
+**Version**: 12.64.2
 
 ## Troubleshooting
 

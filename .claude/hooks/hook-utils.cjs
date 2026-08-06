@@ -130,6 +130,28 @@ const SESSION_DISCOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000;
 const MAX_SESSION_START_CHARS = 1500;  // Max chars for SessionStart additionalContext
 const MAX_ATTENTION_CHARS = 500;       // Max chars for attention-injection systemMessage
 
+// Fallback deadline for readStdin() when stdin never emits 'end'.
+//
+// INVARIANT: this MUST stay strictly below the SMALLEST `timeout` (in seconds)
+// registered for any hook in `.claude/settings.json`, with enough margin for
+// node cold start + the handler's own work. Pinned by
+// `tests/hooks/stdin-fallback-below-hook-timeout.test.js`.
+//
+// BUG (fixed here): this was 3000 ms while `PreToolUse[Agent]` and
+// `UserPromptSubmit` are both registered with `timeout: 3` (= 3000 ms). Equal
+// deadlines are a guaranteed race, and the harness won it: over a 14-day
+// transcript window, 68 `PreToolUse:Agent` and 13 `UserPromptSubmit` runs were
+// cancelled at 3010-3063 ms, so those hooks produced NO verdict at all. The
+// bimodal signature was unmistakable — 369 `PreToolUse:Write|Edit` runs under
+// 500 ms and 36 at >=3 s, with nothing in between.
+//
+// Dropping to 2000 ms lets the slow path finish and emit its verdict inside
+// every registered budget. It is not a semantic change: a timed-out stdin read
+// resolves to `{}`, and every dispatcher returns `{"continue": true}` for an
+// empty payload — the same effective outcome as being cancelled, but delivered
+// cleanly and ~1 s sooner.
+const STDIN_FALLBACK_MS = 2000;
+
 /**
  * Read JSON from stdin with timeout.
  * Returns parsed object or {} on any failure.
@@ -160,13 +182,15 @@ function readStdin(hookName) {
 
     // Safety-only fallback timer. .unref() so it does NOT keep the Node event
     // loop alive: once stdin ends normally and the hook's work completes, the
-    // process must exit immediately instead of lingering ~3s for this timer.
+    // process must exit immediately instead of lingering for this timer.
     // If stdin never ends, the open stdin stream keeps the loop alive and this
-    // timer still fires at 3s — correctness is preserved, keep-alive is dropped.
+    // timer still fires — correctness is preserved, keep-alive is dropped.
+    // See STDIN_FALLBACK_MS above for why this must stay under every registered
+    // hook `timeout` in .claude/settings.json.
     const stdinFallbackTimer = setTimeout(() => {
-      if (!resolved) console.error(hookName ? `[Hook] stdin reading timed out for hook: ${hookName}` : '[hook-utils] readStdin timeout after 3s');
+      if (!resolved) console.error(hookName ? `[Hook] stdin reading timed out for hook: ${hookName}` : `[hook-utils] readStdin timeout after ${STDIN_FALLBACK_MS}ms`);
       done({});
-    }, 3000);
+    }, STDIN_FALLBACK_MS);
     stdinFallbackTimer.unref();
   });
 }
@@ -1447,6 +1471,7 @@ module.exports = {
   SESSION_DISCOVERY_GRACE_PERIOD_MS,
   MAX_SESSION_START_CHARS,
   MAX_ATTENTION_CHARS,
+  STDIN_FALLBACK_MS,
   createHook,
   dedupGuard,
   readStdin,
