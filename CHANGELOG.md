@@ -10,6 +10,23 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.65.0] - 2026-08-06
+
+**Version-level reclassification of v12.64.2. No code changed.**
+
+v12.64.2 shipped as a patch bump, but its non-sync diff touches 6 files
+(`hook-utils.cjs`, `team-stop.cjs`, `hooks.md`, `orchestration.md`, and two new
+test files) — one over the ≤5-file cap that `check_tiny_bump` enforces for
+patch-level bumps, so the guard was red at HEAD (exit 6). It also carries three
+objectives rather than one, failing atomicity criterion 1.
+
+Per `.claude/rules/core/version-registry.md` § "When a bump is NOT a tiny bump"
+("multi-file refactors touching more than ~5 files outside the 16 sync locations
+→ should usually be a minor bump"), the correct classification was a minor bump
+from the start. Re-released here at minor level, which is exempt from the file
+cap and restores a green guard. The v12.64.2 entry below remains the record of
+what actually changed; nothing in it is superseded.
+
 ## [12.64.2] - 2026-08-06
 
 Two silent-failure hook bugs, each pinned by a new regression test, plus the
