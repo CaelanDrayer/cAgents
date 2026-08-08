@@ -27,7 +27,8 @@
  *     materializeCoordinatedStaleChild.
  */
 
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -36,12 +37,109 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /** Committed static reference fixtures live alongside this module. */
 export const FIXTURES_DIR = __dirname;
 
+/** The real repo (vitest runs from the repo root). Source of plugin resources. */
+const REPO_ROOT = process.cwd();
+
 /**
- * Live-session root. Mirrors verify-completion.cjs's PROJECT_ROOT resolution
- * (cwd-based when vitest runs from the repo root, matching the sibling
- * verify-completion-active-wait.test.js).
+ * ISOLATED project root for every fixture this module materializes.
+ *
+ * WHY (cross-test pollution, fixed here): these builders used to write live
+ * session dirs into the REAL `<repo>/cagents-memory/sessions/`. Vitest runs test
+ * FILES in parallel, so while a safety-net fixture existed on disk, ANY sibling
+ * test that resolves a session through `hook-utils.cjs`'s
+ * `findActiveSession({fallbackHeuristic: true})` / `findMostRecentSessionDir()`
+ * could bind to it. The reproducible victim was
+ * `tests/v12/prompt-router-consolidation.test.js`'s no-active-session control
+ * case: `controller-delegation-validator.cjs`, asked about an intentionally
+ * NONEXISTENT session, heuristically resolved one of these fixtures — whose
+ * `agent_tree.yaml` carries a `stopped_at: null` controller child — and returned
+ * `deny` where the test asserts no decision at all. It passed 6/6 in isolation
+ * and failed in a full-suite run: a pure shared-global-state race, not a defect
+ * in either test.
+ *
+ * The isolation uses the injection point hook-utils.cjs ALREADY exposes:
+ * `CLAUDE_PROJECT_DIR` (hook-utils.cjs:42) sets `PROJECT_ROOT`, and therefore
+ * `AGENT_MEMORY_DIR` = `<PROJECT_ROOT>/cagents-memory`, for a spawned hook.
+ * `PLUGIN_ROOT` is resolved from the hook's own `__dirname`, so plugin resources
+ * still come from the real repo — only session/knowledge WRITES are redirected.
+ * Consumers MUST spread `hookEnv()` into the env of every hook they spawn.
+ *
+ * Path is computed with pure string joins so importing this module stays free of
+ * fs side effects (see the module docstring); the tree is created lazily by
+ * `ensureProjectRoot()`.
  */
-export const SESSIONS_DIR = join(process.cwd(), 'cagents-memory', 'sessions');
+export const PROJECT_DIR = join(
+  tmpdir(),
+  `cagents-safety-net-${process.pid}-${Math.random().toString(36).slice(2, 8)}`
+);
+
+/** Live-session root — inside the isolated project root, never the real repo. */
+export const SESSIONS_DIR = join(PROJECT_DIR, 'cagents-memory', 'sessions');
+
+/** Learning store the Stop hook appends to (redirected with the project root). */
+export const OUTCOMES_JSONL = join(
+  PROJECT_DIR,
+  'cagents-memory',
+  '_knowledge',
+  'learning',
+  'session_outcomes.jsonl'
+);
+
+let _rootReady = false;
+
+/**
+ * Create the isolated project root and seed the few files a spawned hook reads
+ * from `AGENT_MEMORY_DIR` (so redirecting the root does not silently change
+ * hook behavior). Idempotent; called by `hookEnv()`.
+ *
+ *   - `_system/config/pipeline_config.yaml` — verify-completion.cjs reads
+ *     `max_cycles` from it (falls back to 3 when unreadable; copying keeps the
+ *     fixture honest if the repo value ever diverges from the fallback).
+ *   - `_knowledge/patterns/.last-extracted` + `_system/.last-gc` — 24h throttle
+ *     sentinels for team-stop.cjs's two fire-and-forget maintenance spawns. A
+ *     missing sentinel in a fresh temp root would make every fixture run launch
+ *     a detached pattern-extractor.
+ */
+export function ensureProjectRoot() {
+  if (_rootReady) return PROJECT_DIR;
+  mkdirSync(SESSIONS_DIR, { recursive: true });
+
+  const cfgDir = join(PROJECT_DIR, 'cagents-memory', '_system', 'config');
+  mkdirSync(cfgDir, { recursive: true });
+  try {
+    copyFileSync(
+      join(REPO_ROOT, 'cagents-memory', '_system', 'config', 'pipeline_config.yaml'),
+      join(cfgDir, 'pipeline_config.yaml')
+    );
+  } catch { /* hook falls back to its built-in defaults */ }
+
+  mkdirSync(join(PROJECT_DIR, 'cagents-memory', '_knowledge', 'patterns'), { recursive: true });
+  writeFileSync(
+    join(PROJECT_DIR, 'cagents-memory', '_knowledge', 'patterns', '.last-extracted'),
+    ''
+  );
+  writeFileSync(join(PROJECT_DIR, 'cagents-memory', '_system', '.last-gc'), '');
+
+  _rootReady = true;
+  return PROJECT_DIR;
+}
+
+/**
+ * Env overlay every consumer MUST spread into the env of a hook it spawns, e.g.
+ * `env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' }`.
+ * Without it the hook resolves the REAL sessions dir and cannot see the fixture.
+ */
+export function hookEnv() {
+  ensureProjectRoot();
+  return { CLAUDE_PROJECT_DIR: PROJECT_DIR };
+}
+
+// Best-effort teardown of the isolated root. Per-test `cleanup(dirs)` already
+// removes individual session dirs; this sweeps the container so repeated runs
+// do not accumulate roots under the OS temp dir.
+process.on('exit', () => {
+  try { if (_rootReady) rmSync(PROJECT_DIR, { recursive: true, force: true }); } catch { /* best-effort */ }
+});
 
 /** ISO timestamp `msAgo` milliseconds before now. */
 export function iso(msAgo = 0) {

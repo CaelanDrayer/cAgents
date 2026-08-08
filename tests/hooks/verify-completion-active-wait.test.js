@@ -97,11 +97,14 @@ import { join } from 'path';
 import { spawnSync } from 'child_process';
 // Phase-0 safety-net (audit team_plugin-full-audit_260717_001): shared fixture
 // builders for the appended REC-04 describe.skip block at the bottom of this file.
-import { materializeInitZeroAgent, cleanup } from './fixtures/safety-net/materialize.mjs';
+import { materializeInitZeroAgent, cleanup, hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
+// SESSIONS_DIR is imported from materialize.mjs — this file's own makeSession()
+// fixtures share the isolated temp project root with the safety-net builders
+// instead of being written into the REAL cagents-memory/sessions/, where a
+// sibling test's heuristic session resolution could bind to them mid-run.
 
 // Explicit liveness window so the fresh/stale heartbeat boundary is deterministic
 // (never dependent on the machine's default or on subprocess spawn latency).
@@ -214,6 +217,7 @@ function runHook(sid, livenessMs = LIVENESS_MS) {
     timeout: 10000,
     env: {
       ...process.env,
+      ...hookEnv(),
       CAGENTS_ACTIVE_SESSION: '',
       CAGENTS_SESSION_LIVENESS_MS: String(livenessMs),
     },

@@ -32,7 +32,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
-import { materializeCoordinatedStaleChild, cleanup } from './fixtures/safety-net/materialize.mjs';
+import { materializeCoordinatedStaleChild, cleanup, hookEnv } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const VERIFY_HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
@@ -60,6 +60,7 @@ function runStopHook(sid) {
     timeout: 60000,
     env: {
       ...process.env,
+      ...hookEnv(),
       CAGENTS_ACTIVE_SESSION: '',
       CAGENTS_SESSION_LIVENESS_MS: String(LIVENESS_MS),
     },

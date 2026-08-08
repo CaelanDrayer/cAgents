@@ -40,6 +40,7 @@ import {
   materializeCoordinatedStaleChild,
   materializeGenuineValidated,
   cleanup,
+  hookEnv,
 } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
@@ -59,7 +60,7 @@ function runStopHook(sid) {
     // safeJson's former catch→{} was the same swallow. Raise the budget and FAIL
     // LOUD on abnormal termination.
     timeout: 60000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   // verify-completion.cjs (Stop via createHook) ALWAYS exits 0 with one JSON line
   // on stdout (a decision:block verdict is exit-0 JSON too), so any abnormal
@@ -82,7 +83,7 @@ function runSessionEnd(sid) {
     // execution_summary.yaml, so Test D's file assertions could go silently wrong.
     // Raise the budget and FAIL LOUD on abnormal termination.
     timeout: 60000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   // team-stop.cjs (SessionEnd via createHook) exits 0; a null/non-zero status or a
   // spawn error means the hook was killed/crashed, not that it finished normally.
