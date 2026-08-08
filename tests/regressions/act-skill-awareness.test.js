@@ -1,15 +1,17 @@
 /**
  * Regression: workspace skill awareness (reuse-before-rebuild).
  *
- * Ensures /run can SEE and WORK WITH skills already present in a workspace
+ * Ensures /act can SEE and WORK WITH skills already present in a workspace
  * instead of reinventing them. Pins:
- *   (1) /run declares the Skill tool in allowed-tools (also fixes the latent
+ *   (1) /act declares the Skill tool in allowed-tools (also fixes the latent
  *       team-mode `Skill({skill:"team"})` reference that had no tool grant).
- *   (2) /run SKILL.md wires the discovery step (writes available_skills.yaml)
+ *   (2) /act SKILL.md wires the discovery step (writes available_skills.yaml)
  *       and points at the skill-awareness reference doc.
  *   (3) The skill-awareness reference doc exists and documents the contract:
- *       available_skills.yaml, assigned_skill, and the exclusion of cAgents'
- *       own run/team/designer/helper skills.
+ *       available_skills.yaml, assigned_skill, the exclusion of cAgents'
+ *       own act/team/designer/helper skills, and the exclusion of Claude
+ *       Code's built-in `run` skill (the app-launcher the cAgents entry point
+ *       was renamed away from).
  *   (4) The planner consults available_skills.yaml and can assign_skill.
  *   (5) controllers.md documents Skill-tool invocation + graceful fallback.
  *   (6) Every controller-tier agent actually has the Skill tool (capability is
@@ -21,8 +23,8 @@ import fs from 'fs';
 import path from 'path';
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-const RUN_SKILL = path.join(REPO_ROOT, '.claude', 'skills', 'run', 'SKILL.md');
-const SKILL_AWARENESS = path.join(REPO_ROOT, '.claude', 'skills', 'run', 'reference', 'skill-awareness.md');
+const ACT_SKILL = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
+const SKILL_AWARENESS = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'reference', 'skill-awareness.md');
 const PLANNER = path.join(REPO_ROOT, 'agents', 'core', 'planner', 'SKILL.md');
 const CONTROLLERS_MD = path.join(REPO_ROOT, '.claude', 'rules', 'core', 'controllers.md');
 const AGENTS_DIR = path.join(REPO_ROOT, 'agents');
@@ -38,19 +40,22 @@ function walkSkillMd(dir) {
 }
 
 describe('workspace skill awareness', () => {
-  it('(1) /run declares the Skill tool in allowed-tools', () => {
-    const body = fs.readFileSync(RUN_SKILL, 'utf8');
+  it('(1) /act declares the Skill tool in allowed-tools', () => {
+    const body = fs.readFileSync(ACT_SKILL, 'utf8');
     const line = body.split('\n').find((l) => l.startsWith('allowed-tools:'));
     expect(line).toBeTruthy();
     expect(/\bSkill\b/.test(line)).toBe(true);
   });
 
-  it('(2) /run wires skill discovery and references the doc', () => {
-    const body = fs.readFileSync(RUN_SKILL, 'utf8');
+  it('(2) /act wires skill discovery and references the doc', () => {
+    const body = fs.readFileSync(ACT_SKILL, 'utf8');
     expect(body).toMatch(/available_skills\.yaml/);
     expect(body).toMatch(/skill-awareness\.md/);
     // Must exclude cAgents' own skills from discovery.
-    expect(body).toMatch(/EXCLUDE[^\n]*run[^\n]*team[^\n]*designer[^\n]*helper/i);
+    expect(body).toMatch(/EXCLUDE[^\n]*act[^\n]*team[^\n]*designer[^\n]*helper/i);
+    // ...and Claude Code's built-in `run` app-launcher, which is NOT the
+    // cAgents pipeline and must never be picked up as a reusable work skill.
+    expect(body).toMatch(/built-in `run` skill/);
   });
 
   it('(3) skill-awareness reference doc documents the contract', () => {
@@ -60,7 +65,16 @@ describe('workspace skill awareness', () => {
     expect(body).toMatch(/assigned_skill/);
     expect(body).toMatch(/reuse[- ]before[- ]rebuild/i);
     // Recursion guard: never route back into cAgents' own skills.
-    expect(body).toMatch(/run.*team.*designer.*helper/);
+    expect(body).toMatch(/act.*team.*designer.*helper/);
+  });
+
+  it('(3b) skill-awareness doc excludes Claude Code\'s built-in `run` skill', () => {
+    // The `/run` -> `/act` rename means a built-in `run` skill now appears in
+    // every workspace listing. Discovery must name it as an explicit exclusion
+    // so the planner cannot mistake it for the old cAgents entry point.
+    const body = fs.readFileSync(SKILL_AWARENESS, 'utf8');
+    expect(body).toMatch(/built-in \*\*`run`\*\* skill/);
+    expect(body).toMatch(/[Nn]ever select `run` as a work item's `assigned_skill`/);
   });
 
   it('(4) planner consults available_skills.yaml and can assign a skill', () => {

@@ -95,11 +95,12 @@ describe('session-catchup.cjs', () => {
 
   // WI-5 (session run_improve-skills-hooks_260703_001): the hook injected
   // guidance referencing the REMOVED standalone /improve skill (folded into
-  // /run via the v12.1.2 keyword router: `/run improve|review|optimize X`)
-  // and pointed the product-context tip at the non-canonical
+  // the pipeline entry point via the v12.1.2 keyword router — then spelled
+  // `/run improve|review|optimize X`, now `/act ...` after the rename) and
+  // pointed the product-context tip at the non-canonical
   // .claude/context/product-context.yaml path instead of the documented
   // cagents-memory/_projects/{project_hash}/product_context.yaml location
-  // (see .claude/skills/run/SKILL.md § context passthrough removal).
+  // (see .claude/skills/act/SKILL.md § context passthrough removal).
   describe('WI-5: removed /improve references + canonical product-context path', () => {
     // The hook dedups on session_id (see session-catchup-v11.test.js) — use a
     // fresh session_id per invocation so the handler actually runs.
@@ -108,7 +109,7 @@ describe('session-catchup.cjs', () => {
     }
 
     // Matches the standalone /improve SKILL token only. Deliberately does NOT
-    // match the live v12.1.2 keyword-router syntax `/run improve <target>`,
+    // match the live keyword-router syntax `/act improve <target>`,
     // because there the token is a bare "improve" with no leading slash.
     const STANDALONE_IMPROVE_RE = /(?<![\w-])\/improve\b/;
 
@@ -119,20 +120,23 @@ describe('session-catchup.cjs', () => {
       expect(STANDALONE_IMPROVE_RE.test(ctx)).toBe(false);
     });
 
-    it('routes review/optimize work via the /run keyword router (v12.1.2)', () => {
+    it('routes review/optimize work via the /act keyword router (v12.1.2)', () => {
       const result = runHookFresh();
       const ctx = result?.hookSpecificOutput?.additionalContext || '';
-      // At least one keyword-router form must be advertised: /run review,
-      // /run optimize, or /run improve.
-      expect(ctx).toMatch(/\/run (review|optimize|improve)\b/);
+      // At least one keyword-router form must be advertised: /act review,
+      // /act optimize, or /act improve.
+      expect(ctx).toMatch(/\/act (review|optimize|improve)\b/);
     });
 
     it('names only live skills in the skill-invocation guidance', () => {
       const result = runHookFresh();
       const ctx = result?.hookSpecificOutput?.additionalContext || '';
-      for (const skill of ['/run', '/team', '/designer', '/helper']) {
+      for (const skill of ['/act', '/team', '/designer', '/helper']) {
         expect(ctx).toContain(skill);
       }
+      // The renamed-away /run entry point must not be advertised — it now
+      // names Claude Code's built-in app-launcher skill, not the pipeline.
+      expect(ctx).not.toMatch(/(?<![\w-])\/run(?![\w-])/);
     });
 
     it('product-context tip points at the canonical cagents-memory/_projects path', () => {

@@ -4,7 +4,7 @@
  * Covers scripts/ci/advisory/trigger-collision.cjs:
  *   - the pure classification helpers (classifyTrigger / classifyBaiting) fire
  *     on a crafted bad case for each of TR1 / TR2 / TR3,
- *   - the four real skills (run / team / designer / helper) owning their own
+ *   - the four real skills (act / team / designer / helper) owning their own
  *     names do NOT produce TR2 self-collisions,
  *   - run() against the live catalog never throws and returns an array,
  *   - scanRoot() over a temp fixture tree emits the expected findings and does
@@ -32,6 +32,8 @@ const {
   isOwnerRooted,
   scanRoot,
   run,
+  RESERVED_SKILLS,
+  RESERVED_BUILTINS,
 } = validator;
 
 describe('trigger-collision module shape', () => {
@@ -83,7 +85,7 @@ describe('TR1 — over-broad triggers', () => {
     expect(classifyTrigger('refactor', 'some-agent')).toEqual([]);
     // Specific verbs the real skills use must stay clean.
     for (const t of ['implement', 'fix', 'build', 'create', 'parallel', 'swarm', 'strategic']) {
-      expect(classifyTrigger(t, 'run').filter((h) => h.ruleId === 'trigger-tr1-overbroad')).toEqual([]);
+      expect(classifyTrigger(t, 'act').filter((h) => h.ruleId === 'trigger-tr1-overbroad')).toEqual([]);
     }
   });
 
@@ -102,14 +104,36 @@ describe('TR1 — over-broad triggers', () => {
 });
 
 describe('TR2 — shadow reserved names', () => {
+  it('classifies `run` as a reserved BUILT-IN and `act` as a reserved cAgents SKILL', () => {
+    // The `/run` -> `/act` rename: Claude Code shipped its own built-in `run`
+    // skill, so `run` is no longer a cAgents skill name — it moved from
+    // RESERVED_SKILLS to RESERVED_BUILTINS, and `act` took its place.
+    expect([...RESERVED_SKILLS].sort()).toEqual(['act', 'designer', 'helper', 'team']);
+    expect(RESERVED_BUILTINS.has('run')).toBe(true);
+    expect(RESERVED_SKILLS.has('run')).toBe(false);
+    expect(RESERVED_BUILTINS.has('act')).toBe(false);
+    // Both sets still shadow-guard, but the finding text names the right kind.
+    const asBuiltin = classifyTrigger('run', 'roadmap-runner').find(
+      (h) => h.ruleId === 'trigger-tr2-shadow',
+    );
+    expect(asBuiltin.reason).toMatch(/reserved built-in name "run"/);
+    const asSkill = classifyTrigger('act', 'roadmap-runner').find(
+      (h) => h.ruleId === 'trigger-tr2-shadow',
+    );
+    expect(asSkill.reason).toMatch(/reserved skill name "act"/);
+  });
+
   it('fires HIGH when a different owner claims a reserved skill name', () => {
-    const hits = classifyTrigger('run', 'roadmap-runner');
+    const hits = classifyTrigger('act', 'roadmap-runner');
     const tr2 = hits.find((h) => h.ruleId === 'trigger-tr2-shadow');
     expect(tr2).toBeTruthy();
     expect(tr2.severity).toBe('HIGH');
   });
 
-  it('fires HIGH when any owner claims a reserved built-in name (memory/init)', () => {
+  it('fires HIGH when any owner claims a reserved built-in name (run/memory/init)', () => {
+    expect(classifyTrigger('run', 'roadmap-runner').map((h) => h.ruleId)).toContain(
+      'trigger-tr2-shadow',
+    );
     expect(classifyTrigger('memory', 'notes-agent').map((h) => h.ruleId)).toContain(
       'trigger-tr2-shadow',
     );
@@ -119,7 +143,7 @@ describe('TR2 — shadow reserved names', () => {
   });
 
   it('does NOT fire when the owner IS the reserved name (self-ownership)', () => {
-    for (const name of ['run', 'team', 'designer', 'helper']) {
+    for (const name of ['act', 'team', 'designer', 'helper']) {
       const tr2 = classifyTrigger(name, name).filter((h) => h.ruleId === 'trigger-tr2-shadow');
       expect(tr2).toEqual([]);
     }
@@ -156,7 +180,7 @@ describe('run() over the live catalog', () => {
     const selfShadows = findings.filter(
       (f) =>
         f.ruleId === 'trigger-tr2-shadow' &&
-        /\.claude\/skills\/(run|team|designer|helper)\/SKILL\.md/.test(f.file),
+        /\.claude\/skills\/(act|team|designer|helper)\/SKILL\.md/.test(f.file),
     );
     expect(selfShadows).toEqual([]);
   });
@@ -188,9 +212,9 @@ describe('scanRoot() over a temp fixture tree', () => {
     };
 
     // A GOOD skill that owns its own name (must not self-collide on TR2).
-    writeSkill('run', 'Execute any task. TRIGGER: run, implement, fix, build, create. NOT for: parallel.');
-    // A BAD skill: shadows /run (TR2) and declares an ultra-generic trigger (TR1).
-    writeSkill('roadmap-runner', 'Roadmap runner. TRIGGER: run, roadmap, go. NOT for: nothing.');
+    writeSkill('act', 'Execute any task. TRIGGER: act, implement, fix, build, create. NOT for: parallel.');
+    // A BAD skill: shadows /act (TR2) and declares an ultra-generic trigger (TR1).
+    writeSkill('roadmap-runner', 'Roadmap runner. TRIGGER: act, roadmap, go. NOT for: nothing.');
     // A GOOD agent (no TRIGGER, clean description) — must yield 0 findings.
     writeAgent('developer/backend', 'backend-developer', 'Consolidated backend agent. Modes: api, database.');
     // A BAD agent: keyword-baiting description (TR3).
@@ -205,7 +229,7 @@ describe('scanRoot() over a temp fixture tree', () => {
     const findings = scanRoot(tmp);
     const by = (rule) => findings.filter((f) => f.ruleId === rule);
 
-    // TR2: exactly the roadmap-runner shadow of /run.
+    // TR2: exactly the roadmap-runner shadow of /act.
     const tr2 = by('trigger-tr2-shadow');
     expect(tr2.length).toBe(1);
     expect(tr2[0].file).toMatch(/roadmap-runner/);
@@ -221,8 +245,8 @@ describe('scanRoot() over a temp fixture tree', () => {
     expect(tr3.length).toBe(1);
     expect(tr3[0].file).toMatch(/shout-agent/);
 
-    // The good skill "run" and the clean backend-developer produce no findings.
-    expect(findings.some((f) => /skills\/run\/SKILL\.md/.test(f.file))).toBe(false);
+    // The good skill "act" and the clean backend-developer produce no findings.
+    expect(findings.some((f) => /skills\/act\/SKILL\.md/.test(f.file))).toBe(false);
     expect(findings.some((f) => /backend-developer/.test(f.file))).toBe(false);
   });
 
