@@ -8,7 +8,7 @@ paths:
   - "agents/core/reviewer/**"
   - "agents/core/wave-reviewer/**"
   - "agents/core/planner/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/subagent-stop-tracker.cjs"
   - ".claude/hooks/post-write-validator.cjs"

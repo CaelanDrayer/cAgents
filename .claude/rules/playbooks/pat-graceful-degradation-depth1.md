@@ -6,7 +6,7 @@ paths:
   - ".claude/rules/core/teams.md"
   - ".claude/rules/core/delegation.md"
   - "agents/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/verify-completion.cjs"
   - "cagents-memory/sessions/**/workflow/coordination_log.yaml"

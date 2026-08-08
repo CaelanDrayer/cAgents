@@ -5,7 +5,7 @@ paths:
   - ".claude/rules/quality/completion.md"
   - ".claude/rules/playbooks/pat-subagent-status-protocol.md"
   - "agents/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/verify-completion.cjs"
   - "cagents-memory/sessions/**/workflow/work_items.yaml"

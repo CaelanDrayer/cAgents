@@ -6,7 +6,7 @@ paths:
   - "agents/core/execution-monitor/**"
   - "agents/core/validator/**"
   - "agents/core/self-correct/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - "cagents-memory/_system/config/**"
 ---
 

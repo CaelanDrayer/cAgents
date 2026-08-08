@@ -5,7 +5,7 @@ paths:
   - "cagents-memory/_knowledge/**"
   - "cagents-memory/sessions/*/status.yaml"
   - "cagents-memory/sessions/*/waypoints/**"
-  - ".claude/skills/run/reference/session-schema.md"
+  - ".claude/skills/act/reference/session-schema.md"
   - ".claude/hooks/hook-utils.cjs"
   - ".claude/hooks/session-catchup.cjs"
   - ".claude/hooks/session-init-gate.cjs"

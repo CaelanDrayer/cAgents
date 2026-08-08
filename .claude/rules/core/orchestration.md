@@ -1,6 +1,6 @@
 ---
 paths:
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/skills/designer/**"
   - ".claude/skills/helper/**"

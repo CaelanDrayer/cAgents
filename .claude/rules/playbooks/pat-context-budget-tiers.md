@@ -4,7 +4,7 @@ paths:
   - ".claude/rules/core/controllers.md"
   - ".claude/rules/memory/agent-memory.md"
   - "agents/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/pre-compact-save.cjs"
   - ".claude/hooks/post-compact-restore.cjs"
