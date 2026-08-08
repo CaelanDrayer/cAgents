@@ -81,7 +81,7 @@ From `scan_patterns.yaml`:
 When CRITICAL (81-100 risk) optimizations are found:
 1. Generate optimization design document with full context
 2. Write to `cagents-memory/sessions/{session_id}/optimization_design.md`
-3. Trigger `/act`: `Skill({skill: "run", args: "implement optimization plan from {session_id}"})`
+3. Trigger `/act`: `Skill({skill: "act", args: "implement optimization plan from {session_id}"})`
 
 ## Quality Gates
 
