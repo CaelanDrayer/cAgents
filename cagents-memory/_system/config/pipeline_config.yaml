@@ -57,8 +57,8 @@ states:
 # REC-11 (P-5): the /act loop PERSISTS a `revision_cycles` counter to
 # status.yaml and increments it on each FAIL/REVISE route-back to PLANNED
 # (re-added in REC-11; removed in v12.6.0). `max_cycles` below is the SINGLE
-# revision cap — the /act loop (run/SKILL.md Step 3g), the /goal auto-anchor
-# (run/SKILL.md Step 2 ACTION 4), and the verify-completion.cjs Stop hook all
+# revision cap — the /act loop (act/SKILL.md Step 3g), the /goal auto-anchor
+# (act/SKILL.md Step 2 ACTION 4), and the verify-completion.cjs Stop hook all
 # reconcile to it. There is exactly one cap, not two (the pre-REC-11 hard-coded
 # /goal "8" contradicted this and was a defect).
 revision:
@@ -101,7 +101,7 @@ classification_mapping:
 # Signal file intervention (v10.6.0)
 # Pipeline checks for signal files before each state transition.
 # REC-17 (P-10): `enabled: true` is HONOURED — the /act state-machine loop
-# implements the before_transition signal check (run/SKILL.md Step 3e-signals),
+# implements the before_transition signal check (act/SKILL.md Step 3e-signals),
 # and the canonical protocol lives in
 # .claude/rules/core/orchestration-reference.md § Signal File Intervention
 # Protocol. This is no longer a config-`enabled` feature with zero
