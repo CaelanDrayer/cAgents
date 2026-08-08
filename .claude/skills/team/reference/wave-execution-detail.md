@@ -218,7 +218,7 @@ Agent({
 
 If PASS: Pipeline complete. Proceed to cleanup.
 If FAIL with partial results: Report partial completion summary (see `reference/partial-results.md`).
-If FAIL without partial results: Report issues with evidence. Suggest `/run --resume {SESSION_ID}`.
+If FAIL without partial results: Report issues with evidence. Suggest `/act --resume {SESSION_ID}`.
 
 ## Cross-Wave Coordination
 

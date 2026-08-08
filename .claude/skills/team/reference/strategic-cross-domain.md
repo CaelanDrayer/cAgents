@@ -2,11 +2,11 @@
 
 Supporting detail for the per-domain dispatch and cross-domain handoff mechanics of `/team` strategic mode. The canonical wave-by-wave flow lives in `@reference/strategic-mode.md` (Wave 3..N-1 per-domain dispatch, Wave N integration); this file covers the cross-domain handoff verification and the file-based communication model that those waves rely on.
 
-Strategic mode is **wave-based and parallel-within-wave**, not sequential per-domain re-invocation. Independent domains dispatch in parallel via the Agent tool; dependent domains dispatch sequentially via `Skill(run, "--brief ...")`. Dispatch grouping is driven by the `dependency_type` field in `strategic_brief.yaml` — see `@reference/strategic-mode.md` § Wave 3 .. Wave N-1 for the topological-sort logic.
+Strategic mode is **wave-based and parallel-within-wave**, not sequential per-domain re-invocation. Independent domains dispatch in parallel via the Agent tool; dependent domains dispatch sequentially via `Skill(act, "--brief ...")`. Dispatch grouping is driven by the `dependency_type` field in `strategic_brief.yaml` — see `@reference/strategic-mode.md` § Wave 3 .. Wave N-1 for the topological-sort logic.
 
 ## Per-Domain Session Subdirectories
 
-Before per-domain dispatch begins, the strategic-mode lead pre-creates a session subdirectory per assigned domain so each domain controller (and any `Skill(run)` fork) has somewhere to write:
+Before per-domain dispatch begins, the strategic-mode lead pre-creates a session subdirectory per assigned domain so each domain controller (and any `Skill(act)` fork) has somewhere to write:
 
 ```bash
 for domain in {domain_keys}:
@@ -18,20 +18,20 @@ for domain in {domain_keys}:
 
 ## Dispatch Visibility for Skill-Tool Forks
 
-Independent domains dispatched via the **Agent tool** are visible to `SubagentStart` hooks automatically. Dependent domains dispatched via the **Skill tool** (`Skill(run, ...)`) are forks, not Task subagents, so they are invisible to those hooks. Before each `Skill(run)` dispatch, write a manual `agent_tree.yaml` entry so the fork appears in the agent hierarchy:
+Independent domains dispatched via the **Agent tool** are visible to `SubagentStart` hooks automatically. Dependent domains dispatched via the **Skill tool** (`Skill(act, ...)`) are forks, not Task subagents, so they are invisible to those hooks. Before each `Skill(act)` dispatch, write a manual `agent_tree.yaml` entry so the fork appears in the agent hierarchy:
 
 ```yaml
-# Append to ${SESSION_DIR}/workflow/agent_tree.yaml before each Skill(run) dispatch:
+# Append to ${SESSION_DIR}/workflow/agent_tree.yaml before each Skill(act) dispatch:
 - id: "skill-fork-{domain_key}-{ISO_TIMESTAMP_COMPACT}"
   type: "skill-fork"
-  cagents_type: "cagents:run"
+  cagents_type: "cagents:act"
   short_role: "Domain dispatch ({domain_key})"
   parent: "team-strategic-lead"
   depth: 1
   spawned_at: "{ISO_TIMESTAMP}"
   stopped_at: null
   domain_session: "{SESSION_ID}/{domain_key}"
-  role_description: "Dependent-domain /run dispatch for {domain_key}"
+  role_description: "Dependent-domain /act dispatch for {domain_key}"
   session: "{SESSION_ID}"
 ```
 
@@ -52,7 +52,7 @@ Cross-domain integration (merging overlapping outputs, verifying all contracts f
 
 - **Lead ↔ C-suite**: File-based. C-suite agents write `domain_analyses/*.yaml` and `objections/*.yaml`; the lead reads them and decides. No direct messaging.
 - **C-suite peer reads**: C-suite agents READ peer domain analyses via file-based inline passes (`domain_analyses/*.yaml`). Wave 0b agents read Wave 0a outputs during analysis; ALL agents read ALL peer analyses during the Wave 1 objection phase. Reads only — never direct peer-to-peer messaging.
-- **Lead ↔ domain dispatch**: Independent domains via Agent tool (parallel); dependent domains via `Skill(run, "--brief ...")` (sequential). Status flows back through `domain_status.{domain_key}` in `strategic_brief.yaml`.
+- **Lead ↔ domain dispatch**: Independent domains via Agent tool (parallel); dependent domains via `Skill(act, "--brief ...")` (sequential). Status flows back through `domain_status.{domain_key}` in `strategic_brief.yaml`.
 - **Cross-domain**: Shared session directory. Dependencies expressed via `strategic_brief.yaml` `cross_domain_dependencies`.
 - **Escalation**: A domain writes its escalation into `domain_status.{domain_key}.escalations`; the lead reads it, resolves at the strategic level, or escalates to the user as a HITL gate per `@reference/strategic-escalation.md`.
 

@@ -24,7 +24,7 @@ Strategic mode is a wave pipeline with two distinct phases:
 | Phase | Wave Range | Owner | Purpose |
 |-------|-----------|-------|---------|
 | **Strategic prefix** | Wave 0, Wave 1, Wave 2 | Strategic-mode lead | Cross-domain C-suite analysis, objection deliberation, brief synthesis |
-| **Per-domain dispatch** | Wave 3 .. Wave N-1 | Per-domain controllers | Execute work items per domain. Independent domains in parallel via Agent; dependent domains sequential via Skill(/run --brief). |
+| **Per-domain dispatch** | Wave 3 .. Wave N-1 | Per-domain controllers | Execute work items per domain. Independent domains in parallel via Agent; dependent domains sequential via Skill(/act --brief). |
 | **Integration** | Wave N | Strategic-mode lead | Merge cross-domain outputs, run final validation, write integration_report.yaml |
 
 Compared to standard `/team` mode, the strategic prefix replaces what was previously the "bootstrap" wave with a richer cross-domain analysis cycle. Per-domain dispatch waves are similar to standard /team but driven by `domain_assignments` in the strategic brief rather than a template.
@@ -109,11 +109,11 @@ This is the cross-domain context pass — each agent objects with full visibilit
    - **Dependent domains** (`dependency_type: dependent_on`) dispatch **sequentially via Skill tool**:
      ```
      Skill({
-       skill: "run",
+       skill: "act",
        args: "{instruction_summary_for_domain} --brief {SESSION_DIR}/strategic_brief.yaml --domain {domain_key}"
      })
      ```
-     The Skill invocation receives the full brief plus a `--domain` selector so `/run` can scope to the dependent domain's work items. Upstream domain outputs are available in the session directory for `/run` to read.
+     The Skill invocation receives the full brief plus a `--domain` selector so `/act` can scope to the dependent domain's work items. Upstream domain outputs are available in the session directory for `/act` to read.
 
 4. **Track completion** per domain via `domain_status.{domain_key}.status` in `strategic_brief.yaml` (pending -> in_progress -> completed | blocked).
 
@@ -162,7 +162,7 @@ The strategic-mode lead can short-circuit the full wave flow when the analyzed s
 After Wave 0 analysis (or via --quick), if domains_touched == 1:
 
   1 domain + simple scope:
-    -> Strategic brief + Skill("run", "--brief {brief_path}")
+    -> Strategic brief + Skill("act", "--brief {brief_path}")
     -> Collapse pipeline to: INIT -> BRIEFED -> EXECUTED -> COMPLETE
 
   1 domain + complex scope:

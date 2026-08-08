@@ -28,13 +28,13 @@ When a domain reports an escalation during the per-domain execution waves:
 
 ### Routing Shortcuts
 
-#### Single-Domain Simple (-> /run)
+#### Single-Domain Simple (-> /act)
 
 For instructions touching only one domain with simple scope:
 
 1. Strategic-mode lead still generates `strategic_brief.yaml` (adds mission, success criteria)
-2. Invoke: `Skill({ skill: "run", args: "{instruction} --brief {brief_path}" })`
-3. /run reads brief for richer context
+2. Invoke: `Skill({ skill: "act", args: "{instruction} --brief {brief_path}" })`
+3. /act reads brief for richer context
 4. Skip states: ANALYZED, DELIBERATED (brief generated inline)
 
 #### Single-Domain Complex (-> /team standard mode)

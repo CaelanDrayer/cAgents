@@ -9,15 +9,15 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/review <target>` | `/improve --mode review <target>` (or `/improve <target>`; `review` is the default mode) |
 | `/optimize <target>` | `/improve --mode optimize <target>` |
 | `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
-| `/context init\|show\|update\|clear` | `/run context init\|show\|update\|clear` |
-| `/debug <bug>` | `/run --mode debug <bug>` |
+| `/context init\|show\|update\|clear` | `/act context init\|show\|update\|clear` |
+| `/debug <bug>` | `/act --mode debug <bug>` |
 
-## Passthroughs (handled inside /run)
+## Passthroughs (handled inside /act)
 
 | Form | Replaces | Landed in |
 |------|----------|-----------|
-| `/run context show\|init\|update\|clear` | `/context` | V10.26.9 |
-| `/run --mode debug` | `/debug` | V10.26.11 |
+| `/act context show\|init\|update\|clear` | `/context` | V10.26.9 |
+| `/act --mode debug` | `/debug` | V10.26.11 |
 
 ## Dynamic SKILL.md Reading
 
@@ -27,9 +27,9 @@ When answering questions about specific skills, **Read the actual SKILL.md file 
 
 | Skill | SKILL.md Path |
 |-------|---------------|
-| /run | `.claude/skills/run/SKILL.md` |
+| /act | `.claude/skills/act/SKILL.md` |
 | /designer | `.claude/skills/designer/SKILL.md` |
-| /improve | folded into `/run` via keyword router (v12.1.2; no separate SKILL.md) |
+| /improve | folded into `/act` via keyword router (v12.1.2; no separate SKILL.md) |
 | /team | `.claude/skills/team/SKILL.md` (includes strategic mode for cross-domain work in v12.2.0+) |
 | /org | REMOVED in v12.2.0 (absorbed into /team strategic mode; no SKILL.md) |
 | /helper | `.claude/skills/helper/SKILL.md` |

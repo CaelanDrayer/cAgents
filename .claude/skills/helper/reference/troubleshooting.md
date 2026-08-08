@@ -2,22 +2,22 @@
 
 Common issues and diagnostic flows for each command. Used by `/helper --troubleshoot <command>`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their troubleshooting now lives under `/run` (keyword router for review/audit/optimize/improve modes, plus `--mode debug` and `run context` passthroughs)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their troubleshooting now lives under `/act` (keyword router for review/audit/optimize/improve modes, plus `--mode debug` and `run context` passthroughs)._
 
-## /run Troubleshooting
+## /act Troubleshooting
 
 ### 1. Wrong domain detected
-- **Symptom**: /run routes to engineering when you wanted marketing
+- **Symptom**: /act routes to engineering when you wanted marketing
 - **Likely cause**: Request keywords overlap across domains (e.g., "improve" matches engineering and grow)
 - **Check**: Look at the TodoWrite output for domain classification
-- **Fix**: Re-run with `--domain` flag: `/run Plan campaign --domain grow`
+- **Fix**: Re-run with `--domain` flag: `/act Plan campaign --domain grow`
 - **Prevention**: Use domain-specific keywords (campaign, marketing, SEO for grow)
 
 ### 2. Stuck in coordinating phase
-- **Symptom**: /run appears to hang after planning, no progress updates
+- **Symptom**: /act appears to hang after planning, no progress updates
 - **Likely cause**: Controller waiting for execution agent response, or agent context exhaustion
 - **Check**: Look at `cagents-memory/sessions/{id}/workflow/coordination_log.yaml`
-- **Fix**: Use `--resume` to restart from last checkpoint: `/run --resume run_20260207_143022`
+- **Fix**: Use `--resume` to restart from last checkpoint: `/act --resume act_20260207_143022`
 - **Prevention**: Use `--stream` for real-time progress updates
 
 ### 3. No controller selected
@@ -30,7 +30,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Symptom**: Pipeline cycles between COORDINATED and PROMPTS_READY or PLANNED repeatedly
 - **Likely cause**: Acceptance criteria too strict, or implementation approach fundamentally wrong
 - **Check**: Read `cagents-memory/sessions/{id}/validation/validation_report.yaml` for specific failures
-- **Fix**: After 5 cycles, /run escalates to user. Check what criteria are failing and adjust the request
+- **Fix**: After 5 cycles, /act escalates to user. Check what criteria are failing and adjust the request
 
 ### 5. Agent not found error
 - **Symptom**: "Agent cagents:{name} not found" or similar
@@ -39,17 +39,17 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Fix**: Check agent naming matches the reference in planner_config.yaml
 
 ### 6. Debug mode keeps cycling through hypotheses without resolution
-- **Symptom**: `/run --mode debug` runs 5+ hypotheses, none confirmed, no root cause found
+- **Symptom**: `/act --mode debug` runs 5+ hypotheses, none confirmed, no root cause found
 - **Likely cause**: Bug is in a dependency, external service, or requires architecture knowledge not accessible
 - **Check**: Review the list of falsified hypotheses in the session findings file
-- **Fix**: Use `--escalate` to generate an escalation report: `/run --mode debug --escalate "..."`. Then seek domain expert review.
+- **Fix**: Use `--escalate` to generate an escalation report: `/act --mode debug --escalate "..."`. Then seek domain expert review.
 - **Prevention**: Use `--escalate` from the start if the bug has already resisted 3+ attempts
 
-### 7. `/run context` not picked up by subsequent /run
-- **Symptom**: /run still makes wrong assumptions about project structure despite `/run context init`
+### 7. `/act context` not picked up by subsequent /act
+- **Symptom**: /act still makes wrong assumptions about project structure despite `/act context init`
 - **Likely cause**: Context file not found at expected path, or project hash mismatch
-- **Check**: Run `/run context show` to verify context exists and has the correct project_root
-- **Fix**: Run `/run context init` again from the project root directory; if frameworks/dependencies have changed, run `/run context update`
+- **Check**: Run `/act context show` to verify context exists and has the correct project_root
+- **Fix**: Run `/act context init` again from the project root directory; if frameworks/dependencies have changed, run `/act context update`
 
 ---
 
@@ -75,14 +75,14 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 
 ---
 
-## /run review|optimize|audit|improve Troubleshooting (Keyword Router Modes)
+## /act review|optimize|audit|improve Troubleshooting (Keyword Router Modes)
 
-`/run`'s keyword router covers both review and optimize work via the first-token modes `review` / `audit` (review mode), `optimize` (optimize mode), `improve` (full mode). The defaults below cover both modes; mode-specific items are tagged.
+`/act`'s keyword router covers both review and optimize work via the first-token modes `review` / `audit` (review mode), `optimize` (optimize mode), `improve` (full mode). The defaults below cover both modes; mode-specific items are tagged.
 
 ### 1. Review finding everything but the issue (review mode)
 - **Symptom**: Lots of findings but none related to the actual problem
 - **Likely cause**: Review scope too broad or wrong focus area
-- **Fix**: Use `--focus security|performance|quality` to narrow: `/run review --focus security`
+- **Fix**: Use `--focus security|performance|quality` to narrow: `/act review --focus security`
 - **Prevention**: Use `--scope changed` to review only modified files
 
 ### 2. Auto-fix broke something (review mode)
@@ -95,7 +95,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 3. Framework not detected (review mode)
 - **Symptom**: Review misses framework-specific patterns (e.g., Next.js SSR issues)
 - **Likely cause**: Framework detection failed to identify the project type
-- **Fix**: Force framework: `/run review --framework nextjs`
+- **Fix**: Force framework: `/act review --framework nextjs`
 - **Check**: Verify package.json or framework config files exist in the review target
 
 ### 4. Quality gate blocking incorrectly (review mode)
@@ -107,7 +107,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Symptom**: Detection phase finds zero opportunities
 - **Likely cause**: Target path is wrong, or optimization type does not match the content
 - **Check**: Verify target path exists and contains files of the expected type
-- **Fix**: Specify type explicitly: `/run optimize src/ --type code`
+- **Fix**: Specify type explicitly: `/act optimize src/ --type code`
 
 ### 6. Optimization made things worse (optimize mode)
 - **Symptom**: Metrics regressed after optimization
@@ -116,15 +116,15 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Fix**: Rollback should be automatic if `--rollback automatic` was set. Otherwise, `git restore`
 - **Prevention**: Use `--dry-run` first, then `--safety safe` for low-risk changes only
 
-### 7. `/run improve` rejects the run
-- **Symptom**: `/run improve` reports "scope is required" when --scope is mandatory per the controller contract
+### 7. `/act improve` rejects the run
+- **Symptom**: `/act improve` reports "scope is required" when --scope is mandatory per the controller contract
 - **Likely cause**: The full mode requires a scope (either positional path or explicit `--scope`) so review and optimize share the same baseline
-- **Fix**: Pass the path as positional: `/run improve src/` (the keyword router treats the request as the scope), or use the explicit flag: `/run improve --scope src/`
+- **Fix**: Pass the path as positional: `/act improve src/` (the keyword router treats the request as the scope), or use the explicit flag: `/act improve --scope src/`
 
 ### 8. Baseline mismatch between runs
 - **Symptom**: Suppressions from a prior run no longer apply
 - **Likely cause**: Baseline ID changed because the scope or framework changed between runs
-- **Fix**: Re-baseline with `/run review --baseline <new-id>` and re-suppress with `--suppress <id>`
+- **Fix**: Re-baseline with `/act review --baseline <new-id>` and re-suppress with `--suppress <id>`
 
 ---
 
@@ -136,7 +136,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Check**: Verify `.claude/settings.json` env section has the variable
 - **Fix**: Add `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"` to settings.json env
 
-### 2. /team falls back to /run
+### 2. /team falls back to /act
 - **Symptom**: Task runs sequentially instead of in parallel
 - **Likely cause**: Fewer than 3 independent work items, or all items are sequential
 - **Check**: This is expected behavior -- /team requires 3+ parallelizable work items
@@ -190,5 +190,5 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 1. Outdated information
 - **Symptom**: /helper shows flags or features that do not exist or are missing new ones
 - **Likely cause**: Reference files in /helper are out of sync with actual SKILL.md files
-- **Check**: Compare `/helper --flags run` output against `.claude/skills/run/SKILL.md`
+- **Check**: Compare `/helper --flags act` output against `.claude/skills/act/SKILL.md`
 - **Fix**: Reference files need to be updated to match current skill definitions

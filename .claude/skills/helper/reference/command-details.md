@@ -2,13 +2,13 @@
 
 Detailed help content for each command when the user runs `/helper <command>`.
 
-## /run - Universal Workflow Engine
+## /act - Universal Workflow Engine
 
 ### What It Does
 
-`/run` is the general-purpose command that handles ANY task in ANY domain. You give it a natural language request, and it automatically detects the domain (engineering, creative, marketing, finance, HR, support), classifies the complexity, creates a plan with objectives, coordinates specialist agents through a controller, and validates the results. Every request goes through a full orchestration pipeline: routing, planning, coordinating, executing, and validating.
+`/act` is the general-purpose command that handles ANY task in ANY domain. You give it a natural language request, and it automatically detects the domain (engineering, creative, marketing, finance, HR, support), classifies the complexity, creates a plan with objectives, coordinates specialist agents through a controller, and validates the results. Every request goes through a full orchestration pipeline: routing, planning, coordinating, executing, and validating.
 
-### When to Use /run
+### When to Use /act
 
 - **Fix something**: "Fix the authentication bug", "Fix the broken CSS on the homepage"
 - **Build something**: "Add OAuth2 login", "Implement the payment gateway"
@@ -18,17 +18,17 @@ Detailed help content for each command when the user runs `/helper <command>`.
 - **Refactor something**: "Refactor the auth module", "Migrate from REST to GraphQL"
 - **Any domain**: Engineering, creative writing, marketing, finance, HR, legal -- it routes automatically
 
-### When NOT to Use /run
+### When NOT to Use /act
 
 - **You want to PLAN first**: Use `/designer` to think through the design before building
-- **You want to CHECK existing work**: Use `/run review <target>` (or `/run audit`) for quality analysis
-- **You want to IMPROVE metrics**: Use `/run optimize <target>` for measurable improvements
-- **You have a LARGE task with parallel parts**: Use `/team` (or `/run --team`)
+- **You want to CHECK existing work**: Use `/act review <target>` (or `/act audit`) for quality analysis
+- **You want to IMPROVE metrics**: Use `/act optimize <target>` for measurable improvements
+- **You have a LARGE task with parallel parts**: Use `/team` (or `/act --team`)
 
 ### How It Works (Simplified)
 
 ```
-You: /run Fix auth bug
+You: /act Fix auth bug
   |
   v
 [Trigger] Detects domain: Engineering, Intent: bug_fix, Tier: 2
@@ -56,43 +56,43 @@ Result: Bug fixed, tests passing, outputs saved
 
 | Flag | What It Does | Example |
 |------|-------------|---------|
-| `--interactive` | Ask your preferences before starting | `/run Fix bug --interactive` |
-| `--dry-run` | Show the plan without executing | `/run Add feature --dry-run` |
-| `--quiet` / `-q` | Skip plan display, go straight to work | `/run Fix bug --quiet` |
-| `--team` | Run in parallel team mode | `/run Build dashboard --team` |
-| `--domain <name>` | Force a specific domain | `/run Analyze --domain engineering` |
-| `--tier <N>` | Force complexity tier (2-4) | `/run Migrate database --tier 4` |
-| `--template <name>` | Use a workflow template | `/run Budget --template budget_creation` |
-| `--stream` | Real-time progress updates | `/run Deploy app --stream` |
-| `--resume <id>` | Resume an interrupted session | `/run --resume run_20260207_143022` |
+| `--interactive` | Ask your preferences before starting | `/act Fix bug --interactive` |
+| `--dry-run` | Show the plan without executing | `/act Add feature --dry-run` |
+| `--quiet` / `-q` | Skip plan display, go straight to work | `/act Fix bug --quiet` |
+| `--team` | Run in parallel team mode | `/act Build dashboard --team` |
+| `--domain <name>` | Force a specific domain | `/act Analyze --domain engineering` |
+| `--tier <N>` | Force complexity tier (2-4) | `/act Migrate database --tier 4` |
+| `--template <name>` | Use a workflow template | `/act Budget --template budget_creation` |
+| `--stream` | Real-time progress updates | `/act Deploy app --stream` |
+| `--resume <id>` | Resume an interrupted session | `/act --resume act_20260207_143022` |
 
 ### Real Examples
 
 ```bash
 # Simple bug fix
-/run Fix the login timeout error
+/act Fix the login timeout error
 
 # Feature addition
-/run Add user profile page with avatar upload
+/act Add user profile page with avatar upload
 
 # Creative writing
-/run Write a 3-chapter mystery story set in Victorian London
+/act Write a 3-chapter mystery story set in Victorian London
 
 # Business task
-/run Create Q4 marketing campaign plan for product launch
+/act Create Q4 marketing campaign plan for product launch
 
 # With flags
-/run Implement OAuth2 with Google and GitHub providers --interactive
-/run Refactor the authentication module --dry-run
-/run Build user dashboard --team
+/act Implement OAuth2 with Google and GitHub providers --interactive
+/act Refactor the authentication module --dry-run
+/act Build user dashboard --team
 ```
 
 ### Integration
 
-- **After /designer**: `/designer` creates a design document, then triggers `/run` to build it
-- **After /run review**: If the review finds critical issues, follow up with `/run` to fix them
-- **After /run optimize**: If the optimizer finds CRITICAL opportunities, follow up with `/run` to implement them
-- **With /team**: `/run --team` activates parallel team execution
+- **After /designer**: `/designer` creates a design document, then triggers `/act` to build it
+- **After /act review**: If the review finds critical issues, follow up with `/act` to fix them
+- **After /act optimize**: If the optimizer finds CRITICAL opportunities, follow up with `/act` to implement them
+- **With /team**: `/act --team` activates parallel team execution
 
 ### Tips
 
@@ -108,7 +108,7 @@ Result: Bug fixed, tests passing, outputs saved
 
 ### What It Does
 
-`/designer` is a structured 4-phase design tool that helps you think through a problem before building. It guides you through Discovery (understanding the problem), Ideation (exploring solutions), Refinement (detailing the design), and Specification (generating artifacts). It asks one question at a time, searches your codebase for context, recommends proven design patterns, generates mermaid diagrams, and produces implementation-ready documents. When done, it offers to build via `/run` or `/team`.
+`/designer` is a structured 4-phase design tool that helps you think through a problem before building. It guides you through Discovery (understanding the problem), Ideation (exploring solutions), Refinement (detailing the design), and Specification (generating artifacts). It asks one question at a time, searches your codebase for context, recommends proven design patterns, generates mermaid diagrams, and produces implementation-ready documents. When done, it offers to build via `/act` or `/team`.
 
 ### When to Use /designer
 
@@ -121,9 +121,9 @@ Result: Bug fixed, tests passing, outputs saved
 
 ### When NOT to Use /designer
 
-- **You already know what to build**: Go straight to `/run`
+- **You already know what to build**: Go straight to `/act`
 - **Quick fixes**: Bug fixes and small changes don't need design sessions
-- **You want quality checks**: Use `/run review <target>` instead
+- **You want quality checks**: Use `/act review <target>` instead
 - **Time-sensitive**: Design sessions take 15-45 minutes
 
 ### How It Works (Simplified)
@@ -147,7 +147,7 @@ Phase 3: Refinement (35% of session)
 Phase 4: Specification (25% of session)
   -> Generates user stories, tech specs, diagrams, checklists
   -> Validates completeness, consistency, feasibility, quality
-  -> Offers: "Build it now (/run)" or "Build with team (/team)"
+  -> Offers: "Build it now (/act)" or "Build with team (/team)"
 ```
 
 ### Key Flags
@@ -180,7 +180,7 @@ Phase 4: Specification (25% of session)
 
 ### Integration
 
-- **Flows into /run**: After design, select "Build it now" to auto-trigger `/run`
+- **Flows into /act**: After design, select "Build it now" to auto-trigger `/act`
 - **Flows into /team**: After design, select "Build with team" to auto-trigger `/team`
 - **Standalone**: Save the design document without building
 
@@ -205,8 +205,8 @@ for migration details.
 |-----------------|-------------|------------------------|------------|
 | `/review`     | `/improve --mode review`  | V10.26.26 | V11.0.0 |
 | `/optimize`   | `/improve --mode optimize`| V10.26.32 | V11.0.0 |
-| `/debug`      | `/run --mode debug`       | V10.26.18 | V11.0.0 |
-| `/context`    | `/run context show|init|update|clear` | V10.26.9 (passthrough) | V11.0.0 |
+| `/debug`      | `/act --mode debug`       | V10.26.18 | V11.0.0 |
+| `/context`    | `/act context show|init|update|clear` | V10.26.9 (passthrough) | V11.0.0 |
 
 Additionally, V10.26.33 introduced `/improve --mode full` — a unified
 review → optimize pipeline with a shared baseline and synthesized
@@ -218,7 +218,7 @@ review → optimize pipeline with a shared baseline and synthesized
 
 ### What It Does
 
-`/team` decomposes a large task into parallelizable work items and runs them simultaneously as concurrent-Agent waves. Each subagent is a separate Claude Code instance that executes its work item via `/run` (full orchestration per item). With tmux split panes (experimental named-teammate path only), all subagents are visible at once. It provides shared task lists and inter-agent messaging for coordination.
+`/team` decomposes a large task into parallelizable work items and runs them simultaneously as concurrent-Agent waves. Each subagent is a separate Claude Code instance that executes its work item via `/act` (full orchestration per item). With tmux split panes (experimental named-teammate path only), all subagents are visible at once. It provides shared task lists and inter-agent messaging for coordination.
 
 ### When to Use /team
 
@@ -229,10 +229,10 @@ review → optimize pipeline with a shared baseline and synthesized
 
 ### When NOT to Use /team
 
-- **Simple tasks**: Single work item -- use `/run` instead
+- **Simple tasks**: Single work item -- use `/act` instead
 - **Sequential dependencies**: If everything depends on the previous step, parallelism won't help
-- **Tier 2 tasks**: Simple bug fixes and questions -- use `/run`
-- **Quality over speed**: If you want maximum attention per item, `/run` gives sequential focus
+- **Tier 2 tasks**: Simple bug fixes and questions -- use `/act`
+- **Quality over speed**: If you want maximum attention per item, `/act` gives sequential focus
 
 ### How It Works (Simplified)
 
@@ -252,10 +252,10 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
   v
 [Parallel Execution in tmux split panes -- experimental named-teammate path]
   Pane 0: Team Lead (coordinates, monitors)
-  Pane 1: Teammate -> /run "Implement Google OAuth"     -> Complete
-  Pane 2: Teammate -> /run "Implement GitHub OAuth"     -> Complete
-  Pane 3: Teammate -> /run "Implement email login"      -> Complete
-  Pane 4: Teammate -> /run "Create auth middleware"      -> (waits for 1-3, then runs)
+  Pane 1: Teammate -> /act "Implement Google OAuth"     -> Complete
+  Pane 2: Teammate -> /act "Implement GitHub OAuth"     -> Complete
+  Pane 3: Teammate -> /act "Implement email login"      -> Complete
+  Pane 4: Teammate -> /act "Create auth middleware"      -> (waits for 1-3, then runs)
   |
   v
 [Aggregation] Combine all results into final output
@@ -292,16 +292,16 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 # Force tmux split pane display
 /team Implement search feature --teammate-mode tmux
 
-# Via /run with --team flag (equivalent)
-/run Build user dashboard --team
+# Via /act with --team flag (equivalent)
+/act Build user dashboard --team
 ```
 
 ### Integration
 
 - **After /designer**: Design a feature, then build with team for speed
-- **Uses /run internally**: Every subagent runs `/run` for full orchestration per item
-- **Alternative to /run**: For parallelizable tasks, `/team` replaces `/run`
-- **Shortcut**: `/run --team` is equivalent to `/team`
+- **Uses /act internally**: Every subagent runs `/act` for full orchestration per item
+- **Alternative to /act**: For parallelizable tasks, `/team` replaces `/act`
+- **Shortcut**: `/act --team` is equivalent to `/team`
 
 ### Tips
 
@@ -309,7 +309,7 @@ You: /team Implement OAuth2 with Google, GitHub, and email login
 2. **3+ work items minimum**: Tasks with fewer than 3 items may not benefit from team mode
 3. **Independent work is key**: The more independent the items, the better the parallelism
 4. **tmux gives best visibility**: Use `--teammate-mode tmux` for visual split pane display
-5. **Each item gets full /run quality**: No shortcuts -- every work item goes through full orchestration
+5. **Each item gets full /act quality**: No shortcuts -- every work item goes through full orchestration
 
 ---
 
@@ -370,10 +370,10 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 
 ```
 /helper                     -> Full overview of all 9 commands
-/helper run                 -> Deep dive into /run
-/helper how do I fix a bug  -> "Use /run. Here's how..."
+/helper act                 -> Deep dive into /act
+/helper how do I fix a bug  -> "Use /act. Here's how..."
 /helper --compare           -> Side-by-side comparison table
-/helper --flags review      -> All `/run review` flags (review-mode keyword router) with examples
+/helper --flags review      -> All `/act review` flags (review-mode keyword router) with examples
 /helper --quick             -> One-screen reference card
 /helper --topic domains     -> Deep dive into the 9 archetypes
 ```
@@ -383,7 +383,7 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 | Flag | What It Does | Example |
 |------|-------------|---------|
 | `--compare` | Side-by-side comparison of all commands | `/helper --compare` |
-| `--flags <command>` | Complete flag reference for a command | `/helper --flags run` |
+| `--flags <command>` | Complete flag reference for a command | `/helper --flags act` |
 | `--examples` | Real-world usage examples by domain | `/helper --examples` |
 | `--quick` | One-screen quick reference card | `/helper --quick` |
 | `--topic <topic>` | Deep dive into a topic | `/helper --topic domains` |
@@ -395,7 +395,7 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 /helper
 
 # Learn about a specific command
-/helper run
+/helper act
 /helper designer
 /helper review
 
@@ -418,19 +418,19 @@ Same situations that previously called for `/org`: multi-domain initiatives, pro
 
 1. **Start with `/helper --quick`**: Get oriented fast with the one-screen reference
 2. **Use natural language**: Ask questions like "how do I..." and get targeted recommendations
-3. **Check flags before running**: `/helper --flags run` shows every flag with examples
+3. **Check flags before running**: `/helper --flags act` shows every flag with examples
 4. **Compare when unsure**: `/helper --compare` shows exactly when each command is best
 5. **Explore topics**: Use `--topic` for deep dives into domains, tiers, agents, teams, etc.
 
 ---
 
-## review / optimize / audit / improve — Keyword Router on /run (canonical as of v12.1.2)
+## review / optimize / audit / improve — Keyword Router on /act (canonical as of v12.1.2)
 
 ### What It Does
 
-In v12.1.2, the standalone `/improve` skill was folded into `/run` via a
-first-token keyword router. When `/run`'s first request token is one of
-`improve`, `review`, `audit`, or `optimize`, `/run` strips the keyword,
+In v12.1.2, the standalone `/improve` skill was folded into `/act` via a
+first-token keyword router. When `/act`'s first request token is one of
+`improve`, `review`, `audit`, or `optimize`, `/act` strips the keyword,
 sets an internal `mode`, and proceeds through the standard 5-state
 pipeline. The same controller-based quality engine that V11.0 `/improve`
 shipped — review, optimize, full — is preserved; only the invocation
@@ -438,13 +438,13 @@ surface changed.
 
 ### When to Use the Keyword Router
 
-- **Audit code, docs, content, infrastructure**: `/run review <target>` or
-  `/run audit <target>` (alias). The default review pipeline is the same
+- **Audit code, docs, content, infrastructure**: `/act review <target>` or
+  `/act audit <target>` (alias). The default review pipeline is the same
   3-group parallel specialist review V11 used.
-- **Measure then optimize**: `/run optimize <target>` for performance,
+- **Measure then optimize**: `/act optimize <target>` for performance,
   size, or efficiency improvements with before/after metric deltas and
   atomic rollback.
-- **Both with a single shared baseline**: `/run improve <target>` for
+- **Both with a single shared baseline**: `/act improve <target>` for
   review → optimize synthesis with a unified `improve_report.md`.
 
 ### Keyword Router Contract
@@ -478,7 +478,7 @@ unchanged (they bind to the inferred mode after the keyword is stripped).
 
 - Explicit `--mode standard` flag bypasses the keyword router — first
   token is treated as part of the request.
-- Keyword must be the **first** token. `/run check the audit logs` does
+- Keyword must be the **first** token. `/act check the audit logs` does
   NOT trigger improve-mode (first word is `check`).
 
 ### History
@@ -486,11 +486,11 @@ unchanged (they bind to the inferred mode after the keyword is stripped).
 - V10.26.19–26: Cluster 4 landed `--mode review` on the standalone `/improve` skill and the `/review` shim
 - V10.26.27–35: Cluster 5 landed `--mode optimize`, `--mode full`, the `/optimize` shim, and uniform deprecation warnings
 - V11.0.0: Removed `/review`, `/optimize`, `/context`, `/debug` skills; `/improve` was the canonical V11 entry point
-- v12.1.2: `/improve` folded into `/run` via the first-token keyword router; the keyword router is now the canonical entry point
+- v12.1.2: `/improve` folded into `/act` via the first-token keyword router; the keyword router is now the canonical entry point
 
 ### Canonical Reference
 
-`@.claude/skills/run/reference/improve-mode.md` — full router contract,
+`@.claude/skills/act/reference/improve-mode.md` — full router contract,
 override rules, stripping examples, mode-specific controller behavior.
 
 ---

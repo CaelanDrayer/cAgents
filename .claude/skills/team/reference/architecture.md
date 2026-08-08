@@ -13,7 +13,7 @@
     |   Wave 1..N-1 (parallel per wave): main work -- subagents execute per-wave
     |   Wave N (integration): merge + validate -- lead executes via controller delegation
     |   Each wave has a GATE sentinel for quality validation
-    |   If < 3 items or no parallel work: fall back to /run
+    |   If < 3 items or no parallel work: fall back to /act
     |
     Step 3: (no TeamCreate) -- teams are implicit since CC v2.1.178; nothing to create
     |
@@ -32,7 +32,7 @@
     |   6a. Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
     |       run_in_background: false (synchronous -- lead collects all wave results together)
     |       Each wave subagent IS a controller agent that spawns execution agents
-    |       DIRECTLY via the Agent tool (NOT via /run -- see below)
+    |       DIRECTLY via the Agent tool (NOT via /act -- see below)
     |       (tmux panes are an experimental-path-only display option)
     |   6b. Monitor wave K progress via TaskList
     |   6c. All wave K items complete -> Validate GATE-K
@@ -110,7 +110,7 @@ Configure in settings.json (experimental path only):
 
 ## Wave Subagent Execution Model
 
-Each wave subagent IS a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. Wave subagents spawn their execution agents **directly** -- they do NOT re-enter `/run` via the Skill tool. This keeps the nesting shallow within the 5-level depth budget (skill loop = depth 0; CC >= 2.1.172 supports up to 5 subagent generations beneath it):
+Each wave subagent IS a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. Wave subagents spawn their execution agents **directly** -- they do NOT re-enter `/act` via the Skill tool. This keeps the nesting shallow within the 5-level depth budget (skill loop = depth 0; CC >= 2.1.172 supports up to 5 subagent generations beneath it):
 
 ```
 Wave subagent (controller, e.g., tech-lead)
@@ -121,7 +121,7 @@ Wave subagent (controller, e.g., tech-lead)
 
 Wave subagents NEVER implement work directly. They always coordinate through execution agents via the Agent tool. A subagent that needs a different specialty spawns that specialist as its own downward subagent, within the same 5-level ceiling — that is how parallelism compounds beyond the per-wave fan-out.
 
-**Why no Skill("run") fork**: Wave subagents are full Claude Code sessions. As of CC 2.1.172 a nested `/run` from a wave subagent is technically possible within the 5-level depth budget, but it is avoided **by design for cost and clarity** -- invoking `/run` via Skill re-runs the full pipeline (orchestrator + planner + controller + validator), duplicating the Wave 0 enrichment the lead already did and burning extra context and tokens. Spawning execution agents directly keeps the chain short (subagent-controller -> execution agents -> reviewer) and reuses the lead's enrichment.
+**Why no Skill("act") fork**: Wave subagents are full Claude Code sessions. As of CC 2.1.172 a nested `/act` from a wave subagent is technically possible within the 5-level depth budget, but it is avoided **by design for cost and clarity** -- invoking `/act` via Skill re-runs the full pipeline (orchestrator + planner + controller + validator), duplicating the Wave 0 enrichment the lead already did and burning extra context and tokens. Spawning execution agents directly keeps the chain short (subagent-controller -> execution agents -> reviewer) and reuses the lead's enrichment.
 
 ## Per-Wave Subagent Lifecycle
 

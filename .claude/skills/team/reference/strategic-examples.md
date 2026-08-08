@@ -2,11 +2,11 @@
 
 Examples showing how `/team` in strategic mode (introduced in v12.2.0) handles single-domain, multi-domain, and escalation-driven instructions. Each example shows the strategic-mode wave flow: Wave 0 (C-suite analysis) -> Wave 1 (objection phase) -> Wave 2 (brief synthesis) -> Wave 3..N (per-domain dispatch) -> Final wave (integration).
 
-In strategic mode, `/team` plays the role formerly held by a dedicated strategic skill: it performs cross-domain C-suite analysis up front and then dispatches per-domain work in subsequent waves. Independent domains dispatch in parallel via the Agent tool; dependent domains dispatch sequentially via `Skill(/run --brief)` so upstream outputs are available as context.
+In strategic mode, `/team` plays the role formerly held by a dedicated strategic skill: it performs cross-domain C-suite analysis up front and then dispatches per-domain work in subsequent waves. Independent domains dispatch in parallel via the Agent tool; dependent domains dispatch sequentially via `Skill(/act --brief)` so upstream outputs are available as context.
 
 ---
 
-## Example 1: Single Domain Simple (-> standalone /run)
+## Example 1: Single Domain Simple (-> standalone /act)
 
 **Input**: `/team --strategic Fix the login button alignment`
 
@@ -20,12 +20,12 @@ In strategic mode, `/team` plays the role formerly held by a dedicated strategic
    - Mission: "Fix login button alignment for consistent UI"
    - Success criteria: ["Button aligned per design spec"]
    - `domain_assignments.engineering.dependency_type: independent`
-2. Invokes: `Skill("run", "Fix the login button alignment --brief {brief_path}")`
+2. Invokes: `Skill("act", "Fix the login button alignment --brief {brief_path}")`
 3. Strategic-mode pipeline collapses to: INIT -> BRIEFED -> EXECUTED -> COMPLETE (no need for full Wave 0/1 since only one domain)
 
 **Expected outputs**:
 - `outputs/strategic_brief.yaml`
-- Standard `/run` outputs from the delegated call
+- Standard `/act` outputs from the delegated call
 
 ---
 
@@ -94,10 +94,10 @@ In strategic mode, `/team` plays the role formerly held by a dedicated strategic
    - people: spawn `cagents:chro`-led domain controller
 
 5. **Wave 4 — Dependent Domain (engineering)**: spawns AFTER people completes initial hire
-   - Dispatched via `Skill(/run --brief {brief_path} --domain engineering)`
+   - Dispatched via `Skill(/act --brief {brief_path} --domain engineering)`
 
 6. **Wave 5 — Dependent Domain (growth)**: spawns AFTER engineering AND creative complete
-   - Dispatched via `Skill(/run --brief {brief_path} --domain growth)`
+   - Dispatched via `Skill(/act --brief {brief_path} --domain growth)`
 
 7. **Final Wave — Integration**: strategic-mode lead merges outputs, verifies cross-domain handoffs, writes `integration_report.yaml`
 
@@ -142,7 +142,7 @@ In strategic mode, `/team` plays the role formerly held by a dedicated strategic
 
 **Flow**:
 1. Strategic-mode lead generates brief inline (no Wave 0 C-suite spawn)
-2. Directly invokes `/run` with `--brief`
+2. Directly invokes `/act` with `--brief`
 3. States: INIT -> BRIEFED -> EXECUTED -> COMPLETE
 
 ---
@@ -167,7 +167,7 @@ In strategic mode, `/team` plays the role formerly held by a dedicated strategic
   +-- Count domains touched
   |
   +-- 1 domain?
-  |     +-- Simple scope? -> Skill(/run --brief)
+  |     +-- Simple scope? -> Skill(/act --brief)
   |     +-- Complex scope? -> /team standard mode with strategic_brief
   |
   +-- 2+ domains?

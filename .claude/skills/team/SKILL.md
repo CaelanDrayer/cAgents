@@ -1,6 +1,6 @@
 ---
 name: team
-description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items, including cross-domain strategic work (via Strategic Mode). TRIGGER: team, parallel, swarm, complex multi-part, cross-domain, strategic. NOT for: simple single-domain tasks (/run)."
+description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items, including cross-domain strategic work (via Strategic Mode). TRIGGER: team, parallel, swarm, complex multi-part, cross-domain, strategic. NOT for: simple single-domain tasks (/act)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
@@ -30,7 +30,7 @@ Do nothing else before Step 1 + Step 2a. Create the session directory and write 
 
 ## Lead-Context Discipline (v12.1.0+)
 
-This skill is designed so the lead can complete 5-10 wave workflows without exhausting context (full team-execution model — wave structure, depth-5 nesting budget, why wave subagents spawn execution agents directly rather than re-entering `/run` — in @reference/architecture.md). Four disciplines enforce this:
+This skill is designed so the lead can complete 5-10 wave workflows without exhausting context (full team-execution model — wave structure, depth-5 nesting budget, why wave subagents spawn execution agents directly rather than re-entering `/act` — in @reference/architecture.md). Four disciplines enforce this:
 
 1. **Per-wave decomposition** — planner emits `workflow/work_meta.yaml` (lead reads ONCE) + `workflow/work_items_wave_{K}.yaml` (lead reads only current wave). See @reference/per-wave-decomposition.md.
 2. **Disk-handoff spawn briefs** — lead writes `outputs/wave-{K}/spawn_brief.md` once per wave; each subagent gets a ~80-token pointer prompt. See @reference/spawn-brief-schema.md.
@@ -141,7 +141,7 @@ fi
 
 After each agent returns, advance the `phase:` field in `status.yaml` (orchestrator → `ENRICHING`, planner → `ENRICHED`) with `sed -i 's/^phase: .*/phase: <PHASE>/' "{SESSION_DIR}/status.yaml"`.
 
-**2e.** Read `work_meta.yaml` ONCE. Confirm wave count meets tier minimum; if not, request re-decomposition. If `--dry-run`, display plan and STOP. If <3 WIs total, `Skill({ skill: "run", args: ... })` fallback.
+**2e.** Read `work_meta.yaml` ONCE. Confirm wave count meets tier minimum; if not, request re-decomposition. If `--dry-run`, display plan and STOP. If <3 WIs total, `Skill({ skill: "act", args: ... })` fallback.
 
 ## Step 3 — Team Is Implicit (no creation call)
 
@@ -238,11 +238,11 @@ Read 1-line confirmation only.
 
 ## Session Hierarchy
 
-`/team` creates `team_*` sessions. When `/team` strategic mode spawns child `/run` sessions via `--brief`, `parent_session_id` is set per @reference/parent-session-extraction.md. Max 2-level hierarchy (`team_*` → `run_*`).
+`/team` creates `team_*` sessions. When `/team` strategic mode spawns child `/act` sessions via `--brief`, `parent_session_id` is set per @reference/parent-session-extraction.md. Max 2-level hierarchy (`team_*` → `act_*`).
 
 ## See Also
 
 - @reference/per-wave-decomposition.md, @reference/spawn-brief-schema.md, @reference/integration-handoff.md — v12.1 lead-context discipline contracts
 - @reference/wave-execution-detail.md, @reference/teammate-spawning-template.md, @reference/gate-validation-protocol.md — wave execution + spawn + gate detail
 - @reference/dynamic-scaling.md, @reference/partial-results.md, @reference/fallback-and-error-recovery.md, @reference/parent-session-extraction.md, @reference/cross-version-compat.md — scaling, partial results, fallback, child-session integration, CC compat
-- `.claude/rules/core/teams.md`, `.claude/skills/run/reference/session-schema.md` — rules + canonical session schema
+- `.claude/rules/core/teams.md`, `.claude/skills/act/reference/session-schema.md` — rules + canonical session schema

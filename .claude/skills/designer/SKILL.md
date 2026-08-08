@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/run) or review (/run review)."
+description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/act) or review (/act review)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
@@ -26,7 +26,7 @@ You are the **Designer** - a controller-based design engine that transforms vagu
 
 **THIS OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md.** The /designer is an INTERACTIVE skill. It MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking.
 
-**/designer is EXEMPT from /goal auto-anchoring (V11.3.0)**: `/run` auto-sets a session-scoped `/goal` condition in Step 1 to keep the pipeline pushing toward verifiable end state, but `/designer` is interactive-by-contract — every phase waits for user input via `AskUserQuestion`. Any `/goal`-driven autonomous continuation would short-circuit that contract. When `/designer` invokes `/run` (e.g., via the Build Integration phase), it MUST pass `--no-goal` to suppress the auto-anchor. This mirrors the existing exemption from auto-proceed.
+**/designer is EXEMPT from /goal auto-anchoring (V11.3.0)**: `/act` auto-sets a session-scoped `/goal` condition in Step 1 to keep the pipeline pushing toward verifiable end state, but `/designer` is interactive-by-contract — every phase waits for user input via `AskUserQuestion`. Any `/goal`-driven autonomous continuation would short-circuit that contract. When `/designer` invokes `/act` (e.g., via the Build Integration phase), it MUST pass `--no-goal` to suppress the auto-anchor. This mirrors the existing exemption from auto-proceed.
 
 **MANDATORY RULES — NO EXCEPTIONS:**
 1. This command MUST use the `AskUserQuestion` tool for EVERY question. Never output questions as plain text.
@@ -105,7 +105,7 @@ If `--iterate <session_id>` is provided, load the completed design from the prev
 Write `instruction.yaml` (session_id, session_type: designer, command, request, created_at, flags, parent_session_id, working_directory).
 Write `status.yaml` with `phase: empathize` and `state_history` initialized.
 
-Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/run/reference/session-schema.md` for the canonical session YAML contract.
+Note: /designer uses the `phase` field (not `pipeline_state`). Hooks check both fields as fallback. See `.claude/skills/act/reference/session-schema.md` for the canonical session YAML contract.
 
 ## Architecture Pointers
 
@@ -175,17 +175,17 @@ Then enter the **continuation gate** — refinement is the default; do NOT prese
 
 Selecting either refinement option re-enters Refinement for the chosen scope (with a fresh research agent), updates the design document incrementally, and returns to this same gate. The loop does NOT exit on its own. Only when the user explicitly picks "I'm done refining" do you proceed to Call 2.
 
-**Call 2** (build / export — ONLY after "I'm done refining"): Build now (/run) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | Export / Share / Manual.
+**Call 2** (build / export — ONLY after "I'm done refining"): Build now (/act) | Build with team (/team) | Build with team strategic mode (/team --strategic, cross-domain) | Export / Share / Manual.
 
 **Call 3** (if "Export / Share / Manual" in Call 2): Export design (PDF/Markdown) | Share design (read-only link) | Manual execute (printable checklist) | Keep refining.
 
-The Export, Share, and Manual-execute exits exist for designs that do not get "built" by `/run` or `/team` — weddings, curricula, research-study protocols, personal routines. Every terminal branch keeps a path back to refinement. See @reference/phase-6-specification.md for the cascade rules (AskUserQuestion's max-4-options-per-call constraint requires this multi-call structure).
+The Export, Share, and Manual-execute exits exist for designs that do not get "built" by `/act` or `/team` — weddings, curricula, research-study protocols, personal routines. Every terminal branch keeps a path back to refinement. See @reference/phase-6-specification.md for the cascade rules (AskUserQuestion's max-4-options-per-call constraint requires this multi-call structure).
 
 ONLY after the user explicitly chooses a build, export, or save-and-stop option: write `phase: completed` to `status.yaml` (terminal phase recognized by the verify-completion.cjs Stop hook), then call `TaskList` and mark all tasks `completed` or `deleted` via `TaskUpdate`. Never write `phase: completed` on your own initiative just because artifacts exist. See @reference/phase-6-specification.md.
 
 ## Build Integration
 
-When user selects a build option, invoke the corresponding skill via the Skill tool: `run` or `team` with `args: "implement design from ${session_id}"` (append `--strategic` to the `team` args for the cross-domain strategic-mode build path; the legacy `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode). When user selects "Refine specific area", ask which phase/topic via AskUserQuestion and jump back to that phase with existing context preserved. When user selects "Endless refinement loop" (or any refinement option at the continuation gate), enter the endless refinement cycle: present current design summary, ask which area to refine via AskUserQuestion, re-enter targeted Refinement for that area (with a fresh research agent), update the design document incrementally, and loop. Default to staying in this loop: after each refinement, PROACTIVELY propose 2-3 specific further refinements you judge valuable (deeper edge cases, untested assumptions, stronger alternatives) rather than asking whether to stop. Exit the loop ONLY on an explicit user request to build, export, or stop.
+When user selects a build option, invoke the corresponding skill via the Skill tool: `act` or `team` with `args: "implement design from ${session_id}"` (append `--strategic` to the `team` args for the cross-domain strategic-mode build path; the legacy `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode). When user selects "Refine specific area", ask which phase/topic via AskUserQuestion and jump back to that phase with existing context preserved. When user selects "Endless refinement loop" (or any refinement option at the continuation gate), enter the endless refinement cycle: present current design summary, ask which area to refine via AskUserQuestion, re-enter targeted Refinement for that area (with a fresh research agent), update the design document incrementally, and loop. Default to staying in this loop: after each refinement, PROACTIVELY propose 2-3 specific further refinements you judge valuable (deeper edge cases, untested assumptions, stronger alternatives) rather than asking whether to stop. Exit the loop ONLY on an explicit user request to build, export, or stop.
 
 ## Session State Management
 

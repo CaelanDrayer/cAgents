@@ -2,7 +2,7 @@
 
 Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when the user asks for what a specific command does, when to use it, or its key flags.
 
-## /run - Universal Workflow Engine
+## /act - Universal Workflow Engine
 
 **What**: The general-purpose command that handles any task. It detects the domain (engineering, creative, business, people, service), classifies complexity via a 9-signal scoring system, selects the optimal pipeline path (minimal/medium/full), coordinates specialist agents, and validates results. Think of it as "do this thing for me."
 
@@ -32,14 +32,14 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Workflow**: Discovery (15%) -> Ideation (25%) -> Refinement (35%) -> Specification (25%) -> Build offer
 
-## review / optimize / audit / improve — Keyword Router Modes on /run (v12.1.2+)
+## review / optimize / audit / improve — Keyword Router Modes on /act (v12.1.2+)
 
-**What**: In v12.1.2, the standalone `/improve` skill was folded into `/run` via a first-token keyword router. When the first word of `/run`'s request is one of `improve`, `review`, `audit`, or `optimize`, `/run` strips the keyword, sets an internal `mode`, and proceeds through the standard 5-state pipeline (INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED). Same controller-based quality engine as V11.0 `/improve`, but invoked through `/run`.
+**What**: In v12.1.2, the standalone `/improve` skill was folded into `/act` via a first-token keyword router. When the first word of `/act`'s request is one of `improve`, `review`, `audit`, or `optimize`, `/act` strips the keyword, sets an internal `mode`, and proceeds through the standard 5-state pipeline (INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED). Same controller-based quality engine as V11.0 `/improve`, but invoked through `/act`.
 
 **When to use**:
-- Audit code, docs, content, infrastructure (`/run review <target>` or `/run audit <target>`)
-- Speed up slow code, reduce bundle size, cut costs with measured before/after metrics (`/run optimize <target>`)
-- Do both with one shared baseline (`/run improve <target>`)
+- Audit code, docs, content, infrastructure (`/act review <target>` or `/act audit <target>`)
+- Speed up slow code, reduce bundle size, cut costs with measured before/after metrics (`/act optimize <target>`)
+- Do both with one shared baseline (`/act improve <target>`)
 
 **Keyword router contract** (first-word match, case-insensitive):
 
@@ -52,15 +52,15 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Key flags** (mode-specific flags carry through from V11.0 /improve surface unchanged): `--scope <path>`, `--baseline` / `--suppress <id>` (review), `--benchmark auto|lighthouse|k6|hyperfine` (optimize), `--auto-fix safe` (review), `--dry-run` (all).
 
-**Workflow**: Same 5-state /run pipeline. The inferred mode shapes the controller's coordination — e.g., `review` mode spawns specialist review agents; `optimize` mode spawns opportunity scanners and benchmark runners.
+**Workflow**: Same 5-state /act pipeline. The inferred mode shapes the controller's coordination — e.g., `review` mode spawns specialist review agents; `optimize` mode spawns opportunity scanners and benchmark runners.
 
-**Canonical reference**: See `@.claude/skills/run/reference/improve-mode.md` for the full keyword-router contract, override rules, stripping examples, and mode-specific controller behavior.
+**Canonical reference**: See `@.claude/skills/act/reference/improve-mode.md` for the full keyword-router contract, override rules, stripping examples, and mode-specific controller behavior.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/run context`, and `/debug` to `/run --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/act context`, and `/debug` to `/act --mode debug`._
 
 ## /team - Parallel Team Execution
 
-**What**: A parallel execution layer that decomposes large tasks into work items and runs them simultaneously as concurrent-Agent waves. Each subagent executes their work item via `/run` in their own context (with optional tmux split pane display via the experimental named-teammate path). Think of it as "/run but parallel for big tasks."
+**What**: A parallel execution layer that decomposes large tasks into work items and runs them simultaneously as concurrent-Agent waves. Each subagent executes their work item via `/act` in their own context (with optional tmux split pane display via the experimental named-teammate path). Think of it as "/act but parallel for big tasks."
 
 **When to use**:
 - Large features with 3+ independent components
@@ -70,7 +70,7 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Key flags**: `--dry-run` (preview team composition), `--members <N>` (limit team size), `--lead <agent>` (specify team lead), `--teammate-mode tmux|in-process` (display mode), `--display` (show team communication)
 
-**Workflow**: Decompose -> Create Team -> Spawn Subagents -> Parallel /run per item -> Aggregate Results
+**Workflow**: Decompose -> Create Team -> Spawn Subagents -> Parallel /act per item -> Aggregate Results
 
 ## /org - REMOVED in v12.2.0
 
