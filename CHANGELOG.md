@@ -10,6 +10,11 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.66.0] - 2026-08-08
+
+### Changed
+- Version bump to 12.66.0. See commit message for details.
+
 ## [12.65.0] - 2026-08-06
 
 **Version-level reclassification of v12.64.2. No code changed.**
