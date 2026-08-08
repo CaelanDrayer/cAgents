@@ -31,11 +31,21 @@ already in context).
      each one's frontmatter `name` + `description`). Skip if neither dir
      exists.
 2. **Exclude** these — they are NOT reusable work skills for the pipeline:
-   - cAgents' own pipeline skills: `run`, `team`, `designer`, `helper`
+   - cAgents' own pipeline skills: `act`, `team`, `designer`, `helper`
      (and their `cagents:`-prefixed aliases). Routing a work item back into
      `/act` recursively is a defect.
    - Pure built-in harness/config skills with no domain output (e.g.
-     `init`, `update-config`, `keybindings-help`, `statusline-setup`).
+     `init`, `update-config`, `keybindings-help`, `statusline-setup`) — and
+     Claude Code's built-in **`run`** skill, which launches and drives the
+     project's app so a human can watch a change work. The built-in `run` is
+     NOT the cAgents pipeline. cAgents' own entry point was renamed
+     `/run` -> `/act` precisely because the harness now ships a skill under
+     that name, so `run` appears in the workspace listing of every project;
+     a planner that sees it can mistake it for the old cAgents entry point
+     (or read the bare verb "run" as a generic do-the-work skill) and route a
+     work item into it. Never select `run` as a work item's `assigned_skill`.
+     This exclusion is unconditional — it is not subject to the when-in-doubt
+     rule below.
    - Anything whose description marks it non-user-invocable infrastructure.
    - When in doubt, KEEP it — an extra candidate the planner ignores is
      cheaper than a missing one that forces a reinvention.
@@ -123,7 +133,8 @@ Verify the tool is actually absent before falling back; do not assume.
 
 - It does not auto-run every workspace skill. Discovery only catalogs them;
   the planner decides per work item whether a skill is the right tool.
-- It does not recurse into cAgents' own skills (run/team/designer/helper).
+- It does not recurse into cAgents' own skills (act/team/designer/helper),
+  and it never routes a work item to Claude Code's built-in `run` skill.
 - It does not require the user to register skills anywhere — discovery is
   automatic from the workspace.
 

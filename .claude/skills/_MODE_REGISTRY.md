@@ -94,7 +94,7 @@ See `## /team` section above for the full flag/mode catalog including
 
 Interactive Q&A throughout. EXEMPT from auto-proceed per CLAUDE.md.
 
-## /improve (REMOVED in v12.1.2 — folded into /act, the skill then named `run`)
+## /improve (REMOVED in v12.1.2 — folded into /act, which was then named `run`)
 
 Removed in v12.1.2. The standalone `/improve` skill was folded into `/act`
 (named `run` at the time) via a keyword router. The three modes and three
