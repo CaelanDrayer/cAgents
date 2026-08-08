@@ -102,7 +102,7 @@ fi
 # 6-9. Skill SKILL.md frontmatter versions (4 active skills as of v12.2.0;
 # /org removed in v12.2.0 and absorbed into /team strategic mode;
 # /improve removed in v12.1.2 and folded into /run)
-check_version ".claude/skills/run/SKILL.md"      "6. .claude/skills/run/SKILL.md"
+check_version ".claude/skills/act/SKILL.md"      "6. .claude/skills/act/SKILL.md"
 check_version ".claude/skills/team/SKILL.md"     "7. .claude/skills/team/SKILL.md"
 check_version ".claude/skills/designer/SKILL.md" "8. .claude/skills/designer/SKILL.md"
 check_version ".claude/skills/helper/SKILL.md"   "9. .claude/skills/helper/SKILL.md"

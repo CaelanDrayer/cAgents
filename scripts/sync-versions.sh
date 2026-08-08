@@ -91,9 +91,9 @@ else
   echo "SKIP: CLAUDE.md (not found)"
 fi
 
-# Update skill SKILL.md frontmatter versions (4 active skills as of v12.2.0)
+# Update skill SKILL.md frontmatter versions (4 active skills: act, team, designer, helper)
 SKILLS=(
-  "$ROOT/.claude/skills/run/SKILL.md"
+  "$ROOT/.claude/skills/act/SKILL.md"
   "$ROOT/.claude/skills/team/SKILL.md"
   "$ROOT/.claude/skills/designer/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
