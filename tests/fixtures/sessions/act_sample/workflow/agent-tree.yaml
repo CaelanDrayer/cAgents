@@ -18,7 +18,7 @@ agents:
     duration_seconds: 173
     short_role: "tech-lead"
     depth: 0
-    session: run_fixture-test_260101_001
+    session: act_fixture-test_260101_001
 
   - id: agent-002
     type: cagents:security-engineer
@@ -31,7 +31,7 @@ agents:
     duration_seconds: 15
     short_role: "security"
     depth: 1
-    session: run_fixture-test_260101_001
+    session: act_fixture-test_260101_001
 
   - id: agent-003
     type: cagents:backend-developer
@@ -50,7 +50,7 @@ agents:
     duration_seconds: 80
     short_role: "backend-dev"
     depth: 1
-    session: run_fixture-test_260101_001
+    session: act_fixture-test_260101_001
 
   - id: agent-004
     type: cagents:senior-developer
@@ -68,4 +68,4 @@ agents:
     duration_seconds: 55
     short_role: "senior-dev"
     depth: 1
-    session: run_fixture-test_260101_001
+    session: act_fixture-test_260101_001
