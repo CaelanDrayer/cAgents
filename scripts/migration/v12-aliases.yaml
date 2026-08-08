@@ -608,27 +608,31 @@ coverage:
 # ---------------------------------------------------------------------------
 skill_aliases:
   - old: "/improve"
-    new: "/run"
+    new: "/act"   # v12.1.2 target was "/run"; /run was later renamed /act
     type: keyword_router_fold
     introduced: "12.1.2"
     notes: |
-      The standalone /improve skill was folded into /run in v12.1.2. The
-      first word of /run's request is now inspected for the improve-family
+      The standalone /improve skill was folded into /run in v12.1.2; /run
+      was later renamed /act (Claude Code shipped a built-in /run). The
+      first word of /act's request is now inspected for the improve-family
       keywords (improve, review, audit, optimize) and the matching --mode
-      is inferred. See .claude/skills/run/reference/improve-mode.md for
+      is inferred. See .claude/skills/act/reference/improve-mode.md for
       the full contract. Users who type "/improve X --mode review" should
-      now type "/run review X" or "/run X --mode review".
+      now type "/act review X" or "/act X --mode review".
 
+# `new:` below is what a user should type TODAY. The v12.1.2-era spelling of
+# these targets was "/run ..."; /run was later renamed /act, so the targets are
+# carried forward to /act rather than frozen at their original spelling.
 skill_invocation_aliases:
   - old: "/improve <target>"
-    new: "/run review <target>"
+    new: "/act review <target>"
     introduced: "12.1.2"
   - old: "/improve --mode review <target>"
-    new: "/run review <target>"
+    new: "/act review <target>"
     introduced: "12.1.2"
   - old: "/improve --mode optimize <target>"
-    new: "/run optimize <target>"
+    new: "/act optimize <target>"
     introduced: "12.1.2"
   - old: "/improve --mode full <target>"
-    new: "/run improve <target>"
+    new: "/act improve <target>"
     introduced: "12.1.2"
