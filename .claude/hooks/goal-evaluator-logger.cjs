@@ -83,7 +83,7 @@ createHook('GoalEvaluatorLogger', async (input) => {
 
   const sessionDir = findActiveSession(input.session_id);
   if (!sessionDir) {
-    // No active cAgents session — no-op (e.g., bare /goal outside a /run).
+    // No active cAgents session — no-op (e.g., bare /goal outside an /act).
     return null;
   }
 

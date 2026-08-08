@@ -657,7 +657,7 @@ async function handler(input) {
   // block mode, warn in warn mode.
   if (isHardDeny) {
     const message = `Controller "${activeControllerName}" is writing to reserved implementation path '${filePath}'. ` +
-      `Controllers and pipeline skills (/run, /team) MUST delegate via the Agent tool. ` +
+      `Controllers and pipeline skills (/act, /team) MUST delegate via the Agent tool. ` +
       `Spawn the appropriate execution agent (backend-developer, frontend-developer, etc.) instead. ` +
       `See @.claude/rules/core/delegation.md for the canonical rule.`;
     if (mode === 'block') {
