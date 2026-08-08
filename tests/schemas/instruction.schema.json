@@ -19,6 +19,7 @@
         "session_type": {
           "type": "string",
           "enum": [
+            "act",
             "org",
             "team",
             "run",
