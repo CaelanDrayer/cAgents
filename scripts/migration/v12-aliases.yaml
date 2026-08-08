@@ -620,6 +620,35 @@ skill_aliases:
       the full contract. Users who type "/improve X --mode review" should
       now type "/act review X" or "/act X --mode review".
 
+  # DOCUMENTATION ONLY -- this entry has NO runtime consumer and is NOT a shim.
+  #
+  # The only reader of this file is .claude/hooks/session-init-gate.cjs, and it
+  # reads exactly one thing: the top-level `aliases:` map, which it resolves
+  # against `subagent_type` on AGENT spawns. It never reads `skill_aliases`, and
+  # it could not help here even if it did -- slash commands are resolved by the
+  # Claude Code harness before any cAgents hook observes a tool call.
+  #
+  # So this entry does NOT make /run invoke /act. Nothing does. Anyone who
+  # describes it as a back-compat shim is wrong. /run now invokes Claude Code's
+  # built-in `run` skill, which launches and drives the project's app -- a
+  # completely different operation, with no warning that you got the wrong one.
+  # This record exists so a reader tracing the rename finds it where the other
+  # skill renames live.
+  - old: "/run"
+    new: "/act"
+    type: rename_no_alias
+    introduced: "12.66.0"
+    runtime_consumer: none
+    notes: |
+      Claude Code shipped a built-in `run` skill; the names collided, so
+      cAgents' /run was renamed /act in v12.66.0. There is no back-compat
+      alias and none is possible. Flags, modes, and the first-word keyword
+      router carry over unchanged: /act review X, /act improve --scope X,
+      /act context X, /act --mode debug X. Session directories are NOT
+      renamed -- new sessions are act_*, and existing run_* directories keep
+      resolving because `run_` is retained in SESSION_PREFIXES as a legacy
+      reader (.claude/hooks/hook-utils.cjs, scripts/maintenance/session-gc.cjs).
+
 # `new:` below is what a user should type TODAY. The v12.1.2-era spelling of
 # these targets was "/run ..."; /run was later renamed /act, so the targets are
 # carried forward to /act rather than frozen at their original spelling.

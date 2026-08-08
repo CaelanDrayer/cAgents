@@ -12,8 +12,97 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [12.66.0] - 2026-08-08
 
+### Removed (BREAKING FOR USERS)
+
+- **`/run` is gone. Use `/act`.** Claude Code now ships a **built-in `run`
+  skill**, and the two names collide. There is **no back-compat shim and no
+  alias**. Typing `/run` no longer reaches cAgents at all. It invokes Claude
+  Code's built-in skill, which launches and drives your project's app. That is a
+  completely different operation from the cAgents pipeline, and nothing will
+  warn you that you got the wrong one. Replace every `/run X` with `/act X`.
+
+  Flags, modes, and the first-word keyword router carry over unchanged:
+  `/act review src/`, `/act improve --scope src/auth/`, `/act context ...`,
+  `/act --mode debug ...`.
+
+  We cannot fix this with an alias. Slash commands resolve inside the harness
+  before any cAgents hook observes a tool call, so no hook, config, or alias
+  file in this repository can intercept `/run` and forward it. Renaming was the
+  only option available to us.
+
+  **Why this is a minor bump and not a major one.** It repeats a shape this
+  project has shipped twice: `/improve` was folded into `/run` and its skill
+  directory deleted in **v12.1.2**, and `/org` was removed in favour of `/team`
+  strategic mode in **v12.2.0**. Both dropped a user-typed command with no
+  back-compat alias, and neither took a major bump.
+  `.claude/rules/core/version-registry.md` § Tiny-Bump Cadence sets the bar:
+  removals require "a minor or major bump." Nothing else about the contract
+  surface moved: the 60-agent catalog, hook events, the 5-state pipeline, and
+  the memory layout are all unchanged. One user-facing command name changed.
+
+### Fixed
+
+- **Workspace-skill discovery no longer offers Claude Code's built-in `run`
+  skill to the planner.** Claude Code now ships a built-in `run` skill that
+  launches and drives the project's app. cAgents' skill-awareness discovery
+  procedure excluded cAgents' own pipeline skills *by name*, so renaming `/run`
+  to `/act` silently promoted the harness's `run` into a "discoverable workspace
+  skill" the planner could assign to a work item — reintroducing precisely the
+  run/act ambiguity the rename removes. The exclusion list now names the
+  built-in `run` explicitly and unconditionally, and explains why. The same pass
+  closed the mirror-image half of the defect: the own-skill exclusion tuple
+  still read `run`/`team`/`designer`/`helper`, leaving `act` absent from its own
+  exclusion list, so the planner could emit `assigned_skill: act` and the
+  controller would call `Skill({skill: "act"})` — recursing into the entire
+  pipeline. Fixed in `.claude/skills/act/reference/skill-awareness.md`; both
+  halves are pinned by `tests/regressions/act-rename-collision.test.js`.
+
+- **`scripts/maintenance/session-gc.cjs` held a second, independent
+  `SESSION_PREFIXES` list that never gained `'act_'`.** Found while sweeping the
+  session prefix. The GC's directory scan filters candidates through its own
+  copy of the prefix list, with no shared import from
+  `.claude/hooks/hook-utils.cjs`, so fixing the hook-utils list left this one
+  stale. Every go-forward `act_*` session directory would have been invisible to
+  garbage collection: never archived, never deleted, accumulating forever, with
+  no error to signal it. Reproduced red, fixed at
+  `scripts/maintenance/session-gc.cjs:65`, and now pinned by a drift guard that
+  asserts the two prefix lists agree, so they cannot diverge again.
+
 ### Changed
 - Version bump to 12.66.0. See commit message for details.
+- **Session directories: `act_*` going forward, `run_*` still readable.** New
+  sessions are created as `act_{slug}_{YYMMDD}_{NNN}`. Existing session
+  directories are **not** renamed on disk: 21 live sessions under
+  `cagents-memory/sessions/` and 26 under `cagents-memory/_archive/` keep their
+  `run_` prefix. `run_` is retained in `SESSION_PREFIXES`
+  (`.claude/hooks/hook-utils.cjs:47`, mirrored in `session-gc.cjs:65`) as a
+  legacy reader, so those sessions continue to resolve, resume, and get swept by
+  the GC exactly as before. Historical session slugs in documentation are left
+  alone; they name sessions that really were called that.
+- **The rename sweep.** Roughly 250 files across 30+ work items: 1,504 live
+  `/run` slash-form references repointed to `/act` (of 1,691 total; the other
+  187 sit in `CHANGELOG.md`, `docs/RELEASE_NOTES.md`, `docs/MIGRATION_GUIDE.md`
+  and the other history files, where they are an accurate record of what the
+  command was called at the time and are deliberately preserved), plus 117
+  `skills/run` path references. `.claude/skills/run/` moved to
+  `.claude/skills/act/`; `docs/commands/run.md` to `docs/commands/act.md`.
+- **Five silent-failure sites repaired.** Each of these fails with no error
+  message and no test failure, which is why they are called out individually:
+  `SESSION_PREFIXES` in `hook-utils.cjs`; the frontmatter `paths:` globs in 11
+  rules files, which would have stopped matching — and therefore stopped
+  loading — permanently; `ENFORCED_SKILLS` in `prompt-router.cjs`; the
+  skill-awareness exclusion list; and the `session_type` enum in
+  `instruction.schema.json`.
+- **Tests.** The suite is 2,497 tests across 214 files. Six test files were
+  renamed `run-*` → `act-*`, and a new bug-driven guard,
+  `tests/regressions/act-rename-collision.test.js`, pins 8 collision sites with
+  21 assertions.
+- **`scripts/migration/v12-aliases.yaml`** gains a `run: act` entry under
+  `skill_aliases`. It is documentation only. The file's sole consumer,
+  `.claude/hooks/session-init-gate.cjs`, reads the top-level `aliases:` map to
+  resolve `subagent_type` on **agent** spawns; it never reads `skill_aliases`,
+  and it cannot see a slash command at all. The entry does not make `/run`
+  invoke `/act`.
 
 ## [12.65.0] - 2026-08-06
 

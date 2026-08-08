@@ -6,6 +6,56 @@
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
 
+## V12.66.0 — August 8, 2026 (`/run` renamed to `/act`)
+
+> **BREAKING FOR USERS: `/run` is gone. Use `/act`.**
+> Claude Code now ships a **built-in `run` skill**, and the two names collide.
+> There is **no back-compat shim and no alias**. Typing `/run` no longer reaches
+> cAgents. It invokes Claude Code's built-in skill, which launches and drives
+> your project's app. That is a completely different operation, and nothing
+> warns you that you got the wrong one. Replace every `/run X` with `/act X`.
+
+Flags and modes carry over unchanged: `/act review src/`,
+`/act improve --scope src/auth/`, `/act context ...`, `/act --mode debug ...`.
+
+An alias is not possible. Slash commands resolve inside the harness before any
+cAgents hook observes a tool call, so nothing in this repository can intercept
+`/run` and forward it. Renaming was the only option.
+
+**Why a minor bump.** This is the same clean-removal shape as `/improve`
+(folded into `/run`, v12.1.2) and `/org` (removed for `/team` strategic mode,
+v12.2.0): a user-typed command dropped with no alias, neither taking a major
+bump. Nothing else in the contract surface moved: the 60-agent catalog, hook
+events, the 5-state pipeline, and the memory layout are unchanged.
+
+**Two bugs fixed in the same release**, both of which fail silently:
+
+- **Workspace-skill discovery was about to offer the harness's `run` skill to
+  the planner.** The skill-awareness exclusion list excluded cAgents' own
+  pipeline skills *by name*, so renaming `/run` promoted Claude Code's built-in
+  `run` into a "discoverable workspace skill" the planner could assign to a work
+  item, reintroducing exactly the ambiguity the rename removes. The mirror
+  image was also live: the own-skill exclusion tuple still read
+  `run`/`team`/`designer`/`helper`, leaving `act` off its own list, so the
+  planner could emit `assigned_skill: act` and the controller would call
+  `Skill({skill: "act"})`, recursing into the whole pipeline.
+- **`scripts/maintenance/session-gc.cjs` held a second, independent
+  `SESSION_PREFIXES` list** that never gained `'act_'`. Every new `act_*`
+  session would have been invisible to garbage collection: never archived,
+  never deleted, accumulating forever. A drift guard now asserts the two prefix
+  lists agree.
+
+**Session directories are not renamed.** New sessions are `act_*`; the 21 live
+and 26 archived `run_*` directories keep their names and continue to resolve,
+resume, and get swept, because `run_` is retained in `SESSION_PREFIXES` as a
+legacy reader.
+
+**Scope.** ~250 files across 30+ work items: 1,504 live `/run` references
+repointed (the other 187 are historical record in this and the other history
+files and were deliberately left alone), 117 `skills/run` paths, five
+silent-failure sites repaired, and a new regression guard pinning 8 collision
+sites with 21 assertions. Suite: 2,497 tests across 214 files.
+
 ## V12.20.0 – V12.42.0 — June 18 to July 14, 2026 (consolidated summary)
 
 This span shipped as roughly 30 tiny/minor bumps. The per-bump detail lives in the canonical [CHANGELOG.md](../CHANGELOG.md); the themes below summarize what changed across the range so this file stays a coherent narrative history.

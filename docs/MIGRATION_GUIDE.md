@@ -165,3 +165,47 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 **Review finds no issues**: If the codebase is genuinely clean, `/run review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
 
 **Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `cagents-memory/sessions/` and that `coordination_log.yaml` is being written.
+
+## v12.66.0 — `/run` is now `/act`
+
+> **Read this before running any example above.** Every `/run ...` command in
+> this guide predates v12.66.0 and no longer invokes cAgents. Substitute `/act`.
+
+Claude Code now ships a **built-in `run` skill**, and the two names collide.
+cAgents renamed its own skill to `/act` in v12.66.0.
+
+There is **no back-compat shim and no alias.** `/run` does not error and does
+not fall through to cAgents. It invokes Claude Code's built-in skill, which
+launches and drives your project's app. That is a completely different
+operation, and nothing warns you that you got the wrong one. This is the one
+failure mode to watch for while your muscle memory catches up.
+
+| Before v12.66.0 | Now |
+|---|---|
+| `/run <request>` | `/act <request>` |
+| `/run review src/` | `/act review src/` |
+| `/run improve --scope src/auth/` | `/act improve --scope src/auth/` |
+| `/run optimize <target>` | `/act optimize <target>` |
+| `/run context <request>` | `/act context <request>` |
+| `/run --mode debug <request>` | `/act --mode debug <request>` |
+
+Only the command name changed. Flags, modes, the first-word keyword router, the
+controller catalog, and the 5-state pipeline all behave exactly as before.
+`/team`, `/designer`, and `/helper` are unaffected.
+
+**Why there is no alias.** Slash commands resolve inside the Claude Code harness
+before any cAgents hook observes a tool call. No hook, config, or alias file in
+this repository can intercept `/run` and forward it to `/act`. Renaming was the
+only fix available. (`scripts/migration/v12-aliases.yaml` records the rename
+under `skill_aliases` for documentation purposes; that file has no runtime
+consumer for skill names.)
+
+**Your existing sessions are safe.** Session directories are **not** renamed.
+New sessions are created as `act_*`; the existing `run_*` directories under
+`cagents-memory/sessions/` and `cagents-memory/_archive/` keep their names and
+continue to resolve, resume, and get garbage-collected, because `run_` is
+retained as a legacy prefix. You do not need to migrate anything on disk.
+
+**Historical references in this guide are intentional.** Text above describing
+what a command was called in v12.1.2 or v12.2.0 still says `/run`, because that
+is what it was called then.
