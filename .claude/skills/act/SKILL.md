@@ -1,6 +1,6 @@
 ---
-name: run
-description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: run, implement, fix, build, create. NOT for: parallel work or cross-domain strategy (use /team)."
+name: act
+description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: act, implement, fix, build, create. NOT for: parallel work or cross-domain strategy (use /team)."
 license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
@@ -12,7 +12,7 @@ metadata:
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
 ---
 
-# /run - Event-Driven Pipeline Engine
+# /act - Event-Driven Pipeline Engine
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
@@ -20,7 +20,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 ## This Pipeline Is Domain-Agnostic — NOT Software-Only
 
-`/run` is a **universal** task engine, not a software-engineering tool. The state names (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) and the agent roles (orchestrator, planner, controller, validator) are domain-neutral coordination machinery — they apply identically to a legal contract, a marketing campaign, a financial model, a client SOW with a price quote, a research study, a curriculum, or a novel chapter as they do to a code change. The 57-agent catalog includes lawyers, marketers, financial analysts, copywriters, HR partners, doctors, educators, sales reps, account managers, and strategists. `backend-developer` / `architect` / `reviewer` are merely the agents the router happens to pick for *engineering* requests — they are not what `/run` "is."
+`/act` is a **universal** task engine, not a software-engineering tool. The state names (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) and the agent roles (orchestrator, planner, controller, validator) are domain-neutral coordination machinery — they apply identically to a legal contract, a marketing campaign, a financial model, a client SOW with a price quote, a research study, a curriculum, or a novel chapter as they do to a code change. The 57-agent catalog includes lawyers, marketers, financial analysts, copywriters, HR partners, doctors, educators, sales reps, account managers, and strategists. `backend-developer` / `architect` / `reviewer` are merely the agents the router happens to pick for *engineering* requests — they are not what `/act` "is."
 
 **Do NOT refuse, second-guess, or warn the user away from a non-technical request because the pipeline "looks like" it is for code.** A request to draft three SOWs, price a data migration, build a client quote, or plan a campaign is squarely in scope — route it to the right domain controller (e.g. `operations-manager`, `marketing-strategist`, `general-counsel`, `account-manager`, `cfo`) exactly as you would route a bug fix to `tech-lead`. The router (Step 3b) selects the domain from the request content; trust it and proceed. Telling the user "this is a generic software-engineering engine, use a different tool" is a defect, not helpfulness.
 
@@ -32,7 +32,7 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 
 **You MUST delegate ALL work to subagents via the Agent tool. You NEVER implement, write code, create content, or fix bugs yourself.**
 
-/run is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
+/act is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
 
 **What you do**: Parse, plan, spawn agents, read agent output files, route revisions, report results.
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
@@ -84,10 +84,10 @@ See @reference/task-tracking-rules.md for the full task tracking protocol, forma
 | `audit` | `review` |
 | `optimize` | `optimize` |
 
-If no match, leave `mode` unset (or set by an explicit `--mode` flag in Step 1b). The keyword router collapsed the standalone `/improve` skill into `/run` in v12.1.2 — see @reference/improve-mode.md for the full contract, mode-specific controller behavior, atomic rollback pattern, and cross-session artifact layout.
+If no match, leave `mode` unset (or set by an explicit `--mode` flag in Step 1b). The keyword router collapsed the standalone `/improve` skill into `/act` in v12.1.2 — see @reference/improve-mode.md for the full contract, mode-specific controller behavior, atomic rollback pattern, and cross-session artifact layout.
 
-Example: `/run improve src/auth/` -> mode=`full`, request=`src/auth/`.
-Example: `/run review the auth module` -> mode=`review`, request=`the auth module`.
+Example: `/act improve src/auth/` -> mode=`full`, request=`src/auth/`.
+Example: `/act review the auth module` -> mode=`review`, request=`the auth module`.
 
 ### Step 1b: Parse Flags
 
@@ -104,9 +104,9 @@ Special flag handling:
 - `--brief <path>`: Strategic brief from /team strategic mode. See @reference/strategic-brief-integration.md.
 - `--mode debug`: Enables debug-mode prefix injection for the controller. See @reference/debug-mode-prompt.md.
 
-`.claude/skills/_MODE_REGISTRY.md § /run` is the canonical source of truth for every `/run` flag and mode (keep it in sync when adding/changing a flag). See @reference/flags.md for the complete flag reference with defaults and examples.
+`.claude/skills/_MODE_REGISTRY.md § /act` is the canonical source of truth for every `/act` flag and mode (keep it in sync when adding/changing a flag). See @reference/flags.md for the complete flag reference with defaults and examples.
 
-**`/run context show|init|update|clear` — REMOVED (no live subcommand).** The `/run context show|init|update|clear` passthrough was removed in V11.0; `/run` no longer dispatches to a sibling `/context` skill. To persist project knowledge, edit `cagents-memory/_projects/{project_hash}/product_context.yaml` directly — the orchestrator reads it during INIT enrichment. See @reference/context-passthrough.md for the removed-subcommand history (archived-session back-compat only).
+**`/act context show|init|update|clear` — REMOVED (no live subcommand).** The `/act context show|init|update|clear` passthrough was removed in V11.0; `/act` no longer dispatches to a sibling `/context` skill. To persist project knowledge, edit `cagents-memory/_projects/{project_hash}/product_context.yaml` directly — the orchestrator reads it during INIT enrichment. See @reference/context-passthrough.md for the removed-subcommand history (archived-session back-compat only).
 
 ---
 
@@ -116,7 +116,7 @@ Special flag handling:
 
 **ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
 
-**ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/run` (or a `/team` subagent) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
+**ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/act` (or a `/team` subagent) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
 
 ```bash
 CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -126,13 +126,13 @@ SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 
 Never run `npm install` / `npm ci` (or any dependency install / build) with the cwd inside a session or scratch dir — it dumps `node_modules/` into the session tree. Installs run from `$CAGENTS_ROOT` only.
 
-`{ISO_TIMESTAMP}` MUST be the real current time. NEVER fabricate timestamps like `T00:00:00Z`. Note: /run uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
+`{ISO_TIMESTAMP}` MUST be the real current time. NEVER fabricate timestamps like `T00:00:00Z`. Note: /act uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
 
 See @reference/session-id-format.md for slug rules, NNN counter generation, and required initial files.
 
 See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
 
-**ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /team-spawned /run instances.
+**ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /team-spawned /act instances.
 
 **ACTION 1c (BEST-EFFORT PRIMARY — SDK-UUID map)**: After the session dir + `status.yaml` exist, if `${CLAUDE_SESSION_ID}` is available AND matches the SDK-UUID shape, persist the mapping so hooks can resolve this session deterministically by its SDK transcript UUID. This write is **best-effort PRIMARY only**; the **authoritative / robust fallback** is the WI-3 hook self-population (`subagent-tracker.cjs` / `session-init-gate.cjs` `upsertSdkSessionMap`), because `${CLAUDE_SESSION_ID}` may be empty at skill init and may not equal the hook payload's `input.session_id` — the map must never depend SOLELY on the skill capturing its own UUID.
 
@@ -227,7 +227,7 @@ elif [ -f "$SIG/PAUSE" ]; then
 fi
 ```
 
-Honour order: STOP wins over PAUSE. The canonical protocol (waypoint contents, resume semantics) lives in `.claude/rules/core/orchestration-reference.md` § Signal File Intervention Protocol — this step is its `/run`-loop implementation, so the config `signals.enabled: true` is no longer a half-advertised feature. A user drives it with `touch cagents-memory/sessions/{SESSION_ID}/signals/{PAUSE|STOP|RESUME}`.
+Honour order: STOP wins over PAUSE. The canonical protocol (waypoint contents, resume semantics) lives in `.claude/rules/core/orchestration-reference.md` § Signal File Intervention Protocol — this step is its `/act`-loop implementation, so the config `signals.enabled: true` is no longer a half-advertised feature. A user drives it with `touch cagents-memory/sessions/{SESSION_ID}/signals/{PAUSE|STOP|RESUME}`.
 
 **3f. Agent delegation pattern** for each state spawn:
 
@@ -251,7 +251,7 @@ INSTRUCTIONS:
 
 For the **PLANNED state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. (v12.0.0: PROMPTS_READY removed; planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
 
-**Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`, read `.claude/skills/run/reference/debug-mode-prompt.md` and PREPEND its prefix text to the controller spawn prompt. See @reference/debug-mode-prompt.md.
+**Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`, read `.claude/skills/act/reference/debug-mode-prompt.md` and PREPEND its prefix text to the controller spawn prompt. See @reference/debug-mode-prompt.md.
 
 **3g. Revision handling** after the COORDINATED state. Read `workflow/validation_report.yaml`:
 
@@ -303,7 +303,7 @@ Note: v12.6.0 dropped `revision_rounds_used` and `total_duration_ms` from execut
 - [ ] **4.7**. Pre-stop verification: confirm `execution_summary.yaml` exists, `coordination_log.yaml` has self_validation and validation_checkpoints blocks if a controller ran, `status.yaml` is in a terminal state, and no stale tasks remain.
 - [ ] **4.8**. Report results to the user with final pipeline state, revision count, key deliverables, and any validation warnings.
 
-If the pipeline failed after max revisions: report what completed vs what remains, suggest `/run --resume {SESSION_ID}`, and ensure `workflow/recovery_state.yaml` captures phase, domain, controller, and pending/in-progress work items (the `stop-failure-handler.cjs` hook writes this on incomplete sessions).
+If the pipeline failed after max revisions: report what completed vs what remains, suggest `/act --resume {SESSION_ID}`, and ensure `workflow/recovery_state.yaml` captures phase, domain, controller, and pending/in-progress work items (the `stop-failure-handler.cjs` hook writes this on incomplete sessions).
 
 ---
 
@@ -325,15 +325,15 @@ For team mode, after completing routing + planning inline, delegate to `/team`:
 Skill({ skill: "team", args: "{request} --session {SESSION_DIR}" })
 ```
 
-The /team skill handles decomposition into work items, team creation, and parallel execution. Each subagent invokes `/run --session {SESSION_DIR}` which detects pre-enrichment and picks up from the appropriate state.
+The /team skill handles decomposition into work items, team creation, and parallel execution. Each subagent invokes `/act --session {SESSION_DIR}` which detects pre-enrichment and picks up from the appropriate state.
 
 If `--dry-run` with `--team`: Display plan summary and team composition, then STOP.
 
 ---
 
-## What /run Does Directly vs Delegates
+## What /act Does Directly vs Delegates
 
-| /run does directly | /run delegates |
+| /act does directly | /act delegates |
 |--------------------|----------------|
 | Parse flags, create session dir, write instruction.yaml + status.yaml | Orchestrator (level 1) -> enriched_context.yaml |
 | Load pipeline_config, read strategic_brief.yaml | Universal-planner (level 1) -> plan.yaml + work_items.yaml (decomposition inline, v12.0.0) |
@@ -359,7 +359,7 @@ If an agent fails or returns incomplete:
 If context is exhausted mid-workflow:
 1. Session state is preserved in cagents-memory/sessions/
 2. pre-compact-save hook creates waypoints automatically
-3. User can resume with `/run --resume {SESSION_ID}`
+3. User can resume with `/act --resume {SESSION_ID}`
 4. Resume detects completed states from status.yaml state_history and primary output files, and skips them
 
 ## Configuration

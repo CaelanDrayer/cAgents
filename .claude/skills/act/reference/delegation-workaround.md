@@ -44,13 +44,13 @@ Key parameters:
 
 ## Workaround: Delegation Plan Pattern
 
-Until the full rename is completed, controllers can use a **delegation plan** pattern where the controller writes a structured plan that /run (level 0) reads and executes on the controller's behalf.
+Until the full rename is completed, controllers can use a **delegation plan** pattern where the controller writes a structured plan that /act (level 0) reads and executes on the controller's behalf.
 
 ### How It Works
 
 1. Controller writes `workflow/delegation_plan.yaml` with work items and agent assignments
 2. Controller signals it needs delegation assistance via coordination_log status
-3. /run reads the delegation plan and spawns agents using the correct `Agent` tool
+3. /act reads the delegation plan and spawns agents using the correct `Agent` tool
 4. Results are written back to the session directory for the controller to read
 
 ### delegation_plan.yaml Schema
@@ -94,9 +94,9 @@ delegation_requests:
     depends_on: [WI-1]
 ```
 
-### /run Execution of Delegation Plan
+### /act Execution of Delegation Plan
 
-When /run detects a `delegation_plan.yaml`:
+When /act detects a `delegation_plan.yaml`:
 
 ```javascript
 // For each delegation request (respecting depends_on order):

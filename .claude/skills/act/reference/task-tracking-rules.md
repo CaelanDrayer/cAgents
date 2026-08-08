@@ -1,13 +1,13 @@
 # Task Tracking Rules and Validation Pattern
 
-How /run uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transition.
+How /act uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transition.
 
 ## Core Rules
 
-1. **/run calls TaskCreate/TaskUpdate at every state transition** -- minimum once per state.
+1. **/act calls TaskCreate/TaskUpdate at every state transition** -- minimum once per state.
 2. **Each task call happens BEFORE advancing to the next state.**
 3. **The controller also calls TaskCreate** when it identifies execution agents (progressive refinement).
-4. **No slash prefix on command names**: Use `[run]`, `[team]` -- not `[/run]`, `[/team]`. (Pre-v12.2.0 also `[org]`; v12.2.0 removed /org.)
+4. **No slash prefix on command names**: Use `[run]`, `[team]` -- not `[/act]`, `[/team]`. (Pre-v12.2.0 also `[org]`; v12.2.0 removed /org.)
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[run > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
 6. **2-space indent for children**: Sub-tasks under a parent entry are indented with 2 spaces.
 7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[run > planner] Planning approach\n  [planner] Controller: tech-lead`.
@@ -87,19 +87,19 @@ TodoWrite([
 
 Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route back to PLANNED.
 
-## /run Owns All Pipeline Tasks
+## /act Owns All Pipeline Tasks
 
-**/run (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /run calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way task cleanup works in Step 4, because TaskUpdate only works on tasks created by the same agent scope.
+**/act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way task cleanup works in Step 4, because TaskUpdate only works on tasks created by the same agent scope.
 
-**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** Tasks created by subagents live in the subagent's scope and cannot be updated by /run, causing "Task not found" errors during Step 4 cleanup. Subagents may use TaskCreate for their OWN internal sub-spawns but those are scoped tasks invisible to /run cleanup.
+**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** Tasks created by subagents live in the subagent's scope and cannot be updated by /act, causing "Task not found" errors during Step 4 cleanup. Subagents may use TaskCreate for their OWN internal sub-spawns but those are scoped tasks invisible to /act cleanup.
 
 ```
-# /run creates the task BEFORE spawning the agent:
+# /act creates the task BEFORE spawning the agent:
 TaskCreate({ subject: "ORCHESTRATED: Plan + decomposition (planner)", description: "..." })
 TaskUpdate({ taskId: "N", status: "in_progress" })
 Agent({ subagent_type: "cagents:planner", description: "...", prompt: "..." })
-# /run updates the task AFTER the agent returns:
+# /act updates the task AFTER the agent returns:
 TaskUpdate({ taskId: "N", status: "completed" })
 ```
 
-Without per-agent tasks owned by /run, the user only sees generic entries like "[run] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each pipeline agent MUST be a separate task created by /run.
+Without per-agent tasks owned by /act, the user only sees generic entries like "[run] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each pipeline agent MUST be a separate task created by /act.

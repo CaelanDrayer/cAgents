@@ -18,13 +18,13 @@ cagents-memory/sessions/{session_id}/
 |   +-- work_items.yaml        # PLANNED-state output (planner)
 |   +-- coordination_log.yaml  # COORDINATED-state output (controller)
 |   +-- validation_report.yaml # VALIDATED-state output (validator)
-|   +-- execution_summary.yaml # /run loop final summary
+|   +-- execution_summary.yaml # /act loop final summary
 |   +-- agent_tree.yaml        # Agent spawn tracking (written by hooks)
 |   +-- file_changes.log       # File change audit (written by hooks)
 +-- outputs/                 # Work item outputs
 ```
 
-State advancement is driven by each agent's primary output file. The `/run` state machine loop reads these files at level 0 to detect completion and advance state.
+State advancement is driven by each agent's primary output file. The `/act` state machine loop reads these files at level 0 to detect completion and advance state.
 
 ## Session ID Format
 
@@ -39,7 +39,7 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 
 | Skill | Prefix | Example |
 |-------|--------|---------|
-| /run | `run_` | `run_fix-auth-module-jwt_260317_001` |
+| /act | `run_` | `run_fix-auth-module-jwt_260317_001` |
 | /team | `team_` | `team_implement-oauth2-flow_260317_001` |
 | /designer | `designer_` | `designer_redo-session-names_260317_001` |
 
@@ -57,7 +57,7 @@ All skills that create sessions check `process.env.CAGENTS_SESSION_ID` during in
 | `CAGENTS_SESSION_ID` set, directory does not exist | Use env var value verbatim; create new session directory |
 | `CAGENTS_SESSION_ID` set, directory already exists | Use env var value; **resume** the existing session |
 
-Use cases (cAgents-internal): parent-skill chaining (e.g., `/team` strategic mode passing an ID to child `/run` invocations), test fixtures with deterministic IDs.
+Use cases (cAgents-internal): parent-skill chaining (e.g., `/team` strategic mode passing an ID to child `/act` invocations), test fixtures with deterministic IDs.
 
 ## instruction.yaml (Required)
 
@@ -66,7 +66,7 @@ Every skill writes this file at session creation:
 ```yaml
 session_id: "{SESSION_ID}"                       # REQUIRED: Unique session identifier
 session_type: run|team|designer                  # REQUIRED: Skill type
-command: /run|/team|/designer                    # REQUIRED: Skill command
+command: /act|/team|/designer                    # REQUIRED: Skill command
 request: "{user_request}"                        # REQUIRED: Original user request text
 created_at: "{ISO_TIMESTAMP}"                    # REQUIRED: ISO 8601 timestamp — use `date -u +%Y-%m-%dT%H:%M:%SZ`
 flags: {parsed_flags}                            # REQUIRED: Object of parsed CLI flags
@@ -77,7 +77,7 @@ metadata:
 
 Skill-specific extension:
 
-- **/run**: May include `strategic_brief_path` when invoked with `--brief` from `/team` strategic mode.
+- **/act**: May include `strategic_brief_path` when invoked with `--brief` from `/team` strategic mode.
 
 ## status.yaml (Required)
 
@@ -87,7 +87,7 @@ Tracks the current pipeline/phase state and state history.
 
 | Skills | Field Name | Rationale |
 |--------|-----------|-----------|
-| /run | `pipeline_state` | Event-driven pipeline engine with formal state machine |
+| /act | `pipeline_state` | Event-driven pipeline engine with formal state machine |
 | /team, /designer | `phase` | Phase-based workflow progression |
 
 Hooks (`session-catchup.cjs`, `verify-completion.cjs`, `post-compact-restore.cjs`) check BOTH `pipeline_state` AND `phase` as fallback.
@@ -95,13 +95,13 @@ Hooks (`session-catchup.cjs`, `verify-completion.cjs`, `post-compact-restore.cjs
 ### Schema (v12.6.0)
 
 ```yaml
-pipeline_state: "{STATE}"               # /run: INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED
+pipeline_state: "{STATE}"               # /act: INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED
 # OR
 phase: "{phase}"                        # /team, /designer: phase name
 
 created_at: "{ISO_TIMESTAMP}"           # REQUIRED: Session creation time
-revision_cycles: 0                      # /run: revision counter (REC-11). Re-added to
-                                        # status.yaml in REC-11 (removed v12.6.0). /run
+revision_cycles: 0                      # /act: revision counter (REC-11). Re-added to
+                                        # status.yaml in REC-11 (removed v12.6.0). /act
                                         # increments it on each FAIL/REVISE route-back to
                                         # PLANNED; verify-completion.cjs reads it to enforce
                                         # the max_cycles cap (pipeline_config.yaml, 3).
@@ -114,21 +114,21 @@ state_history:                          # REQUIRED: Ordered list of state transi
 
 | Skill | States (in order) |
 |-------|-------------------|
-| /run (v12.0.0+) | INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
+| /act (v12.0.0+) | INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED, FOLLOWUP_{TYPE}_{N} |
 | /team | INIT, (wave states vary; strategic mode adds Wave 0/1/2 prefix when domain_count >= 2) |
 | /designer | empathize, define, conceptualize, ideation, refinement, specification |
 
 ## Additional Session Files (Skill-Specific)
 
-### /run
+### /act
 - `workflow/enriched_context.yaml` - Orchestrator output (ORCHESTRATED state advancement signal)
 - `workflow/plan.yaml` - Planner output: objectives + controller assignment (PLANNED state signal)
 - `workflow/work_items.yaml` - Planner output: decomposition
 - `workflow/coordination_log.yaml` - Controller output (MUST include `schema_version: "1"`, `implementation_tasks[].agent_id` linking to agent_tree.yaml). COORDINATED state signal.
 - `workflow/validation_report.yaml` - Validator output (verdict: PASS/FAIL/REVISE). VALIDATED state signal.
-- `workflow/execution_summary.yaml` - **ALWAYS written** by /run at loop exit (success, failure, or interruption)
+- `workflow/execution_summary.yaml` - **ALWAYS written** by /act at loop exit (success, failure, or interruption)
 
-**Runtime responsibilities of /run state machine** (not delegated to agents):
+**Runtime responsibilities of /act state machine** (not delegated to agents):
 - Append state_history entry on each transition (state + entered_at)
 - Always write `execution_summary.yaml` at pipeline exit
 - Persist + increment `revision_cycles` in status.yaml on each FAIL/REVISE route-back to PLANNED (REC-11); at `revision_cycles >= max_cycles` (pipeline_config.yaml, 3) escalate to user (HITL) + finalize `incomplete` instead of re-planning again
@@ -186,12 +186,12 @@ Hooks discover active sessions by scanning `cagents-memory/sessions/` for direct
 A session is considered complete when its status.yaml state matches one of:
 - Lowercase: `completed`, `complete`, `failed`, `aborted`
 - Uppercase: `COMPLETE`, `VALIDATED`
-- /run: `VALIDATED` (final successful state) or after max revision cycles (3)
+- /act: `VALIDATED` (final successful state) or after max revision cycles (3)
 - /team: `COMPLETE` (final wave gate validated)
 
 Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. No limit on follow-up rounds.
 
-### Follow-Up Types (/run only, v12.6.0)
+### Follow-Up Types (/act only, v12.6.0)
 
 | Type | Re-entry Point | Use Case |
 |------|----------------|----------|

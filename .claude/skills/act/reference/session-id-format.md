@@ -1,6 +1,6 @@
 # Session ID Format and Generation
 
-How /run generates session IDs and creates the session directory.
+How /act generates session IDs and creates the session directory.
 
 ## Format
 
@@ -45,7 +45,7 @@ Before generating a new SESSION_ID, check `process.env.CAGENTS_SESSION_ID`:
 
 **Anchor session paths to an ABSOLUTE project root, not a relative `cagents-memory/…`
 literal.** A relative path resolves against the *current working directory*, and a
-nested `/run` (or a `/team` subagent) can run with its cwd inside a parent session
+nested `/act` (or a `/team` subagent) can run with its cwd inside a parent session
 dir — a relative write then nests a whole `cagents-memory/` tree under that session
 (the CWD-leak, REC-20). Anchor once and derive everything from `$MEM`:
 
@@ -58,7 +58,7 @@ mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"
 
 ## Required Initial Files
 
-On creation, /run writes:
+On creation, /act writes:
 
 | File | Purpose |
 |------|---------|
@@ -71,7 +71,7 @@ On creation, /run writes:
 ```yaml
 session_id: {SESSION_ID}
 session_type: run
-command: /run
+command: /act
 request: "{user_request}"
 created_at: "{ISO_TIMESTAMP}"
 flags: {parsed_flags}
@@ -92,6 +92,6 @@ state_history:
 
 `{ISO_TIMESTAMP}` MUST be the real current time. Never fabricate timestamps like `T00:00:00Z` or `T12:00:00Z` -- these are detectable fakes that break session timeline analysis. Use `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash if needed.
 
-v12.6.0: `revision_round`, `validation_cycles`, and `state_history[].duration_ms` were external-UI-only fields and are no longer written. Track revision count in `/run`'s working state (max 3 cycles before HITL).
+v12.6.0: `revision_round`, `validation_cycles`, and `state_history[].duration_ms` were external-UI-only fields and are no longer written. Track revision count in `/act`'s working state (max 3 cycles before HITL).
 
-Note: /run uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See @reference/session-schema.md for the canonical session YAML contract.
+Note: /act uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See @reference/session-schema.md for the canonical session YAML contract.

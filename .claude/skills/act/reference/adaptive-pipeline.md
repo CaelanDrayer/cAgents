@@ -1,6 +1,6 @@
 # Pipeline Paths (v12.7.0)
 
-Two named pipeline paths drive `/run`: `fast` and `standard`. Path selection
+Two named pipeline paths drive `/act`: `fast` and `standard`. Path selection
 is governed by an enumerated orchestrator-skip allowlist, not freeform
 heuristics or complexity scoring. The pre-v12.7 names (Minimal, Medium,
 `Full`) and the prose "fast-path" / "adaptive" naming were collapsed in
@@ -33,7 +33,7 @@ The orchestrator is skipped iff ALL of:
 If any condition fails, the orchestrator runs. Tier 3+ ALWAYS runs the
 orchestrator regardless of other signals. The rule is an enumerated
 allowlist, not a heuristic; the canonical statement lives in
-`.claude/skills/run/SKILL.md` Step 3c.
+`.claude/skills/act/SKILL.md` Step 3c.
 
 ## state_history Schema Additions (v12.7.0)
 
@@ -73,11 +73,11 @@ field but prefer `skipped_reason` when both are present.
 `ambiguous_domain` is set by the router when domain confidence < 0.7 or
 when the request matches keywords from multiple domain catalogs. The
 router writes the flag to `enriched_context.yaml` (when the orchestrator
-runs) or `/run` computes it inline (when it does not).
+runs) or `/act` computes it inline (when it does not).
 
 ## Path Display
 
-`/run` displays the selected path to the user after routing:
+`/act` displays the selected path to the user after routing:
 
 ```
 Pipeline: {path}, Domain={domain}, Tier={tier}, Controller={controller}
@@ -94,7 +94,7 @@ Pipeline: standard, Domain=mixed, Tier=3, Controller=tech-lead
 
 When `path == fast` (orchestrator skipped):
 
-- `/run` writes a minimal `enriched_context.yaml` inline with the user
+- `/act` writes a minimal `enriched_context.yaml` inline with the user
   request, detected domain, tier, and working-directory context. This
   becomes the planner's input.
 - The state_history entry for INIT records `skipped: true,

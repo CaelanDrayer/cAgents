@@ -1,13 +1,13 @@
-# /run State Machine: Full Detail
+# /act State Machine: Full Detail
 
-Detailed state-by-state semantics for the /run event-driven pipeline. The SKILL.md body holds the high-level diagram; this file holds the per-state contracts, transitions, and revision routing.
+Detailed state-by-state semantics for the /act event-driven pipeline. The SKILL.md body holds the high-level diagram; this file holds the per-state contracts, transitions, and revision routing.
 
 ## State Machine Overview (v12.0.0 — 5 states)
 
 ```
-/run (state machine loop -- level 0)
+/act (state machine loop -- level 0)
   |
-  Phase 1: Sequential enrichment (all level 1, spawned by /run)
+  Phase 1: Sequential enrichment (all level 1, spawned by /act)
   +-> orchestrator (level 1)         -> enriched_context.yaml
   +-> planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
   |
@@ -82,7 +82,7 @@ After the COORDINATED state, read `workflow/validation_report.yaml`:
 | **REVISE** | Re-run planner with feedback | PLANNED (orchestrator may also re-run) | Increment in-memory revision counter (v12.6.0: not persisted to status.yaml) |
 | **BLOCKED** (V10.26.17+, debug-mode only) | Re-run controller with falsification annotation | PLANNED | Annotates controller prompt with hypotheses_tested[] count |
 
-Max 3 total revision cycles (lowered from 5 in v12.0.0). If the in-memory revision counter reaches 3: escalate to user (HITL). Report what completed and what failed. (v12.6.0: the counter is held in `/run`'s working state, not persisted to status.yaml.)
+Max 3 total revision cycles (lowered from 5 in v12.0.0). If the in-memory revision counter reaches 3: escalate to user (HITL). Report what completed and what failed. (v12.6.0: the counter is held in `/act`'s working state, not persisted to status.yaml.)
 
 **v12.0.0 routing change**: FAIL and REVISE both route back to PLANNED. Previously FAIL routed to PROMPTS_READY (re-run controller with same plan) and REVISE routed to PLANNED (re-plan from scratch). With PROMPTS_READY removed, FAIL re-runs the controller from PLANNED using the existing plan plus validator feedback; REVISE re-runs the planner (and may also re-run the orchestrator) to produce a new plan.
 
@@ -102,7 +102,7 @@ This prevents infinite revision loops on fundamentally stuck debug sessions. Non
 ```yaml
 pipeline_state: PLANNED     # both FAIL and REVISE route here in v12.0.0+
 # v12.6.0: revision_round and validation_cycles fields are NO LONGER written to status.yaml.
-# Track revision count in /run's working state; enforce the 3-cycle cap there.
+# Track revision count in /act's working state; enforce the 3-cycle cap there.
 ```
 
 ## Loop Exit Contract
@@ -111,12 +111,12 @@ When the loop exits at any terminal state (VALIDATED, COORDINATED in minimal pat
 
 ## Event File Format (REMOVED in v12.6.0)
 
-Historical note: pre-v12.6 sessions wrote completion events to `workflow/events/EVT-{N}.yaml` and an index at `workflow/events/index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumes them. v12.6.0 removed the emission entirely. State advancement is now driven by each agent's primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which the `/run` loop reads at level 0. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record.
+Historical note: pre-v12.6 sessions wrote completion events to `workflow/events/EVT-{N}.yaml` and an index at `workflow/events/index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumes them. v12.6.0 removed the emission entirely. State advancement is now driven by each agent's primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which the `/act` loop reads at level 0. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record.
 
 ## state_history Skip Fields (v12.7.0)
 
 When a pipeline state is skipped via the orchestrator-skip enumerated
-allowlist (see `.claude/skills/run/SKILL.md` Step 3c and
+allowlist (see `.claude/skills/act/SKILL.md` Step 3c and
 `reference/adaptive-pipeline.md`), the state_history entry MUST record
 the skip with two fields:
 

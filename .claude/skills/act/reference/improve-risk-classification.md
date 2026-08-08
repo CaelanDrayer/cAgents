@@ -1,7 +1,7 @@
 # Risk Classification
 
-Canonical risk-classification rules for `/run improve --mode optimize` (and
-`/run review|audit` via the v12.1.2 keyword router). Both review-mode
+Canonical risk-classification rules for `/act improve --mode optimize` (and
+`/act review|audit` via the v12.1.2 keyword router). Both review-mode
 auto-fix and optimize-mode EXECUTING phases share a common
 snapshot / apply / test / keep-or-rollback primitive, inlined below.
 
@@ -47,7 +47,7 @@ not block the remaining queue.
 | **LOW** | 21-40 | Yes | Standard (+ unit tests) |
 | **MEDIUM** | 41-60 | Yes | Comprehensive (+ integration tests) |
 | **HIGH** | 61-80 | No -- ask user | Full (+ architect review) |
-| **CRITICAL** | 81-100 | No -- hand off to `/run` | Full (+ executive approval) |
+| **CRITICAL** | 81-100 | No -- hand off to `/act` | Full (+ executive approval) |
 
 ## Prioritization Formula
 
@@ -81,7 +81,7 @@ From `scan_patterns.yaml`:
 When CRITICAL (81-100 risk) optimizations are found:
 1. Generate optimization design document with full context
 2. Write to `cagents-memory/sessions/{session_id}/optimization_design.md`
-3. Trigger `/run`: `Skill({skill: "run", args: "implement optimization plan from {session_id}"})`
+3. Trigger `/act`: `Skill({skill: "run", args: "implement optimization plan from {session_id}"})`
 
 ## Quality Gates
 

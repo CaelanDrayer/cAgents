@@ -1,11 +1,11 @@
-# /run Delegation Patterns (v12.0.0 — 5-State Pipeline)
+# /act Delegation Patterns (v12.0.0 — 5-State Pipeline)
 
 ## Delegation Chain (v12.0.0)
 
 The event-driven pipeline architecture uses a 5-state machine with sequential enrichment and nested controller execution:
 
 ```
-/run (state machine loop, level 0)
+/act (state machine loop, level 0)
   +-> orchestrator (level 1)         -> enriched_context.yaml
   +-> planner (level 1)    -> plan.yaml + work_items.yaml (decomposition inline)
   +-> controller (level 1)
@@ -16,7 +16,7 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
 
 **v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no `delegation_prompts.yaml` artifact).
 
-## What /run Does Inline (v12.0.0)
+## What /act Does Inline (v12.0.0)
 
 | Phase | Agent | Output |
 |-------|-------|--------|
@@ -40,9 +40,9 @@ Pre-v12 paths referenced DECOMPOSED and PROMPTS_READY; those states no longer ex
 
 ## Debug-Mode Prefix Injection (V10.26.13+)
 
-When `/run` is invoked with `--mode debug`, the **PLANNED** state controller
+When `/act` is invoked with `--mode debug`, the **PLANNED** state controller
 spawn gets a prepended prefix block from
-`.claude/skills/run/reference/debug-mode-prompt.md`. The injection point is
+`.claude/skills/act/reference/debug-mode-prompt.md`. The injection point is
 the controller spawn prompt only — enrichment agents (orchestrator,
 planner) are unaffected. When
 `flags.mode === "standard"` (default), no prefix is added and behavior is
@@ -105,7 +105,7 @@ Max 3 revision cycles (lowered from 5 in v12.0.0) before escalation to user.
 
 ## Team Mode Delegation
 
-For `--team`, /run delegates to the `cagents:team-bootstrap` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline. `team-bootstrap` was renamed from the former `team` name in v12.53.0):
+For `--team`, /act delegates to the `cagents:team-bootstrap` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline. `team-bootstrap` was renamed from the former `team` name in v12.53.0):
 
 ```javascript
 Agent({

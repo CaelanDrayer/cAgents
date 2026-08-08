@@ -1,6 +1,6 @@
 # Debug-Mode Controller Prompt Prefix (V10.26.12+, updated for v12.0.0)
 
-Reusable prompt prefix injected into the controller spawn when `/run --mode debug`
+Reusable prompt prefix injected into the controller spawn when `/act --mode debug`
 is active. Landed dormant in V10.26.12; V10.26.13 wired it into the controller
 spawn (originally PROMPTS_READY state, now PLANNED state in v12.0.0). Subsequent
 patches (V10.26.14–17) extend the validator to enforce the artifacts
@@ -32,7 +32,7 @@ corresponding validator checks:
 ## Where It Is Consumed
 
 - v12.0.0 PLANNED controller spawn (see `delegation-patterns.md`). Pre-v12 sessions injected this prefix at the PROMPTS_READY controller spawn; that state was collapsed into PLANNED in v12.0.0.
-- V10.26.18 `/debug` shim invokes `/run --mode debug`, inheriting this prefix
+- V10.26.18 `/debug` shim invokes `/act --mode debug`, inheriting this prefix
 
 ## Authoring Notes
 

@@ -1,6 +1,6 @@
 # Workspace Skill Awareness
 
-`/run` must reuse skills that already exist in the workspace instead of
+`/act` must reuse skills that already exist in the workspace instead of
 reinventing the work they do. When a user has a dedicated skill — e.g. a
 `pr` skill that knows their SOW/budget templates, a `deep-research` skill, a
 `changelog` skill — the pipeline should route the matching work item to that
@@ -10,13 +10,13 @@ applied at planning time: **reuse before rebuild.**
 
 ## Why a session file is needed
 
-`/run` runs as the main-loop agent, so the harness injects the list of
+`/act` runs as the main-loop agent, so the harness injects the list of
 available skills directly into its context. But the planner and controllers
-are **subagents** — they do NOT see the main loop's skill list. So `/run`
+are **subagents** — they do NOT see the main loop's skill list. So `/act`
 must capture the workspace skills once, at level 0, and persist them to
 `workflow/available_skills.yaml` for the rest of the pipeline to read.
 
-## Discovery procedure (run by `/run` at level 0)
+## Discovery procedure (run by `/act` at level 0)
 
 Run this AFTER session init and domain/tier routing, BEFORE spawning the
 planner. It is cheap (one optional Bash enumeration + reading the skill list
@@ -33,7 +33,7 @@ already in context).
 2. **Exclude** these — they are NOT reusable work skills for the pipeline:
    - cAgents' own pipeline skills: `run`, `team`, `designer`, `helper`
      (and their `cagents:`-prefixed aliases). Routing a work item back into
-     `/run` recursively is a defect.
+     `/act` recursively is a defect.
    - Pure built-in harness/config skills with no domain output (e.g.
      `init`, `update-config`, `keybindings-help`, `statusline-setup`).
    - Anything whose description marks it non-user-invocable infrastructure.

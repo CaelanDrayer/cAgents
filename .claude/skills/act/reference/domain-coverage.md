@@ -1,6 +1,6 @@
-# /run Domain Coverage
+# /act Domain Coverage
 
-The trigger agent (not the /run command itself) handles requests across ALL domains with enhanced detection.
+The trigger agent (not the /act command itself) handles requests across ALL domains with enhanced detection.
 
 ## Domain Detection Table
 

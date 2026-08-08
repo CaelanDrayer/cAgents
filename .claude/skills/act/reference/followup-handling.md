@@ -1,6 +1,6 @@
 # Follow-Up Handling (Post-Completion)
 
-After /run reports results, the pipeline enters a listening state. If the user provides follow-up feedback in the same conversation, the pipeline re-enters execution within the SAME session rather than starting a new one.
+After /act reports results, the pipeline enters a listening state. If the user provides follow-up feedback in the same conversation, the pipeline re-enters execution within the SAME session rather than starting a new one.
 
 ## Follow-Up Type Classification (v12.0.0)
 
@@ -19,7 +19,7 @@ After /run reports results, the pipeline enters a listening state. If the user p
 1. Update status.yaml:
    - Set pipeline_state back to the re-entry point
    - Append state_history entry: `{ state: "FOLLOWUP_{TYPE}", entered_at }`
-     (v12.6.0: duration_ms is NO LONGER written; track follow-up round count in `/run`'s working state, not in `followup_round` on disk)
+     (v12.6.0: duration_ms is NO LONGER written; track follow-up round count in `/act`'s working state, not in `followup_round` on disk)
 
 2. (v12.6.0: workflow/events/EVT-*.yaml emission removed. The re-entry state advance + status.yaml history entry are sufficient; the follow-up's resulting `coordination_log.yaml` or `validation_report.yaml` is the canonical signal for the next stage.)
 

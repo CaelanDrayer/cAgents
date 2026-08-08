@@ -1,13 +1,13 @@
 # Improve Mode (Keyword Router)
 
-In v12.1.2, the standalone `/improve` skill was folded into `/run` via a
-keyword router. Users no longer invoke `/improve` directly; instead, `/run`
+In v12.1.2, the standalone `/improve` skill was folded into `/act` via a
+keyword router. Users no longer invoke `/improve` directly; instead, `/act`
 detects an improve-family keyword as the first token of the request and
 sets an internal `mode` that the controller carries through coordination.
 
 ## Keyword Router Contract
 
-When `/run` parses `$ARGUMENTS`, BEFORE flag parsing and BEFORE domain
+When `/act` parses `$ARGUMENTS`, BEFORE flag parsing and BEFORE domain
 routing, it checks whether the first whitespace-separated token of the
 request is one of the four improve-family keywords:
 
@@ -20,27 +20,27 @@ request is one of the four improve-family keywords:
 
 The match is case-insensitive on the first token. If the first token matches,
 the keyword is stripped from the request, the internal `mode` is set, and
-`/run` proceeds with the standard 5-state pipeline (INIT -> ORCHESTRATED ->
+`/act` proceeds with the standard 5-state pipeline (INIT -> ORCHESTRATED ->
 PLANNED -> COORDINATED -> VALIDATED).
 
-If the first token does not match, `/run` proceeds as before with no
+If the first token does not match, `/act` proceeds as before with no
 improve-mode behavior.
 
 ### Keyword stripping example
 
-Input: `/run improve src/auth/ --scope changed`
+Input: `/act improve src/auth/ --scope changed`
 After router:
 - mode = `full`
 - request = `src/auth/`
 - flags = `--scope changed`
 
-Input: `/run review the auth module for security issues`
+Input: `/act review the auth module for security issues`
 After router:
 - mode = `review`
 - request = `the auth module for security issues`
 - flags = (none)
 
-Input: `/run optimize src/api/queries.ts`
+Input: `/act optimize src/api/queries.ts`
 After router:
 - mode = `optimize`
 - request = `src/api/queries.ts`
@@ -50,20 +50,20 @@ After router:
 
 The router can be bypassed in two ways:
 
-1. **Use `--mode` flag explicitly**: `/run review X --mode standard` forces
+1. **Use `--mode` flag explicitly**: `/act review X --mode standard` forces
    `standard` mode and treats `review` as a regular word in the request.
-2. **Keyword as non-first word**: `/run audit the review process` does
+2. **Keyword as non-first word**: `/act audit the review process` does
    NOT trigger improve-mode because `audit` is not the first token, but
    wait — `audit` IS first here. To embed a keyword as the second word
    onward, simply structure the request so the keyword does not lead.
-   Example: `/run check audit logs for anomalies` -> no match (first word
+   Example: `/act check audit logs for anomalies` -> no match (first word
    is `check`).
 
 ## Mode-Specific Controller Behavior
 
 The keyword router collapses improve's 7-state machine (SCOPING ->
 MEASURING -> DETECTING -> PLANNING -> EXECUTING -> VALIDATING ->
-REPORTING) into `/run`'s 5-state machine. The improve-specific work is
+REPORTING) into `/act`'s 5-state machine. The improve-specific work is
 carried by the controller selected during the PLANNED state:
 
 ### `mode: review`
@@ -155,12 +155,12 @@ All modes append to `cagents-memory/_projects/{hash}/improve/history.yaml`.
 
 The standalone `/improve` skill was removed in v12.1.2. The 7-state
 state machine, mode-specific reference docs, and per-mode controller
-behavior were collapsed into `/run`'s keyword-router flow. The
+behavior were collapsed into `/act`'s keyword-router flow. The
 `scripts/migration/v12-aliases.yaml` file documents the removal so
 historical session references resolve gracefully.
 
 Users who previously typed `/improve X --mode review` now type
-`/run review X`. The `--mode` flag remains valid as an explicit
+`/act review X`. The `--mode` flag remains valid as an explicit
 override, but the first-word keyword is the canonical invocation.
 
 ## Related Reference
@@ -170,5 +170,5 @@ override, but the first-word keyword is the canonical invocation.
 - `improve-risk-classification.md` - Risk tiers for auto-fix changes
 - `improve-pattern-effectiveness.md` - Scoring math and modifier update
   rule
-- `state-machine-detail.md` - /run's 5-state machine (which carries
+- `state-machine-detail.md` - /act's 5-state machine (which carries
   improve modes through the controller)
