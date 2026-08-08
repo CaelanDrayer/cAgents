@@ -1,6 +1,6 @@
 # Migration Guide
 
-> **Current cAgents version**: v12.20.0 — 58 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/run`, `/team`, `/designer`, `/helper`). V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
+> **Applies to cAgents v12.x** — 60 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/act`, `/team`, `/designer`, `/helper`). The skill was called `/run` until v12.66.0 renamed it to `/act`; every example below uses `/act`, and the v12.66.0 section at the end of this guide explains the rename. V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` (now `/act`) via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
 
 How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents v12.x.
 
@@ -12,7 +12,7 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 
 | Dimension | feature-dev | code-review | cAgents |
 |-----------|------------|------------|---------|
-| **Agent count** | ~3 | ~3 | 57 |
+| **Agent count** | ~3 | ~3 | 60 |
 | **Archetypes** | Engineering only | Engineering only | 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) |
 | **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED |
 | **Revision loops** | None | None | Executor → Reviewer (max 3 rounds per work item), PASS/FAIL/REVISE routing (max 5 cycles) |
@@ -22,16 +22,16 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 
 ## Command Equivalents
 
-### feature-dev → /run
+### feature-dev → /act
 
-`/run` is the direct replacement for `/feature-dev`. It does everything feature-dev does, plus automatic routing, revision loops, and reviewer validation.
+`/act` is the direct replacement for `/feature-dev`. It does everything feature-dev does, plus automatic routing, revision loops, and reviewer validation.
 
 ```bash
 # feature-dev
 /feature-dev Add OAuth login to the app
 
 # cAgents equivalent
-/run Add OAuth login to the app
+/act Add OAuth login to the app
 ```
 
 What changes:
@@ -40,22 +40,22 @@ What changes:
 - A reviewer validates spec compliance then code quality before the work is marked done
 - If validation fails, the pipeline re-runs the controller (up to 5 cycles) instead of stopping
 
-### code-review → /run review
+### code-review → /act review
 
-`/run review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass. (V11.0 unified the previous `/review` and `/optimize` skills under `/improve`; v12.1.2 folded `/improve` into `/run` via the first-word keyword router. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 mapping and CHANGELOG entries for the v12 folds.)
+`/act review` is the direct replacement for code-review plugins. It runs parallel specialist agents instead of a single sequential pass. (V11.0 unified the previous `/review` and `/optimize` skills under `/improve`; v12.1.2 folded `/improve` into `/run` (now `/act`) via the first-word keyword router. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 mapping and CHANGELOG entries for the v12 folds.)
 
 ```bash
 # code-review plugin
 /code-review src/auth/
 
-# cAgents equivalent (v12.1.2+)
-/run review src/auth/
+# cAgents equivalent
+/act review src/auth/
 ```
 
 What changes:
 - Security, code quality, and performance reviewers run in parallel instead of sequentially
 - Each reviewer reports findings with CRITICAL/HIGH/LOW severity tiers
-- `/run optimize` (or `/run improve` = `--mode full`) applies fixes with before/after metrics and atomic rollback
+- `/act optimize` (or `/act improve` = `--mode full`) applies fixes with before/after metrics and atomic rollback
 - Review baselines suppress known issues via `--baseline` and `--suppress`
 
 ### No Equivalent → /team (with strategic mode for cross-domain)
@@ -74,10 +74,10 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 ### Upgrade from feature-dev if you need:
 
-**Cross-domain work**: feature-dev only handles engineering. If a feature touches backend + marketing copy + content strategy, `/run` routes across domains automatically.
+**Cross-domain work**: feature-dev only handles engineering. If a feature touches backend + marketing copy + content strategy, `/act` routes across domains automatically.
 
 ```bash
-/run Add a referral program            # engineering + growth in one request
+/act Add a referral program            # engineering + growth in one request
 ```
 
 **Parallel execution**: feature-dev runs agents sequentially. `/team` runs them in waves with quality gates — 40-60% faster for complex features.
@@ -92,24 +92,24 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 ### Upgrade from code-review if you need:
 
-**Parallel specialist review**: `/run review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
+**Parallel specialist review**: `/act review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
 
-**Apply-and-measure pipeline**: `/run optimize` (or `/run improve` = `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
+**Apply-and-measure pipeline**: `/act optimize` (or `/act improve` = `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
 
-**Review baselines**: `/run review --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
+**Review baselines**: `/act review --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
 
 **Tier 3+ blind review**: For complex work, multiple reviewers evaluate independently and a Devil's Advocate challenges unanimous PASS decisions.
 
 ## Migration Path
 
-### 1. Start with /run for single tasks
+### 1. Start with /act for single tasks
 
-Replace your `/feature-dev` invocations one-for-one with `/run`. The routing is automatic — you don't need to specify agents, domains, or controllers.
+Replace your `/feature-dev` invocations one-for-one with `/act`. The routing is automatic — you don't need to specify agents, domains, or controllers.
 
 ```bash
-/run Fix the login page redirect bug
-/run Add email notifications for new signups
-/run Write documentation for the API endpoints
+/act Fix the login page redirect bug
+/act Add email notifications for new signups
+/act Write documentation for the API endpoints
 ```
 
 ### 2. Move complex features to /team
@@ -132,16 +132,16 @@ When work spans engineering + business + people or needs executive-level analysi
 
 (Pre-v12.2.0 this was `/org Plan ...` — the `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode.)
 
-### 4. Replace code-review with /run review (v12.1.2+ keyword router)
+### 4. Replace code-review with /act review
 
 ```bash
-/run review src/                          # Full codebase review
-/run improve --scope src/auth/            # Review auth module then apply fixes with metrics (= --mode full)
-/run review src/ --baseline               # First run: establish baseline
-/run review src/ --baseline --suppress    # Subsequent runs: suppress known issues
+/act review src/                          # Full codebase review
+/act improve --scope src/auth/            # Review auth module then apply fixes with metrics (= --mode full)
+/act review src/ --baseline               # First run: establish baseline
+/act review src/ --baseline --suppress    # Subsequent runs: suppress known issues
 ```
 
-(Pre-v12.1.2 this was `/improve --mode review|optimize|full` — the `/improve` skill was folded into `/run` in v12.1.2 via the first-word keyword router; all original flags carried over.)
+(Pre-v12.1.2 this was `/improve --mode review|optimize|full` — the `/improve` skill was folded into `/run` (now `/act`) in v12.1.2 via the first-word keyword router; all original flags carried over.)
 
 ## Token Usage
 
@@ -149,8 +149,8 @@ cAgents uses more tokens than single-purpose plugins. Each subagent in the pipel
 
 | Command | Approximate multiplier vs direct Claude |
 |---------|----------------------------------------|
-| `/run` (tier 2) | 10-20x |
-| `/run` (tier 3) | 20-40x |
+| `/act` (tier 2) | 10-20x |
+| `/act` (tier 3) | 20-40x |
 | `/team` (standard) | 30-60x |
 | `/team --strategic` (cross-domain; auto-enables for multi-domain requests, replaces removed `/org`) | 50-100x |
 
@@ -162,14 +162,11 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 
 **Too many tokens for simple tasks**: Use Claude Code directly for single-file fixes. cAgents is designed for multi-step, multi-agent work.
 
-**Review finds no issues**: If the codebase is genuinely clean, `/run review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
+**Review finds no issues**: If the codebase is genuinely clean, `/act review` will report a passing score. Use `--focus security` (or another focus area) to narrow scrutiny.
 
 **Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `cagents-memory/sessions/` and that `coordination_log.yaml` is being written.
 
 ## v12.66.0 — `/run` is now `/act`
-
-> **Read this before running any example above.** Every `/run ...` command in
-> this guide predates v12.66.0 and no longer invokes cAgents. Substitute `/act`.
 
 Claude Code now ships a **built-in `run` skill**, and the two names collide.
 cAgents renamed its own skill to `/act` in v12.66.0.
@@ -207,5 +204,6 @@ continue to resolve, resume, and get garbage-collected, because `run_` is
 retained as a legacy prefix. You do not need to migrate anything on disk.
 
 **Historical references in this guide are intentional.** Text above describing
-what a command was called in v12.1.2 or v12.2.0 still says `/run`, because that
-is what it was called then.
+what a command was called in v12.1.2 or v12.2.0 still says `/run`, followed by a
+"(now `/act`)" annotation. The past-tense statement stays true, and the
+annotation tells you what to type today. Every runnable example uses `/act`.
