@@ -99,7 +99,7 @@ origin.
 "Examples" is overloaded across cAgents, so it helps to name the three distinct
 things. First, an agent's own `resources/examples.md` — tier-3 material bundled
 inside a single SKILL.md, loaded on demand to show that one agent how to do its
-job. Second, a skill's usage examples — the `/run Fix auth bug`-style lines in a
+job. Second, a skill's usage examples — the `/act Fix auth bug`-style lines in a
 SKILL.md body or `_MODE_REGISTRY.md` that tell a human how to invoke the skill.
 Third, this directory: a curated, cross-agent **few-shot example store**, indexed
 by `_index.yaml` and selected by the planner to seed decomposition. The first two

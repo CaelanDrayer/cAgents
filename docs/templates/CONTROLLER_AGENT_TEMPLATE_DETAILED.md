@@ -344,7 +344,7 @@ TodoWrite({
     {content: "[backend-developer] Implement OAuth2 endpoints", status: "pending", activeForm: "[backend-developer] Implementing OAuth2 endpoints"},
     {content: "[qa-lead] Create OAuth2 tests", status: "pending", activeForm: "[qa-lead] Creating OAuth2 tests"},
     {content: "[security-specialist] Security review of implementation", status: "pending", activeForm: "[security-specialist] Reviewing security"},
-    {content: "[/run] Validate outputs and quality", status: "pending", activeForm: "[/run] Validating outputs"}
+    {content: "[/act] Validate outputs and quality", status: "pending", activeForm: "[/act] Validating outputs"}
   ]
 })
 ```

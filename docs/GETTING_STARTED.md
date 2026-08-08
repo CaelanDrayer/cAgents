@@ -1,8 +1,8 @@
 # Getting Started with cAgents
 
-Five minutes from install to your first orchestrated result. This guide reflects **v12.20.0 current** — 60 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 44 routable + 16 core) and 4 user-invocable skills (`/designer`, `/helper`, `/run`, `/team`).
+Five minutes from install to your first orchestrated result. This guide reflects **v12.20.0 current** — 60 agents across 9 builder-role archetypes (post-v12.20.0 catalog consolidation; 44 routable + 16 core) and 4 user-invocable skills (`/designer`, `/helper`, `/act`, `/team`).
 
-_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path. v12.1.2 folded `/improve` into `/run` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode._
+_V11.0 removed `/review`, `/optimize`, `/context`, and `/debug` — see [MIGRATION-V11.md](./MIGRATION-V11.md) for the migration path. v12.1.2 folded `/improve` into `/act` via a first-word keyword router. v12.2.0 removed `/org` and absorbed cross-domain coordination into `/team` strategic mode._
 
 ## Prerequisites
 
@@ -31,7 +31,7 @@ Requires Claude Code 2.1.69+ and Node.js (for hooks).
 ## 2. Your First Command
 
 ```bash
-/run Fix the typo in README.md
+/act Fix the typo in README.md
 ```
 
 That's it. cAgents handles everything else.
@@ -56,7 +56,7 @@ You got a validated fix without specifying a single agent or writing a single pr
 Every run writes structured artifacts to `cagents-memory/sessions/`:
 
 ```
-cagents-memory/sessions/run_fix-typo-readme_YYMMDD_001/
+cagents-memory/sessions/act_fix-typo-readme_YYMMDD_001/
 ├── workflow/
 │   ├── enriched_context.yaml   # What the orchestrator discovered
 │   ├── plan.yaml               # Objectives and controller selection
@@ -87,11 +87,11 @@ Strategic mode auto-enables when `router` detects 2+ domains. Triggers CTO, CPO,
 ```
 Guides you through structured Q&A to produce an implementation-ready design document before any code is written.
 
-**Review existing work** (v12.1.2+: `/improve` was folded into `/run` via the first-word keyword router):
+**Review existing work** (v12.1.2+: `/improve` was folded into `/act` via the first-word keyword router):
 ```bash
-/run review src/auth/
+/act review src/auth/
 ```
-Parallel specialist agents audit for security, correctness, maintainability, and style. Use `/run optimize src/auth/` to apply fixes with before/after metrics, or `/run improve src/auth/` (= `--mode full`) to chain review then optimize with one baseline. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for V10 `/review` and `/optimize` migration, and [CHANGELOG.md v12.1.2](../CHANGELOG.md) for the keyword-router contract.
+Parallel specialist agents audit for security, correctness, maintainability, and style. Use `/act optimize src/auth/` to apply fixes with before/after metrics, or `/act improve src/auth/` (= `--mode full`) to chain review then optimize with one baseline. See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for V10 `/review` and `/optimize` migration, and [CHANGELOG.md v12.1.2](../CHANGELOG.md) for the keyword-router contract.
 
 **Not sure which command to use?**
 ```bash

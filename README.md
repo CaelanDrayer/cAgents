@@ -9,7 +9,7 @@ Deploy 60 specialized agents across 9 builder-role archetypes through an intelli
 | Stat | Value |
 |------|-------|
 | Agents | 60 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
-| Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /run) |
+| Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /act) |
 | Hooks | 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library, across 18 event types |
 | Models | Opus 4.8 (controllers / high-reasoning) · Sonnet 4.6 (execution) — the catalog uses no `model: haiku` / `tier: support`; both remain available via `model_routing.yaml` |
 
@@ -33,7 +33,7 @@ Deploy 60 specialized agents across 9 builder-role archetypes through an intelli
 
 ## Usage Warning
 
-cAgents spawns 3-10+ subagents per request. Each consumes API tokens independently. A single `/run` can use 10-50x more tokens than a direct Claude Code interaction. `/team` (especially strategic mode) amplifies this further. Monitor usage closely.
+cAgents spawns 3-10+ subagents per request. Each consumes API tokens independently. A single `/act` can use 10-50x more tokens than a direct Claude Code interaction. `/team` (especially strategic mode) amplifies this further. Monitor usage closely.
 
 ---
 
@@ -69,13 +69,13 @@ Four commands. Four different capabilities. Note how the examples span domains �
 
 ```bash
 # Produce a client deliverable (business / sales) — no code involved
-/run Draft a statement of work and price quote for a Dropbox-to-SharePoint data migration, with a detailed assumptions list
+/act Draft a statement of work and price quote for a Dropbox-to-SharePoint data migration, with a detailed assumptions list
 
 # Coordinate strategy across domains with C-suite analysis (strategic mode auto-enables)
 /team Plan our Q3 product roadmap
 
 # Route a bug fix to the engineering domain automatically
-/run Fix the authentication bug in src/auth.ts
+/act Fix the authentication bug in src/auth.ts
 
 # Explore ANY design problem interactively — software or not
 /designer Design a 6-week onboarding curriculum
@@ -87,17 +87,17 @@ The pipeline detects the domain, selects the appropriate controller, decomposes 
 
 ## Skills Reference
 
-### `/run` — Task Execution Pipeline
+### `/act` — Task Execution Pipeline
 
 Routes any request through the full pipeline: orchestrator enriches context, planner defines objectives + decomposes work into items with acceptance criteria + assembles delegation prompts, a controller coordinates specialists, and a validator confirms quality. (v12.0.0 folded the standalone task-decomposer and prompt-engineer agents into the planner.)
 
 ```bash
-/run Fix the auth bug in src/auth.ts
-/run Write a sci-fi short story set on a generation ship
-/run Plan Q4 product launch campaign
-/run Design onboarding program for new engineers
-/run Create knowledge base article on our refund policy
-/run Fix auth bug --analytics    # Show execution metrics after run
+/act Fix the auth bug in src/auth.ts
+/act Write a sci-fi short story set on a generation ship
+/act Plan Q4 product launch campaign
+/act Design onboarding program for new engineers
+/act Create knowledge base article on our refund policy
+/act Fix auth bug --analytics    # Show execution metrics after run
 ```
 
 The domain routes automatically based on request content. Engineering requests go to a tech-lead controller; creative requests go to a narrative-director; business requests go to an operations-manager or strategic-planner.
@@ -110,7 +110,7 @@ Decomposes work into parallel waves. Teammates execute simultaneously within eac
 /team Implement OAuth2 authentication
 /team Build user dashboard --waves 8   # Force minimum 8 waves
 /team Build feature --dry-run          # Preview wave structure before running
-/run Build feature --team              # Team mode via flag on /run
+/act Build feature --team              # Team mode via flag on /act
 ```
 
 Each teammate is a controller that spawns execution agents directly. Wave 0 handles scaffolding and interface contracts; middle waves parallelize implementation; the final wave handles integration and validation.
@@ -126,7 +126,7 @@ Each teammate is a controller that spawns execution agents directly. Wave 0 hand
 /team Migrate to microservices --dry-run        # preview routing decision
 ```
 
-Single-domain simple requests still favor `/run`; single-domain complex work runs as flat parallel `/team`; multi-domain requests trigger Wave 0/1/2 C-suite deliberation plus Wave 3..N per-domain dispatch.
+Single-domain simple requests still favor `/act`; single-domain complex work runs as flat parallel `/team`; multi-domain requests trigger Wave 0/1/2 C-suite deliberation plus Wave 3..N per-domain dispatch.
 
 ### `/designer` — Interactive Design Exploration
 
@@ -140,27 +140,27 @@ Guides design exploration through structured Q&A before building anything. Resea
 
 A 4-dimension clarity score tracks readiness; implementation does not begin until ambiguity drops below 20%. Phase overlap starts next-phase research during the current phase to reduce wait time.
 
-### Improve Modes inside `/run` — Quality Review and Optimization
+### Improve Modes inside `/act` — Quality Review and Optimization
 
-Quality review and measurable optimization are available as modes on `/run`. The standalone `/improve` skill was folded into `/run` in v12.1.2 via a first-word keyword router. Mode selection via the keyword or via `--mode review|optimize|full`.
+Quality review and measurable optimization are available as modes on `/act`. The standalone `/improve` skill was folded into `/act` in v12.1.2 via a first-word keyword router. Mode selection via the keyword or via `--mode review|optimize|full`.
 
 ```bash
-/run review src/auth/                              # = --mode review (audit only)
-/run audit src/auth/                               # = --mode review (alias for review)
-/run review src/api/ --auto-fix                    # Auto-patch CRITICAL findings
-/run optimize src/db/queries.ts                    # = --mode optimize (measure, change, verify)
-/run improve src/                                  # = --mode full (review then optimize)
-/run review src/ --baseline                        # Establish quality baseline
-/run review src/ --suppress baseline               # Show only regressions
+/act review src/auth/                              # = --mode review (audit only)
+/act audit src/auth/                               # = --mode review (alias for review)
+/act review src/api/ --auto-fix                    # Auto-patch CRITICAL findings
+/act optimize src/db/queries.ts                    # = --mode optimize (measure, change, verify)
+/act improve src/                                  # = --mode full (review then optimize)
+/act review src/ --baseline                        # Establish quality baseline
+/act review src/ --suppress baseline               # Show only regressions
 ```
 
 Review mode runs parallel specialist reviewers (security-engineer, code-reviewer, performance-analyzer) and produces severity-tagged findings with file:line evidence. Optimize mode benchmarks before and after, rolls back on regression, and tracks pattern effectiveness across sessions.
 
-V11.0.0 consolidated `/review` and `/optimize` into `/improve`. v12.1.2 folded `/improve` into `/run` via the keyword router. See `.claude/skills/run/reference/improve-mode.md` for the full contract and [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the V11 migration baseline.
+V11.0.0 consolidated `/review` and `/optimize` into `/improve`. v12.1.2 folded `/improve` into `/act` via the keyword router. See `.claude/skills/act/reference/improve-mode.md` for the full contract and [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the V11 migration baseline.
 
 ### `/helper` — Command Guidance
 
-Recommends the right skill based on your task description. Use it when you are unsure whether to reach for `/run` or `/team` (with or without `--strategic`).
+Recommends the right skill based on your task description. Use it when you are unsure whether to reach for `/act` or `/team` (with or without `--strategic`).
 
 ```bash
 /helper
@@ -204,26 +204,26 @@ The router and planner still consume legacy domain routing config (controller_ca
 | **Leadership** | `leadership/` (used by `/team` strategic mode in v12.2.0+; pre-v12.2.0 used by `/org`) |
 | **Shared/Science/Health/Education/Personal/Arts/Trades** | `analyst/` + `advisor/{health,education,personal}` + `creator/` |
 
-**Engineering (31)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 23 more. Use `/run Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
+**Engineering (31)** handles the full software stack: backend-developer, frontend-developer, devops-engineer, security-engineer, qa-lead, architect, dba, performance-analyzer, and 23 more. Use `/act Fix the bug` or `/team Build the feature` and the pipeline routes here automatically for software tasks.
 
-**Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/run Write a mystery short story` and the narrative-director controller coordinates the right specialists.
+**Creative (30)** covers long-form and short-form writing: prose-stylist, dialogue-specialist, plot-developer, narrative-director, character-psychologist, worldbuilder, and 24 more. Use `/act Write a mystery short story` and the narrative-director controller coordinates the right specialists.
 
-**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, demand-generation-manager, sales-strategist, and 29 more. Use `/run Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
+**Growth (34)** is the largest domain: copywriter, marketing-strategist, seo-specialist, demand-generation-manager, sales-strategist, and 29 more. Use `/act Plan the Q4 content calendar` and the marketing-strategist controller coordinates the campaign team.
 
-**Service (28)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 23 more. Use `/run Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
+**Service (28)** covers support and legal: customer-success-manager, general-counsel, compliance-officer, technical-writer, legal-analyst, and 23 more. Use `/act Draft an EULA for our SaaS product` and the general-counsel controller coordinates the legal team.
 
 ---
 
 ## Architecture
 
-### `/run` — Event-Driven Pipeline
+### `/act` — Event-Driven Pipeline
 
-`/run` is a config-driven state machine. Each stage writes a file that triggers the next stage.
+`/act` is a config-driven state machine. Each stage writes a file that triggers the next stage.
 
 ```
 User Request
   |
-  +-> /run  (state machine loop, reads pipeline_config.yaml)
+  +-> /act  (state machine loop, reads pipeline_config.yaml)
         |
         INIT          -> orchestrator  -> enriched_context.yaml
         ORCHESTRATED  -> planner       -> plan.yaml + work_items.yaml
@@ -338,12 +338,12 @@ cAgents routes your request to the right domain automatically based on keywords.
 
 | Request | Routed To | Controller |
 |---------|-----------|------------|
-| `/run Fix the auth bug` | Engineering | tech-lead |
-| `/run Write a blog post about AI` | Creative | narrative-director |
-| `/run Plan Q4 product launch` | Business | operations-manager |
-| `/run Build an email campaign` | Growth | marketing-strategist |
-| `/run Create onboarding program` | People | hr-manager |
-| `/run Draft our privacy policy` | Service | general-counsel |
+| `/act Fix the auth bug` | Engineering | tech-lead |
+| `/act Write a blog post about AI` | Creative | narrative-director |
+| `/act Plan Q4 product launch` | Business | operations-manager |
+| `/act Build an email campaign` | Growth | marketing-strategist |
+| `/act Create onboarding program` | People | hr-manager |
+| `/act Draft our privacy policy` | Service | general-counsel |
 
 For cross-domain work that spans multiple areas (e.g., launching a product requires engineering, marketing, and ops), use `/team` — strategic mode auto-engages when `router` detects 2+ domains and coordinates C-suite agents across domains automatically (v12.2.0+; pre-v12.2.0 this was `/org`).
 
@@ -400,7 +400,7 @@ Wave 2 (parallel, 2 teammates): qa-lead writes integration tests covering the AP
 
 Wave 3 (lead, sequential): integration, final test run, validation report. Each wave is gated — the next wave does not start until the current wave's quality criteria pass. Total execution time: 40-60% less than sequential.
 
-### Quality Review: `/run review src/auth/ --auto-fix`
+### Quality Review: `/act review src/auth/ --auto-fix`
 
 Three reviewers run in parallel: security-engineer (injection, auth bypass, token handling), code-reviewer (naming, structure, DRY, complexity), performance-analyzer (N+1 queries, unnecessary allocations). Each reports findings with CRITICAL/HIGH/LOW severity, citing specific file:line evidence.
 
@@ -438,16 +438,16 @@ Key external tools and libraries that cAgents depends on:
 
 ## Version History
 
-See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights:
+See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
 - **V12.65.0** — Current release. Bucket-D hook security/performance remediation (session `run_bucket-d-remediation_260614_001`): added a bounded head+tail size cap to `secret-detection.cjs` (`CAGENTS_SECRET_SCAN_MAX_BYTES`, default 512 KB) to prevent a memory/latency blowup on large writes; consolidated the three `Write|Edit` PreToolUse hooks (secret-detection, controller-delegation-validator, skill-size-monitor) into a single deny-first, fail-closed `write-edit-dispatch.cjs` dispatcher (cold-start node spawns per Write|Edit cut 3→1); added a reproducible perf-benchmark corpus runner + Write|Edit hook-perf microbench with committed baselines; and fixed `verify-completion.cjs` to fact-check slash-less filename citations.
 - **V12.10.0** — FU-3 bare-prose agent-name sweep: replaced the last bare `universal-*` agent-name mentions in agent prose (the five pipeline agents — router, planner, validator, executor, self-correct) across 25 `agents/**` files, completing the v12.5.0 pipeline-agent rename. Added a `no-bare-universal-prose-refs` regression guard.
 - **V12.2.0** — BREAKING: `/org` skill removed; cross-domain coordination folded into `/team` with auto-enabled strategic mode (`router` `domain_count >= 2` triggers Wave 0/1/2 C-suite deliberation + Wave 3..N per-domain dispatch). 12 leadership agents preserved at their existing locations. Plugin skill count 5->4. Migration: `/org X` → `/team X`.
-- **V12.1.2** — Folds `/improve` into `/run` via a first-word keyword router and removes the standalone `/improve` skill (`/run review|audit` = `--mode review`, `/run optimize` = `--mode optimize`, `/run improve` = `--mode full`). Plugin skill count 6->5.
+- **V12.1.2** — Folds `/improve` into `/act` via a first-word keyword router and removes the standalone `/improve` skill (`/act review|audit` = `--mode review`, `/act optimize` = `--mode optimize`, `/act improve` = `--mode full`). Plugin skill count 6->5.
 - **V12.0.0** — Consolidation release: pipeline collapse 7->5 states (task-decomposer + prompt-engineer folded into planner), engineering-manager merged into tech-lead, architecture-reviewer collapsed into `architect --review` mode flag, 13 marketing-sales agents absorbed (38->25), chief-legal-officer renamed to clo, 11 legacy domain dirs deleted, `cagents-memory/_communication/` removed, max_revision_cycles 5->3, execution self-validation reduced 15->5 hook-verifiable checks. Total agents 251->238.
 - **V11.3.0** — Plugin health sweep: archetype-canonical doc alignment (9 archetypes canonical, 15 domains as routing overlay), 109 stale `related_agents` cross-references swept, hook-count assertions corrected (26 unique registered, 29 .cjs total), `sync-agents.sh --check` dry-run flag added, `validate-versions.sh` pruned to 18 canonical slots, regression tests added.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
-- **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/run context …` passthrough; `/debug` replaced by `/run --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
+- **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`); `/context` replaced by `/act context …` passthrough; `/debug` replaced by `/act --mode debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
 - **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
 - **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
 - **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents

@@ -30,7 +30,7 @@ skill directories were deleted. Those four slots accounted for the
 21 → 18 transition. The removal landed alongside the V11.0 consolidation
 of `/review` and `/optimize` into `/improve --mode review|optimize|full`,
 and the removal of `/context` and `/debug` (whose behaviors moved into
-`/run --mode debug` and the orchestrator's pre-enrichment context flow,
+`/act --mode debug` and the orchestrator's pre-enrichment context flow,
 respectively).
 
 The 18-location canonical table in `.claude/rules/core/version-registry.md`

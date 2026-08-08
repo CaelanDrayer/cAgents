@@ -13,27 +13,27 @@
 
 ```bash
 # {Workflow 1}
-/run {example request 1}
+/act {example request 1}
 
 # {Workflow 2}
-/run {example request 2}
+/act {example request 2}
 
 # {Workflow 3}
-/run {example request 3}
+/act {example request 3}
 
-# Review/Optimize (v12.1.2+: /improve folded into /run via keyword router)
-/run review {target}
-/run optimize {target}
+# Review/Optimize (v12.1.2+: /improve folded into /act via keyword router)
+/act review {target}
+/act optimize {target}
 ```
 
 ### {Category 2} Workflows
 
 ```bash
 # {Workflow 1}
-/run {example request 1}
+/act {example request 1}
 
 # {Workflow 2}
-/run {example request 2}
+/act {example request 2}
 ```
 
 ---

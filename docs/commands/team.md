@@ -6,7 +6,7 @@
 /team Implement OAuth2 authentication     # 5-7 waves
 /team Build user dashboard --dry-run      # Preview wave structure
 /team Build feature --waves 8             # Force minimum 8 waves
-/run Build feature --team                 # Team mode via /run flag
+/act Build feature --team                 # Team mode via /act flag
 ```
 
 ## How It Works
@@ -40,7 +40,7 @@ Wave N (Lead): Integration + final validation
 | Service | support, legal, compliance, customer, SLA |
 
 ## Fallback
-Unsuitable requests (<3 work items or all sequential) auto-delegate to `/run`.
+Unsuitable requests (<3 work items or all sequential) auto-delegate to `/act`.
 
 ## Context Mode
 `context: fork` -- runs in a forked context with agent teams.

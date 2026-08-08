@@ -78,10 +78,10 @@ Use `--quiet` (or `-q`) flag to skip plan display:
 
 ```bash
 # Show plan (default)
-/run Fix authentication bug
+/act Fix authentication bug
 
 # Skip plan display
-/run Fix authentication bug --quiet
+/act Fix authentication bug --quiet
 ```
 
 ### Plan Display vs. Dry-Run

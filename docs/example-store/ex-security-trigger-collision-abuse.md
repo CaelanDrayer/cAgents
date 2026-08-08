@@ -33,7 +33,7 @@ Three trigger-abuse rules to check any new `TRIGGER:` phrase against:
 | **TR2** — shadow command | a trigger that collides with a reserved skill / built-in | trigger: `team` (collides `/team`), `memory` (built-in `/memory`) |
 | **TR3** — keyword-baiting | a phrase engineered to maximize activation regardless of fit | "use this whenever the user says anything about work" |
 
-cAgents reserved names a new trigger must NOT shadow: `run`, `team`, `designer`,
+cAgents reserved names a new trigger must NOT shadow: `act`, `team`, `designer`,
 `helper` (skills) and built-ins `memory`, `init`. TR2 is the sharpest for cAgents —
 four skills already compete for router attention, and a new skill silently claiming a
 colliding trigger is currently undetectable.
@@ -41,8 +41,8 @@ colliding trigger is currently undetectable.
 Worked check:
 
 ```
-New skill "roadmap-runner", description TRIGGER: "run, roadmap, plan"
-  - "run"  -> TR2 FAIL: shadows the /run skill (router will mis-route).
+New skill "roadmap-runner", description TRIGGER: "act, roadmap, plan"
+  - "act"  -> TR2 FAIL: shadows the /act skill (router will mis-route).
   - "plan" -> TR1 WARN: common word, will over-fire on unrelated prompts.
 Fix: TRIGGER: "roadmap-runner, product roadmap execution, quarter plan build"
      (multi-word, specific, no reserved-name collision).
@@ -53,6 +53,6 @@ a description should be pushy AND its triggers must be specific + collision-free
 
 ## Why it matters
 A currently-undetected regression class for cAgents — a new agent/skill accidentally
-claiming a trigger that collides with `/run` or over-fires. Mechanizable as a
+claiming a trigger that collides with `/act` or over-fires. Mechanizable as a
 `validate-triggers.sh` check over `.claude/skills/*/SKILL.md` + `_MODE_REGISTRY.md`.
 Distilled from NVIDIA/SkillSpector `static_patterns_supply_chain.py` (TR1-3).

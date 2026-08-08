@@ -88,7 +88,7 @@ execution plans. The "how" before any keystroke of implementation.*
 | orchestrator | core | Enriches request context at pipeline start, detects domain and complexity |
 | task-state | core | Manages CSV-based task state for large-scale workflows with 20+ items; absorbs task-merger (context-overhead reduction, 40-88%) since v12.20.0 |
 | team | core | Initializes team-mode execution (concurrent-Agent wave planning; teams are implicit since CC v2.1.178 removed `TeamCreate`/`TeamDelete`); replaces the standalone `team-trigger` agent removed in v12.0.0 — the `/team` skill loop now drives this inline |
-| trigger | core | Pipeline entry point — parses user requests, routes to /run or /team |
+| trigger | core | Pipeline entry point — parses user requests, routes to /act or /team |
 | planner | core | Creates plan.yaml + work_items.yaml + optional delegation_prompts.yaml |
 | fashion-designer | creator | Garment design, pattern making, textile selection, trend analysis |
 | film-director | creator | Cinematography, screenwriting, editing, production design |
@@ -316,12 +316,12 @@ now-removed `/org` skill) for cross-domain strategic work; core pipeline agents
 
 ## How to use this index
 
-- **Starting a new project?** Run `/designer` (Define phase) before any `/run` or
+- **Starting a new project?** Run `/designer` (Define phase) before any `/act` or
   `/team`. Designer is interactive and uses Define-phase agents (`product-owner`,
   `business-analyst`, `ux-designer`) to clarify scope.
 - **Building a feature?** Walk Define → Plan → Build → Verify → Review → Ship,
-  spawning the relevant agents per phase via `/run` or `/team`. The planner inside
-  `/run` does this automatically, but knowing the spine lets you sanity-check
+  spawning the relevant agents per phase via `/act` or `/team`. The planner inside
+  `/act` does this automatically, but knowing the spine lets you sanity-check
   whether a phase was skipped.
 - **Diagnosing a problem?** Verify/Review agents (`qa-lead`, `code-reviewer`,
   `security-engineer`, `methodology-critic`, `reviewer`) are your first stop.
@@ -335,4 +335,4 @@ now-removed `/org` skill) for cross-domain strategic work; core pipeline agents
 - `CLAUDE.md` — canonical archetype tree (Project Overview section)
 - `AGENTS.md` — multi-tool routing surface
 - `docs/ARCHITECTURE.md` — subsystem deep dives
-- `docs/SKILLS.md` — skill catalog (`/run`, `/team`, `/designer`, `/helper`; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0)
+- `docs/SKILLS.md` — skill catalog (`/act`, `/team`, `/designer`, `/helper`; `/improve` folded into `/act` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0)
