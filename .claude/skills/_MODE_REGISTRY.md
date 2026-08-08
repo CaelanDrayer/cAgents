@@ -10,7 +10,7 @@ other 3 user skills.
 
 ---
 
-## /run
+## /act
 
 | Flag / Mode | Type | Description | Trigger phrases |
 |-------------|------|-------------|-----------------|
@@ -94,20 +94,20 @@ See `## /team` section above for the full flag/mode catalog including
 
 Interactive Q&A throughout. EXEMPT from auto-proceed per CLAUDE.md.
 
-## /improve (REMOVED in v12.1.2 — folded into /run)
+## /improve (REMOVED in v12.1.2 — folded into /act, the skill then named `run`)
 
-Removed in v12.1.2. The standalone `/improve` skill was folded into `/run`
-via a keyword router. The three modes and three flags are now available
-under `/run`:
+Removed in v12.1.2. The standalone `/improve` skill was folded into `/act`
+(named `run` at the time) via a keyword router. The three modes and three
+flags are now available under `/act`:
 
-- `/improve --mode review X` -> `/run review X` (or `/run X --mode review`)
-- `/improve --mode optimize X` -> `/run optimize X` (or `/run X --mode optimize`)
-- `/improve --mode full X` -> `/run improve X` (or `/run X --mode full`)
+- `/improve --mode review X` -> `/act review X` (or `/act X --mode review`)
+- `/improve --mode optimize X` -> `/act optimize X` (or `/act X --mode optimize`)
+- `/improve --mode full X` -> `/act improve X` (or `/act X --mode full`)
 - `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix` flags
-  remain valid on `/run` when an improve mode is active.
+  remain valid on `/act` when an improve mode is active.
 
-See `## /run` section above for the full flag/mode catalog. See
-`.claude/skills/run/reference/improve-mode.md` for the keyword router
+See `## /act` section above for the full flag/mode catalog. See
+`.claude/skills/act/reference/improve-mode.md` for the keyword router
 contract and mode-specific behavior.
 
 ## /helper
