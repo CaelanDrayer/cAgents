@@ -363,7 +363,7 @@ function _makeCacheKey(sessionHint, envSession, promptHint, fallback) {
  *   act|team|designer|debug going forward (legacy run|review|optimize|org are
  *   still read — see the SESSION_PREFIXES D2 carve-out above), and the
  *   trailing segments carry a timestamp / counter. Canonical production form is
- *   `{command}_{slug}_{YYMMDD}_{NNN}` (e.g. `run_fix-auth_260317_001`); test
+ *   `{command}_{slug}_{YYMMDD}_{NNN}` (e.g. `act_fix-auth_260317_001`); test
  *   fixtures often use a shorter base36 timestamp tail (e.g.
  *   `run_findactivesession-a_mpx7w1mu`). Both are valid cAgents shapes.
  *
