@@ -17,7 +17,7 @@ paths:
 
 All locations where the cAgents version number appears. Keep ALL locations in sync on every release.
 
-**Last verified**: v12.42.0 — `scripts/ci/validate-versions.sh` reports `Checked 16/16 locations, 0 mismatches, 0 skipped`. v12.2.0 removed slot #7 (`.claude/skills/org/SKILL.md`) when `/org` was removed and cross-domain coordination folded into `/team` strategic mode. Slots #8-#17 renumbered to #7-#16. (Prior v12.1.2 removal: slot `.claude/skills/improve/SKILL.md` when `/improve` was folded into `/run` via the keyword router.)
+**Last verified**: v12.42.0 — `scripts/ci/validate-versions.sh` reports `Checked 16/16 locations, 0 mismatches, 0 skipped`. v12.2.0 removed slot #7 (`.claude/skills/org/SKILL.md`) when `/org` was removed and cross-domain coordination folded into `/team` strategic mode. Slots #8-#17 renumbered to #7-#16. (Prior v12.1.2 removal: slot `.claude/skills/improve/SKILL.md` when `/improve` was folded into `/act` — formerly `/run` — via the keyword router.)
 
 ## Version Locations (16 total)
 

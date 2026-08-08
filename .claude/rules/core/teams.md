@@ -57,10 +57,10 @@ Subagent (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
 
 Wave subagents MAY also spawn deeper sub-agents within the 5-level nesting budget (skill loop = depth 0; the 5 levels are the subagent generations beneath it) when a work item genuinely warrants it — a subagent's execution agent can spawn its own helper sub-agent, and so on, up to the ceiling.
 
-**Wave subagents spawn execution agents DIRECTLY rather than re-entering /run via the Skill tool.** As of CC 2.1.172 a nested `/run` from a subagent is technically possible within the depth budget, but it is avoided **by design for cost and clarity**: re-entering the full /run pipeline (orchestrator + planner + controller + validator) for a single wave's work items duplicates enrichment the lead already did in Wave 0 and burns extra context and tokens. Spawn the execution agent directly instead.
+**Wave subagents spawn execution agents DIRECTLY rather than re-entering /act via the Skill tool.** As of CC 2.1.172 a nested `/act` from a subagent is technically possible within the depth budget, but it is avoided **by design for cost and clarity**: re-entering the full /act pipeline (orchestrator + planner + controller + validator) for a single wave's work items duplicates enrichment the lead already did in Wave 0 and burns extra context and tokens. Spawn the execution agent directly instead.
 
 **Anti-patterns (NEVER DO):**
-- Telling a subagent to invoke /run — re-entering the full pipeline duplicates Wave 0 enrichment and wastes tokens; spawn execution agents directly instead (by design for cost/clarity, NOT a harness limit)
+- Telling a subagent to invoke /act — re-entering the full pipeline duplicates Wave 0 enrichment and wastes tokens; spawn execution agents directly instead (by design for cost/clarity, NOT a harness limit)
 - Having the team lead do implementation work
 - Having wave subagents implement work items directly instead of spawning execution agents *(except the Nesting-Ceiling fallback below, when the `Agent` tool is verifiably absent)*
 - Having wave subagents answer questions directly instead of delegating *(except when `Agent` is verifiably absent)*
@@ -317,7 +317,7 @@ Agent({
 // Create tasks for each work item
 TaskCreate({
   subject: "TASK-01: Implement user model",
-  description: "Execute via /run: ...",
+  description: "Execute via /act: ...",
   activeForm: "Implementing user model"  // optional
 })
 
@@ -456,7 +456,7 @@ Dependencies: Use `addBlockedBy` in TaskUpdate. Blocked tasks auto-unblock when 
 
 If the request is unsuitable for team execution (tier 2, too few work items, all sequential):
 1. Notify user: "Request better suited for standard execution."
-2. Automatically delegate to `/run` for standard orchestration.
+2. Automatically delegate to `/act` for standard orchestration.
 
 ### Display Mode Fallback
 
@@ -633,7 +633,7 @@ When flat execution is used, the system behaves as a simple parallel distributio
 
 ## Integration Points
 
-- **trigger + router + planner**: Available for routing and planning (used by /run, optionally by /team via `mode: team_planning_only`)
+- **trigger + router + planner**: Available for routing and planning (used by /act, optionally by /team via `mode: team_planning_only`)
 - **`/team` skill loop**: Decomposes the request directly and executes waves by spawning subagents as concurrent `Agent()` calls (implicit teams — no TeamCreate). The standalone `team-trigger` agent was removed in v12.0.0 — this work is now inlined in the `/team` SKILL.md.
 - **controller delegate-mode wrapper**: The `/team` lead applies the delegate-mode pattern directly to its chosen controller, validates gates, and tracks contracts (the standalone `team-lead-adapter` agent was removed in v12.0.0 — this is now an inline pattern in `/team`)
 - **orchestrator**: Detects team mode, routes appropriately

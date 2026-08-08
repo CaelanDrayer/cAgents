@@ -112,7 +112,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 
 1. **core/controllers.md** — Question-based delegation patterns
 2. **core/controller-reference.md** — Detailed controller schemas and protocols
-3. **core/delegation.md** — Aggressive-delegation rules (`/run`, `/team`, `/designer` never do direct work)
+3. **core/delegation.md** — Aggressive-delegation rules (`/act`, `/team`, `/designer` never do direct work)
 4. **core/execution.md** — Execution agent patterns
 5. **core/hooks.md** — Hook system (18 event types, 34 .cjs files, 26 unique registered hooks + 5 dispatched sub-validators)
 6. **core/orchestration.md** — Workflow phases (routing → planning → coordinating → executing → validating)
@@ -174,18 +174,18 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 
 ## Current Skill Catalog (v12.2.0+)
 
-The rules in this directory support the four current skills shipped by cAgents. `/improve` was folded into `/run` via a first-word keyword router in v12.1.2 (`/run improve|review|audit|optimize ...`). `/org` was removed in v12.2.0 and its cross-domain C-suite coordination work absorbed into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`). See `docs/MIGRATION-V11.md` and the v12.1.2 / v12.2.0 CHANGELOG entries.
+The rules in this directory support the four current skills shipped by cAgents. `/improve` was folded into `/act` (formerly `/run`) via a first-word keyword router in v12.1.2 (`/act improve|review|audit|optimize ...`). `/org` was removed in v12.2.0 and its cross-domain C-suite coordination work absorbed into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`). See `docs/MIGRATION-V11.md` and the v12.1.2 / v12.2.0 CHANGELOG entries.
 
 | Skill | Purpose |
 |-------|---------|
-| `/run` | Single-domain task execution. Improve modes via keyword router: `/run improve X` → `--mode full`; `/run review X` or `/run audit X` → `--mode review`; `/run optimize X` → `--mode optimize`. |
+| `/act` | Single-domain task execution. Improve modes via keyword router: `/act improve X` → `--mode full`; `/act review X` or `/act audit X` → `--mode review`; `/act optimize X` → `--mode optimize`. |
 | `/team` | Parallel multi-agent execution with wave-based quality gates. Auto-enables strategic mode for cross-domain requests (12 leadership agents act as Wave 0/1 subagents). |
 | `/designer` | Interactive design exploration via guided Q&A (exempt from auto-proceed). |
 | `/helper` | Command guide and skill recommender. |
 
 Removed/folded skills (do not appear as current):
 
-- `/improve` — folded into `/run` keyword router (v12.1.2). Use `/run improve ...`, `/run review ...`, `/run audit ...`, `/run optimize ...`.
+- `/improve` — folded into `/act` keyword router (v12.1.2). Use `/act improve ...`, `/act review ...`, `/act audit ...`, `/act optimize ...`.
 - `/org` — removed (v12.2.0). Use `/team <cross-domain request>` (auto-strategic) or `/team <request> --strategic`.
 - `/review`, `/optimize`, `/context`, `/debug` — removed in V11.0. See `docs/MIGRATION-V11.md` for replacements.
 

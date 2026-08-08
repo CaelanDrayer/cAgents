@@ -18,14 +18,14 @@ paths:
 
 The canonical home of the cAgents aggressive-delegation rule, its
 Rationalization Kill List, and the size rule governing what the main
-session may carry. `/run` and `/team` reference this file via
+session may carry. `/act` and `/team` reference this file via
 `@.claude/rules/core/delegation.md`. Hooks (`prompt-router.cjs`,
 `controller-delegation-validator.cjs`) enforce the delegation rule; the
 size rule is doctrine and is not mechanically enforced.
 
 ## The Rule
 
-`/run`, `/team`, `/designer`, and every cAgents controller are pure
+`/act`, `/team`, `/designer`, and every cAgents controller are pure
 delegation proxies. They parse, plan, spawn agents, and read results.
 They do NOT write code, create content, explore the codebase for
 implementation purposes, or handle tasks themselves. ALL work goes to
@@ -47,9 +47,9 @@ critical violation when emitted by a skill or controller. No exceptions.
 | "This is a planning task" | Planning is a pipeline stage (planner agent), not a bypass. |
 | "I'll handle this directly" | Direct handling is a critical protocol violation. |
 | "The task is too simple for a full pipeline" | Simplicity never bypasses delegation — even one-line fixes use the pipeline. |
-| "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /run and /team. |
+| "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /act and /team. |
 | "I can do this more efficiently myself" | Efficiency is irrelevant. Delegation is mandatory regardless of efficiency claims. |
-| "This doesn't need agent coordination" | Every /run and /team invocation requires the full agent coordination pipeline. |
+| "This doesn't need agent coordination" | Every /act and /team invocation requires the full agent coordination pipeline. |
 | "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Agent tool. |
 | "Let me just make this change directly" | "Just" is a rationalization word. Agent tool only. |
 | "This is a minor edit that doesn't warrant spawning agents" | Size does not determine delegation requirements. |
@@ -140,7 +140,7 @@ still explicitly collected via `SendMessage` — never spawned-and-forgotten. Se
 
 | Layer | Mechanism | Effect |
 |-------|-----------|--------|
-| 1 | `prompt-router.cjs` (UserPromptSubmit) | Layer 1 (always on): detects `/run` or `/team` invocations and injects a 5-line systemMessage referencing this file. Layer 2 (OPT-IN, default OFF via `CAGENTS_ROUTING_SUGGESTIONS`): when enabled, suggests skills for natural-language requests ("build X" → `/run`), suppressed for conversational mode (≥3 sentences). When the env var is unset, no routing suggestions are emitted. |
+| 1 | `prompt-router.cjs` (UserPromptSubmit) | Layer 1 (always on): detects `/act` or `/team` invocations and injects a 5-line systemMessage referencing this file. Layer 2 (OPT-IN, default OFF via `CAGENTS_ROUTING_SUGGESTIONS`): when enabled, suggests skills for natural-language requests ("build X" → `/act`), suppressed for conversational mode (≥3 sentences). When the env var is unset, no routing suggestions are emitted. |
 | 2 | `.claude/skills/{run,team}/SKILL.md` | The skill body re-states the rule once and `@`-references this file for the kill list. |
 | 3 | `post-compact-restore.cjs` (PostCompact) | Re-injects goal/phase/work-item progress after context compaction (replaced `attention-injection.cjs` in v12.7.0 — see P2-10). |
 | 4 | `controller-delegation-validator.cjs` (PreToolUse[Write/Edit]) | DENIES writes to `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` while a controller is active; WARNS for other implementation paths. |
@@ -167,7 +167,7 @@ depth-1 context.
 
 ## See Also
 
-- `.claude/skills/run/SKILL.md` — /run skill body
+- `.claude/skills/act/SKILL.md` — /act skill body
 - `.claude/skills/team/SKILL.md` — /team skill body
 - `.claude/rules/core/controllers.md` — controller patterns
 - `.claude/rules/core/teams.md` — team coordination + nesting model (historical depth-1 stripping note)

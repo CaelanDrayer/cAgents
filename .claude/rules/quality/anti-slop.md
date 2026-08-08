@@ -53,7 +53,7 @@ Name the human or agent who acts. Do not give inanimate objects human verbs.
 
 ### In cAgents Context
 - BAD: "The pipeline manages execution flow"
-- GOOD: "The /run state machine advances through enrichment, coordination, and validation stages"
+- GOOD: "The /act state machine advances through enrichment, coordination, and validation stages"
 - BAD: "The system handles authentication"
 - GOOD: "The backend-developer implements JWT validation in the auth middleware"
 

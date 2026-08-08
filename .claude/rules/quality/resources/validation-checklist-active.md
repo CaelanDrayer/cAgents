@@ -35,7 +35,7 @@ Run at various points by **Multiple Agents** throughout the workflow. **Enforced
 
 | # | Check | What It Validates | Who Runs It | When | Failure Action |
 |---|-------|------------------|-------------|------|----------------|
-| 25 | Task Cleanup | Every TaskCreate has a matching TaskUpdate(completed/deleted) | /run, /team (incl. strategic mode; pre-v12.2.0 also /org) | Before session end | CLEANUP: mark all tasks completed or deleted |
+| 25 | Task Cleanup | Every TaskCreate has a matching TaskUpdate(completed/deleted) | /act, /team (incl. strategic mode; pre-v12.2.0 also /org) | Before session end | CLEANUP: mark all tasks completed or deleted |
 | 26 | Agent Tree Completeness | Every spawned agent in agent_tree.yaml has stopped_at and completion_summary | subagent-stop-tracker hook | On each SubagentStop | AUTO-FIX: record stop event |
 | 27 | File Change Audit | All modified files logged in file_changes.log with validation status | post-write-validator hook | After each Write/Edit | AUTO-FIX: log the change |
 | 28 | Context Drift Prevention | Plan objectives re-read before synthesis and major decisions | Controller | Before synthesis, before spawning | WARN: re-read plan.yaml |
