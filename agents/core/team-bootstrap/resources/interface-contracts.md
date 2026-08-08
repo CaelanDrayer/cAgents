@@ -54,7 +54,7 @@ for each contract where established_in == gate.wave:
 
 ### During Parallel Execution
 
-Consumer teammates should reference contract artifacts in their `/run` instructions:
+Consumer teammates should reference contract artifacts in their `/act` instructions:
 
 ```
 Execute TASK-03: Build user service.
@@ -80,7 +80,7 @@ When creating teammate tasks, include contract context:
 ```javascript
 TaskCreate({
   subject: "TASK-03: Build user API endpoints",
-  description: `Execute via /run: Build user CRUD endpoints.
+  description: `Execute via /act: Build user CRUD endpoints.
     Contract: Consumes "Database Schema & Models" from platform team.
     Reference: schema.prisma, src/models/, src/types/
     Acceptance: Endpoints use established models, no schema drift.`,

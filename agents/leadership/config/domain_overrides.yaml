@@ -1,5 +1,5 @@
 # Leadership domain overrides
-# Leadership agents are invoked by /team strategic mode, not directly by /run
+# Leadership agents are invoked by /team strategic mode, not directly by /act
 domain: leadership
 description: "C-suite executives for strategic coordination via /team strategic mode"
 

@@ -127,7 +127,7 @@ See @resources/prompt-templates.md § Pre-emptive Consultation for the per-WI as
 ## Workspace Skill Reuse (reuse-before-rebuild)
 
 Before assigning a cAgents execution agent to a work item, check whether a
-**skill already present in the workspace** can do that work. `/run` writes the
+**skill already present in the workspace** can do that work. `/act` writes the
 catalog to `workflow/available_skills.yaml` at level 0 (read it; if absent or
 `skills: []`, skip this — proceed with normal agent assignment).
 
@@ -148,10 +148,10 @@ multi-source reports), assign the **skill** instead of a generic agent:
 Rules: assign a skill ONLY on a clear match (a vague/partial match → normal
 agent); a work item has EITHER `assigned_skill` OR `assigned_to` (set the
 unused one to `null`); never route a work item back into cAgents' own
-`run`/`team`/`designer`/`helper`. This is the minimal-solution ladder
+`act`/`team`/`designer`/`helper`. This is the minimal-solution ladder
 (`@.claude/rules/playbooks/pat-minimal-solution-ladder.md`) at planning time —
 reuse an existing skill before rebuilding it with agents. See
-@.claude/skills/run/reference/skill-awareness.md for the full contract and the
+@.claude/skills/act/reference/skill-awareness.md for the full contract and the
 controller-side invocation/fallback.
 
 ## Example-Store Few-Shot (advisory)
@@ -195,7 +195,7 @@ After creating plan and decomposition:
 
 ## Event-Driven Pipeline Integration (v12.0.0)
 
-When spawned by /run's state machine loop, the planner is the PLANNED state agent in the v12 collapsed pipeline (7 -> 5 states). Your job is to:
+When spawned by /act's state machine loop, the planner is the PLANNED state agent in the v12 collapsed pipeline (7 -> 5 states). Your job is to:
 1. Define objectives and select controllers (formerly planner-only)
 2. Decompose into work_items.yaml inline (formerly task-decomposer)
 3. (v12.6.0: `delegation_prompts.yaml` emission removed — controllers use standard delegation prompts.)
@@ -203,7 +203,7 @@ When spawned by /run's state machine loop, the planner is the PLANNED state agen
 ### Pipeline Role
 
 ```
-/run state machine (v12.6.0) -> PLANNED -> planner -> plan.yaml + work_items.yaml (and per-wave files when waves are defined)
+/act state machine (v12.6.0) -> PLANNED -> planner -> plan.yaml + work_items.yaml (and per-wave files when waves are defined)
 ```
 
 ### Inputs
@@ -212,7 +212,7 @@ Read `workflow/enriched_context.yaml` for domain, constraints, and project conte
 
 ### State Advancement (v12.6.0)
 
-After writing plan.yaml + work_items.yaml + (when waves are defined) work_meta.yaml + per-wave files, return control to `/run`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/run` advances state by reading `plan.yaml` directly (the canonical PLANNED-state output). Do NOT create `workflow/events/`, and do NOT write `delegation_prompts.yaml` (also removed; controllers fall back to standard delegation prompts).
+After writing plan.yaml + work_items.yaml + (when waves are defined) work_meta.yaml + per-wave files, return control to `/act`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/act` advances state by reading `plan.yaml` directly (the canonical PLANNED-state output). Do NOT create `workflow/events/`, and do NOT write `delegation_prompts.yaml` (also removed; controllers fall back to standard delegation prompts).
 
 ## Per-Wave Emission Contract (v12.1.1+)
 

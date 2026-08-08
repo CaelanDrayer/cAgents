@@ -1,6 +1,6 @@
 ## Per-Wave Emission Contract (v12.1.1+)
 
-When the request decomposes into waves (typical under `/team` or `/run --waves N`, and any time the planner identifies natural delivery phases), the planner MUST emit BOTH the legacy monolithic file AND the new per-wave shapes:
+When the request decomposes into waves (typical under `/team` or `/act --waves N`, and any time the planner identifies natural delivery phases), the planner MUST emit BOTH the legacy monolithic file AND the new per-wave shapes:
 
 | Artifact | Required when | Purpose |
 |----------|---------------|---------|
@@ -77,4 +77,4 @@ work_items:
 
 ### When Waves Are Not Defined
 
-For tier-2 single-wave work (e.g., simple `/run` with no `--waves` flag and a request that fits in one delivery phase), the planner MAY skip `work_meta.yaml` + per-wave files and emit only `work_items.yaml`. In that case the completion event omits the per-wave artifacts. The regression test at `tests/v12/planner-per-wave-emission.test.js` only asserts the per-wave shapes exist when `work_meta.yaml.total_waves >= 1`.
+For tier-2 single-wave work (e.g., simple `/act` with no `--waves` flag and a request that fits in one delivery phase), the planner MAY skip `work_meta.yaml` + per-wave files and emit only `work_items.yaml`. In that case the completion event omits the per-wave artifacts. The regression test at `tests/v12/planner-per-wave-emission.test.js` only asserts the per-wave shapes exist when `work_meta.yaml.total_waves >= 1`.

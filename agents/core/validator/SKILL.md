@@ -29,7 +29,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 **Role**: Quality gate for all domains. Validates controller coordination and outputs.
 
-**Note on debug mode**: The validator's "debug mode" branch (detected from `instruction.yaml` `flags.mode: debug`) is orthogonal to the `/debug` skill removed in V11.0.0 — it is driven by `/run --mode debug` and remains fully active.
+**Note on debug mode**: The validator's "debug mode" branch (detected from `instruction.yaml` `flags.mode: debug`) is orthogonal to the `/debug` skill removed in V11.0.0 — it is driven by `/act --mode debug` and remains fully active.
 
 **Use When**:
 
@@ -69,7 +69,7 @@ See @resources/validation-phases.md for the per-phase check list, output schemas
 
 ## Debug-Mode Detection (V10.26.14+)
 
-When the session was launched with `/run --mode debug`, the validator runs an extra branch of mode-specific checks. The branch detects `flags.mode: debug` in `instruction.yaml`, logs the sentinel into `validation_report.yaml mode_notes:`, then layers progressive enforcement (V10.26.15 hypotheses_tested[], V10.26.16 failing-test artifact, V10.26.17 falsified-hypothesis rule + BLOCKED verdict).
+When the session was launched with `/act --mode debug`, the validator runs an extra branch of mode-specific checks. The branch detects `flags.mode: debug` in `instruction.yaml`, logs the sentinel into `validation_report.yaml mode_notes:`, then layers progressive enforcement (V10.26.15 hypotheses_tested[], V10.26.16 failing-test artifact, V10.26.17 falsified-hypothesis rule + BLOCKED verdict).
 
 See @resources/debug-mode-checks.md for the authoritative check catalog, verification methods, severity per check, and the BLOCKED verdict routing rule.
 
@@ -81,7 +81,7 @@ See @resources/debug-mode-checks.md for the authoritative check catalog, verific
 
 ## Classification Logic (Event-Driven Pipeline V9.23.0)
 
-The validator now outputs three classifications that drive /run's revision routing:
+The validator now outputs three classifications that drive /act's revision routing:
 
 | Classification | Conditions | Pipeline Action |
 |----------------|------------|-----------------|
@@ -121,7 +121,7 @@ revision_target: PLANNED  # only present for FAIL/REVISE (v12.0.0: both verdicts
 
 ### State Advancement (v12.6.0)
 
-After writing `validation_report.yaml`, return control to `/run`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/run` reads `validation_report.yaml` directly to determine the verdict (`PASS` / `FAIL` / `REVISE`). The verdict field in `validation_report.yaml` is the canonical routing signal: PASS advances to terminal VALIDATED, FAIL/REVISE route back to PLANNED for re-run (max 3 cycles).
+After writing `validation_report.yaml`, return control to `/act`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/act` reads `validation_report.yaml` directly to determine the verdict (`PASS` / `FAIL` / `REVISE`). The verdict field in `validation_report.yaml` is the canonical routing signal: PASS advances to terminal VALIDATED, FAIL/REVISE route back to PLANNED for re-run (max 3 cycles).
 
 ## Decision Log Validation (V10.6.0)
 

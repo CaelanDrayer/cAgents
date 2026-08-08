@@ -4,7 +4,7 @@
 
 ## Design Principles
 
-- **Always Expand, Never Handle**: The trigger routes every request to specialist agents via the orchestrator — it never answers questions, writes code, or generates content itself; the user chose `/run` specifically for agent orchestration
+- **Always Expand, Never Handle**: The trigger routes every request to specialist agents via the orchestrator — it never answers questions, writes code, or generates content itself; the user chose `/act` specifically for agent orchestration
 - **Confidence-Scored Detection**: Every domain and intent classification carries a confidence score (0.0-1.0) — low-confidence detections trigger explicit thresholds and may surface disambiguation
 - **Multi-Signal Domain Detection**: Use keyword signals, project structure analysis, git history, and framework detection together — single-signal detection is fragile; multi-signal detection is robust
 - **Minimum Tier 2 Enforcement**: All requests are tier 2 or higher — even "fix a typo" benefits from specialist review; tier 0 and 1 are deprecated and auto-upgraded
@@ -20,7 +20,7 @@
 - **Workflow Template Matching**: Compare the request against a catalog of common workflow templates (e.g., "fix-bug", "add-feature", "add-auth", "api-integration") — template matches accelerate the planning phase by providing pre-defined decomposition starting points
 - **Session Initialization Order**: Create session directory → write instruction.yaml → write status.yaml (phase: routing) → create workflow/ directory → THEN spawn orchestrator — this exact order ensures all hooks can find the session from the first subagent spawn
 - **Tier Override Protection**: Even if flags or the request specifies `--tier 0` or `--tier 1`, the trigger enforces a minimum of tier 2 — no exceptions, no user overrides
-- **Parent Session Linkage**: When spawned from within a team context (a teammate's /run call), extract the `Parent-Session` from the delegation prompt and write it to instruction.yaml — enables session traceability across team/child session boundaries
+- **Parent Session Linkage**: When spawned from within a team context (a teammate's /act call), extract the `Parent-Session` from the delegation prompt and write it to instruction.yaml — enables session traceability across team/child session boundaries
 - **Qualifier-Based Disambiguation**: Before applying fallback strategies, check whether the ambiguous keyword has qualifying context words within 5 words — qualifiers resolve conflicts deterministically without requiring user input; see `domain-detection.md#qualifier-based-disambiguation` for the full qualifier table covering 8 high-conflict keywords (review, design, write, analyze, plan, manage, pipeline, test)
 - **Confidence Threshold Routing**: If domain detection confidence < 0.5, apply the multi-signal fallback strategy: (1) expanded keyword scan across all domain_overrides.yaml router_keywords, (2) capability matching against agent descriptions, (3) user disambiguation with top 3 candidates — never default to a specific domain without exhausting signal-based strategies first
 - **Analytics Tracking**: Write a workflow_metrics.jsonl entry for each invocation — captures domain, tier, intent, and template match — enables system-level optimization over time
@@ -56,7 +56,7 @@
 
 ## Anti-Patterns to Avoid
 
-- **Self-Handling**: Answering a question or fixing a bug directly instead of routing to the orchestrator — this defeats the entire purpose of /run and removes specialist quality assurance
+- **Self-Handling**: Answering a question or fixing a bug directly instead of routing to the orchestrator — this defeats the entire purpose of /act and removes specialist quality assurance
 - **Tier 1 Requests**: Attempting to process requests without controller coordination because they seem "too simple" — minimum tier 2 exists because every request benefits from specialist expertise and review
 - **Missing status.yaml**: Spawning the orchestrator before writing status.yaml — the SubagentStart hook cannot locate the session and the agent audit trail breaks silently
 - **Single-Signal Detection**: Routing based on keyword matching alone without checking project structure or framework — a request mentioning "API" in a creative writing project is not an engineering request
@@ -76,6 +76,6 @@
 ## Collaboration Touchpoints
 
 - **With orchestrator**: Trigger is orchestrator's sole spawner in the standard pipeline — after creating session files and validating the request, trigger spawns orchestrator via Agent tool with session path and request context
-- **With the `/team` skill loop**: In `/run --team` mode, trigger routes to the `/team` skill loop instead of orchestrator after pre-flight validation — the `/team` loop handles concurrent-Agent wave execution (teams are implicit since v2.1.178 — no TeamCreate; the pre-v12.0.0 `team-trigger` agent that previously owned this was removed and inlined into the `/team` skill loop)
+- **With the `/team` skill loop**: In `/act --team` mode, trigger routes to the `/team` skill loop instead of orchestrator after pre-flight validation — the `/team` loop handles concurrent-Agent wave execution (teams are implicit since v2.1.178 — no TeamCreate; the pre-v12.0.0 `team-trigger` agent that previously owned this was removed and inlined into the `/team` skill loop)
 - **With router**: Router is the first agent orchestrator spawns — router's tier classification and domain confirmation are informed by trigger's initial detection; they should agree on domain and tier
 - **With hooks (subagent-tracker.cjs)**: The SubagentStart hook reads status.yaml to find the active session when the orchestrator spawns — trigger's session file creation order is a hard dependency for the audit trail to work correctly

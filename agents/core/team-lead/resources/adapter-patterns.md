@@ -43,7 +43,7 @@ When all wave-0 tasks are completed, GATE-0 unblocks, enabling wave-1 tasks.
 
 ### Work Distribution (spawn via Agent, NOT SendMessage)
 
-Teammates are spawned as controller agents via the Agent tool — NEVER assigned work through SendMessage, and NEVER told to re-enter `/run`. Spawn a wave's teammates as concurrent `Agent()` calls in ONE message:
+Teammates are spawned as controller agents via the Agent tool — NEVER assigned work through SendMessage, and NEVER told to re-enter `/act`. Spawn a wave's teammates as concurrent `Agent()` calls in ONE message:
 
 ```javascript
 Agent({
