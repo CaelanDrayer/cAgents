@@ -27,9 +27,9 @@ After /act reports results, the pipeline enters a listening state. If the user p
    ```
    TodoWrite([
      ...all_previous_completed...,
-     {"content": "[run] Follow-up #{N}: {type} -- \"{feedback_summary}\"\n[run > {controller}] Coordinating {type}\n  [{controller} > {executor}] {action_description}\n  [{controller}] {type} synthesized", "status": "in_progress", "id": "followup_{N}"},
-     {"content": "[run > validator] Re-validating", "status": "pending", "id": "revalidate_followup_{N}"},
-     {"content": "[run] Follow-up #{N} complete", "status": "pending", "id": "validated_followup_{N}"}
+     {"content": "[act] Follow-up #{N}: {type} -- \"{feedback_summary}\"\n[act > {controller}] Coordinating {type}\n  [{controller} > {executor}] {action_description}\n  [{controller}] {type} synthesized", "status": "in_progress", "id": "followup_{N}"},
+     {"content": "[act > validator] Re-validating", "status": "pending", "id": "revalidate_followup_{N}"},
+     {"content": "[act] Follow-up #{N} complete", "status": "pending", "id": "validated_followup_{N}"}
    ])
    ```
 
