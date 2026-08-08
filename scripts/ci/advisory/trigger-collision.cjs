@@ -11,9 +11,9 @@
 //   TR1 over-broad   — a trigger that is a single very-common word or <=2 chars
 //                      (e.g. `go`, `do`, `xy`) fires on unrelated prompts. MEDIUM.
 //   TR2 shadow       — a trigger that collides with a reserved skill/built-in
-//                      name (run, team, designer, helper, memory, init) when
-//                      declared by a DIFFERENT owner than the reserved name's
-//                      owner. HIGH.
+//                      name (act, team, designer, helper, run, memory, init)
+//                      when declared by a DIFFERENT owner than the reserved
+//                      name's owner. HIGH.
 //   TR3 keyword-bait — a description phrase engineered to over-activate
 //                      regardless of fit ("use this whenever the user says
 //                      anything", "always use this", "for any request"). MEDIUM.
@@ -42,8 +42,19 @@ const fs = require('fs');
 const path = require('path');
 
 // Reserved skill + built-in command names a trigger must not shadow (TR2).
-const RESERVED_SKILLS = new Set(['run', 'team', 'designer', 'helper']);
-const RESERVED_BUILTINS = new Set(['memory', 'init']);
+//
+// D8 (`run` -> `act` rename): `run` moved from RESERVED_SKILLS to
+// RESERVED_BUILTINS because Claude Code shipped its own built-in `run` skill,
+// which shadowed the cAgents `run` skill — the exact TR2 failure this validator
+// models, hit for real. cAgents therefore renamed its skill to `act`; the
+// harness now owns `run`.
+//
+// `run` is deliberately RETAINED as a built-in rather than deleted: it must keep
+// firing TR2 so a future cAgents skill cannot silently re-shadow the harness's
+// `run`. Only its classification changed (the TR2 message now reads "built-in"
+// instead of "skill"), never its reserved status.
+const RESERVED_SKILLS = new Set(['act', 'team', 'designer', 'helper']);
+const RESERVED_BUILTINS = new Set(['run', 'memory', 'init']);
 const RESERVED_NAMES = new Set([...RESERVED_SKILLS, ...RESERVED_BUILTINS]);
 
 // Ultra-generic single words that fire on virtually any prompt (TR1). Kept
