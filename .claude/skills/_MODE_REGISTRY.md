@@ -2,8 +2,8 @@
 
 Single source of truth for all skill modes, flags, and trigger phrases. Skill
 SKILL.md bodies SHOULD reference this registry rather than redefining modes inline.
-This prevents documentation drift across `team/`, `run/`, and the
-other 3 user skills.
+This prevents documentation drift across `team/`, `act/`, and the
+other 2 user skills.
 
 **Last regenerated**: 2026-06-18 (v12.20.0 — Agent Modes section added for consolidated catalog; 30 moded agents enumerated across 8 archetypes; added by int-docs wave-10 in team_consolidate-catalog_260617_001)
 **Reference pattern**: Imbad0202/academic-research-skills MODE_REGISTRY.md (Apache-2.0)

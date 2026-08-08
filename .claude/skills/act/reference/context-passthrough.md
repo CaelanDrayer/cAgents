@@ -62,8 +62,8 @@ either moved into `/improve` (review/optimize) or `/act --mode debug`
 (debug), or whose maintenance burden exceeded user demand (`/context`).
 After `/context` was removed, the `/act context` passthrough had nothing
 to dispatch to and was left as dead code. V11.1.4 deleted the live
-dispatch block from `/run/SKILL.md` and rewrote this reference document
-as a historical deprecation note.
+dispatch block from `/run/SKILL.md` (now `act/SKILL.md`) and rewrote
+this reference document as a historical deprecation note.
 
 ## See Also
 
