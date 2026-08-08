@@ -1,0 +1,60 @@
+COMMIT MESSAGE CORRECTION (WI-30, attached as a git note; history NOT rewritten)
+
+The subject/body carried by this commit is WRONG. During wave 4 an agent ran
+`git commit --amend` while two siblings were committing concurrently; the amend
+landed on the wrong HEAD and replaced this commit's message with a duplicate of
+WI-14's. The pre-amend commit is 9d2f20a2e66230733e27695e0e9ff7fa8c993bb6
+(orphaned, still reachable via reflog rename-run-to-act@{15}).
+
+WHAT THIS COMMIT ACTUALLY CONTAINS
+  1. WI-13 / WI-31 (the real work) -- 2 files, byte-identical to 9d2f20a2:
+       .claude/skills/act/SKILL.md
+       .claude/skills/act/reference/skill-awareness.md
+     Proof: `git diff 9d2f20a2 dfeafa24 -- <those 2 files>` is empty.
+  2. One line of WI-14 follow-up polish that the misfired amend swallowed:
+       .claude/skills/_MODE_REGISTRY.md line 94
+       -  ... folded into /act, the skill then named `run`)
+       +  ... folded into /act, which was then named `run`)
+     WI-14 proper is commit fe9238a700b6aac5ab3507232997d2968dd84e41.
+
+Consequently the correct message is the recovered text below PLUS the one-line
+_MODE_REGISTRY.md wording refinement noted above. Restored verbatim:
+
+--- BEGIN RECOVERED ORIGINAL MESSAGE (from 9d2f20a2) ---
+fix(act): exclude Claude Code's built-in `run` skill from workspace discovery
+
+BEHAVIORAL FIX (WI-13, risk R4) -- not rename fallout. Claude Code now ships a
+built-in `run` skill ("launch and drive this project's app"). The
+skill-awareness discovery procedure excluded cAgents' own pipeline skills by
+name only, so once cAgents' `/run` became `/act` the built-in `run` became a
+newly "discoverable workspace skill" the planner could pick as a work item's
+`assigned_skill` -- reintroducing exactly the run/act confusion the rename
+exists to remove. The exclusion list now names the built-in `run` explicitly
+and unconditionally, and says why.
+
+Second half of the same defect (WI-31 / CD-8, sanctioned pattern (6)): the
+own-skill exclusion tuple still read `run`/`team`/`designer`/`helper`, so
+`act` was absent from its own exclusion list. The planner could emit
+`assigned_skill: act` and the controller would then call
+`Skill({skill: "act"})`, recursing into the whole pipeline. Anchored on the
+fixed 4-tuple and rewritten to `act`/`team`/`designer`/`helper` at both sites.
+
+Sites: skill-awareness.md step-2 exclusion list, skill-awareness.md
+"What this does NOT do", act/SKILL.md step 3d-skills.
+
+Known follow-up (reported to controller, NOT fixed here -- unowned file):
+tests/regressions/act-skill-awareness.test.js still points at
+.claude/skills/run/ and asserts the old 4-tuple; it needs repointing plus a
+new assertion pinning the built-in-`run` exclusion.
+--- END RECOVERED ORIGINAL MESSAGE ---
+
+WHY A NOTE AND NOT A REWRITE: a message-only rewrite would re-hash this commit
+and every one of the 6 commits after it on a 29-commit series whose content is
+verified and whose gates are green. A note is non-destructive, survives a
+--no-ff merge (which preserves SHAs), and -- unlike a straight message swap --
+can also record the swallowed WI-14 line, which the recovered message alone
+does not mention.
+
+Read with: git log --show-notes  |  git notes show dfeafa24
+Note refs are NOT pushed by `git push` alone; add
+`git push origin refs/notes/commits` if this annotation should reach the remote.
