@@ -4,10 +4,11 @@
 # Counts-derivation CI guard (P1-5).
 #
 # Derives canonical counts from disk and compares against documented values
-# in CLAUDE.md, README.md, .claude/settings.json, .claude/rules/core/hooks.md,
-# .claude/rules/core/version-registry.md, docs/agents/index.md, and
-# docs/12-FACTOR-COMPLIANCE.md. Exits 0 if all counts match, exits 1 with the
-# offending file + claimed-vs-derived diff on first mismatch.
+# in CLAUDE.md, README.md, AGENTS.md, package.json, .claude/settings.json,
+# .claude/rules/core/hooks.md, .claude/rules/core/version-registry.md,
+# docs/agents/index.md, and docs/12-FACTOR-COMPLIANCE.md. Exits 0 if all counts
+# match, exits 1 with the offending file + claimed-vs-derived diff on first
+# mismatch.
 #
 # Usage:
 #   bash scripts/ci/validate-counts.sh           # full check
@@ -62,6 +63,10 @@ RULES_MD=$(find .claude/rules -name '*.md' -type f | wc -l | tr -d ' ')
 # Playbook .md files (currently 8 pat-* + README = 9) — the CLAUDE.md playbooks claim.
 PLAYBOOK_FILES=$(ls .claude/rules/playbooks/*.md 2>/dev/null | wc -l | tr -d ' ')
 
+# User-facing skills shipped under .claude/skills (one SKILL.md per skill dir).
+# Currently 4 (act, team, designer, helper) — derived, never hardcoded.
+USER_SKILLS=$(find .claude/skills -maxdepth 2 -name 'SKILL.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+
 # Pre-execution validation checks (### Check N headings in the checklist).
 # This is the count cited as "Pre-Execution (N checks)" in controllers.md.
 PREEXEC_CHECKS=$(grep -cE "^### Check [0-9]" .claude/rules/core/resources/controller-validation-checklist.md)
@@ -78,6 +83,7 @@ print_derived() {
   echo "registry_slots=$REGISTRY_SLOTS"
   echo "rules_md=$RULES_MD"
   echo "playbook_files=$PLAYBOOK_FILES"
+  echo "user_skills=$USER_SKILLS"
   echo "preexec_checks=$PREEXEC_CHECKS"
 }
 
@@ -334,6 +340,40 @@ if [ -f AGENTS.md ]; then
       report_mismatch "AGENTS.md" "${actual:-${arch} count}" "\`${arch}/\` (${count})"
     fi
   done
+fi
+
+# Check 15 (FU-1): package.json `description` agent + user-skill counts.
+# package.json was the ONE root manifest this guard did not cover, which is
+# exactly how its description drifted to a stale "58 agents" (introduced in
+# v12.43.0, still on main) while CLAUDE.md, README.md, AGENTS.md and
+# plugin.json all said 60 and CI stayed green. The description states both the
+# agent total ("<N> agents across 9 archetypes") and the user-skill count
+# ("<M> user skills (...)"); both are compared against the canonical derived
+# values — ACTIVE_AGENTS (from plugin.json) and USER_SKILLS (from the on-disk
+# .claude/skills tree). Presence checks, mirroring Check 14 (AGENTS.md).
+# Only the `description` field is read; the `scripts` block is never inspected.
+#
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_PACKAGE_JSON lets the
+# package-json-counts-guard.test.js mutation test point Check 15 at a temp-dir
+# copy of package.json (mirrors the CAGENTS_VALIDATE_COUNTS_CLAUDE_MD pattern
+# from Check 1), so the real manifest is never mutated in place. Production
+# callers do NOT set it; the default path (package.json in REPO_ROOT) is
+# unchanged.
+PACKAGE_JSON_PATH="${CAGENTS_VALIDATE_COUNTS_PACKAGE_JSON:-package.json}"
+if [ -f "$PACKAGE_JSON_PATH" ]; then
+  PKG_DESC=$(jq -r '.description // empty' "$PACKAGE_JSON_PATH")
+  if [ -n "$PKG_DESC" ]; then
+    if ! printf '%s' "$PKG_DESC" | grep -qE "\b${ACTIVE_AGENTS} agents\b"; then
+      actual=$(printf '%s' "$PKG_DESC" | grep -oE "\b[0-9]+ agents\b" | head -1)
+      report_mismatch "$PACKAGE_JSON_PATH (description)" "${actual:-agent total}" \
+        "$ACTIVE_AGENTS agents"
+    fi
+    if ! printf '%s' "$PKG_DESC" | grep -qE "\b${USER_SKILLS} user skills\b"; then
+      actual=$(printf '%s' "$PKG_DESC" | grep -oE "\b[0-9]+ user skills\b" | head -1)
+      report_mismatch "$PACKAGE_JSON_PATH (description)" "${actual:-user-skill count}" \
+        "$USER_SKILLS user skills"
+    fi
+  fi
 fi
 
 # ---- Result ----------------------------------------------------------------
