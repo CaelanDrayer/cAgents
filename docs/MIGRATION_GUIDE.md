@@ -15,7 +15,7 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 | **Agent count** | ~3 | ~3 | 60 |
 | **Archetypes** | Engineering only | Engineering only | 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership) |
 | **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED |
-| **Revision loops** | None | None | Executor → Reviewer (max 3 rounds per work item), PASS/FAIL/REVISE routing (max 3 cycles) |
+| **Revision loops** | None | None | Executor → Reviewer (max 2 rounds per work item), PASS/FAIL/REVISE routing (max 3 cycles) |
 | **Parallel execution** | No | No | N-wave parallel teams with per-wave quality gates (40-60% faster) |
 | **Cross-domain** | No | No | Yes — single command spans engineering + business + creative |
 | **Hook lifecycle** | 1-4 hooks | 1-4 hooks | 26 registered hooks (session init, secret detection, attention injection, team lifecycle, completion verification) |
