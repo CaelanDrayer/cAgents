@@ -40,7 +40,7 @@ function makeSession(sid, dirMtimeOffsetMs) {
   );
   writeFileSync(
     join(dir, 'instruction.yaml'),
-    `session_id: ${sid}\nraw_request: "req ${sid}"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sid}\nraw_request: "req ${sid}"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   // status.yaml mtime old (>> liveness threshold) so the session is NOT live.
   const statusT = (Date.now() - 5000) / 1000;

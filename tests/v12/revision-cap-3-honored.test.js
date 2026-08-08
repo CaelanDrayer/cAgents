@@ -7,7 +7,7 @@
  * an additional surface-area check: any docs/rules file that documents
  * the cap must agree with the live config value.
  *
- * Rationale: a value in one place is easy to drift. The /run state machine
+ * Rationale: a value in one place is easy to drift. The /act state machine
  * loop and any rules file that mentions the cap must agree.
  */
 import { describe, it, expect, beforeAll } from 'vitest';

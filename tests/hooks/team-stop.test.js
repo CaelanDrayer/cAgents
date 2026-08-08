@@ -59,7 +59,7 @@ describe('team-stop.cjs', () => {
   });
 
   it('should update pipeline_state to VALIDATED when status uses pipeline_state field', () => {
-    // Simulate a /run session that writes pipeline_state instead of phase
+    // Simulate a /act session that writes pipeline_state instead of phase
     writeFileSync(join(SESSION_DIR, 'status.yaml'),
       'pipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
     runHook({ session_id: TEST_SESSION });
@@ -77,7 +77,7 @@ describe('team-stop.cjs', () => {
   });
 
   it('should report result: success (not partial) when no task_list.yaml exists (non-team session)', () => {
-    // No task_list.yaml is written — simulates a /run session (not a team session)
+    // No task_list.yaml is written — simulates a /act session (not a team session)
     // The status.yaml has result: null which should become result: success
     runHook({ session_id: TEST_SESSION });
     const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');

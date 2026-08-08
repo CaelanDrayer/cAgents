@@ -36,7 +36,7 @@ function makeSession(dir, sid, mtimeOffsetMs) {
   );
   writeFileSync(
     join(dir, 'instruction.yaml'),
-    `session_id: ${sid}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sid}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   if (mtimeOffsetMs !== 0) {
     const t = (Date.now() + mtimeOffsetMs) / 1000;

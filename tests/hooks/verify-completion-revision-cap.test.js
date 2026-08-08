@@ -7,9 +7,9 @@
  *   persisted the pipeline's revision count and nothing capped it at the Stop
  *   gate. A session that kept failing validation would be BLOCKED by the Stop
  *   hook on every turn (issues.length > 0 -> decision: block), which — combined
- *   with /run routing FAIL/REVISE back to PLANNED — is the "re-plan forever"
+ *   with /act routing FAIL/REVISE back to PLANNED — is the "re-plan forever"
  *   defect. REC-11 re-adds a persisted `revision_cycles` counter (incremented by
- *   the /run loop on each route-back to PLANNED) and has verify-completion.cjs
+ *   the /act loop on each route-back to PLANNED) and has verify-completion.cjs
  *   FINALIZE (escalate to user + mark incomplete) instead of blocking once
  *   `revision_cycles >= max_cycles` (pipeline_config.yaml revision.max_cycles = 3).
  *

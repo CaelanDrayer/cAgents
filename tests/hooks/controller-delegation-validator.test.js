@@ -605,7 +605,7 @@ describe('controller-delegation-validator.cjs', () => {
     // PRODUCTION shape. subagent-tracker.cjs::inferParentAgent emits
     // `parent: pipeline` (a sentinel) for most execution agents. An active
     // controller (tech-lead, parent pipeline) + a deeper active EXECUTION agent
-    // (backend-developer, parent pipeline — sentinel) is exactly a normal /run
+    // (backend-developer, parent pipeline — sentinel) is exactly a normal /act
     // COORDINATED session where the controller is synchronously awaiting its
     // executor. The executor's src/ write MUST be ALLOWED — a sentinel parent is
     // AMBIGUOUS lineage, so we fall back to the legacy heuristic and never

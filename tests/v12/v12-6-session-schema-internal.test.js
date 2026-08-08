@@ -1,5 +1,5 @@
 // Regression test for v12.6.0 Pillar 4 (AC-4.3)
-// Asserts that .claude/skills/run/reference/session-schema.md is internal-only:
+// Asserts that .claude/skills/act/reference/session-schema.md is internal-only:
 //   - zero AgentPath/agentpath references
 //   - contains internal-only framing ("Internal contract" or "NOT a public API")
 //   - none of the documented fields are in the removed list
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
-const SCHEMA_DOC = path.join(REPO_ROOT, '.claude/skills/run/reference/session-schema.md');
+const SCHEMA_DOC = path.join(REPO_ROOT, '.claude/skills/act/reference/session-schema.md');
 
 describe('v12.6.0 AC-4.3: session-schema.md is internal-only', () => {
   it('session-schema.md exists', () => {

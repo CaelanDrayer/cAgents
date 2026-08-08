@@ -3,14 +3,14 @@
  *
  * History:
  * - V11.0 unified /review and /optimize into /improve --mode {review,optimize}.
- * - v12.1.2 folded /improve into /run via a first-word keyword router:
- *   `/run review <target>` -> --mode review, `/run optimize <target>` ->
- *   --mode optimize, `/run improve <target>` -> --mode full, `/run audit
+ * - v12.1.2 folded /improve into /act via a first-word keyword router:
+ *   `/act review <target>` -> --mode review, `/act optimize <target>` ->
+ *   --mode optimize, `/act improve <target>` -> --mode full, `/act audit
  *   <target>` -> --mode review.
  *
  * This test asserts the current (v12.1.2) routing target:
  *  (a) live runtime behavior: routing a "review ..." / "optimize ..." /
- *      "audit ..." prompt produces a /run review or /run optimize suggestion
+ *      "audit ..." prompt produces a /act review or /act optimize suggestion
  *      (NOT a bare /review, /optimize, or /improve standalone target)
  *  (b) source-level: the hook source documents the v12.1.2 keyword router
  *      and does not retain stale "-> /review" or "-> /optimize" doc mappings
@@ -23,7 +23,7 @@ import { execSync } from 'child_process';
 import { randomUUID } from 'crypto';
 
 // P1-7 (v12.7.1, c5d48fce) consolidated magic-keywords.cjs into prompt-router.cjs.
-// The v12.1.2 keyword-routing behavior (/run review, /run optimize, audit->review)
+// The v12.1.2 keyword-routing behavior (/act review, /act optimize, audit->review)
 // is preserved in prompt-router's KEYWORD_ROUTES, so this regression targets it.
 const HOOK_PATH = join(process.cwd(), '.claude', 'hooks', 'prompt-router.cjs');
 
@@ -50,27 +50,27 @@ describe('prompt-router.cjs v12.1.2 keyword routing (formerly magic-keywords.cjs
 
   // ---------- (a) live runtime behavior ----------
 
-  it('routes "review ..." prompts to /run review (v12.1.2 keyword router)', () => {
+  it('routes "review ..." prompts to /act review (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'review the auth module for security issues' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/run review/);
+    expect(result.systemMessage).toMatch(/\/act review/);
     // Must not suggest the removed /review skill on its own.
-    const stripped = result.systemMessage.replace(/\/run review/g, '');
+    const stripped = result.systemMessage.replace(/\/act review/g, '');
     expect(stripped).not.toMatch(/(^|[^a-zA-Z0-9_-])\/review(?=[^a-zA-Z0-9_-]|$)/);
   });
 
-  it('routes "optimize ..." prompts to /run optimize (v12.1.2 keyword router)', () => {
+  it('routes "optimize ..." prompts to /act optimize (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'optimize the database queries for performance' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/run optimize/);
-    const stripped = result.systemMessage.replace(/\/run optimize/g, '');
+    expect(result.systemMessage).toMatch(/\/act optimize/);
+    const stripped = result.systemMessage.replace(/\/act optimize/g, '');
     expect(stripped).not.toMatch(/(^|[^a-zA-Z0-9_-])\/optimize(?=[^a-zA-Z0-9_-]|$)/);
   });
 
-  it('routes "audit ..." prompts to /run review (audit is an alias for review)', () => {
+  it('routes "audit ..." prompts to /act review (audit is an alias for review)', () => {
     const result = runHook({ user_prompt: 'audit our authentication for vulnerabilities' });
     expect(result.systemMessage).toBeDefined();
-    expect(result.systemMessage).toMatch(/\/run review/);
+    expect(result.systemMessage).toMatch(/\/act review/);
   });
 
   // ---------- (b) source-level: documentation matches new target ----------
@@ -78,8 +78,8 @@ describe('prompt-router.cjs v12.1.2 keyword routing (formerly magic-keywords.cjs
   it('source documents the v12.1.2 keyword router target', () => {
     const src = readFileSync(HOOK_PATH, 'utf8');
     // The hook should mention the new v12.1.2 routing target.
-    expect(src).toMatch(/\/run review/);
-    expect(src).toMatch(/\/run optimize/);
+    expect(src).toMatch(/\/act review/);
+    expect(src).toMatch(/\/act optimize/);
   });
 
   it('source does not advertise standalone /improve as the routing target', () => {

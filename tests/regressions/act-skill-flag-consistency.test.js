@@ -5,14 +5,14 @@ import { join } from 'path';
 /**
  * Regression test for V11.2.9 (Q-004 / F-skills-002).
  *
- * Bug: The /run skill (.claude/skills/run/SKILL.md) advertises one flag set in
+ * Bug: The /act skill (.claude/skills/act/SKILL.md) advertises one flag set in
  *      its frontmatter `argument-hint` (autocomplete display) and a different
  *      flag set in its Step 1 body-parsing prose. The two enumerations drifted
  *      by 7 flags:
  *          --stream, --skip-preflight, --template, --domain, --tier,
  *          --confidence, --mode
  *      These appear in the body parser ("Parse $ARGUMENTS for flags ...") and
- *      in the canonical .claude/skills/run/reference/flags.md table, but NOT
+ *      in the canonical .claude/skills/act/reference/flags.md table, but NOT
  *      in argument-hint. Autocomplete therefore hides 7 documented, functional
  *      flags from users.
  *
@@ -32,8 +32,8 @@ import { join } from 'path';
  */
 
 const ROOT = process.cwd();
-const SKILL_PATH = join(ROOT, '.claude', 'skills', 'run', 'SKILL.md');
-const FLAGS_MD_PATH = join(ROOT, '.claude', 'skills', 'run', 'reference', 'flags.md');
+const SKILL_PATH = join(ROOT, '.claude', 'skills', 'act', 'SKILL.md');
+const FLAGS_MD_PATH = join(ROOT, '.claude', 'skills', 'act', 'reference', 'flags.md');
 
 /**
  * Extract the `argument-hint:` field from SKILL.md frontmatter and return a
@@ -126,7 +126,7 @@ function diff(a, b) {
   return [...a].filter((x) => !b.has(x));
 }
 
-describe('Q-004: /run skill flag enumerations are consistent', () => {
+describe('Q-004: /act skill flag enumerations are consistent', () => {
   const skillMd = readFileSync(SKILL_PATH, 'utf8');
   const flagsMd = readFileSync(FLAGS_MD_PATH, 'utf8');
 

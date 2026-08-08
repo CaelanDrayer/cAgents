@@ -98,9 +98,9 @@ describe('P1-7: prompt-router consolidation', () => {
     expect(hits[0]).toMatch(/delegation\.md$/);
   });
 
-  it('replaces the inline kill-list in run/SKILL.md and team/SKILL.md with an @-reference', () => {
+  it('replaces the inline kill-list in act/SKILL.md and team/SKILL.md with an @-reference', () => {
     const runSkill = fs.readFileSync(
-      path.join(ROOT, '.claude/skills/run/SKILL.md'),
+      path.join(ROOT, '.claude/skills/act/SKILL.md'),
       'utf8'
     );
     const teamSkill = fs.readFileSync(
@@ -108,7 +108,7 @@ describe('P1-7: prompt-router consolidation', () => {
       'utf8'
     );
 
-    // The huge inline rationalization table is gone from run/SKILL.md
+    // The huge inline rationalization table is gone from act/SKILL.md
     expect(runSkill).not.toMatch(/\|\s*Rationalization\s*\|\s*Why it fails\s*\|/);
 
     // Both reference the canonical delegation.md

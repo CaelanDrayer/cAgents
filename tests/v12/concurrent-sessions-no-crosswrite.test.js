@@ -47,7 +47,7 @@ function makeSession(sessionDir, sessionId) {
   );
   writeFileSync(
     join(sessionDir, 'instruction.yaml'),
-    `session_id: ${sessionId}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sessionId}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   writeFileSync(
     join(sessionDir, 'workflow', 'agent_tree.yaml'),

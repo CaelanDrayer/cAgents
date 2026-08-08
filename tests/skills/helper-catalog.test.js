@@ -8,7 +8,7 @@
  * Could have been caught by: unit test on helper/SKILL.md catalog coverage.
  *
  * v12.2.0 change: /org was absorbed into /team strategic mode. The
- * user-invocable catalog shrinks to 4 skills (/designer, /helper, /run,
+ * user-invocable catalog shrinks to 4 skills (/designer, /helper, /act,
  * /team). /org joins the removed-commands list along with the four V11.0
  * removals; users searching for it should be redirected to /team strategic
  * mode.
@@ -26,10 +26,11 @@ const HELPER_PATH = join(
 );
 const content = readFileSync(HELPER_PATH, 'utf8');
 
-// v12.2.0: 4 user-invocable skills (/improve folded into /run in v12.1.2;
-// /org folded into /team strategic mode in v12.2.0).
+// v12.2.0: 4 user-invocable skills (/improve folded into /act in v12.1.2;
+// /org folded into /team strategic mode in v12.2.0). `/run` was renamed to
+// `/act` (it collided with Claude Code's built-in `run` skill).
 const USER_INVOCABLE_SKILLS = [
-  '/run',
+  '/act',
   '/designer',
   '/team',
   '/helper',

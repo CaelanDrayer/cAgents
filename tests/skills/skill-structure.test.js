@@ -6,13 +6,15 @@ import yaml from 'js-yaml';
 const SKILLS_DIR = join(process.cwd(), '.claude', 'skills');
 
 // v12.2.0: 4 surviving user-invocable skills. /org was absorbed into
-// /team strategic mode in v12.2.0. /improve was folded into /run via a
+// /team strategic mode in v12.2.0. /improve was folded into /act via a
 // first-word keyword router (improve|review|audit|optimize) in v12.1.2.
 // V11.0 had already removed context, debug, review, optimize.
+// The `run` skill was renamed to `act` (it collided with Claude Code's
+// built-in `run` skill).
 const SKILL_NAMES = [
+  'act',
   'designer',
   'helper',
-  'run',
   'team',
 ];
 
@@ -189,14 +191,14 @@ describe('SKILL.md frontmatter — metadata Claude Code extensions', () => {
 
 // ─── Skill-specific content assertions ────────────────────────────────────
 
-describe('/run SKILL.md content', () => {
+describe('/act SKILL.md content', () => {
   it('contains delegation enforcement section (Rationalization Kill List)', () => {
-    const content = readSkill('run');
+    const content = readSkill('act');
     expect(content).toContain('Rationalization Kill List');
   });
 
   it('contains critical delegator declaration', () => {
-    const content = readSkill('run');
+    const content = readSkill('act');
     expect(content).toMatch(/You Are a Delegator, Not a Doer/i);
   });
 });

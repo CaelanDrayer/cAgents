@@ -32,7 +32,7 @@ const STATUS_YAML = 'pipeline_state: coordinating\nphase: coordinating\ncurrent_
 // (a) Active controller is the LAST entry — its own stopped_at is absent (active).
 const ACTIVE_CONTROLLER_LAST = `session_id: ${TEST_SESSION}
 root:
-  agent: /run
+  agent: /act
   children:
     - agent: cagents:orchestrator
       cagents_type: "cagents:orchestrator"
@@ -50,7 +50,7 @@ root:
 // the explicit `stopped_at: null` false-positive shape see EXPLICIT_NULL below.
 const STOPPED_CTRL_THEN_ACTIVE_EXEC = `session_id: ${TEST_SESSION}
 root:
-  agent: /run
+  agent: /act
   children:
     - agent: cagents:tech-lead
       cagents_type: "cagents:tech-lead"
@@ -66,7 +66,7 @@ root:
 // `stopped_at: null` found belongs to backend-developer.
 const STOPPED_CTRL_THEN_NULL_EXEC = `session_id: ${TEST_SESSION}
 root:
-  agent: /run
+  agent: /act
   children:
     - agent: cagents:tech-lead
       cagents_type: "cagents:tech-lead"
@@ -81,7 +81,7 @@ root:
 // Active controller whose entry OMITS stopped_at entirely (old false-negative).
 const ACTIVE_CTRL_NO_STOPPED_FIELD = `session_id: ${TEST_SESSION}
 root:
-  agent: /run
+  agent: /act
   children:
     - agent: cagents:architect
       cagents_type: "cagents:architect"

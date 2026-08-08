@@ -2,7 +2,7 @@
 // Asserts SKILL.md PLANNED controller section references debug-mode-prompt.md, gated
 // on flags.mode === "debug".
 // Failing-before: V10.26.12 added the prefix file but nothing referenced it;
-// this test locks in the wiring so /run --mode debug actually injects the prefix.
+// this test locks in the wiring so /act --mode debug actually injects the prefix.
 // v12.0.0: PROMPTS_READY collapsed into PLANNED — controller now lives in the
 // PLANNED state. The wiring paragraph stays in the controller-state block.
 
@@ -10,10 +10,10 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const RUN_SKILL = resolve(process.cwd(), '.claude/skills/run/SKILL.md');
+const RUN_SKILL = resolve(process.cwd(), '.claude/skills/act/SKILL.md');
 const DELEGATION_REF = resolve(
   process.cwd(),
-  '.claude/skills/run/reference/delegation-patterns.md'
+  '.claude/skills/act/reference/delegation-patterns.md'
 );
 
 describe('V10.26.13 debug-mode prefix wiring', () => {

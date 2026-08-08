@@ -101,7 +101,7 @@ describe('.claude/settings.json — git allowlist narrowing (P5.2)', () => {
   });
 
   it('(d) still auto-approves the workflow verbs the pipeline needs (checkout/merge/branch)', () => {
-    // The parent /run loop must keep auto-approving these to land the commit.
+    // The parent /act loop must keep auto-approving these to land the commit.
     expect(allow.some((p) => bashPatternMatches(p, 'git checkout -b feature'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git merge --no-ff feature'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git branch'))).toBe(true);

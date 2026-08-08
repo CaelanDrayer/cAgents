@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 
 const PREFIX_FILE = resolve(
   process.cwd(),
-  '.claude/skills/run/reference/debug-mode-prompt.md'
+  '.claude/skills/act/reference/debug-mode-prompt.md'
 );
 
 describe('V10.26.12 debug-mode controller prompt prefix', () => {

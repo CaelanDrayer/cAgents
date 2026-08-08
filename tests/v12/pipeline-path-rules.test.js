@@ -4,10 +4,10 @@
  * Locks in the v12.7.0 contract for pipeline-path naming and orchestrator-
  * skip rationale:
  *
- *   1. .claude/skills/run/reference/adaptive-pipeline.md documents exactly
+ *   1. .claude/skills/act/reference/adaptive-pipeline.md documents exactly
  *      TWO named paths: `fast` and `standard`. The pre-v12.7 names
  *      (`Minimal`, `Medium`, `Full`) must not appear as path labels.
- *   2. .claude/skills/run/SKILL.md enforces orchestrator-skip as an
+ *   2. .claude/skills/act/SKILL.md enforces orchestrator-skip as an
  *      enumerated allowlist: tier == 2 AND !ambiguous_domain AND
  *      mode != "debug". Tier 3+ ALWAYS runs the orchestrator.
  *   3. Tier-3 mock (constructed from a plan.yaml fixture): orchestrator
@@ -45,7 +45,7 @@ const ADAPTIVE_DOC = path.join(
   REPO_ROOT,
   '.claude',
   'skills',
-  'run',
+  'act',
   'reference',
   'adaptive-pipeline.md'
 );
@@ -53,14 +53,14 @@ const RUN_SKILL = path.join(
   REPO_ROOT,
   '.claude',
   'skills',
-  'run',
+  'act',
   'SKILL.md'
 );
 const STATE_MACHINE_DETAIL = path.join(
   REPO_ROOT,
   '.claude',
   'skills',
-  'run',
+  'act',
   'reference',
   'state-machine-detail.md'
 );

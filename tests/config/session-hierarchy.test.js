@@ -9,7 +9,7 @@ import { join } from 'path';
  * 1. Parent session ID extraction logic from --session flag paths
  * 2. /team SKILL.md contains Session Hierarchy documentation section
  * 3. /team SKILL.md (strategic mode) nesting diagram is accurate
- *    (no /run via Skill, has execution agents via Agent)
+ *    (no /act via Skill, has execution agents via Agent)
  *
  * v12.2.0: /org was absorbed into /team strategic mode. The historical
  * /org-specific assertions are now exercised against /team SKILL.md (which
@@ -158,10 +158,10 @@ describe('/team strategic mode nesting diagram (replaces /org)', () => {
     'utf8'
   );
 
-  it('nesting diagram does NOT show /run via Skill as a teammate-level fork', () => {
-    // The old incorrect /org diagram had '/run via Skill (level 0 fork)' for teammates.
-    // /team architecture explicitly documents why no Skill("run") fork is used.
-    expect(teamArchitecture).not.toContain('/run via Skill (level 0 fork)');
+  it('nesting diagram does NOT show /act via Skill as a teammate-level fork', () => {
+    // The old incorrect /org diagram had '/act via Skill (level 0 fork)' for teammates.
+    // /team architecture explicitly documents why no Skill("act") fork is used.
+    expect(teamArchitecture).not.toContain('/act via Skill (level 0 fork)');
   });
 
   it('nesting model documents execution agents via Agent tool', () => {
@@ -176,8 +176,8 @@ describe('/team strategic mode nesting diagram (replaces /org)', () => {
     expect(teamArchitecture).toMatch(/execution agents via Agent/i);
   });
 
-  it('explicitly forbids teammates from invoking /run via Skill', () => {
-    // /team architecture must explain why teammates DON'T invoke /run via Skill.
-    expect(teamArchitecture).toMatch(/no Skill\("run"\) fork|teammates do NOT invoke \/run|Why no Skill/i);
+  it('explicitly forbids teammates from invoking /act via Skill', () => {
+    // /team architecture must explain why teammates DON'T invoke /act via Skill.
+    expect(teamArchitecture).toMatch(/no Skill\("act"\) fork|teammates do NOT invoke \/act|Why no Skill/i);
   });
 });

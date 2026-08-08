@@ -5,7 +5,7 @@
  * Rationale: /helper exists to guide users to the right skill, but users
  * frequently don't discover it. Surfacing it in the SessionStart context
  * is a zero-cost nudge that pays off when users are choosing between
- * /run, /team, /designer, etc.
+ * /act, /team, /designer, etc.
  *
  * Bug-driven testing mandate: this test would have caught
  *   (a) accidental removal of the /helper tip during a future context refactor

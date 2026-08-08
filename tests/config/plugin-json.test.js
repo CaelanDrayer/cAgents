@@ -65,7 +65,7 @@ describe('root plugin.json', () => {
   it('description reflects v12.2.0 4-skill catalog (no standalone /improve, no /org)', () => {
     const plugin = loadPluginJson(PLUGIN_PATH);
     // v12.2.0: /org absorbed into /team strategic mode; 4 user skills now.
-    // (v12.1.2 had previously folded /improve into /run, leaving 5 skills.)
+    // (v12.1.2 had previously folded /improve into /act, leaving 5 skills.)
     expect(plugin.description).toMatch(/4 user skills/);
     // The description should NOT advertise /improve as a standalone skill.
     expect(plugin.description).not.toMatch(/\/improve audits/i);

@@ -77,11 +77,11 @@ describe('session-catchup.cjs V11.0 removed-skill suggestions (Bug-1)', () => {
 
   it('emitted additionalContext still advertises live V12 skills', () => {
     // After fix, the hook should still mention the canonical V12 skill set.
-    // v12.2.0: /org was absorbed into /team strategic mode; /run and /team are
+    // v12.2.0: /org was absorbed into /team strategic mode; /act and /team are
     // the surviving orchestration skills that may never self-handle.
     const result = runHook({});
     const ctx = result?.hookSpecificOutput?.additionalContext || '';
-    expect(mentionsLiveSkill(ctx, '/run')).toBe(true);
+    expect(mentionsLiveSkill(ctx, '/act')).toBe(true);
     expect(mentionsLiveSkill(ctx, '/team')).toBe(true);
   });
 

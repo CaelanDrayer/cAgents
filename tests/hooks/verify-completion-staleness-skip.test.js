@@ -4,7 +4,7 @@
  * Background (run_verify-completion-staleness-field_260603_001):
  *   verify-completion.cjs:922 read status.yaml via
  *     extractYamlValue(s, 'updated_at') || extractYamlValue(s, 'created_at')
- *   but /run writes `last_updated_at` + `started_at`. The lookup chain
+ *   but /act writes `last_updated_at` + `started_at`. The lookup chain
  *   never matched on real cAgents sessions, `updatedAt` was always undefined,
  *   and the 24h staleness branch was therefore skipped — so the Stop hook
  *   proceeded to verifyCompletion() against orphaned-at-INIT sessions
@@ -105,7 +105,7 @@ describe('verify-completion.cjs staleness skip (WI-2)', () => {
   });
 
   it('Test 1 (FAIL-before, PASS-after) — session with only last_updated_at > 24h old is skipped as stale (no block decision)', () => {
-    // Synthetic session with the field-name shape that /run actually writes:
+    // Synthetic session with the field-name shape that /act actually writes:
     // last_updated_at (no updated_at, no created_at). pipeline_state=INIT
     // means findActiveSession will resolve this hint (non-terminal).
     makeSession(

@@ -233,7 +233,7 @@ describe('findTeamSession deterministic chain (concurrency fix)', () => {
     delete process.env.CAGENTS_ACTIVE_SESSION;
     // (b) cAgents-shaped team_ pin whose dir is absent → null, NOT a sibling.
     expect(utils.findTeamSession({ session_id: 'team_does-not-exist_260317_777' })).toBeNull();
-    // (c) Non-team concrete session_id (a /run or synthetic-test session) → null.
+    // (c) Non-team concrete session_id (a /act or synthetic-test session) → null.
     //     This is the leak SOURCE the flake came from: a Stop/TaskCompleted hook
     //     firing for a non-team session must NOT heuristic-resolve & mutate a
     //     sibling team session. (Production team hooks fire with a UUID → case a.)

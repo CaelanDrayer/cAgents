@@ -40,26 +40,26 @@ describe('prompt-router.cjs (keyword routing, formerly magic-keywords.cjs)', () 
     expect(result.continue).toBe(true);
   });
 
-  it('should suggest /run for build keywords', () => {
+  it('should suggest /act for build keywords', () => {
     const result = runHook({ user_prompt: 'build a login page with OAuth' });
-    expect(result.systemMessage).toContain('/run');
+    expect(result.systemMessage).toContain('/act');
   });
 
-  it('should suggest /run for fix keywords', () => {
+  it('should suggest /act for fix keywords', () => {
     const result = runHook({ user_prompt: 'fix the authentication bug in login.ts' });
-    expect(result.systemMessage).toContain('/run');
+    expect(result.systemMessage).toContain('/act');
   });
 
-  // v12.1.2: /improve folded into /run via keyword router. The hook now suggests
-  // /run review (instead of /improve --mode review) and /run optimize.
-  it('should suggest /run review for review keywords (v12.1.2 keyword router)', () => {
+  // v12.1.2: /improve folded into /act via keyword router. The hook now suggests
+  // /act review (instead of /improve --mode review) and /act optimize.
+  it('should suggest /act review for review keywords (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'review the auth module for security issues' });
-    expect(result.systemMessage).toContain('/run review');
+    expect(result.systemMessage).toContain('/act review');
   });
 
-  it('should suggest /run optimize for optimize keywords (v12.1.2 keyword router)', () => {
+  it('should suggest /act optimize for optimize keywords (v12.1.2 keyword router)', () => {
     const result = runHook({ user_prompt: 'optimize the database queries for performance' });
-    expect(result.systemMessage).toContain('/run optimize');
+    expect(result.systemMessage).toContain('/act optimize');
   });
 
   it('should suggest /designer for design keywords', () => {
@@ -79,7 +79,7 @@ describe('prompt-router.cjs (keyword routing, formerly magic-keywords.cjs)', () 
   });
 
   it('should suppress suggestions for slash commands', () => {
-    const result = runHook({ user_prompt: '/run fix the bug' });
+    const result = runHook({ user_prompt: '/act fix the bug' });
     expect(result.continue).toBe(true);
     expect(result.systemMessage).toBeUndefined();
   });
@@ -127,6 +127,6 @@ describe('prompt-router.cjs Layer 2 is opt-in (default OFF)', () => {
 
   it('emits the routing suggestion when the toggle is enabled', () => {
     const result = runHookWithEnv({ user_prompt: 'build a login page with OAuth' }, '1');
-    expect(result.systemMessage).toContain('/run');
+    expect(result.systemMessage).toContain('/act');
   });
 });

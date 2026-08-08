@@ -5,22 +5,22 @@ import { join } from 'path';
 /**
  * Regression test for WI-2 (REC-1 + REC-10) of V11.3.0:
  *
- * /run Step 1 must derive a /goal condition and surface it as an optional Bash
- * invocation (auto-anchor pattern from REC-1). The /run flags reference must
+ * /act Step 1 must derive a /goal condition and surface it as an optional Bash
+ * invocation (auto-anchor pattern from REC-1). The /act flags reference must
  * document the --no-goal opt-out. /designer SKILL.md must include an exemption
  * sentence (REC-10) explaining that /designer is interactive-by-contract and
  * therefore exempt from /goal auto-anchoring.
  *
- * This test FAILS at V11.2.16 (no /goal mention in run/SKILL.md, no --no-goal flag,
+ * This test FAILS at V11.2.16 (no /goal mention in act/SKILL.md, no --no-goal flag,
  * no /designer exemption) and PASSES at V11.3.0.
  */
 
-const RUN_SKILL = join(process.cwd(), '.claude/skills/run/SKILL.md');
-const RUN_FLAGS = join(process.cwd(), '.claude/skills/run/reference/flags.md');
+const RUN_SKILL = join(process.cwd(), '.claude/skills/act/SKILL.md');
+const RUN_FLAGS = join(process.cwd(), '.claude/skills/act/reference/flags.md');
 const DESIGNER_SKILL = join(process.cwd(), '.claude/skills/designer/SKILL.md');
 
-describe('/run /goal auto-anchor (WI-2, REC-1 + REC-10)', () => {
-  describe('/run SKILL.md Step 1 auto-anchor', () => {
+describe('/act /goal auto-anchor (WI-2, REC-1 + REC-10)', () => {
+  describe('/act SKILL.md Step 1 auto-anchor', () => {
     const content = readFileSync(RUN_SKILL, 'utf8');
 
     it('mentions /goal in Step 1 / session-init section', () => {
@@ -46,7 +46,7 @@ describe('/run /goal auto-anchor (WI-2, REC-1 + REC-10)', () => {
     });
   });
 
-  describe('/run reference/flags.md --no-goal flag', () => {
+  describe('/act reference/flags.md --no-goal flag', () => {
     const content = readFileSync(RUN_FLAGS, 'utf8');
 
     it('lists --no-goal in the flag table', () => {
