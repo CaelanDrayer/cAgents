@@ -10,6 +10,106 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.66.1] - 2026-08-08
+
+Closing round of the `/run` -> `/act` rename effort begun in v12.66.0. Patch,
+not minor: everything here is a bug fix or a doc correction, and no new
+capability ships.
+
+The entries below are split into two groups deliberately. Roughly half of what
+this round found was **already broken on `main`** and has nothing to do with the
+rename — it was surfaced only because the same files were being audited. Anyone
+bisecting a regression into this range should not attribute the first group to
+the rename.
+
+### Fixed — pre-existing defects on `main` (NOT rename fallout)
+
+- **`validator-evidence-recheck.cjs`: two defects** (`e8dd650a`).
+
+  1. *Block scalars were never parsed.* The hook read `evidence: |` and took the
+     literal string `"|"` as the value. Evidence written as a YAML block scalar
+     therefore looked empty, and a correct PASS was downgraded to FAIL on
+     formatting alone.
+  2. *Duplicate `reason:` keys produced invalid YAML* in
+     `validation_report.yaml` — the very artifact the state machine reads to
+     advance.
+
+  Root cause of (2): `failing_entries` was assembled from two sequential
+  `.map()` spreads that grouped by FIELD instead of pairing by ENTRY. With
+  N >= 2 failures the last list item absorbed all N reasons **and the first
+  N-1 entries silently lost their reason entirely**. That is data loss, not a
+  formatting nit — an operator reading the report saw failing criteria with no
+  explanation attached to them. Fixed with a single `.flatMap()` that emits each
+  criterion immediately followed by its own reason.
+
+  Regression tests were proven RED before the fix (5/8 failing).
+
+  The block-scalar fix is js-yaml-first with a deliberate regex fallback. This
+  hook is `PostToolUse` on a file an LLM just wrote, so a hard js-yaml
+  dependency would silently skip the recheck whenever the input is malformed —
+  disabling the PASS-bias defense at exactly the moment it is most needed.
+
+- **`package.json` description said "58 agents"; disk has 60** (`98aa6b59`).
+  The drift entered at `ca3ab363` (v12.43.0) and survived because
+  `validate-counts.sh` did not cover `package.json` at all — it was the one root
+  manifest sitting outside the guard. Closed by a new Check 15 in
+  `scripts/ci/validate-counts.sh` plus
+  `tests/regressions/package-json-counts-guard.test.js`, both proven RED before
+  landing.
+
+- **Cross-test pollution: fixtures wrote into the real session store**
+  (`c829e086`). `verify-completion` fixtures created session directories inside
+  the live shared `cagents-memory/sessions/`.
+
+  The original diagnosis was only half right. `prompt-router-consolidation`
+  failed even when run **alone**, because its "no active session" control case
+  resolved the live cAgents session that spawned the test runner via
+  `fallbackHeuristic`. Test ordering was never the whole story. Fixed by
+  pointing the fixtures at isolated temp project roots through the **existing**
+  `CLAUDE_PROJECT_DIR` injection point — no new interface was introduced.
+  Verified: session-dir count 39 before and after a full suite run, listing
+  byte-identical.
+
+- **`docs/MIGRATION_GUIDE.md` stale internals** (`ac103501`, plus one further
+  fix in this release). Four corrections measured against live config:
+  - revision cap said 5; live `max_cycles` is 3
+  - hook count said 21; live count is 26
+  - internal-round cap said 3; live `max_internal_rounds` is 2
+    (`cagents-memory/_system/config/pipeline_config.yaml:85` — read the key
+    itself, not the adjacent `LP-27 ... lowered 3 -> 2` comment, which states
+    the superseded value and will mislead anyone who stops there)
+  - one grammar fix
+
+### Fixed — rename fallout (`/run` -> `/act`)
+
+- **`docs/MIGRATION_GUIDE.md` unfrozen and properly fixed** (`25d136cc`). The
+  file had been treated as frozen history. It is not. It is a live user-facing
+  guide that people copy-paste from, so every `/run` sitting in an **invocation
+  position** was a broken instruction rather than a historical record. About 25
+  invocations were corrected across fenced blocks, headers, table cells, and
+  prose. Line 3 was stale on three axes at once: version, agent count, and
+  skill list.
+
+  The appended bottom-of-file warning was **removed** rather than updated: it
+  sat below every example it warned about. A warning that arrives after the
+  reader has already copied the broken command reads as diligence instead of
+  providing it. Genuine historical claims were annotated `(now /act)` rather
+  than falsified.
+
+- **`docs/commands/{optimize,org,review}.md` redirect stubs repointed to
+  `/act`** (`70a63df0`). A redirect stub's entire content is an actionable
+  instruction, so unlike historical prose these were live defects, not stale
+  references.
+
+### Note on detection
+
+Two of the fallout items above were found only because executors were required
+to **enumerate an identifier's unanchored forms before writing the search
+pattern**: `/run` unbackticked inside `###` headers following arrows, and
+`(run / team / designer / helper)` with no leading slash. Both were invisible to
+every previously-sanctioned grep pattern. Worth carrying into the next
+repository-wide identifier rename.
+
 ## [12.66.0] - 2026-08-08
 
 ### Removed (BREAKING FOR USERS)
