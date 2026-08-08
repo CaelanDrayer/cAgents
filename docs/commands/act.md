@@ -1,13 +1,13 @@
-# /run - Event-Driven Pipeline Engine
+# /act - Event-Driven Pipeline Engine
 
 ## Usage
 ```bash
-/run <request>
-/run Fix auth bug                    # Engineering (tier 2)
-/run Write fantasy story             # Creative (tier 2)
-/run Plan Q4 campaign                # Business (tier 3)
-/run Build microservice --analytics  # With execution analytics
-/run --resume <session_id>           # Resume interrupted session
+/act <request>
+/act Fix auth bug                    # Engineering (tier 2)
+/act Write fantasy story             # Creative (tier 2)
+/act Plan Q4 campaign                # Business (tier 3)
+/act Build microservice --analytics  # With execution analytics
+/act --resume <session_id>           # Resume interrupted session
 ```
 
 ## How It Works
@@ -40,7 +40,7 @@ The pre-v12.3.0 score-based 3-path selector (minimal/medium/full, driven by a 9-
 
 ## Session Files
 
-Written to `cagents-memory/sessions/run_{timestamp}/`:
+Written to `cagents-memory/sessions/act_{timestamp}/`:
 - `instruction.yaml`, `status.yaml`
 - `workflow/enriched_context.yaml`, `workflow/plan.yaml`
 - `workflow/work_items.yaml`
