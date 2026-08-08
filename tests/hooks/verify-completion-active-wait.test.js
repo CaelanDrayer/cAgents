@@ -140,7 +140,7 @@ const created = [];
  * @param {string} [opts.transition]  ISO timestamp for the state_history entered_at
  */
 function makeSession(slug, { heartbeat, childRunning, transition = TX_RECENT }) {
-  const sid = `run_active-wait-${slug}_${TS}`;
+  const sid = `act_active-wait-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   created.push(dir);
   mkdirSync(join(dir, 'workflow'), { recursive: true });

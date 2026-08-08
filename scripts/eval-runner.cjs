@@ -394,7 +394,7 @@ if (!sessionId) {
   console.log('  node eval-runner.cjs --session <session_id>');
   console.log('');
   console.log('Example:');
-  console.log('  node eval-runner.cjs --session run_fix-auth_260127_001');
+  console.log('  node eval-runner.cjs --session act_fix-auth_260127_001');
   process.exit(0);
 }
 

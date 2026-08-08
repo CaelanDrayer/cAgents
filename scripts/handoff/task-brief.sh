@@ -43,7 +43,7 @@ Matching note:
   Standard cAgents work_items.yaml uses this inline form.
 
 Examples:
-  task-brief.sh WI-3 cagents-memory/sessions/run_x/workflow/work_items.yaml
+  task-brief.sh WI-3 cagents-memory/sessions/act_x/workflow/work_items.yaml
   task-brief.sh WI-3 work_items.yaml --stdout
   task-brief.sh WI-3 work_items.yaml --out-dir /tmp/handoff
 EOF

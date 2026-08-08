@@ -91,7 +91,7 @@ describe('permission-handler.cjs', () => {
   // pass-through), but the TypeError polluted stderr and made the HITL-gate
   // branch unreachable. FAILS on pre-guard HEAD via the stderr assertion.
   describe('session without plan.yaml (WI-8 null-content guard)', () => {
-    const SID = 'run_permtest-wi8_260703_001';
+    const SID = 'act_permtest-wi8_260703_001';
     let tmpRoot;
 
     beforeEach(() => {

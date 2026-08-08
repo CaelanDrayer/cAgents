@@ -40,12 +40,12 @@ After `/act` completes, `/team` strategic mode reads the child session's `execut
 ```yaml
 domain_status:
   engineering:
-    session_id: "{run_session_id}"
+    session_id: "{act_session_id}"
     status: completed | failed
     final_state: VALIDATED | FAILED
     deliverables: [...]
   business:
-    session_id: "{run_session_id}"
+    session_id: "{act_session_id}"
     status: completed
 ```
 

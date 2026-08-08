@@ -57,7 +57,7 @@ cagents-memory/
   _system/      # configs, commands/, domains/, metrics/, evals/, templates/
   _knowledge/   # semantic/, procedural/, calibration/, analytics/ (cross-session learnings)
   _archive/     # completed sessions
-  sessions/     # live sessions: act_*, team_*, designer_* (org_*, review_*, optimize_* are legacy)
+  sessions/     # live sessions: act_*, team_*, designer_* (run_*, org_*, review_*, optimize_* are legacy)
 \`\`\`
 
 **Session ID format**: \`{command}_{slug}_{YYMMDD}_{NNN}\`

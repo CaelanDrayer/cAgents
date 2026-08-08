@@ -20,8 +20,8 @@ const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
 const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const TS = Date.now().toString(36);
-const SID_FRESH = `run_liveness-fresh_${TS}`;
-const SID_STALE = `run_liveness-stale_${TS}`;
+const SID_FRESH = `act_liveness-fresh_${TS}`;
+const SID_STALE = `act_liveness-stale_${TS}`;
 const DIR_FRESH = join(SESSIONS_DIR, SID_FRESH);
 const DIR_STALE = join(SESSIONS_DIR, SID_STALE);
 

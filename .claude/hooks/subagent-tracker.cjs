@@ -241,7 +241,7 @@ createHook('SubagentTracker', async (input) => {
 
   // Build a global audit log entry regardless of session state.
   // REC-10 (v12.51.0): log the RESOLVED session basename (a human-readable
-  // run_slug_date, greppable across the audit trail) instead of the raw SDK
+  // act_slug_date, greppable across the audit trail) instead of the raw SDK
   // transcript UUID that arrives as input.session_id. Keep a short UUID tail
   // (last 8 hex) as a correlatable fallback so a `session=unknown` line is still
   // tied back to its transcript. sessionDir is fully resolved (all 3 passes) or

@@ -32,20 +32,20 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 
 | Component | Description | Example |
 |-----------|-------------|---------|
-| `command` | Skill prefix | `run`, `team`, `designer` |
+| `command` | Skill prefix | `act`, `team`, `designer` |
 | `slug` | 2-6 word kebab-case summary, max 50 chars | `fix-auth-module-jwt` |
 | `YYMMDD` | Compact date (2-digit year) | `260317` |
 | `NNN` | Auto-increment index per command+date, 3 digits | `001` |
 
 | Skill | Prefix | Example |
 |-------|--------|---------|
-| /act | `run_` | `run_fix-auth-module-jwt_260317_001` |
+| /act | `act_` | `act_fix-auth-module-jwt_260317_001` |
 | /team | `team_` | `team_implement-oauth2-flow_260317_001` |
 | /designer | `designer_` | `designer_redo-session-names_260317_001` |
 
 Slug generation: extract 2-6 key words from user request, kebab-case, strip filler words (the, a, an, to, for, with, and, of). Index: scan `cagents-memory/sessions/` for dirs matching `{command}_*_{YYMMDD}_*`, find highest NNN, increment (start at 001).
 
-Backward compatible: old sessions (`run_20260316_143022`) remain valid. Hook sorting extracts the last 2 underscore segments.
+Backward compatible: old sessions remain valid and are never renamed on disk — both the pre-slug shape (`run_20260316_143022`) and every `run_`-prefixed session predating the /run -> /act rename. Hook sorting extracts the last 2 underscore segments.
 
 ## CAGENTS_SESSION_ID Environment Variable
 
@@ -65,7 +65,7 @@ Every skill writes this file at session creation:
 
 ```yaml
 session_id: "{SESSION_ID}"                       # REQUIRED: Unique session identifier
-session_type: run|team|designer                  # REQUIRED: Skill type
+session_type: act|team|designer                  # REQUIRED: Skill type
 command: /act|/team|/designer                    # REQUIRED: Skill command
 request: "{user_request}"                        # REQUIRED: Original user request text
 created_at: "{ISO_TIMESTAMP}"                    # REQUIRED: ISO 8601 timestamp — use `date -u +%Y-%m-%dT%H:%M:%SZ`
@@ -170,7 +170,7 @@ failures:
 
 ## Hook Integration
 
-Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`run_`, `team_`, `designer_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` defines the active list.
+Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`act_`, `team_`, `designer_`, plus the legacy `run_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` defines the active list.
 
 ### Key Hook Behaviors
 

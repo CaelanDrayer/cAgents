@@ -19,7 +19,7 @@ const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
 const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const TS = Date.now().toString(36);
-const SID = `run_concurrent-appends_${TS}`;
+const SID = `act_concurrent-appends_${TS}`;
 const SDIR = join(SESSIONS_DIR, SID);
 
 function setup() {

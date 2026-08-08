@@ -207,7 +207,7 @@ describe('subagent-tracker.cjs', () => {
      */
     function runWithDepthCheck({ statusPhase, existingAgents, agentType, promptOverride }) {
       const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-'));
-      const sessionName = `run_depth-test_260101_001`;
+      const sessionName = `act_depth-test_260101_001`;
       const sessionDir = pathMod.join(tmpRoot, 'cagents-memory', 'sessions', sessionName);
       const workflowDir = pathMod.join(sessionDir, 'workflow');
       fs.mkdirSync(workflowDir, { recursive: true });
@@ -334,7 +334,7 @@ describe('subagent-tracker.cjs', () => {
       // a sentinel nor a real agent ID in the tree. This happens when pending_spawns.yaml
       // references a parent_id that wasn't tracked yet.
       const tmpRoot = fs.mkdtempSync(pathMod.join(os.tmpdir(), 'cagents-depth-unknown-'));
-      const sessionName = `run_depth-unknown_260101_001`;
+      const sessionName = `act_depth-unknown_260101_001`;
       const sessionDir = pathMod.join(tmpRoot, 'cagents-memory', 'sessions', sessionName);
       const workflowDir = pathMod.join(sessionDir, 'workflow');
       fs.mkdirSync(workflowDir, { recursive: true });

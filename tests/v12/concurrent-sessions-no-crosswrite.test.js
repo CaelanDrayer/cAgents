@@ -34,8 +34,8 @@ const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 const SECRET_BACKUPS_DIR = join(PROJECT_ROOT, 'cagents-memory', '_system', 'secret-backups');
 
 const TS = Date.now().toString(36);
-const SESSION_A = `run_concurrent-test-a_${TS}`;
-const SESSION_B = `run_concurrent-test-b_${TS}`;
+const SESSION_A = `act_concurrent-test-a_${TS}`;
+const SESSION_B = `act_concurrent-test-b_${TS}`;
 const SESSION_A_DIR = join(SESSIONS_DIR, SESSION_A);
 const SESSION_B_DIR = join(SESSIONS_DIR, SESSION_B);
 

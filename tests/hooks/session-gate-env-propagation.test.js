@@ -97,7 +97,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
   // ---- H4: session-init-gate must NOT over-deny ----
 
   it('H4 — session-init-gate ALLOWS the Agent spawn when an active session is discoverable (UUID payload, no env)', () => {
-    makeSession('run_h4-active_001', { controller: true });
+    makeSession('act_h4-active_001', { controller: true });
 
     const parsed = runHook('session-init-gate', {
       tool_name: 'Agent',
@@ -121,7 +121,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
   });
 
   it('H4 — terminal-only sessions do NOT satisfy the gate (still denies)', () => {
-    makeSession('run_h4-terminal_001', { controller: true, terminal: true });
+    makeSession('act_h4-terminal_001', { controller: true, terminal: true });
     const parsed = runHook('session-init-gate', {
       tool_name: 'Agent',
       tool_input: { subagent_type: 'cagents:backend-developer' },
@@ -133,7 +133,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
   // ---- H3: controller-delegation-validator must NOT silently fail-open ----
 
   it('H3 — controller-delegation DENIES a controller src/ write when an active controller is present (UUID payload, no env)', () => {
-    makeSession('run_h3-controller_001', { controller: true });
+    makeSession('act_h3-controller_001', { controller: true });
 
     const parsed = runHook(
       'controller-delegation-validator',
@@ -147,7 +147,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
   });
 
   it('H3 — controller-delegation does NOT over-deny when only an execution agent is active (no controller)', () => {
-    makeSession('run_h3-exec_001', { controller: false });
+    makeSession('act_h3-exec_001', { controller: false });
 
     const parsed = runHook(
       'controller-delegation-validator',

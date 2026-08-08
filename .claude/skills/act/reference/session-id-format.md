@@ -8,7 +8,7 @@ How /act generates session IDs and creates the session directory.
 {command}_{slug}_{YYMMDD}_{NNN}
 ```
 
-Example: `run_fix-auth-module-jwt_260317_001`
+Example: `act_fix-auth-module-jwt_260317_001`
 
 ## Slug Rules
 
@@ -27,7 +27,7 @@ Compact date: `YYMMDD` (e.g., 260317 for 2026-03-17).
 
 `NNN` is a 3-digit sequence number starting at 001. To compute:
 
-1. Scan `cagents-memory/sessions/` for dirs matching `run_*_{YYMMDD}_*`
+1. Scan `cagents-memory/sessions/` for dirs matching `act_*_{YYMMDD}_*`
 2. Find the highest existing NNN for today's date
 3. Increment by 1 (start at 001 if none found)
 
@@ -70,7 +70,7 @@ On creation, /act writes:
 
 ```yaml
 session_id: {SESSION_ID}
-session_type: run
+session_type: act
 command: /act
 request: "{user_request}"
 created_at: "{ISO_TIMESTAMP}"

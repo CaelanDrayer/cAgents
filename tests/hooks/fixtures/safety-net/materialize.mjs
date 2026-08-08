@@ -107,7 +107,7 @@ export function materializeInitZeroAgent({
   withRunningChild = false,
   childSpawnedMsAgo = 0,
 } = {}) {
-  const sid = `run_safety-init-zero-${uniq('a')}`;
+  const sid = `act_safety-init-zero-${uniq('a')}`;
   const dir = join(SESSIONS_DIR, sid);
   const hb = iso(heartbeatMsAgo);
   const start = iso(heartbeatMsAgo);
@@ -192,7 +192,7 @@ export function materializeCoordinatedStaleChild({
   childSpawnedMsAgo = 2 * HOUR,
   heartbeatMsAgo = 2 * MIN,
 } = {}) {
-  const sid = `run_safety-stale-child-${uniq('b')}`;
+  const sid = `act_safety-stale-child-${uniq('b')}`;
   const dir = join(SESSIONS_DIR, sid);
   const hb = iso(heartbeatMsAgo);
   const childSpawn = iso(childSpawnedMsAgo);
@@ -266,7 +266,7 @@ export function materializeCoordinatedStaleChild({
  * @returns {{sid: string, dir: string}}
  */
 export function materializeFabricatedPass({ pipelineState = 'VALIDATED', heartbeatMsAgo = 2 * MIN } = {}) {
-  const sid = `run_safety-fabricated-pass-${uniq('c')}`;
+  const sid = `act_safety-fabricated-pass-${uniq('c')}`;
   const dir = join(SESSIONS_DIR, sid);
   const hb = iso(heartbeatMsAgo);
   const now = iso(0);
@@ -328,7 +328,7 @@ export function materializeFabricatedPass({ pipelineState = 'VALIDATED', heartbe
  * @returns {{sid: string, dir: string}}
  */
 export function materializeGenuineValidated({ heartbeatMsAgo = 2 * MIN } = {}) {
-  const sid = `run_safety-genuine-validated-${uniq('d')}`;
+  const sid = `act_safety-genuine-validated-${uniq('d')}`;
   const dir = join(SESSIONS_DIR, sid);
   const hb = iso(heartbeatMsAgo);
   const start = iso(heartbeatMsAgo + 5 * MIN);

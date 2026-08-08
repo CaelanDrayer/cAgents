@@ -58,8 +58,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_ARCHIVE_AGE_DAYS = 30;
 const DEFAULT_DELETE_AGE_DAYS = 120;
 
-// Session directory prefixes this sweep considers (mirrors SESSION_PREFIXES).
-const SESSION_PREFIXES = ['run_', 'team_', 'designer_', 'org_', 'review_', 'optimize_'];
+// Session directory prefixes this sweep considers (mirrors hook-utils.cjs
+// SESSION_PREFIXES). `act_` is the go-forward /act prefix; `run_` is retained as a
+// legacy reader so pre-v12.66 session dirs (which are NOT renamed on disk) stay
+// sweepable. Omitting `act_` here would leak every new session past the GC forever.
+const SESSION_PREFIXES = ['act_', 'run_', 'team_', 'designer_', 'org_', 'review_', 'optimize_'];
 
 // Fixture/test session marker — identical to session-catchup.cjs FIXTURE_SESSION_RE.
 // Matches a `test`/`fixture` token delimited by `_`/`-`/start/end but NOT an

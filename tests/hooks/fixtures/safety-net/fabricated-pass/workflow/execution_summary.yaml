@@ -1,5 +1,5 @@
 # FIXTURE (c) — the fabricated completed summary, also safety-net-marked.
-session_id: "run_fabricated-pass_fixture_260717_001"
+session_id: "act_fabricated-pass_fixture_260717_001"
 final_state: "VALIDATED"
 status: "completed"
 generated_by: verify-completion-hook-safety-net

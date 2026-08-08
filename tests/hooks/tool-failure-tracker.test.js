@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'tool-failure-tracker.cjs');
-const TEST_SESSION_DIR = join(process.cwd(), 'cagents-memory', 'sessions', 'run_20260101_000000_test_tft');
+const TEST_SESSION_DIR = join(process.cwd(), 'cagents-memory', 'sessions', 'act_20260101_000000_test_tft');
 
 function runHook(input) {
   const result = execSync(

@@ -37,7 +37,7 @@ function parseCommandFlags(commandString) {
 | `--tier <N>` | Number | Override tier classification (2-4) | auto-classify | `/act Migrate --tier 4` |
 | `--confidence <N>` | Number | Set detection confidence threshold | 0.7 | `/act Request --confidence 0.6` |
 | `--team` | Boolean | Use parallel team execution via Agent Teams | false | `/act Build feature --team` |
-| `--resume <id>` | String | Resume an interrupted workflow session | none | `/act --resume run_20260207_143022` |
+| `--resume <id>` | String | Resume an interrupted workflow session | none | `/act --resume act_fix-auth_260207_001` |
 | `--session <dir>` | String | Pre-enriched session directory (used by /team subagents) | none | `/act Implement feature --session cagents-memory/sessions/team_xyz_260512_001` |
 | `--brief <path>` | String | Strategic brief (path to brief YAML; produced by /team strategic mode in v12.2.0+ or by pre-v12.2.0 /org) | none | `/act Launch product --brief cagents-memory/sessions/team_xyz/outputs/strategic_brief.yaml` |
 | `--analytics` | Boolean | Display pipeline analytics dashboard and exit | false | `/act --analytics` |

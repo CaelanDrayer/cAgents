@@ -124,7 +124,7 @@ Agent({
 ## Session Structure (v12.0.0)
 
 ```
-cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/
+cagents-memory/sessions/act_{slug}_{YYMMDD}_{NNN}/
 +-- instruction.yaml
 +-- status.yaml
 +-- workflow/

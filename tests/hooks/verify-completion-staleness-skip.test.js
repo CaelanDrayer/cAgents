@@ -46,7 +46,7 @@ const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 const HOOK = join(HOOKS_DIR, 'verify-completion.cjs');
 
 const TS = Date.now().toString(36);
-const SID = `run_staleness-skip-test_${TS}`;
+const SID = `act_staleness-skip-test_${TS}`;
 const DIR = join(SESSIONS_DIR, SID);
 
 const TWENTY_FIVE_HOURS_AGO = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();

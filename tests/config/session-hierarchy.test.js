@@ -69,8 +69,8 @@ describe('Parent Session ID Extraction', () => {
   });
 
   it('extracts from paths with different session type prefixes', () => {
-    expect(extractParentSessionId('cagents-memory/sessions/run_fix-auth_260317_001/subdir'))
-      .toBe('run_fix-auth_260317_001');
+    expect(extractParentSessionId('cagents-memory/sessions/act_fix-auth_260317_001/subdir'))
+      .toBe('act_fix-auth_260317_001');
     expect(extractParentSessionId('cagents-memory/sessions/review_audit_260317_001/subdir'))
       .toBe('review_audit_260317_001');
     expect(extractParentSessionId('cagents-memory/sessions/designer_ui_260317_001/subdir'))
@@ -106,11 +106,11 @@ describe('/team documentation (SKILL.md + reference docs)', () => {
     ).toBe(true);
   });
 
-  it('documents that /team creates team_ sessions (not run_)', () => {
+  it('documents that /team creates team_ sessions (not act_)', () => {
     // Either SKILL.md or the reference doc must state this contract.
     const combined = teamSkill + '\n' + teamParentSessionDoc;
     expect(combined).toContain('team_*');
-    expect(combined).toMatch(/does NOT create.*run_|NOT create.*run_\*/);
+    expect(combined).toMatch(/does NOT create.*act_|NOT create.*act_\*/);
   });
 
   it('documents the max 2-level hierarchy constraint', () => {

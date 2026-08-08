@@ -71,7 +71,7 @@ describe('P5.5: deterministic multi-file sanitize restore', { timeout: 30000 }, 
   let sessionId;
 
   beforeEach(() => {
-    sessionId = `run_test-multifile_${process.pid}_${Date.now()}_001`;
+    sessionId = `act_test-multifile_${process.pid}_${Date.now()}_001`;
     tempDir = join(tmpdir(), `cagents-multifile-${process.pid}-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
     backupDir = join(BACKUP_BASE, sessionId);

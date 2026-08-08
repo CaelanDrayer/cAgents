@@ -62,8 +62,8 @@ const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
 // Realistic production SDK transcript UUIDs (8-4-4-4-12 lowercase hex).
 const UUID = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
 const UUID_B = '11111111-2222-3333-4444-555555555555';
-const SID = 'run_flake-regress_260723_001';
-const SID_B = 'run_flake-regress-b_260723_002';
+const SID = 'act_flake-regress_260723_001';
+const SID_B = 'act_flake-regress-b_260723_002';
 
 function freshHookUtils() {
   delete require.cache[require.resolve(join(HOOKS_DIR, 'hook-utils.cjs'))];

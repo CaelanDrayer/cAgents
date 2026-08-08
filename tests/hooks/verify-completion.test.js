@@ -7,7 +7,7 @@ import { execSync } from 'child_process';
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'verify-completion.cjs');
 const TEST_SESSIONS_DIR = join(process.cwd(), 'cagents-memory', 'sessions');
-const TEST_SESSION = 'run_20260101_000001_test_vc';
+const TEST_SESSION = 'act_20260101_000001_test_vc';
 const TEST_SESSION_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION);
 
 function runHook(input, envOverrides = {}) {

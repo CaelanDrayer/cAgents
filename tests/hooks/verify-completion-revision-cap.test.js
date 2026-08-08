@@ -52,7 +52,7 @@ const created = [];
  * @param {number} revisionCycles   value written as status.yaml revision_cycles
  */
 function makeStalledSession(slug, revisionCycles) {
-  const sid = `run_rev-cap-${slug}_${TS}`;
+  const sid = `act_rev-cap-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   created.push(dir);
   mkdirSync(join(dir, 'workflow'), { recursive: true });

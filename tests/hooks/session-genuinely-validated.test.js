@@ -43,7 +43,7 @@ const COMPLETED_COORD_LOG = [
 
 beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'genuine-validated-'));
-  dir = join(root, 'run_fixture_260717_001');
+  dir = join(root, 'act_fixture_260717_001');
   mkdirSync(join(dir, 'workflow'), { recursive: true });
 });
 

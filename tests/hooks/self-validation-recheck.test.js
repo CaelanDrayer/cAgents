@@ -64,7 +64,7 @@ const created = [];
  * @param {boolean} [opts.outputsBlock=true]  also write a clean outputs/task-2/self-validation.yaml
  */
 function makeSession(slug, { svFilePath, svExitCode, outputsBlock = true }) {
-  const sid = `run_c1recheck-${slug}_${TS}`;
+  const sid = `act_c1recheck-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   created.push(dir);
   mkdirSync(join(dir, 'workflow'), { recursive: true });

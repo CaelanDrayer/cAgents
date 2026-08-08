@@ -4,7 +4,7 @@
  * Background (H1 from run_sessions-hung-single-dir_260602_001):
  *   Claude Code's hook payload `input.session_id` field carries SDK transcript
  *   UUIDs (e.g. "28d9d944-e2f5-4e03-b06b-d367625f1fdd"), NOT cAgents session
- *   directory names (e.g. "run_fix-auth_260317_001"). v12.15.0's deterministic
+ *   directory names (e.g. "act_fix-auth_260317_001"). v12.15.0's deterministic
  *   chain refused to fall through when a sessionHint was unresolvable. Result:
  *   findActiveSession(UUID) always returned null, session-init-gate.cjs:340
  *   HARD-DENIED every Agent spawn, and dependent hooks silently skipped.
@@ -39,7 +39,7 @@ const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 const UUID_HINT = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
 
 const TS = Date.now().toString(36);
-const SID_REAL = `run_uuid-payload-test_${TS}`;
+const SID_REAL = `act_uuid-payload-test_${TS}`;
 const DIR_REAL = join(SESSIONS_DIR, SID_REAL);
 
 function makeNonTerminalSession(dir, sid) {
@@ -117,7 +117,7 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
     makeNonTerminalSession(DIR_REAL, SID_REAL);
 
     // Hint is a cAgents-shaped name for a DIFFERENT session that does not exist.
-    const orphanHint = `run_does-not-exist_${TS}`;
+    const orphanHint = `act_does-not-exist_${TS}`;
 
     const result = utils.findActiveSession(orphanHint);
 

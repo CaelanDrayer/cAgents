@@ -136,7 +136,7 @@ describe('team-stop.cjs', () => {
     });
 
     it('should work for run_ session prefix', () => {
-      const runSession = 'run_test-summary_260317_999';
+      const runSession = 'act_test-summary_260317_999';
       const runDir = join(AGENT_MEMORY, 'sessions', runSession);
       mkdirSync(join(runDir, 'workflow'), { recursive: true });
       writeFileSync(join(runDir, 'status.yaml'),

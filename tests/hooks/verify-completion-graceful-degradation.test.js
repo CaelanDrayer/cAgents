@@ -125,7 +125,7 @@ describe('PHASE-N1 (V11.1.13): verify-completion.cjs graceful-degradation downgr
     // repositioning: the fallback sentinel does NOT trigger a downgrade for a
     // run_* session (the hook scopes the acceptable-fallback recognition to
     // team_* sessions only).
-    const sessionId = `run_n1_marker_${Date.now()}`;
+    const sessionId = `act_n1_marker_${Date.now()}`;
     const sessionDir = setupSession(sessionId, COORDINATION_LOG_WITH_MARKER);
     try {
       runHook({ session_id: sessionId }, sessionDir);

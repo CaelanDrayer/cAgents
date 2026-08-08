@@ -98,7 +98,7 @@ describe('spawn-footprint.cjs — WO-01 measurement instrument', () => {
 
   beforeEach(() => {
     tmpRoot = join(os.tmpdir(), `cagents-spawn-fp-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-    sessionId = 'run_test-spawn-footprint_260804_001';
+    sessionId = 'act_test-spawn-footprint_260804_001';
     sessionDir = join(tmpRoot, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(
@@ -267,7 +267,7 @@ describe('spawn-footprint.cjs — WO-01 measurement instrument', () => {
     ['Agent with string tool_response', { tool_name: 'Agent', tool_response: 'oops' }],
     ['Agent with usage but no resolvable session', {
       tool_name: 'Agent',
-      session_id: 'run_does-not-exist_260804_999',
+      session_id: 'act_does-not-exist_260804_999',
       tool_response: { usage: REAL_USAGE_NO_TOUCH, agentId: 'aX' },
     }],
   ])('never blocks: %s', (_label, input) => {

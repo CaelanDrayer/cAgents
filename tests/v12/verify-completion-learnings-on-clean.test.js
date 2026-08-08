@@ -160,7 +160,7 @@ describe('LP-24: verify-completion.cjs emits workflow/learnings.yaml on PASS', (
   });
 
   it('writes workflow/learnings.yaml when validation verdict is PASS', () => {
-    const sessionId = 'run_lp-24-pass_260522_001';
+    const sessionId = 'act_lp-24-pass_260522_001';
     const { sessionDir, coordLogPath } = buildFixture(tempRoot, sessionId, {
       validationVerdict: 'PASS',
     });
@@ -193,7 +193,7 @@ describe('LP-24: verify-completion.cjs emits workflow/learnings.yaml on PASS', (
   });
 
   it('does NOT write workflow/learnings.yaml when validation_report.yaml is missing', () => {
-    const sessionId = 'run_lp-24-novalid_260522_002';
+    const sessionId = 'act_lp-24-novalid_260522_002';
     const { sessionDir, coordLogPath } = buildFixture(tempRoot, sessionId, {
       validationVerdict: null,
     });
@@ -222,7 +222,7 @@ describe('LP-24: verify-completion.cjs emits workflow/learnings.yaml on PASS', (
   });
 
   it('does NOT write workflow/learnings.yaml when validation verdict is FAIL', () => {
-    const sessionId = 'run_lp-24-fail_260522_003';
+    const sessionId = 'act_lp-24-fail_260522_003';
     const { sessionDir, coordLogPath } = buildFixture(tempRoot, sessionId, {
       validationVerdict: 'FAIL',
     });

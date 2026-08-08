@@ -80,7 +80,7 @@ describe('WI-2 (D3): verify-completion.cjs sentinel gate — slash-less filename
 
   it('Test A: warns when a slash-less claimed file does NOT exist', () => {
     // Pre-change this claim was silently dropped (slash filter) -> no warning.
-    const sessionId = `run_slashless_missing_${Date.now()}`;
+    const sessionId = `act_slashless_missing_${Date.now()}`;
     const sessionDir = setupSession(sessionId, 'DOESNOTEXIST_README.md');
     try {
       runHook({ session_id: sessionId });
@@ -96,7 +96,7 @@ describe('WI-2 (D3): verify-completion.cjs sentinel gate — slash-less filename
     // CLAUDE.md exists at PROJECT_ROOT; the :703-707 existence check resolves the
     // bare name against PROJECT_ROOT, so it must NOT be reported missing.
     expect(existsSync(join(process.cwd(), 'CLAUDE.md'))).toBe(true);
-    const sessionId = `run_slashless_exists_${Date.now()}`;
+    const sessionId = `act_slashless_exists_${Date.now()}`;
     const sessionDir = setupSession(sessionId, 'CLAUDE.md');
     try {
       runHook({ session_id: sessionId });
@@ -113,7 +113,7 @@ describe('WI-2 (D3): verify-completion.cjs sentinel gate — slash-less filename
   });
 
   it('Test C: warnings-only — missing slash-less file does NOT introduce a deny/permissionDecision', () => {
-    const sessionId = `run_slashless_warnonly_${Date.now()}`;
+    const sessionId = `act_slashless_warnonly_${Date.now()}`;
     const sessionDir = setupSession(sessionId, 'DOESNOTEXIST_README.md');
     try {
       const out = runHook({ session_id: sessionId });

@@ -81,7 +81,7 @@ describe('js-yaml guarded require — static contract (WI-2)', () => {
 // without `npm install` (hook-utils.cjs itself does not use js-yaml).
 // ---------------------------------------------------------------------------
 describe('js-yaml guarded require — functional degradation (WI-2)', () => {
-  const TEST_SESSION = 'run_wi2-yaml-guard_260703_001';
+  const TEST_SESSION = 'act_wi2-yaml-guard_260703_001';
   let tmpRoot;
   let sessionDir;
   let preloadPath;

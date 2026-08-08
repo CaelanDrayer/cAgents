@@ -28,7 +28,7 @@ other 3 user skills.
 | `--auto-fix` | flag | Apply atomic auto-fix during review mode | — |
 | `--team` | flag | Delegate to /team for parallel multi-agent execution | "run X in parallel" |
 | `--analytics` | flag | Capture execution analytics for review | "run X with metrics" |
-| `--resume <session_id>` | flag | Resume an existing session at its last checkpoint | "resume run_..." |
+| `--resume <session_id>` | flag | Resume an existing session at its last checkpoint | "resume act_..." |
 | `--session <session_dir>` | flag | Bind to an existing session dir (used by /team; historically by /org, removed in v12.2.0 and absorbed into /team strategic mode) | — |
 | `--dry-run` | flag | Show plan/wave structure without executing | "preview the plan" |
 | `--interactive` | flag | Run with interactive prompts at key gates | — |

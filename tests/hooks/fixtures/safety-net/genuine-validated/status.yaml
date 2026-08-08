@@ -2,7 +2,7 @@
 # complete/PASS and MUST still write `successes:` after the REC-02/06 fixes.
 # This is the "do not over-correct" guard. Tests build a live copy via
 # materialize.mjs (materializeGenuineValidated).
-session_id: run_genuine-validated_fixture_260717_001
+session_id: act_genuine-validated_fixture_260717_001
 pipeline_state: VALIDATED
 phase: complete
 result: success

@@ -369,7 +369,7 @@ If context is exhausted mid-workflow:
 | `cagents-memory/_system/config/pipeline_config.yaml` | Pipeline state machine (optional, generated at runtime) |
 | `{domain}/config/planner_config.yaml` | Per-domain planner config |
 | `cagents-memory/_system/templates/event.yaml` | Event template |
-| `cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/` | Session folder |
+| `cagents-memory/sessions/act_{slug}_{YYMMDD}_{NNN}/` | Session folder |
 | `cagents-memory/sessions/{session_id}/workflow/agent_tree.yaml` | Audit trail |
 | `cagents-memory/_system/logs/agent_spawns.log` | Global audit log |
 | `cagents-memory/_system/metrics/pipeline_analytics.yaml` | Pipeline analytics |

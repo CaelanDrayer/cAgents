@@ -142,7 +142,7 @@ function realTree(sid, agents) {
  * and the coord-log checks are skipped — Path A / the tree checks stay isolated.
  */
 function makeSession(slug, pipelineState, treeContent) {
-  const sid = `run_ats-${slug}_${TS}`;
+  const sid = `act_ats-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   mkdirSync(join(dir, 'workflow'), { recursive: true });
   writeStatus(dir, sid, pipelineState);
@@ -222,7 +222,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     const { sid } = makeSession(
       'next-stage',
       'ORCHESTRATED',
-      realTree(`run_ats-next-stage_${TS}`, [
+      realTree(`act_ats-next-stage_${TS}`, [
         { id: 'aaaa000000000001', type: 'cagents:planner', depth: 1, stopped: TX_RECENT, role: 'Decomposition + objectives + controller selection' },
       ])
     );
@@ -244,7 +244,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     const { sid } = makeSession(
       'abandoned',
       'ORCHESTRATED',
-      realTree(`run_ats-abandoned_${TS}`, [
+      realTree(`act_ats-abandoned_${TS}`, [
         { id: 'bbbb000000000001', type: 'cagents:orchestrator', depth: 1, stopped: TX_RECENT, role: 'Workflow phase conductor' },
       ])
     );
@@ -262,7 +262,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     const { sid } = makeSession(
       'outcome',
       'COORDINATED',
-      realTree(`run_ats-outcome_${TS}`, [
+      realTree(`act_ats-outcome_${TS}`, [
         { id: 'cccc000000000001', type: 'cagents:orchestrator', depth: 1, stopped: TX_RECENT, role: 'Workflow phase conductor' },
         { id: 'cccc000000000002', type: 'cagents:planner', depth: 1, stopped: TX_RECENT, role: 'Decomposition + objectives' },
         { id: 'cccc000000000003', type: 'cagents:tech-lead', depth: 1, stopped: null, role: 'Controller coordinating work items' },
@@ -289,7 +289,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     const { sid, dir } = makeSession(
       'finalize',
       'complete',
-      realTree(`run_ats-finalize_${TS}`, [
+      realTree(`act_ats-finalize_${TS}`, [
         { id: 'dddd000000000001', type: 'cagents:tech-lead', depth: 1, stopped: null, role: 'Controller coordinating work items' },
       ])
     );
@@ -318,7 +318,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     const { sid, dir } = makeSession(
       'fallback',
       'PLANNED',
-      realTree(`run_ats-fallback_${TS}`, [
+      realTree(`act_ats-fallback_${TS}`, [
         { id: 'eeee000000000001', type: 'cagents:orchestrator', depth: 0, stopped: TX_RECENT, role: 'Workflow phase conductor' },
         { id: 'eeee000000000002', type: 'cagents:planner', depth: 0, stopped: TX_RECENT, role: 'Decomposition + objectives' },
       ])
@@ -334,7 +334,7 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
     // A legacy-shaped tree (pre-yaml.dump era / old fixtures) using
     // `- agent_id:` / `agent_type:` keys. The alternation must keep matching it
     // so historical sessions on disk do not regress to blocks.
-    const sid = `run_ats-legacy_${TS}`;
+    const sid = `act_ats-legacy_${TS}`;
     const dir = join(SESSIONS_DIR, sid);
     mkdirSync(join(dir, 'workflow'), { recursive: true });
     writeStatus(dir, sid, 'ORCHESTRATED');

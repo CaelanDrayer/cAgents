@@ -98,7 +98,7 @@ function workflowFileInput() {
 function agentMemoryFileInput() {
   return {
     tool_name: 'Edit',
-    tool_input: { file_path: join(AGENT_MEMORY_DIR, 'sessions', 'run_test', 'status.yaml'), old_string: 'a', new_string: 'b' }
+    tool_input: { file_path: join(AGENT_MEMORY_DIR, 'sessions', 'act_test', 'status.yaml'), old_string: 'a', new_string: 'b' }
   };
 }
 
