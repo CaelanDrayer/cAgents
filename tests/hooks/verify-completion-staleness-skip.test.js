@@ -39,10 +39,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. This fixture is a
+// non-terminal INIT session — exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to. hookEnv() sets
+// CLAUDE_PROJECT_DIR for the spawned hook so it resolves the same temp root.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 const HOOK = join(HOOKS_DIR, 'verify-completion.cjs');
 
 const TS = Date.now().toString(36);
@@ -77,7 +82,7 @@ function runHook(sessionId) {
     input: payload,
     encoding: 'utf8',
     timeout: 10000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   if (result.status !== 0 && result.status !== null) {
     throw new Error(

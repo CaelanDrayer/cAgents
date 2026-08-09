@@ -29,10 +29,20 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. DIR_REAL is a
+// non-terminal COORDINATING session — exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to.
+//
+// This file resolves sessions BOTH in-process (freshHookUtils) and via a
+// spawned hook (Test 5), so hookEnv() alone is NOT sufficient: hook-utils.cjs
+// computes AGENT_MEMORY_DIR from CLAUDE_PROJECT_DIR at MODULE LOAD time
+// (hook-utils.cjs:42), so the env var must be set on this process's own
+// process.env BEFORE the fresh require — see beforeEach below.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 // Realistic Claude Code SDK UUID (from run_sessions-hung-single-dir_260602_001
 // agent_spawns.log line 228 — empirical production payload shape).
@@ -57,8 +67,15 @@ function freshHookUtils() {
 
 describe('UUID-shaped input.session_id payload (WI-2)', () => {
   let utils;
+  let prevProjectDir;
 
   beforeEach(() => {
+    prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    // MUST precede freshHookUtils(): hook-utils.cjs snapshots
+    // AGENT_MEMORY_DIR from CLAUDE_PROJECT_DIR at module load, so setting it
+    // after the require would leave the in-process assertions reading the REAL
+    // sessions dir.
+    Object.assign(process.env, hookEnv());
     if (existsSync(DIR_REAL)) rmSync(DIR_REAL, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
     utils = freshHookUtils();
@@ -67,6 +84,8 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
   afterEach(() => {
     if (existsSync(DIR_REAL)) rmSync(DIR_REAL, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
+    if (prevProjectDir === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+    else process.env.CLAUDE_PROJECT_DIR = prevProjectDir;
   });
 
   it('Test 1 — UUID hint alone resolves to null on HEAD (FAIL-before, PASS-after with env-var); pre-WI-3 it returns null because chain step 1 fails', () => {
@@ -138,7 +157,7 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
 
     const result = spawnSync('node', [join(HOOKS_DIR, 'session-init-gate.cjs')], {
       input: payload,
-      env: { ...process.env, CAGENTS_ACTIVE_SESSION: SID_REAL },
+      env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: SID_REAL },
       encoding: 'utf8',
       timeout: 5000,
     });

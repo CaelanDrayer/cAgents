@@ -2,16 +2,31 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+// Isolation (see materialize.mjs): the fixture below lives in a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. It is a
+// non-terminal COORDINATED session, i.e. exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to. Its session id is also a
+// FIXED literal (not timestamp-suffixed), so in the shared dir two concurrent
+// runs would have collided on the same path; the temp root removes that too.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'stop-failure-handler.cjs');
-const TEST_SESSION_DIR = join(process.cwd(), 'cagents-memory', 'sessions', 'act_test-stop-failure_260101_001');
+const TEST_SESSION_DIR = join(SESSIONS_DIR, 'act_test-stop-failure_260101_001');
 const WORKFLOW_DIR = join(TEST_SESSION_DIR, 'workflow');
 
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
+    {
+      encoding: 'utf8',
+      timeout: 10000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      // hookEnv() sets CLAUDE_PROJECT_DIR so the spawned hook resolves the same
+      // temp root the fixture was written into (this call previously inherited
+      // the ambient env and therefore read the REAL sessions dir).
+      env: { ...process.env, ...hookEnv() },
+    }
   );
   return JSON.parse(result.trim());
 }
