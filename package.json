@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "12.66.1",
+  "version": "12.66.2",
   "description": "Universal multi-domain agent orchestration framework. 60 agents across 9 archetypes with 4 user skills (/act, /team, /designer, /helper).",
   "type": "module",
   "engines": {

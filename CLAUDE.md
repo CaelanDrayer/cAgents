@@ -298,7 +298,7 @@ reconstruct with `ls` has been removed deliberately.
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
 **Tests**: `npm test` runs 1776+ Vitest tests across 214+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.66.1
+**Version**: 12.66.2
 
 ## Troubleshooting
 

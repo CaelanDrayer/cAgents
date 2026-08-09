@@ -10,6 +10,76 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.66.2] - 2026-08-09
+
+Test-infrastructure hardening only. No hook source was touched, no behavior
+changed, and no new capability ships — hence patch.
+
+As with the first half of v12.66.1, everything below was **already latent on
+`main`** and is not `/run` -> `/act` rename fallout. It surfaced only because the
+same test files were under audit. Anyone bisecting a regression into this range
+should not attribute it to the rename.
+
+### Fixed — test isolation (pre-existing on `main`, NOT rename fallout)
+
+- **Eight test files created fixtures inside the real session store**
+  (`956c92cc`). Follow-up to `c829e086`, which fixed six files and named nine
+  more as carrying the same latent hazard; eight of those nine were confirmed
+  and fixed, and the ninth was a false entry (below).
+
+  Each of the eight created session directories inside the shared, real
+  `cagents-memory/sessions/`, where a sibling test asserting *"there is no active
+  session"* could resolve one of them through `hook-utils.cjs`'s
+  `findActiveSession` / `fallbackHeuristic`. They passed, but only by scheduling
+  luck — the green suite was concealing a real cross-test coupling.
+
+  Fixed by routing the fixtures through the **existing** `CLAUDE_PROJECT_DIR`
+  injection point, the same mechanism `c829e086` used. No new interface, no hook
+  signature change.
+
+  Files: `concurrent-appends`, `self-validation-recheck`,
+  `session-catchup-liveness`, `session-init-gate-uuid-payload`,
+  `verify-completion-revision-cap`, `verify-completion-staleness-skip`,
+  `concurrent-sessions-no-crosswrite`, `stop-failure-handler`.
+
+  Measured, not asserted: polling the real sessions dir during one run of those
+  tests showed **16** fixture directories appear before the fix and **zero**
+  after, with the fixtures verified materializing under the temp root instead.
+  The positive control matters — without it a zero could just mean the fixtures
+  stopped being written at all.
+
+  Three findings are recorded because they show the files were individually
+  diagnosed rather than pattern-matched onto one template:
+  - `self-validation-recheck` was the same class via a **different resolution
+    path**. Its fixtures are `pipeline_state: complete` — terminal, and so
+    invisible to `fallbackHeuristic` — but `verify-completion.cjs`'s last-resort
+    `findMostRecentSessionDir({ includeTerminal: true })` picked them up anyway.
+  - `session-init-gate-uuid-payload` needed more than the shared helper. It
+    resolves `AGENT_MEMORY_DIR` at module load, so `CLAUDE_PROJECT_DIR` has to be
+    set on `process.env` **before** the fresh require, and restored afterward.
+  - `stop-failure-handler` used a **fixed, non-timestamped** session id
+    (`act_test-stop-failure_260101_001`), which two concurrent runs would have
+    collided on independently of the shared-directory problem.
+
+### Not changed — one false entry on the list
+
+- **`tests/hooks/tool-failure-tracker.test.js` creates no session directory** and
+  was left untouched. It was listed as a ninth offender, but its
+  `TEST_SESSION_DIR` constant is dead — declared, never referenced — and the hook
+  short-circuits before any write. Verified empirically: it contributed zero
+  directories to the leak measurement above. The dead constant still names the
+  real sessions dir, which is what put the file on the list in the first place;
+  removing it is a different change.
+
+### Reported, not absorbed
+
+- **A tenth file, `tests/hooks/team-stop.test.js`, writes
+  `team_test-stop_260317_999` into the real sessions dir** — same class, not
+  fixed here. It failed once intermittently during this work. Rather than assume
+  causation, all changes were stashed and the full suite re-run on the pre-change
+  tree, where the same file failed at a **different** test. Pre-existing flake,
+  not introduced here. Left for a follow-up.
+
 ## [12.66.1] - 2026-08-08
 
 Closing round of the `/run` -> `/act` rename effort begun in v12.66.0. Patch,
