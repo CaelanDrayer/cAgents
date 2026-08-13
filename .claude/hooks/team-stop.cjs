@@ -4,7 +4,7 @@
  * cAgents V10.24.3 - Extended from team-only to all session types
  *
  * Runs on SessionEnd to:
- * 1. Clean up agent_tree.yaml for ANY active session (run_*, team_*, org_*, designer_*, etc.)
+ * 1. Clean up agent_tree.yaml for ANY active session (act_*, team_*, org_*, designer_*, legacy run_*, etc.)
  *    by marking unstopped agents with stopped_at timestamps and computing durations.
  * 2. Finalize team-specific metrics and update status (team_* sessions only).
  *
@@ -26,7 +26,7 @@
 // teammates.
 //
 // IMPORTANT — do NOT treat the whole hook as a no-op: the remaining phases are a
-// UNIVERSAL SessionEnd routine that runs for EVERY session type (run_*, team_*,
+// UNIVERSAL SessionEnd routine that runs for EVERY session type (act_*, team_*,
 // designer_*, etc.) and the default path DOES depend on them — Phase 1 agent-tree
 // cleanup, Phase 2 execution_summary.yaml generation, Phase 4 pattern-extractor
 // throttle, and Phase 5 SDK-UUID pointer unlink. Those must keep running on the
@@ -563,7 +563,7 @@ createHook('SessionEnd', async (input) => {
   // Explicit unlink at finalization so the sdk_session_map/ registry does not
   // retain a dead pointer. Reuses the sessionDir team-stop already resolved for
   // its own finalization (no newest-session heuristic). Fail-open — never blocks
-  // teardown. Runs for ALL session types (run_/team_/designer_), since the
+  // teardown. Runs for ALL session types (act_/team_/designer_), since the
   // pointer is created for any of them.
   if (anySession) {
     reapSdkPointer(anySession);

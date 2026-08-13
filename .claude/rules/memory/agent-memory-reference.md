@@ -16,7 +16,7 @@ cagents-memory/
 ├── _system/
 │   ├── config/                       # Global configuration
 │   ├── commands/                     # Command-specific configs
-│   │   ├── run/                      # domain_detection, workflow_templates, preflight_validation, workflow_analytics
+│   │   ├── act/                      # domain_detection, workflow_templates, preflight_validation, workflow_analytics
 │   │   ├── designer/templates/       # Design templates
 │   │   ├── review/                   # framework_patterns
 │   │   └── optimize/                 # framework_patterns, scan_patterns
@@ -124,7 +124,7 @@ resume_hints:
 
 ### Historical session extensions (V11.0-removed skills)
 
-The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/optimize` were folded into `/run` via the v12.1.2 keyword router — use `/run review ...` and `/run optimize ...` today). The session-extension shapes below are preserved here for archived-session back-compat with hooks that scan historical `session_type` prefixes on disk:
+The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/optimize` were folded into `/act` — formerly `/run` — via the v12.1.2 keyword router; use `/act review ...` and `/act optimize ...` today). The session-extension shapes below are preserved here for archived-session back-compat with hooks that scan historical `session_type` prefixes on disk:
 
 **/review** (legacy) also included: scope_analysis.yaml, execution_strategy.yaml, reports/ (aggregate, auto_fixes, quality_gates, final_report)
 
@@ -134,9 +134,9 @@ The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/opti
 
 | Command | Config Path |
 |---------|------------|
-| `/run` | `cagents-memory/_system/commands/run/` |
+| `/act` | `cagents-memory/_system/commands/act/` |
 | `/designer` | `cagents-memory/_system/commands/designer/` |
-| `/review` (legacy, V11.0-removed; folded into `/run review` v12.1.2) | `cagents-memory/_system/commands/review/` |
-| `/optimize` (legacy, V11.0-removed; folded into `/run optimize` v12.1.2) | `cagents-memory/_system/commands/optimize/` |
+| `/review` (legacy, V11.0-removed; folded into `/act review` v12.1.2) | `cagents-memory/_system/commands/review/` |
+| `/optimize` (legacy, V11.0-removed; folded into `/act optimize` v12.1.2) | `cagents-memory/_system/commands/optimize/` |
 
 Each domain has 5 configs in `_system/domains/{domain}/`: router, planner, executor, validator, self_correct.

@@ -7,9 +7,9 @@
  *   persisted the pipeline's revision count and nothing capped it at the Stop
  *   gate. A session that kept failing validation would be BLOCKED by the Stop
  *   hook on every turn (issues.length > 0 -> decision: block), which — combined
- *   with /run routing FAIL/REVISE back to PLANNED — is the "re-plan forever"
+ *   with /act routing FAIL/REVISE back to PLANNED — is the "re-plan forever"
  *   defect. REC-11 re-adds a persisted `revision_cycles` counter (incremented by
- *   the /run loop on each route-back to PLANNED) and has verify-completion.cjs
+ *   the /act loop on each route-back to PLANNED) and has verify-completion.cjs
  *   FINALIZE (escalate to user + mark incomplete) instead of blocking once
  *   `revision_cycles >= max_cycles` (pipeline_config.yaml revision.max_cycles = 3).
  *
@@ -30,10 +30,16 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. These fixtures are
+// non-terminal COORDINATED sessions — exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to. hookEnv() additionally seeds
+// pipeline_config.yaml into the temp root, which is load-bearing here: the cap
+// assertions below depend on the hook reading revision.max_cycles = 3.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const NOW = Date.now();
 const MIN = 60 * 1000;
@@ -52,7 +58,7 @@ const created = [];
  * @param {number} revisionCycles   value written as status.yaml revision_cycles
  */
 function makeStalledSession(slug, revisionCycles) {
-  const sid = `run_rev-cap-${slug}_${TS}`;
+  const sid = `act_rev-cap-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   created.push(dir);
   mkdirSync(join(dir, 'workflow'), { recursive: true });
@@ -144,7 +150,7 @@ function runHook(sid) {
     input: payload,
     encoding: 'utf8',
     timeout: 10000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '', CAGENTS_SESSION_LIVENESS_MS: '60000' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '', CAGENTS_SESSION_LIVENESS_MS: '60000' },
   });
   if (r.status !== 0 && r.status !== null) {
     throw new Error(`Hook exited non-zero: status=${r.status}\nstdout=${r.stdout}\nstderr=${r.stderr}`);

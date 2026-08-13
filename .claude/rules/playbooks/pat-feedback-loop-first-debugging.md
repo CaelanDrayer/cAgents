@@ -4,7 +4,7 @@ paths:
   - ".claude/rules/core/execution.md"
   - "agents/developer/**"
   - "agents/core/self-correct/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/hooks/**"
   - "scripts/**"
   - "tests/**"

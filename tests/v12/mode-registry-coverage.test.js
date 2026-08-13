@@ -11,16 +11,17 @@ describe('REC-3: MODE_REGISTRY.md coverage', () => {
     expect(existsSync(registryPath)).toBe(true);
   });
 
-  // v12.1.2: /improve folded into /run via keyword router. The /improve modes
+  // v12.1.2: /improve folded into /act via keyword router. The /improve modes
   // (review/optimize/full) and flags (--baseline/--suppress/--benchmark) are
-  // now under /run. The /improve section is preserved as a REMOVED marker
+  // now under /act. The /improve section is preserved as a REMOVED marker
   // (so the section header regex still matches) but the flags are checked
-  // under /run.
+  // under /act. (`/run` was renamed to `/act` — it collided with Claude
+  // Code's built-in `run` skill.)
   // v12.2.0: /org absorbed into /team strategic mode. The /org section is
   // preserved as a REMOVED marker pointing at /team strategic mode for
   // migration. /team gains --strategic and --no-strategic flags.
   it.each([
-    ['/run', ['--mode debug', '--mode review', '--mode optimize', '--mode full', '--team', '--analytics', '--resume', '--dry-run', '--baseline', '--suppress', '--benchmark']],
+    ['/act', ['--mode debug', '--mode review', '--mode optimize', '--mode full', '--team', '--analytics', '--resume', '--dry-run', '--baseline', '--suppress', '--benchmark']],
     ['/team', ['--dry-run', '--members', '--teammate-mode', '--waves', '--template', '--no-template', '--strategic', '--no-strategic']],
     ['/org', ['REMOVED']],
     ['/improve', ['REMOVED']],

@@ -5,7 +5,7 @@ import { join } from 'path';
 /**
  * Regression test for WI-1 (REC-5) of V11.3.0:
  *
- * /helper SKILL.md must document the /goal + /run + Auto-mode autonomous-execution
+ * /helper SKILL.md must document the /goal + /act + Auto-mode autonomous-execution
  * triad. Before V11.3.0 the helper skill did not mention /goal at all, so cAgents
  * users had no on-ramp to Claude Code's native autonomous-continuation primitive.
  *

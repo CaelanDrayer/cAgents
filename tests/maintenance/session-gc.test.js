@@ -89,6 +89,10 @@ describe('REC-19 session-gc runGc classification', () => {
   });
 
   it('archives a 40-day terminal session', () => {
+    // The `run_` prefix here is DELIBERATE: pre-/act session dirs are never
+    // renamed on disk, so this case is the standing proof that the legacy-reader
+    // entry in SESSION_PREFIXES still lets the GC find and archive them. Every
+    // other case in this file uses the go-forward `act_` prefix. Do not sweep it.
     mkSession(sessionsDir, 'run_archive-me_260101_001', { ageDays: 40, terminal: true });
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory'), dryRun: false });
 
@@ -98,28 +102,28 @@ describe('REC-19 session-gc runGc classification', () => {
   });
 
   it('never archives a LIVE session (fresh heartbeat) even when old + terminal', () => {
-    mkSession(sessionsDir, 'run_live-one_260101_002', { ageDays: 40, terminal: true, live: true });
+    mkSession(sessionsDir, 'act_live-one_260101_002', { ageDays: 40, terminal: true, live: true });
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory'), dryRun: false });
 
-    expect(res.skipped.live).toContain('run_live-one_260101_002');
-    expect(res.archived).not.toContain('run_live-one_260101_002');
-    expect(fs.existsSync(path.join(sessionsDir, 'run_live-one_260101_002'))).toBe(true);
+    expect(res.skipped.live).toContain('act_live-one_260101_002');
+    expect(res.archived).not.toContain('act_live-one_260101_002');
+    expect(fs.existsSync(path.join(sessionsDir, 'act_live-one_260101_002'))).toBe(true);
   });
 
   it('never archives a non-terminal (mid-flight) session even when old', () => {
-    mkSession(sessionsDir, 'run_midflight_260101_003', { ageDays: 40, terminal: false });
+    mkSession(sessionsDir, 'act_midflight_260101_003', { ageDays: 40, terminal: false });
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory'), dryRun: false });
 
-    expect(res.skipped.nonterminal).toContain('run_midflight_260101_003');
-    expect(fs.existsSync(path.join(sessionsDir, 'run_midflight_260101_003'))).toBe(true);
+    expect(res.skipped.nonterminal).toContain('act_midflight_260101_003');
+    expect(fs.existsSync(path.join(sessionsDir, 'act_midflight_260101_003'))).toBe(true);
   });
 
   it('never archives a recent terminal session (< archive age)', () => {
-    mkSession(sessionsDir, 'run_recent_260716_004', { ageDays: 5, terminal: true });
+    mkSession(sessionsDir, 'act_recent_260716_004', { ageDays: 5, terminal: true });
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory'), dryRun: false });
 
-    expect(res.skipped.recent).toContain('run_recent_260716_004');
-    expect(fs.existsSync(path.join(sessionsDir, 'run_recent_260716_004'))).toBe(true);
+    expect(res.skipped.recent).toContain('act_recent_260716_004');
+    expect(fs.existsSync(path.join(sessionsDir, 'act_recent_260716_004'))).toBe(true);
   });
 
   it('never archives a fixture/test session even when old + terminal', () => {
@@ -132,36 +136,36 @@ describe('REC-19 session-gc runGc classification', () => {
 
   it('deletes an archived session older than delete age; keeps a recently-archived one', () => {
     fs.mkdirSync(archiveDir, { recursive: true });
-    mkSession(archiveDir, 'run_old-archived_251201_005', { ageDays: 130, terminal: true });
-    mkSession(archiveDir, 'run_fresh-archived_260601_006', { ageDays: 90, terminal: true });
+    mkSession(archiveDir, 'act_old-archived_251201_005', { ageDays: 130, terminal: true });
+    mkSession(archiveDir, 'act_fresh-archived_260601_006', { ageDays: 90, terminal: true });
 
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory'), dryRun: false });
 
-    expect(res.deleted).toContain('run_old-archived_251201_005');
-    expect(fs.existsSync(path.join(archiveDir, 'run_old-archived_251201_005'))).toBe(false);
+    expect(res.deleted).toContain('act_old-archived_251201_005');
+    expect(fs.existsSync(path.join(archiveDir, 'act_old-archived_251201_005'))).toBe(false);
     // 90 < 120 -> kept
-    expect(res.deleted).not.toContain('run_fresh-archived_260601_006');
-    expect(fs.existsSync(path.join(archiveDir, 'run_fresh-archived_260601_006'))).toBe(true);
+    expect(res.deleted).not.toContain('act_fresh-archived_260601_006');
+    expect(fs.existsSync(path.join(archiveDir, 'act_fresh-archived_260601_006'))).toBe(true);
   });
 
   it('--dry-run (default) writes NOTHING to disk', () => {
-    mkSession(sessionsDir, 'run_dry-archive_260101_007', { ageDays: 40, terminal: true });
+    mkSession(sessionsDir, 'act_dry-archive_260101_007', { ageDays: 40, terminal: true });
     fs.mkdirSync(archiveDir, { recursive: true });
-    mkSession(archiveDir, 'run_dry-delete_251201_008', { ageDays: 130, terminal: true });
+    mkSession(archiveDir, 'act_dry-delete_251201_008', { ageDays: 130, terminal: true });
 
     // dryRun defaults to true when unspecified.
     const res = gc.runGc({ memoryRoot: path.join(sandbox, 'cagents-memory') });
 
     expect(res.dryRun).toBe(true);
     // The plan lists them, but disk is untouched.
-    expect(res.archived).toContain('run_dry-archive_260101_007');
-    expect(res.deleted).toContain('run_dry-delete_251201_008');
-    expect(fs.existsSync(path.join(sessionsDir, 'run_dry-archive_260101_007'))).toBe(true);
-    expect(fs.existsSync(path.join(archiveDir, 'run_dry-delete_251201_008'))).toBe(true);
+    expect(res.archived).toContain('act_dry-archive_260101_007');
+    expect(res.deleted).toContain('act_dry-delete_251201_008');
+    expect(fs.existsSync(path.join(sessionsDir, 'act_dry-archive_260101_007'))).toBe(true);
+    expect(fs.existsSync(path.join(archiveDir, 'act_dry-delete_251201_008'))).toBe(true);
   });
 
   it('is idempotent (a second sweep archives nothing new)', () => {
-    mkSession(sessionsDir, 'run_once_260101_009', { ageDays: 40, terminal: true });
+    mkSession(sessionsDir, 'act_once_260101_009', { ageDays: 40, terminal: true });
     const memoryRoot = path.join(sandbox, 'cagents-memory');
     gc.runGc({ memoryRoot, dryRun: false });
     const res2 = gc.runGc({ memoryRoot, dryRun: false });
@@ -211,7 +215,7 @@ function readLog(logPath) {
   return fs.readFileSync(logPath, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 }
 
-function setupRunSession(sandboxRoot, sessionId = 'run_rec19-wiring_260717_001') {
+function setupRunSession(sandboxRoot, sessionId = 'act_rec19-wiring_260717_001') {
   const sessionDir = path.join(sandboxRoot, 'cagents-memory/sessions', sessionId);
   fs.mkdirSync(path.join(sessionDir, 'workflow'), { recursive: true });
   fs.writeFileSync(

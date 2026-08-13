@@ -26,8 +26,9 @@ const SKILLS_DIR = path.join(REPO_ROOT, '.claude', 'skills');
 const MAX_LINES = 400;
 
 // v12.2.0: /org absorbed into /team strategic mode; 4 user skills.
-// (v12.1.2: /improve folded into /run via keyword router.)
-const USER_SKILLS = ['team', 'run', 'designer', 'helper'];
+// (v12.1.2: /improve folded into /act via keyword router.)
+// `run` was renamed to `act` (collided with Claude Code's built-in `run`).
+const USER_SKILLS = ['team', 'act', 'designer', 'helper'];
 
 function countLines(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -71,9 +72,10 @@ describe('user-skill SKILL.md progressive disclosure (Wave 5)', () => {
     const PRE_REFACTOR = {
       // org: 1202 — removed in v12.2.0 (absorbed into /team strategic mode)
       team: 1185,
-      run: 861,
+      // act: pre-Wave-5 baseline carried over from the skill's former `run` name.
+      act: 861,
       designer: 736,
-      // improve: 597 — removed in v12.1.2 (folded into /run)
+      // improve: 597 — removed in v12.1.2 (folded into /act)
       helper: 508,
     };
     for (const [skill, baseline] of Object.entries(PRE_REFACTOR)) {

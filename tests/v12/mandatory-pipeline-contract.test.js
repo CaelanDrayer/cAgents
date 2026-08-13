@@ -16,7 +16,7 @@
  *   3. (REVISED v12.7.0) adaptive-pipeline.md MAY exist; if present, it
  *      MUST describe exactly two named paths (`fast`, `standard`) and
  *      MUST NOT reintroduce the deleted 3-path Minimal/Medium/Full names.
- *   4. (REVISED v12.7.0) .claude/skills/run/SKILL.md Step 3 describes
+ *   4. (REVISED v12.7.0) .claude/skills/act/SKILL.md Step 3 describes
  *      orchestrator-skip via an enumerated allowlist (tier-2-clear /
  *      tier-2-fast-path / disabled-by-flag). The deleted "complexity
  *      score" heuristic must remain absent. The "fast path" and
@@ -44,8 +44,8 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const PIPELINE_CONFIG = path.join(REPO_ROOT, 'cagents-memory', '_system', 'config', 'pipeline_config.yaml');
-const ADAPTIVE_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'run', 'reference', 'adaptive-pipeline.md');
-const RUN_SKILL = path.join(REPO_ROOT, '.claude', 'skills', 'run', 'SKILL.md');
+const ADAPTIVE_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'reference', 'adaptive-pipeline.md');
+const RUN_SKILL = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
 
 const CANONICAL_STATES = ['INIT', 'ORCHESTRATED', 'PLANNED', 'COORDINATED', 'VALIDATED'];
 
@@ -121,7 +121,7 @@ describe('v12.3.0 Pillar 1: Mandatory pipeline contract', () => {
     });
   });
 
-  describe('run/SKILL.md scrub (REVISED v12.7.0): Step 3c describes enumerated orchestrator-skip allowlist', () => {
+  describe('act/SKILL.md scrub (REVISED v12.7.0): Step 3c describes enumerated orchestrator-skip allowlist', () => {
     it('contains no "complexity score" heuristic (deleted in v12.3.0, remains absent)', () => {
       const raw = fs.readFileSync(RUN_SKILL, 'utf8');
       expect(raw).not.toMatch(/complexity[\s.-]score/i);

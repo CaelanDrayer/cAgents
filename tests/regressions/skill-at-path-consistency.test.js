@@ -17,8 +17,8 @@ import { join } from 'path';
  * Root cause: improve/SKILL.md was authored before the @path convention
  * was adopted across skills; never refactored during V11.0 consolidation.
  *
- * Test added (this file): walks `.claude/skills/{run,team,org,designer,
- * improve,helper}/SKILL.md` and asserts no SKILL.md uses the
+ * Test added (this file): walks `.claude/skills/{act,team,designer,
+ * helper}/SKILL.md` and asserts no SKILL.md uses the
  * `[`reference/X.md`](reference/X.md)` markdown-link form for resource
  * references. Lists offending file paths and counts in the failure
  * message so the report is actionable.
@@ -34,8 +34,9 @@ import { join } from 'path';
 const ROOT = process.cwd();
 const SKILLS_DIR = join(ROOT, '.claude', 'skills');
 // v12.2.0: /org absorbed into /team strategic mode; 4 user skills.
-// (v12.1.2 previously folded /improve into /run via keyword router.)
-const SKILL_NAMES = ['run', 'team', 'designer', 'helper'];
+// (v12.1.2 previously folded /improve into /run via keyword router;
+// /run was later renamed /act after Claude Code shipped a built-in `run`.)
+const SKILL_NAMES = ['act', 'team', 'designer', 'helper'];
 
 // Matches: [`reference/anything.md`](reference/anything.md) and the
 // backtick-less variant [reference/anything.md](reference/anything.md).
@@ -44,11 +45,17 @@ const SKILL_NAMES = ['run', 'team', 'designer', 'helper'];
 const MARKDOWN_LINK_PATTERN = /\]\(reference\/[^)]+\)/g;
 
 describe('skill-at-path-consistency (Q-008)', () => {
-  it('all 5 user-invocable SKILL.md files exist (v12.1.2: /improve folded into /run)', () => {
+  it('all 4 user-invocable SKILL.md files exist (/improve folded into /act)', () => {
     for (const name of SKILL_NAMES) {
       const p = join(SKILLS_DIR, name, 'SKILL.md');
       expect(existsSync(p), `Missing SKILL.md: ${p}`).toBe(true);
     }
+    // The renamed-away `run` skill dir must stay gone — a shipped
+    // .claude/skills/run/ would collide with Claude Code's built-in `run`.
+    expect(
+      existsSync(join(SKILLS_DIR, 'run', 'SKILL.md')),
+      'Stale .claude/skills/run/SKILL.md reintroduced (collides with the built-in `run` skill)',
+    ).toBe(false);
   });
 
   it('no SKILL.md uses [reference/X.md](reference/X.md) markdown-link form for resource refs', () => {
@@ -74,14 +81,15 @@ describe('skill-at-path-consistency (Q-008)', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('run/SKILL.md uses @reference/ form at least once (positive assertion)', () => {
-    // v12.1.2: improve folded into /run; the @reference/ check now applies to /run.
-    const p = join(SKILLS_DIR, 'run', 'SKILL.md');
+  it('act/SKILL.md uses @reference/ form at least once (positive assertion)', () => {
+    // v12.1.2: improve folded into the pipeline entry point; the @reference/
+    // check applies to /act (formerly /run).
+    const p = join(SKILLS_DIR, 'act', 'SKILL.md');
     const content = readFileSync(p, 'utf8');
     const atRefCount = (content.match(/@reference\//g) || []).length;
     expect(
       atRefCount,
-      `Expected run/SKILL.md to use @reference/ form for progressive disclosure; got ${atRefCount} matches.`,
+      `Expected act/SKILL.md to use @reference/ form for progressive disclosure; got ${atRefCount} matches.`,
     ).toBeGreaterThan(0);
   });
 });

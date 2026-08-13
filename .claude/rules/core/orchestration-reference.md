@@ -6,7 +6,7 @@ paths:
   - "agents/core/execution-monitor/**"
   - "agents/core/validator/**"
   - "agents/core/self-correct/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - "cagents-memory/_system/config/**"
 ---
 
@@ -31,7 +31,7 @@ enrichment_summary: "{brief_summary_of_context}"
 > **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
 > The `/context init` reference below is PRESERVED for archived-session back-compat — hooks consume
 > session_type prefixes from historical session directories on disk. Do NOT remove these
-> values. Use `/run review`, `/run optimize`, `/run improve` (v12.1.2+ keyword router) or `/run --mode debug` for V12+ workflows. (`/improve` was folded into `/run` via the keyword router in v12.1.2; the historical `/improve --mode review|optimize|full` syntax no longer exists.)
+> values. Use `/act review`, `/act optimize`, `/act improve` (v12.1.2+ keyword router) or `/act --mode debug` for V12+ workflows. (`/improve` was folded into `/act` — formerly `/run` — via the keyword router in v12.1.2; the historical `/improve --mode review|optimize|full` syntax no longer exists.)
 > See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
 
 The `project_summary` field is loaded from `cagents-memory/_projects/{hash}/product_context.yaml` if it exists (created via `/context init`). Must fit within MAX_ATTENTION_CHARS budget (500 chars).
@@ -67,10 +67,10 @@ revision:
 > `workflow/events/` on disk. New sessions do NOT create `workflow/events/` and
 > do NOT emit EVT files. **Current state-advancement signal**: each pipeline
 > agent's primary output file (`enriched_context.yaml`, `plan.yaml`,
-> `coordination_log.yaml`, `validation_report.yaml`), which the `/run` loop reads
+> `coordination_log.yaml`, `validation_report.yaml`), which the `/act` loop reads
 > at level 0. The EVT files were external-UI-only signals — no cAgents hook or
 > agent ever consumed them — which is why the emission was dropped. See
-> `.claude/skills/run/reference/state-machine-detail.md` (Historical note).
+> `.claude/skills/act/reference/state-machine-detail.md` (Historical note).
 
 Pre-v12.6, each pipeline agent wrote a completion event to `workflow/events/EVT-{N}.yaml`:
 

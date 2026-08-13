@@ -14,14 +14,21 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. SID_FRESH in
+// particular is a deliberately LIVE non-terminal session, i.e. the single most
+// attractive target for a sibling test's
+// findActiveSession({fallbackHeuristic}). Redirecting also stops session-catchup
+// writing _system/incomplete_sessions.json into the real memory tree, and makes
+// the assertions below read against only the two sessions this file declares.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const TS = Date.now().toString(36);
-const SID_FRESH = `run_liveness-fresh_${TS}`;
-const SID_STALE = `run_liveness-stale_${TS}`;
+const SID_FRESH = `act_liveness-fresh_${TS}`;
+const SID_STALE = `act_liveness-stale_${TS}`;
 const DIR_FRESH = join(SESSIONS_DIR, SID_FRESH);
 const DIR_STALE = join(SESSIONS_DIR, SID_STALE);
 
@@ -36,7 +43,7 @@ function makeSession(dir, sid, mtimeOffsetMs) {
   );
   writeFileSync(
     join(dir, 'instruction.yaml'),
-    `session_id: ${sid}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sid}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   if (mtimeOffsetMs !== 0) {
     const t = (Date.now() + mtimeOffsetMs) / 1000;
@@ -52,7 +59,7 @@ function runSessionCatchup(extraEnv = {}) {
       encoding: 'utf8',
       timeout: 5000,
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, VITEST: 'true', CAGENTS_HOOK_DEDUP_DISABLE: '1', CAGENTS_SESSION_LIVENESS_MS: LIVENESS_MS, ...extraEnv },
+      env: { ...process.env, ...hookEnv(), VITEST: 'true', CAGENTS_HOOK_DEDUP_DISABLE: '1', CAGENTS_SESSION_LIVENESS_MS: LIVENESS_MS, ...extraEnv },
     }
   );
   return JSON.parse(result.trim());

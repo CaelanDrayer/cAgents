@@ -57,7 +57,7 @@ router:
 Requests are routed to domains based on keyword matching from `router.keywords` in each domain's `domain_overrides.yaml`. The router evaluates the user's request against all domain keyword lists and selects the best match.
 
 ### Non-Routable Archetypes
-- **Leadership**: C-suite agents invoked by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; pre-v12.2.0 this was the now-removed `/org` skill), not directly by `/run`
+- **Leadership**: C-suite agents invoked by `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; pre-v12.2.0 this was the now-removed `/org` skill), not directly by `/act`
 - **Shared/People (legacy overlays)**: Routing-config dirs only — no SKILL.md files; their controllers/agents now live in other archetypes
 - **Core**: Infrastructure agents used internally by the pipeline
 

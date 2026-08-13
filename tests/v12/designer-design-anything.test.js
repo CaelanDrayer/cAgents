@@ -17,7 +17,7 @@
  *       (matches /bootstrap|novice|topic discovery/i).
  *   (4) SKILL.md Phase 6 surfaces the additive build menu options:
  *       "Export", "Share", AND "Manual" (case-insensitive).
- *   (5) The /run, /team, /team --strategic build-handoff option strings
+ *   (5) The /act, /team, /team --strategic build-handoff option strings
  *       remain present and reachable in SKILL.md Phase 6 (auto-trigger
  *       contract must not break), AND the continuation gate is
  *       refinement-first (build/export options are gated behind an
@@ -45,11 +45,11 @@ const SKILL_MD = path.join(DESIGNER_DIR, 'SKILL.md');
 const PHASE_1_MD = path.join(DESIGNER_DIR, 'reference', 'phase-1-empathize.md');
 
 // The build-handoff option substrings that MUST remain present and reachable
-// in Phase 6 — they drive the /run, /team, /team --strategic auto-handoff.
+// in Phase 6 — they drive the /act, /team, /team --strategic auto-handoff.
 // They now live in Call 2 (after the user explicitly says they're done
 // refining) rather than Call 1, per the endless-refinement fix.
 const BUILD_HANDOFF_OPTIONS = [
-  'Build now (/run',
+  'Build now (/act',
   'Build with team (/team)',
   '/team --strategic',
 ];
@@ -98,7 +98,7 @@ describe('designer "design ANYTHING" capability', () => {
     expect(body).toMatch(/manual/i);
   });
 
-  it('SKILL.md keeps the /run, /team, /team --strategic build-handoff options reachable', () => {
+  it('SKILL.md keeps the /act, /team, /team --strategic build-handoff options reachable', () => {
     const body = fs.readFileSync(SKILL_MD, 'utf8');
     for (const opt of BUILD_HANDOFF_OPTIONS) {
       expect(body.includes(opt)).toBe(true);

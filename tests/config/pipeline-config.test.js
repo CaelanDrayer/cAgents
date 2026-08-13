@@ -46,7 +46,7 @@ describe('pipeline_config.yaml', () => {
   });
 
   // v12.3.0 removed pre-enrichment detection and the progressive
-  // minimal/medium/full path model. Every /run and /team session now
+  // minimal/medium/full path model. Every /act and /team session now
   // unconditionally executes the full 5-state pipeline. The old
   // 'progressive pipeline paths' block (asserting minimal/medium/full +
   // 0.25/0.65/1.0 thresholds) asserted a removed feature; it is replaced

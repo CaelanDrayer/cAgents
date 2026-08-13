@@ -233,20 +233,20 @@ describe('post-write-validator.cjs', () => {
     });
 
     it('does NOT create workflow/events/ when status.yaml has pipeline_state', () => {
-      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'run_test_260331_001');
+      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'act_test_260331_001');
       mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
       const statusPath = join(sessionDir, 'status.yaml');
-      writeFileSync(statusPath, 'pipeline_state: PLANNED\nsession_id: run_test_260331_001\n');
+      writeFileSync(statusPath, 'pipeline_state: PLANNED\nsession_id: act_test_260331_001\n');
       const result = runHookEvt({ tool_name: 'Write', tool_input: { file_path: statusPath } });
       expect(result.continue).toBe(true);
       expect(existsSync(join(sessionDir, 'workflow', 'events'))).toBe(false);
     });
 
     it('does NOT create workflow/events/ when status.yaml has only a phase field', () => {
-      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'run_phase_260331_001');
+      const sessionDir = join(EVT_TMP, 'cagents-memory', 'sessions', 'act_phase_260331_001');
       mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
       const statusPath = join(sessionDir, 'status.yaml');
-      writeFileSync(statusPath, 'phase: coordinating\nsession_id: run_phase_260331_001\n');
+      writeFileSync(statusPath, 'phase: coordinating\nsession_id: act_phase_260331_001\n');
       runHookEvt({ tool_name: 'Write', tool_input: { file_path: statusPath } });
       expect(existsSync(join(sessionDir, 'workflow', 'events'))).toBe(false);
     });

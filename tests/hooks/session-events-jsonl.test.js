@@ -46,7 +46,7 @@ function readEvents(sessionDir) {
 
 describe('REC-16: appendSessionEvent helper', () => {
   it('writes one parseable JSONL line per event with ts + type, in order', () => {
-    const sessionDir = join(TMP, 'run_rec16_a');
+    const sessionDir = join(TMP, 'act_rec16_a');
     mkdirSync(sessionDir, { recursive: true });
 
     appendSessionEvent(sessionDir, { type: 'spawn', agent_id: 'a1', depth: 1 });
@@ -82,7 +82,7 @@ describe('REC-16: appendSessionEvent helper', () => {
   });
 
   it('is lock-protected: N concurrent subprocess writers produce N intact lines', async () => {
-    const sessionDir = join(TMP, 'run_rec16_concurrent');
+    const sessionDir = join(TMP, 'act_rec16_concurrent');
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     const N = 10;
 
@@ -110,7 +110,7 @@ describe('REC-16: appendSessionEvent helper', () => {
 
 describe('REC-16: lifecycle hook wiring (spawn + stop)', () => {
   it('subagent-tracker emits a spawn line and subagent-stop-tracker emits a stop line', () => {
-    const sid = `run_rec16wire_${Date.now().toString(36)}`;
+    const sid = `act_rec16wire_${Date.now().toString(36)}`;
     const sessionDir = join(TMP, 'cagents-memory', 'sessions', sid);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     writeFileSync(

@@ -16,7 +16,7 @@
 
 - **5-Phase Optimization Loop**: Detection → Analysis → Planning → Execution → Validation — each phase produces a named artifact (detection_report.yaml, opportunities.yaml, plan.yaml, execution_summary.yaml, validation_report.yaml)
 - **ROI-Based Prioritization**: Opportunities are ranked by return on investment: (expected_gain / estimated_effort) × risk_factor — highest ROI items execute first
-- **Risk Classification Matrix**: Assigns a 0-100 risk score to each opportunity; SAFE (0-20) auto-applies, LOW (21-40) applies with standard validation, MEDIUM (41-60) with comprehensive validation, HIGH (61-80) requires user input, CRITICAL (81-100) handed to /run
+- **Risk Classification Matrix**: Assigns a 0-100 risk score to each opportunity; SAFE (0-20) auto-applies, LOW (21-40) applies with standard validation, MEDIUM (41-60) with comprehensive validation, HIGH (61-80) requires user input, CRITICAL (81-100) handed to /act
 - **Git Snapshot Pattern**: Before applying any optimization, create a named git commit — rollback becomes `git reset HEAD~1` with zero data loss
 - **Parallel Execution Grouping**: Optimizations with no shared file dependencies are grouped into parallel batches — reduces total wall-clock time by 40-60%
 - **Cross-File Analysis**: Detects optimization opportunities that span multiple files (e.g., duplicate logic, shared inefficiencies, redundant imports) — single-file tools miss these

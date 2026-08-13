@@ -12,7 +12,7 @@ cAgents is a **standalone, domain-agnostic** multi-agent orchestration plugin:
 - **5-state event-driven pipeline**: `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED` (decomposition + prompt-assembly folded into the
   `planner`; `max_revision_cycles: 3`).
-- **4 user skills**: `/run`, `/team`, `/designer`, `/helper`.
+- **4 user skills**: `/act`, `/team`, `/designer`, `/helper`.
 - **Zero external-service dependencies** — see § Standalone Contract.
 
 For v12 consolidation history and all later release notes, see
@@ -22,7 +22,7 @@ For v12 consolidation history and all later release notes, see
 
 Non-obvious pointers only — the rest of the tree is discoverable with `ls`:
 
-- `.claude/skills/run/reference/session-schema.md` - Session YAML contract (internal-only)
+- `.claude/skills/act/reference/session-schema.md` - Session YAML contract (internal-only)
 - `docs/WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
 - `archive/docs/` - Historical documentation (local only, not in git)
 - `cagents-memory/` - Runtime state (excluded from git)
@@ -52,7 +52,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
 
-> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 60-agent catalog span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. `backend-developer` / `architect` / `validator` are the agents the router selects for *code* requests — they are not what the system "is." When a request is non-technical (draft a SOW, price a migration, plan a campaign, write a story, build a financial model), it is squarely in scope: `/run` and `/team` route it to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request on the grounds that the plugin "looks engineering-focused" — that is a framing defect, not correct behavior.
+> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 60-agent catalog span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. `backend-developer` / `architect` / `validator` are the agents the router selects for *code* requests — they are not what the system "is." When a request is non-technical (draft a SOW, price a migration, plan a campaign, write a story, build a financial model), it is squarely in scope: `/act` and `/team` route it to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request on the grounds that the plugin "looks engineering-focused" — that is a framing defect, not correct behavior.
 
 **Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
 
@@ -72,17 +72,17 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 ## CRITICAL: Aggressive Delegation
 
-**Core Principle**: /run, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Agent tool or Skill tool. No exceptions.
+**Core Principle**: /act, /team, and all coordination agents NEVER do direct work. ALL work delegated to subagents via Agent tool or Skill tool. No exceptions.
 
-**Zero Tolerance**: `/run` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
+**Zero Tolerance**: `/act` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. If an orchestrator says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" — that is a critical violation. The user chose these skills specifically for agent orchestration; bypassing delegation defeats the entire purpose of the plugin.
 
-**This applies to ALL request sizes**: Even for single-file bug fixes, /run MUST still spawn a controller who spawns an execution agent. Even for cross-domain strategic requests, `/team` (with auto-strategic mode) MUST still spawn C-suite subagents in Wave 0/1 and synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
+**This applies to ALL request sizes**: Even for single-file bug fixes, /act MUST still spawn a controller who spawns an execution agent. Even for cross-domain strategic requests, `/team` (with auto-strategic mode) MUST still spawn C-suite subagents in Wave 0/1 and synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
 
 **Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
 
 **Delegation Chain** (event-driven pipeline):
 ```
-/run (state machine loop -- level 0)
+/act (state machine loop -- level 0)
   +-> orchestrator (level 1)    -> enriched_context.yaml
   +-> planner (level 1)         -> plan.yaml + work_items.yaml
   +-> controller (level 1)
@@ -91,7 +91,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-`/run` is a config-driven state machine reading `pipeline_config.yaml`: enrichment agents (orchestrator, planner) run sequentially at level 1; controllers spawn executors + reviewers at level 2 with internal reviewer loops (max 2 rounds — see controllers.md); the validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner produces decomposition and assembles delegation prompts inline (controllers fall back to standard prompts otherwise). **Roles**: orchestrator/planner enrich (L1); controllers ONLY coordinate (L1); execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) DO the work (L2); reviewer validates against acceptance criteria (L2); validator gates (L1). This config-driven machine replaces hardcoded steps; revision loops at both levels ensure quality.
+`/act` is a config-driven state machine reading `pipeline_config.yaml`: enrichment agents (orchestrator, planner) run sequentially at level 1; controllers spawn executors + reviewers at level 2 with internal reviewer loops (max 2 rounds — see controllers.md); the validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner produces decomposition and assembles delegation prompts inline (controllers fall back to standard prompts otherwise). **Roles**: orchestrator/planner enrich (L1); controllers ONLY coordinate (L1); execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) DO the work (L2); reviewer validates against acceptance criteria (L2); validator gates (L1). This config-driven machine replaces hardcoded steps; revision loops at both levels ensure quality.
 
 ## CRITICAL: Automatic Workflow Progression
 
@@ -158,7 +158,7 @@ ALL workflows use routing -> planning -> **coordinating** -> executing -> valida
 ## Workflow Execution
 
 ```
-User Request -> /run (state machine loop, reads pipeline_config.yaml)
+User Request -> /act (state machine loop, reads pipeline_config.yaml)
   INIT -> orchestrator -> enriched_context.yaml
   ORCHESTRATED -> planner -> plan.yaml + work_items.yaml (planner absorbs decomposition + delegation-prompt assembly)
   PLANNED -> controller -> coordination_log.yaml (with executor+reviewer loops)
@@ -180,9 +180,9 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 ## CRITICAL: Task Lifecycle (Cleanup + Per-Subagent Visibility)
 
-**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops** — stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create; before finishing a skill, sweep `TaskList` and resolve all of them. `/run`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end.
+**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops** — stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create; before finishing a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end.
 
-**Every background `Agent`/`Task` spawn MUST have a `TaskCreate` call BEFORE the spawn** (one per spawn when `run_in_background: true`), the subject matching the agent's description, marked `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry and no visibility into the parallel agents; `/run`/`/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
+**Every background `Agent`/`Task` spawn MUST have a `TaskCreate` call BEFORE the spawn** (one per spawn when `run_in_background: true`), the subject matching the agent's description, marked `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry and no visibility into the parallel agents; `/act`/`/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
 
 **Anti-patterns**: creating a task then stopping without completing it; leaving tasks `in_progress` after work is committed; creating tracking tasks that are never updated.
 
@@ -194,7 +194,7 @@ User Request -> /run (state machine loop, reads pipeline_config.yaml)
 
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
-| `/run` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `run context ...`, `--mode debug`; keyword router: `run improve|review|audit|optimize ...` triggers improve modes) |
+| `/act` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `act context ...`, `--mode debug`; keyword router: `act improve|review|audit|optimize ...` triggers improve modes) |
 | `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
@@ -212,10 +212,10 @@ cagents-memory/
 +-- _system/       # configs, commands/, templates/
 +-- _knowledge/    # patterns, calibration, learnings
 +-- _archive/      # completed sessions
-+-- sessions/      # run_*, team_*, designer_* (org_*, review_*, optimize_* are legacy)
++-- sessions/      # act_*, team_*, designer_* (run_*, org_*, review_*, optimize_* are legacy)
 ```
 
-**Session ID**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `run_fix-auth_260317_001`)
+**Session ID**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `act_fix-auth_260317_001`)
 
 **Key Session Files**: `workflow/plan.yaml`, `workflow/coordination_log.yaml`, `workflow/execution_summary.yaml`
 
@@ -223,7 +223,7 @@ cagents-memory/
 
 **Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` wave subagents reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/run` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
+**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool and CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`; the skill loop is depth 0, the 5 levels are the subagent generations beneath it). The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`. `/team` wave subagents reliably spawn execution agents and reviewers, and may nest deeper within the budget; they spawn execution agents directly rather than re-entering the full `/act` pipeline by design for cost/clarity, not because of a harness limit. Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback** for the nesting ceiling (a depth-5 subagent cannot spawn a depth-6 child) or a regressed harness — agents check whether the `Agent` tool is actually present before degrading to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
 
 ## Creating Agents / Domains
 
@@ -297,8 +297,8 @@ reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 1755+ Vitest tests across 211+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.65.0
+**Tests**: `npm test` runs 1776+ Vitest tests across 214+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.66.2
 
 ## Troubleshooting
 

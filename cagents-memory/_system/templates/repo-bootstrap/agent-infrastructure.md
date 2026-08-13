@@ -25,7 +25,7 @@ Pipeline agent responsible for PIPELINE_STAGE. Part of the V9.23+ event-driven e
 ## Pipeline Position
 
 ```
-/run state machine
+/act state machine
   ...
   PREVIOUS_STATE -> THIS_AGENT -> produces OUTPUT_ARTIFACT
   OUTPUT_STATE -> NEXT_AGENT
@@ -73,7 +73,7 @@ field_2: value
 
 After writing output artifact:
 - Update `status.yaml` with new `pipeline_state`
-- Return result so `/run` state machine can advance
+- Return result so `/act` state machine can advance
 
 ## Error Handling
 

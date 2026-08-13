@@ -68,7 +68,7 @@ emitted_at: "2026-06-01T22:50:00Z"
 status: pending                         # pending | relayed | spawned | promoted | rejected | completed
 ```
 
-Field names match `/run`'s `delegation_requests` schema (see `.claude/skills/run/reference/delegation-workaround.md`). The on-disk YAML is the audit-trail contract. Teammate A also calls `SendMessage(recipient: lead, type: peer_request, content: "REQ-{N} emitted: see outputs/wave-{K}/peer_requests/REQ-{N}.yaml")` so the lead is woken without polling.
+Field names match `/act`'s `delegation_requests` schema (see `.claude/skills/act/reference/delegation-workaround.md`). The on-disk YAML is the audit-trail contract. Teammate A also calls `SendMessage(recipient: lead, type: peer_request, content: "REQ-{N} emitted: see outputs/wave-{K}/peer_requests/REQ-{N}.yaml")` so the lead is woken without polling.
 
 ## Lead routing decision tree
 
@@ -155,12 +155,12 @@ When `requested_peer` is absent, NEEDS_CONTEXT retains its prior meaning (need u
 | Peer ping-pong (A → B → A → B) | REJECT branch fires when the decision tree cannot route safely; PROMOTE moves the work to a future wave. |
 | Teammates over-emit peer_requests instead of doing their own work | Reviewer flags peer_request emission as a delegation-rationalization in the two-stage review. |
 | Lead-context bloat from many REQ files | Lead reads ONLY the new REQ file, never full wave outputs. REQ files are size-budgeted (~50 lines). |
-| Schema drift from `/run` `delegation_requests` | Field names are aligned; the WI-7 regression test asserts the playbook's YAML example parses as valid YAML. |
+| Schema drift from `/act` `delegation_requests` | Field names are aligned; the WI-7 regression test asserts the playbook's YAML example parses as valid YAML. |
 
 ## See also
 
 - `.claude/rules/core/teams.md` — § Cross-Teammate Request Pattern (links here)
 - `.claude/rules/playbooks/pat-subagent-status-protocol.md` — NEEDS_CONTEXT shape and the 4-status protocol
 - `.claude/rules/core/delegation.md` — Controller-Side Corollary (aggressive-delegation invariant)
-- `.claude/skills/run/reference/delegation-workaround.md` — `delegation_requests` schema (source of field names)
+- `.claude/skills/act/reference/delegation-workaround.md` — `delegation_requests` schema (source of field names)
 - `.claude/skills/team/SKILL.md` — Step 5d (lead wave loop where peer_request routing happens)

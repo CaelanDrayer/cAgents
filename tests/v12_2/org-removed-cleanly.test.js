@@ -62,8 +62,10 @@ describe('v12.2.0: /org removed cleanly', () => {
   it('.claude/skills/ contains exactly the 4 v12.2.0 user-invocable skills', () => {
     const skillsDir = path.join(ROOT, '.claude', 'skills');
     // Filter out _MODE_REGISTRY.md, commit-changes (untracked workspace artifact),
-    // and any non-directory entries. The 4 v12.2.0 user-invocable skills:
-    // designer, helper, run, team.
+    // and any non-directory entries. The 4 user-invocable skills:
+    // act, designer, helper, team. (`run` was renamed to `act` because Claude
+    // Code shipped a built-in `run` skill that collided with it; `act` sorts
+    // first alphabetically where `run` sorted third.)
     const entries = fs
       .readdirSync(skillsDir, { withFileTypes: true })
       .filter((e) => e.isDirectory())
@@ -75,7 +77,10 @@ describe('v12.2.0: /org removed cleanly', () => {
     const userSkills = entries
       .filter((n) => n !== 'commit-changes')
       .sort();
-    expect(userSkills).toEqual(['designer', 'helper', 'run', 'team']);
+    expect(userSkills).toEqual(['act', 'designer', 'helper', 'team']);
     expect(userSkills).not.toContain('org');
+    // The renamed-away `run` directory must not reappear: a shipped
+    // .claude/skills/run/ would shadow Claude Code's built-in `run` skill.
+    expect(userSkills).not.toContain('run');
   });
 });

@@ -128,7 +128,7 @@ work_items.yaml during a now-removed DECOMPOSED state.) The planner writes
 BOTH artifacts in one pass:
 
 ```
-/run state machine (v12) -> PLANNED -> planner -> plan.yaml + work_items.yaml + event file
+/act state machine (v12) -> PLANNED -> planner -> plan.yaml + work_items.yaml + event file
 ```
 
 ### Inputs

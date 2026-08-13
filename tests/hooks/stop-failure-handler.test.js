@@ -2,16 +2,31 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+// Isolation (see materialize.mjs): the fixture below lives in a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. It is a
+// non-terminal COORDINATED session, i.e. exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to. Its session id is also a
+// FIXED literal (not timestamp-suffixed), so in the shared dir two concurrent
+// runs would have collided on the same path; the temp root removes that too.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'stop-failure-handler.cjs');
-const TEST_SESSION_DIR = join(process.cwd(), 'cagents-memory', 'sessions', 'run_test-stop-failure_260101_001');
+const TEST_SESSION_DIR = join(SESSIONS_DIR, 'act_test-stop-failure_260101_001');
 const WORKFLOW_DIR = join(TEST_SESSION_DIR, 'workflow');
 
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
+    {
+      encoding: 'utf8',
+      timeout: 10000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      // hookEnv() sets CLAUDE_PROJECT_DIR so the spawned hook resolves the same
+      // temp root the fixture was written into (this call previously inherited
+      // the ambient env and therefore read the REAL sessions dir).
+      env: { ...process.env, ...hookEnv() },
+    }
   );
   return JSON.parse(result.trim());
 }
@@ -55,61 +70,61 @@ describe('stop-failure-handler.cjs', () => {
     });
 
     it('should return continue:true with systemMessage', () => {
-      const result = runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const result = runHook({ session_id: 'act_test-stop-failure_260101_001' });
       expect(result.continue).toBe(true);
       expect(result.systemMessage).toBeDefined();
       expect(typeof result.systemMessage).toBe('string');
     });
 
     it('should mention the recovery state file in systemMessage', () => {
-      const result = runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const result = runHook({ session_id: 'act_test-stop-failure_260101_001' });
       expect(result.systemMessage).toContain('recovery_state.yaml');
     });
 
     it('should include workflow phase in systemMessage', () => {
-      const result = runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const result = runHook({ session_id: 'act_test-stop-failure_260101_001' });
       expect(result.systemMessage).toContain('COORDINATED');
     });
 
     it('should write recovery_state.yaml to workflow dir', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const recoveryPath = join(WORKFLOW_DIR, 'recovery_state.yaml');
       expect(existsSync(recoveryPath)).toBe(true);
     });
 
     it('should include session_id in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
-      expect(content).toContain('run_test-stop-failure_260101_001');
+      expect(content).toContain('act_test-stop-failure_260101_001');
     });
 
     it('should include event: stop_failure in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('event: stop_failure');
     });
 
     it('should capture domain from plan.yaml in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('domain: "engineering"');
     });
 
     it('should capture controller from plan.yaml in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('controller: "tech-lead"');
     });
 
     it('should capture phase from status.yaml in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('phase: "COORDINATED"');
     });
 
     it('should include error_message in recovery_state.yaml when error provided', () => {
       runHook({
-        session_id: 'run_test-stop-failure_260101_001',
+        session_id: 'act_test-stop-failure_260101_001',
         error: 'API rate limit exceeded'
       });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
@@ -118,7 +133,7 @@ describe('stop-failure-handler.cjs', () => {
 
     it('should include error in systemMessage when error provided', () => {
       const result = runHook({
-        session_id: 'run_test-stop-failure_260101_001',
+        session_id: 'act_test-stop-failure_260101_001',
         error: 'connection timeout'
       });
       expect(result.systemMessage).toContain('connection timeout');
@@ -127,14 +142,14 @@ describe('stop-failure-handler.cjs', () => {
     it('should handle missing plan.yaml gracefully', () => {
       // Remove plan.yaml
       try { rmSync(join(WORKFLOW_DIR, 'plan.yaml')); } catch {}
-      const result = runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      const result = runHook({ session_id: 'act_test-stop-failure_260101_001' });
       expect(result.continue).toBe(true);
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('domain: "unknown"');
     });
 
     it('should include recovery instructions in recovery_state.yaml', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('instructions:');
       expect(content).toContain('workflow/plan.yaml');
@@ -184,13 +199,13 @@ describe('stop-failure-handler.cjs', () => {
     });
 
     it('should extract controller from nested controller_assignment.primary', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).toContain('controller: "cagents:tech-lead"');
     });
 
     it('should NOT fall back to unknown when nested format is used', () => {
-      runHook({ session_id: 'run_test-stop-failure_260101_001' });
+      runHook({ session_id: 'act_test-stop-failure_260101_001' });
       const content = readFileSync(join(WORKFLOW_DIR, 'recovery_state.yaml'), 'utf8');
       expect(content).not.toContain('controller: "unknown"');
     });

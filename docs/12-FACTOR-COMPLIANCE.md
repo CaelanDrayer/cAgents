@@ -24,7 +24,7 @@
 | 8. Own Your Control Flow | YES | `pipeline_config.yaml`-driven state machine; revision routing (FAIL/REVISE) is hand-coded, not LLM-decided |
 | 9. Compact Errors into Context Window | PARTIAL | `tool-failure-tracker.cjs` records failures but does not yet summarize for re-injection on retry |
 | 10. Small, Focused Agents | YES | 60 agents across 9 archetypes (post-v12.20.0 catalog consolidation from 141; 44 routable + 16 core); per-agent SKILL.md scope guarded by `skill-size-monitor.cjs` |
-| 11. Trigger from Anywhere | PARTIAL | Triggers from `/run`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/run` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
+| 11. Trigger from Anywhere | PARTIAL | Triggers from `/act`, `/team`, `/designer`, `/helper` (4 in-terminal skills; `/improve` folded into `/act` in v12.1.2, `/org` folded into `/team` strategic mode in v12.2.0); no webhook/cron/email/Slack triggers |
 | 12. Make Your Agent a Stateless Reducer | DIVERGENCE | Controllers carry state across reviewer-loop rounds; session state lives in `cagents-memory/sessions/{id}/` files by design |
 
 **Score**: 6 YES · 4 PARTIAL · 2 deliberate DIVERGENCE.
@@ -35,9 +35,9 @@
 
 ### Factor 1: Natural Language to Tool Calls — YES
 
-cAgents accepts natural-language requests at every skill entry point (`/run "fix the auth bug"`) and converts them into structured tool calls (Agent spawns, Bash, Write, Edit). The pipeline does this in two stages — `core/orchestrator` produces `enriched_context.yaml`, then `core/router` selects domain + tier + controller.
+cAgents accepts natural-language requests at every skill entry point (`/act "fix the auth bug"`) and converts them into structured tool calls (Agent spawns, Bash, Write, Edit). The pipeline does this in two stages — `core/orchestrator` produces `enriched_context.yaml`, then `core/router` selects domain + tier + controller.
 
-**cAgents implementation**: `core/orchestrator/SKILL.md`, `core/router/SKILL.md`, `.claude/skills/run/SKILL.md`.
+**cAgents implementation**: `core/orchestrator/SKILL.md`, `core/router/SKILL.md`, `.claude/skills/act/SKILL.md`.
 
 ### Factor 2: Own Your Prompts — YES
 
@@ -55,22 +55,22 @@ cAgents controls SKILL.md loading via Three-Tier Progressive Disclosure (frontma
 
 Coordination and validation outputs are YAML with a documented schema (`coordination_log.yaml` carries `schema_version: "1"`; `validation_report.yaml` emits PASS/FAIL/REVISE). Tool outputs themselves (Bash stdout, Read results) flow as raw strings — there is no enforcement of typed-output schemas on a per-tool basis.
 
-**cAgents implementation**: `.claude/skills/run/reference/session-schema.md`; `core/validator/SKILL.md`.
+**cAgents implementation**: `.claude/skills/act/reference/session-schema.md`; `core/validator/SKILL.md`.
 
 ### Factor 5: Unify Execution State and Business State — DELIBERATE DIVERGENCE
 
 cAgents intentionally **separates** the two:
 
-- **Execution state**: `cagents-memory/sessions/{id}/status.yaml`, driven by a 5-state machine (`INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED`). Owned by `/run` and pipeline hooks.
+- **Execution state**: `cagents-memory/sessions/{id}/status.yaml`, driven by a 5-state machine (`INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED`). Owned by `/act` and pipeline hooks.
 - **Business state**: `workflow/work_items.yaml`, `coordination_log.yaml`, agent-emitted artifacts. Owned by controllers and execution agents.
 
-**Why we diverge**: (1) Execution-state churn (re-routes, REVISE cycles, max-5 revision budget) shouldn't pollute the audit trail of business decisions; (2) `validator` reasons about execution states without parsing business-state schemas; (3) pipeline introspection (`/run --analytics`) operates on execution state alone.
+**Why we diverge**: (1) Execution-state churn (re-routes, REVISE cycles, max-5 revision budget) shouldn't pollute the audit trail of business decisions; (2) `validator` reasons about execution states without parsing business-state schemas; (3) pipeline introspection (`/act --analytics`) operates on execution state alone.
 
 **What we lose**: A single "where am I, what am I doing" view requires reading both `status.yaml` and the workflow artifacts. Reproducing a session from a single state blob is not possible — you need both. Tradeoff accepted; the separation has paid for itself in pipeline observability.
 
 ### Factor 6: Launch/Pause/Resume with Simple APIs — YES
 
-`/run` is the launch API. Pause happens implicitly at context compaction (state captured to `waypoints/`) and explicitly at HITL gates. Resume happens via Claude Code's `/resume` plus cAgents' `session-catchup.cjs` `SessionStart` hook, which detects incomplete sessions and offers continuation.
+`/act` is the launch API. Pause happens implicitly at context compaction (state captured to `waypoints/`) and explicitly at HITL gates. Resume happens via Claude Code's `/resume` plus cAgents' `session-catchup.cjs` `SessionStart` hook, which detects incomplete sessions and offers continuation.
 
 **cAgents implementation**: `.claude/hooks/session-catchup.cjs`, `.claude/hooks/pre-compact-save.cjs`, waypoint protocol in `.claude/rules/memory/agent-memory.md`.
 
@@ -82,9 +82,9 @@ cAgents has a dedicated `core/hitl` agent and an `approval-gate.cjs` `PreToolUse
 
 ### Factor 8: Own Your Control Flow — YES
 
-The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_system/config/pipeline_config.yaml` defines the state transitions; revision routing (FAIL→re-controller, REVISE→re-plan, max 5 cycles) is enforced in code, not asked of the model. The LLM picks *what* to do inside a state; cAgents decides *when* to transition.
+The `/act` state machine is config-driven, not LLM-driven. `cagents-memory/_system/config/pipeline_config.yaml` defines the state transitions; revision routing (FAIL→re-controller, REVISE→re-plan, max 5 cycles) is enforced in code, not asked of the model. The LLM picks *what* to do inside a state; cAgents decides *when* to transition.
 
-**cAgents implementation**: `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/run/reference/state-machine.md`.
+**cAgents implementation**: `cagents-memory/_system/config/pipeline_config.yaml`, `.claude/skills/act/reference/state-machine-detail.md`.
 
 ### Factor 9: Compact Errors into Context Window — PARTIAL
 
@@ -100,9 +100,9 @@ The `/run` state machine is config-driven, not LLM-driven. `cagents-memory/_syst
 
 ### Factor 11: Trigger from Anywhere — PARTIAL
 
-cAgents triggers from four in-terminal skills (`/run`, `/team`, `/designer`, `/helper`) plus Claude Code's native `/memory` and `/init`. (`/improve` was folded into `/run` via the first-word keyword router in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.) Team initialization happens inline inside `/team` (the standalone `team-trigger` agent was removed in v12.0.0) but isn't a user-facing trigger. What's missing: webhook, cron, email, Slack, SMS, GitHub-issue, or PR-comment triggers. cAgents is a Claude Code plugin first; outer-loop triggers are a Phase-2 concern.
+cAgents triggers from four in-terminal skills (`/act`, `/team`, `/designer`, `/helper`) plus Claude Code's native `/memory` and `/init`. (`/improve` was folded into `/act` via the first-word keyword router in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.) Team initialization happens inline inside `/team` (the standalone `team-trigger` agent was removed in v12.0.0) but isn't a user-facing trigger. What's missing: webhook, cron, email, Slack, SMS, GitHub-issue, or PR-comment triggers. cAgents is a Claude Code plugin first; outer-loop triggers are a Phase-2 concern.
 
-**cAgents implementation**: `.claude/skills/{run,team,designer,helper}/SKILL.md`.
+**cAgents implementation**: `.claude/skills/{act,team,designer,helper}/SKILL.md`.
 
 ### Factor 12: Make Your Agent a Stateless Reducer — DELIBERATE DIVERGENCE
 

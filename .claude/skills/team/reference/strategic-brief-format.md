@@ -59,7 +59,7 @@ Two new fields position at the **top level of each `domain_assignments` entry** 
 Allowed values: `independent` | `dependent_on`
 
 - **`independent`** — the domain's work items can begin immediately once the strategic brief is finalized. No upstream domain output is required as input. Independent domains are dispatched **in parallel** during the per-domain wave (Wave 3+ in /team strategic mode), using the Agent tool to spawn the domain controller.
-- **`dependent_on`** — the domain's work items require output from one or more upstream domains before they can begin. Dependent domains are dispatched **sequentially** after their upstream dependencies complete, via `Skill(/run --brief {strategic_brief.yaml} --domain {key})` so the upstream outputs are available as context.
+- **`dependent_on`** — the domain's work items require output from one or more upstream domains before they can begin. Dependent domains are dispatched **sequentially** after their upstream dependencies complete, via `Skill(/act --brief {strategic_brief.yaml} --domain {key})` so the upstream outputs are available as context.
 
 If `dependency_type` is omitted from an entry, the planner SHOULD treat the entry as `independent` and emit a warning that the field is missing (the field becomes required in v12.3.0).
 

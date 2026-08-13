@@ -20,7 +20,7 @@ Call 1 (continuation gate — refinement-first):
   Save & pause
 
 Call 2 (ONLY if user picks "I'm done refining"):
-  Build now (/run) |
+  Build now (/act) |
   Build with team (/team) |
   Build with team strategic mode (/team --strategic, cross-domain) |
   Export / Share / Manual (non-implementation exits)
@@ -38,7 +38,7 @@ Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
    specific area"; build/export NEVER appear in Call 1. Selecting either
    refinement option re-enters Refinement for the chosen scope and returns
    to this same gate — the loop does not exit on its own. The build-handoff
-   strings (`Build now (/run`, `Build with team (/team)`, `/team --strategic`)
+   strings (`Build now (/act`, `Build with team (/team)`, `/team --strategic`)
    must remain present and reachable in Call 2; that contract is guarded by
    `tests/v12/designer-design-anything.test.js`.
 2. **Call 2 is only reached when the user picks "I'm done refining".** Never
@@ -49,9 +49,9 @@ Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
    `AskUserQuestion` will fail. Every Call 3 branch keeps a "Keep refining"
    path back to Call 1.
 4. The non-implementation exits (Export, Share, Manual) are for designs
-   that do not get "built" by `/run` or `/team` — weddings, curricula,
+   that do not get "built" by `/act` or `/team` — weddings, curricula,
    research-study protocols, personal routines. The user gets a
-   terminal action without forcing an `/run` invocation.
+   terminal action without forcing an `/act` invocation.
 5. Write `phase: completed` to `status.yaml` and clean up tasks ONLY after
    the user explicitly chooses a build, export, or save-and-stop option.
    Never write it on your own initiative just because artifacts exist.
@@ -224,7 +224,7 @@ AskUserQuestion({
     question: "How would you like to build or export this design?",
     header: "Build",
     options: [
-      {label: "Build now (/run)", description: "Execute immediately with the pipeline engine"},
+      {label: "Build now (/act)", description: "Execute immediately with the pipeline engine"},
       {label: "Build with team (/team)", description: "Parallel team execution for complex designs"},
       {label: "Build with team strategic mode (/team --strategic, cross-domain)", description: "Cross-domain C-suite coordination (Wave 0/1, per-domain Wave 3..N)"},
       {label: "Export / Share / Manual", description: "Non-implementation exits: PDF/Markdown, read-only link, printable checklist"}
@@ -236,9 +236,9 @@ AskUserQuestion({
 
 ### Auto-Trigger Build (only after "I'm done refining")
 
-When user selects "Build now (/run)":
+When user selects "Build now (/act)":
 ```javascript
-Skill({ skill: "run", args: `implement design from ${session_id}` })
+Skill({ skill: "act", args: `implement design from ${session_id}` })
 ```
 
 When user selects "Build with team (/team)":
@@ -279,7 +279,7 @@ If user saves for later, tell them:
 Your design is saved at: cagents-memory/sessions/{session_id}/
 
 To implement later:
-  /run implement design from {session_id}
+  /act implement design from {session_id}
   /team implement design from {session_id}   (parallel, faster for large designs)
   /team implement design from {session_id} --strategic    (cross-domain coordination via C-suite Wave 0/1)
 ```

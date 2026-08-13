@@ -107,7 +107,7 @@ describe('v12.0.0 pipeline state machine (5-state collapse)', () => {
     // The 3-path Minimal/Medium/Full progressive structure was collapsed in
     // v12.3.0 (deletion) and partially re-introduced in v12.7.0 P2-9 as two
     // named paths (`fast`, `standard`) — BUT only described in
-    // .claude/skills/run/reference/adaptive-pipeline.md, NOT in the config.
+    // .claude/skills/act/reference/adaptive-pipeline.md, NOT in the config.
     // The config has a single unconditional 5-state machine; "fast" is an
     // orchestrator-skip selector applied at runtime, not a separate config path.
     // Therefore the path-validity check now asserts that no `paths:` map is

@@ -6,7 +6,7 @@ paths:
   - ".claude/rules/core/teams.md"
   - ".claude/rules/core/delegation.md"
   - "agents/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/verify-completion.cjs"
   - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
@@ -55,7 +55,7 @@ metadata:
 
 **Applies as a fallback to: any cAgents controller or execution agent that,
 after a tool-inventory check, finds the `Agent` tool genuinely absent —
-regardless of which skill spawned it (`/run`, `/team`, or legacy `/org`).**
+regardless of which skill spawned it (`/act`, `/team`, or legacy `/org`).**
 
 ## When this fallback fires
 
@@ -96,11 +96,11 @@ NOT degrade.
 > **Historical framing.** Before v12.17.0, the depth-1 stripping was documented
 > as applying uniformly across all spawning skills and all agent types:
 >
-> - **All spawning skills**: `/run` (controllers at depth-1), `/team` (subagents
+> - **All spawning skills**: `/act` (controllers at depth-1), `/team` (subagents
 >   at depth-1 [historically labeled "teammates"], including C-suite agents in
 >   Wave 0/1 of strategic mode). The
 >   v12.1.0 spike (session `run_improve-team-context_260521_001`) reproduced the
->   stripping under `/run` — a controller spawned by `/run` at depth-1 received
+>   stripping under `/act` — a controller spawned by `/act` at depth-1 received
 >   "Agent is not available inside subagents." on attempting
 >   `Agent(subagent_type: "general-purpose")`. Pre-v12.2.0 the same stripping
 >   affected the now-removed `/org` skill.
@@ -179,7 +179,7 @@ controller/lead aggregates self-validation YAMLs at the wave or session gate.
 > - `team_doc-update-plugin-audit_260503_001` (original audit, May 3 2026)
 > - `team_continue-cagents-w6_260505_001` (spawn-crash reproduction, May 5 2026)
 > - `team_phase11-w6-resume_260505_005` (graceful-degradation success, May 5 2026)
-> - `run_improve-team-context_260521_001` (v12.1.0 spike confirming /run depth-1 stripping)
+> - `run_improve-team-context_260521_001` (v12.1.0 spike confirming /act depth-1 stripping)
 >
 > Lead direct execution per W6 W2 completed in ~25 minutes vs. the projected
 > 1.5-hour subagent path, demonstrating that direct execution was often *faster*

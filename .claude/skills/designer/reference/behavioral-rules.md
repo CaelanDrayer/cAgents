@@ -15,7 +15,7 @@ The complete behavioral contract for /designer. See @reference/rules.md for the 
 9. Generate diagrams as design forms, not just at the end
 10. Write files incrementally — never hold full design in memory
 11. NEVER self-terminate. Artifact generation is a checkpoint, not the finish line — present the continuation gate refinement-first (the recommended option is "Refine a specific area," NOT build). Surface build/export/stop options ONLY when the user explicitly says they are done refining
-12. Auto-trigger /run or /team (with `--strategic` flag for cross-domain) only AFTER the user picks "I'm done refining" and then chooses a build option
+12. Auto-trigger /act or /team (with `--strategic` flag for cross-domain) only AFTER the user picks "I'm done refining" and then chooses a build option
 13. Refinement is the default loop: keep proposing refinements (proactively suggest 2-3 worth deepening) and exit only on an explicit user request to build, export, or stop
 
 ## Tool Constraint Rules

@@ -36,7 +36,7 @@ metadata:
 
 **How to invoke**:
 ```bash
-/run {example usage}
+/act {example usage}
 ```
 
 **Common patterns**:

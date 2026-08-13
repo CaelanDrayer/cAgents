@@ -36,7 +36,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 **Use When**:
 - Starting any new workflow (all domains)
-- User provides request via `/run` command
+- User provides request via `/act` command
 - Creating child workflows (recursive)
 - **Providing routing + planning for `/team`** (mode: team_planning_only)
 
@@ -66,7 +66,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 - Specialist expertise: Even "simple" requests benefit from domain expert review
 - Quality assurance: Multi-agent coverage catches issues single-agent misses
 - Comprehensive output: Specialists provide richer, more complete responses
-- User intent: The user invoked `/run`, explicitly requesting agent orchestration
+- User intent: The user invoked `/act`, explicitly requesting agent orchestration
 
 **Tier Override Protection**: Even if user specifies `--tier 0` or `--tier 1`, trigger MUST upgrade to tier 2 minimum.
 
@@ -83,7 +83,7 @@ See @resources/todowrite-patterns.md for progress tracking patterns.
 The session directory and its key files MUST be created in this exact order, BEFORE spawning any subagents. The SubagentStart hook (`subagent-tracker.cjs`) uses `findActiveSession()` to locate the session directory. If `status.yaml` does not exist when the first subagent spawns, the hook cannot find the session and agent tracking fails silently.
 
 **Required creation order** (all BEFORE any Agent tool calls):
-1. Create session directory: `cagents-memory/sessions/run_{slug}_{YYMMDD}_{NNN}/`
+1. Create session directory: `cagents-memory/sessions/act_{slug}_{YYMMDD}_{NNN}/`
 2. Create `instruction.yaml` with request metadata
 3. Create `status.yaml` with `phase: routing` (MUST exist before spawning orchestrator)
 4. Create `workflow/` directory
@@ -113,11 +113,11 @@ This is critical for auditing which agents were used in a workflow. Claude Code'
 
 ## Parent Session Linkage
 
-When the trigger is invoked from within a team context (teammate running /run), the delegation prompt may include a `Parent-Session` field. If present, include it in instruction.yaml:
+When the trigger is invoked from within a team context (teammate running /act), the delegation prompt may include a `Parent-Session` field. If present, include it in instruction.yaml:
 
 ```yaml
 # instruction.yaml (with parent session linkage)
-session_id: run_20260212_102800
+session_id: act_20260212_102800
 parent_session: team_20260212_102515    # Present when invoked from /team
 request: "TASK-03: Implement backend auth endpoints"
 archetype: core
@@ -131,7 +131,7 @@ tier: 3
 ```yaml
 # cagents-memory/sessions/{parent_session}/workflow/child_sessions.yaml
 child_sessions:
-  - session_id: run_20260212_102800
+  - session_id: act_20260212_102800
     work_item: "TASK-03"
     created_at: "2026-02-12T10:28:00Z"
 ```

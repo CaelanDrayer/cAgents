@@ -35,11 +35,11 @@ Agent({
 **Anti-pattern (NEVER DO THIS):**
 
 ```javascript
-// WRONG: Using SendMessage with /run Skill invocation (re-enters the full /run pipeline; spawn execution agents directly instead — cheaper and clearer)
+// WRONG: Using SendMessage with /act Skill invocation (re-enters the full /act pipeline; spawn execution agents directly instead — cheaper and clearer)
 SendMessage({
   type: "message",
   recipient: "teammate-1",
-  content: "Execute via Skill({skill: 'run', args: '...'})"
+  content: "Execute via Skill({skill: 'act', args: '...'})"
 })
 ```
 
@@ -115,7 +115,7 @@ Team lead explicitly assigns tasks to specific teammates:
 
 1. Team lead reviews TaskList for available items
 2. Team lead assigns via TaskUpdate (set owner) and SendMessage
-3. Teammate (a controller) spawns execution agents + reviewer directly via Agent tool — NOT by re-entering /run
+3. Teammate (a controller) spawns execution agents + reviewer directly via Agent tool — NOT by re-entering /act
 
 ## Result Aggregation
 

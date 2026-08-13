@@ -19,6 +19,7 @@
 
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
@@ -98,9 +99,9 @@ describe('P1-7: prompt-router consolidation', () => {
     expect(hits[0]).toMatch(/delegation\.md$/);
   });
 
-  it('replaces the inline kill-list in run/SKILL.md and team/SKILL.md with an @-reference', () => {
+  it('replaces the inline kill-list in act/SKILL.md and team/SKILL.md with an @-reference', () => {
     const runSkill = fs.readFileSync(
-      path.join(ROOT, '.claude/skills/run/SKILL.md'),
+      path.join(ROOT, '.claude/skills/act/SKILL.md'),
       'utf8'
     );
     const teamSkill = fs.readFileSync(
@@ -108,7 +109,7 @@ describe('P1-7: prompt-router consolidation', () => {
       'utf8'
     );
 
-    // The huge inline rationalization table is gone from run/SKILL.md
+    // The huge inline rationalization table is gone from act/SKILL.md
     expect(runSkill).not.toMatch(/\|\s*Rationalization\s*\|\s*Why it fails\s*\|/);
 
     // Both reference the canonical delegation.md
@@ -125,10 +126,29 @@ describe('P1-7: prompt-router consolidation', () => {
 
     // B1 (v12.18.0): enforcement is CONTROLLER-SCOPED. The deny fires only when
     // an active cAgents controller is present in agent_tree.yaml — NOT
-    // unconditionally — so it never blocks an ordinary direct user edit. Set up
-    // a temp session with an active controller to exercise the deny branch.
-    const sid = 'test_prv_delegation_260612_001';
-    const sessionDir = path.join(ROOT, 'cagents-memory', 'sessions', sid);
+    // unconditionally — so it never blocks an ordinary direct user edit.
+    //
+    // ISOLATION (both cases run against their own temp project root):
+    // when the deterministic chain cannot resolve `input.session_id`, the hook
+    // deliberately falls back to `findActiveSession({fallbackHeuristic: true})`,
+    // which picks the most-recent NON-TERMINAL session in
+    // `<PROJECT_ROOT>/cagents-memory/sessions/`. Pointed at the real repo, that
+    // is whatever happens to be live on the machine — a concurrently-running
+    // cAgents session, or a sibling test's fixture — so the no-active-session
+    // control below was decided by shared global state rather than by the hook's
+    // logic (observed: it resolved a live `designer_*` session whose agent_tree
+    // carries an active controller and returned `deny`). `CLAUDE_PROJECT_DIR`
+    // (hook-utils.cjs:42) redirects PROJECT_ROOT — and hence AGENT_MEMORY_DIR —
+    // per spawn, so each case sees exactly the sessions it declares:
+    //   denyRoot  -> one session, one active controller  => deny
+    //   emptyRoot -> zero sessions                       => no-op
+    // PLUGIN_ROOT still resolves from the hook's own __dirname, so plugin
+    // resources keep coming from the real repo.
+    const denyRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'prv-deny-'));
+    const emptyRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'prv-empty-'));
+
+    const sid = 'act_prv-delegation_260612_001';
+    const sessionDir = path.join(denyRoot, 'cagents-memory', 'sessions', sid);
     const workflowDir = path.join(sessionDir, 'workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
     fs.writeFileSync(
@@ -139,17 +159,10 @@ describe('P1-7: prompt-router consolidation', () => {
       path.join(sessionDir, 'status.yaml'),
       'pipeline_state: coordinating\nphase: coordinating\n'
     );
-    // Back-date the temp session's mtime ~1h into the past so it can never be
-    // the "newest active" session picked up by other tests that scan the shared
-    // cagents-memory/sessions/ dir under findActiveSession({fallbackHeuristic}).
-    // Our own assertions below resolve the session by EXPLICIT hint
-    // (session_id + CAGENTS_ACTIVE_SESSION), which is mtime-independent, so
-    // back-dating does not affect this test.
-    const past = (Date.now() - 3600_000) / 1000;
-    try {
-      fs.utimesSync(path.join(sessionDir, 'status.yaml'), past, past);
-      fs.utimesSync(sessionDir, past, past);
-    } catch { /* best-effort */ }
+    // The control root has a real-but-EMPTY sessions dir, so the no-op below is
+    // proven on "sessions dir exists, nothing active in it" — the ordinary
+    // direct-user-edit shape — not on the weaker "no cagents-memory at all".
+    fs.mkdirSync(path.join(emptyRoot, 'cagents-memory', 'sessions'), { recursive: true });
 
     try {
       const stdin = JSON.stringify({
@@ -160,7 +173,12 @@ describe('P1-7: prompt-router consolidation', () => {
       const result = spawnSync('node', [hookPath], {
         input: stdin,
         encoding: 'utf8',
-        env: { ...process.env, CAGENTS_DELEGATION_ENFORCEMENT: 'block', CAGENTS_ACTIVE_SESSION: sid }
+        env: {
+          ...process.env,
+          CLAUDE_PROJECT_DIR: denyRoot,
+          CAGENTS_DELEGATION_ENFORCEMENT: 'block',
+          CAGENTS_ACTIVE_SESSION: sid
+        }
       });
       expect(result.status).toBe(0);
       const out = JSON.parse(result.stdout || '{}');
@@ -179,14 +197,20 @@ describe('P1-7: prompt-router consolidation', () => {
           session_id: 'nonexistent-session-260612-999'
         }),
         encoding: 'utf8',
-        env: { ...process.env, CAGENTS_DELEGATION_ENFORCEMENT: 'block', CAGENTS_ACTIVE_SESSION: 'nonexistent-session-260612-999' }
+        env: {
+          ...process.env,
+          CLAUDE_PROJECT_DIR: emptyRoot,
+          CAGENTS_DELEGATION_ENFORCEMENT: 'block',
+          CAGENTS_ACTIVE_SESSION: 'nonexistent-session-260612-999'
+        }
       });
       expect(noSessionResult.status).toBe(0);
       const noOut = JSON.parse(noSessionResult.stdout || '{}');
       expect(noOut.hookSpecificOutput?.permissionDecision).toBeUndefined();
       expect(noOut.continue === undefined || noOut.continue === true).toBe(true);
     } finally {
-      fs.rmSync(sessionDir, { recursive: true, force: true });
+      fs.rmSync(denyRoot, { recursive: true, force: true });
+      fs.rmSync(emptyRoot, { recursive: true, force: true });
     }
   }, 15000); // two cold node spawns + fs setup can exceed the default 5s timeout
 

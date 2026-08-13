@@ -29,7 +29,7 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const TIER1_SKILLS = [
-  '.claude/skills/run/SKILL.md',
+  '.claude/skills/act/SKILL.md',
   '.claude/skills/team/SKILL.md',
   '.claude/skills/designer/SKILL.md',
   '.claude/skills/helper/SKILL.md',

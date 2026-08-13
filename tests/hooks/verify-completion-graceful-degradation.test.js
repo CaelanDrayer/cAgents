@@ -119,13 +119,13 @@ describe('PHASE-N1 (V11.1.13): verify-completion.cjs graceful-degradation downgr
 
   it('preserves protocol-violation warning for run_* session even WITH marker', () => {
     // The downgrade is /team-only by design. Under the v12.17.0 nesting model,
-    // controllers (in /run or /team) reliably retain the Agent tool at depth 1
+    // controllers (in /act or /team) reliably retain the Agent tool at depth 1
     // and MUST delegate — direct execution is only the nesting-ceiling FALLBACK.
     // The downgrade-suppression for run_* sessions is independent of the
     // repositioning: the fallback sentinel does NOT trigger a downgrade for a
     // run_* session (the hook scopes the acceptable-fallback recognition to
     // team_* sessions only).
-    const sessionId = `run_n1_marker_${Date.now()}`;
+    const sessionId = `act_n1_marker_${Date.now()}`;
     const sessionDir = setupSession(sessionId, COORDINATION_LOG_WITH_MARKER);
     try {
       runHook({ session_id: sessionId }, sessionDir);

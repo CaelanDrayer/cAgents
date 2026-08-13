@@ -3,7 +3,7 @@
 # Stop-hook safety net stubbed a PASS validation_report + a completed
 # execution_summary. 0 child agents. Tests build a live copy via
 # materialize.mjs (materializeFabricatedPass).
-session_id: run_fabricated-pass_fixture_260717_001
+session_id: act_fabricated-pass_fixture_260717_001
 pipeline_state: VALIDATED
 phase: validating
 created_at: "2026-07-17T05:00:00.000Z"

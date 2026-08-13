@@ -43,10 +43,17 @@ import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
 import yaml from 'js-yaml';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. These fixtures are
+// `pipeline_state: complete` — TERMINAL — so they are invisible to
+// fallbackHeuristic, but verify-completion.cjs's last-resort
+// findMostRecentSessionDir({includeTerminal: true}) DOES pick them up, so an
+// unhinted sibling Stop-hook spawn could bind to one. hookEnv() also seeds
+// pipeline_config.yaml into the temp root, which verify-completion.cjs reads.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const NOW_ISO = new Date().toISOString();
 const TS = Date.now().toString(36);
@@ -64,7 +71,7 @@ const created = [];
  * @param {boolean} [opts.outputsBlock=true]  also write a clean outputs/task-2/self-validation.yaml
  */
 function makeSession(slug, { svFilePath, svExitCode, outputsBlock = true }) {
-  const sid = `run_c1recheck-${slug}_${TS}`;
+  const sid = `act_c1recheck-${slug}_${TS}`;
   const dir = join(SESSIONS_DIR, sid);
   created.push(dir);
   mkdirSync(join(dir, 'workflow'), { recursive: true });
@@ -228,7 +235,7 @@ function runHook(sid) {
     input: payload,
     encoding: 'utf8',
     timeout: 15000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   if (result.status !== 0 && result.status !== null) {
     throw new Error(

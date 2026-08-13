@@ -8,7 +8,7 @@ paths:
   - "agents/core/planner/**"
   - "agents/core/reviewer/**"
   - "agents/core/wave-reviewer/**"
-  - ".claude/skills/run/SKILL.md"
+  - ".claude/skills/act/SKILL.md"
   - ".claude/hooks/verify-completion.cjs"
   - ".claude/hooks/validator-evidence-recheck.cjs"
   - "cagents-memory/sessions/**/workflow/coordination_log.yaml"

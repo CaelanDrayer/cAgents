@@ -48,7 +48,7 @@ describe('goal-evaluator-logger.cjs (WI-3, REC-4)', () => {
     // Create an isolated cagents-memory tree per test so hook writes do not
     // leak into the real project sessions directory.
     tmpRoot = join(os.tmpdir(), `cagents-goal-logger-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-    sessionId = 'run_test-goal-logger_260513_001';
+    sessionId = 'act_test-goal-logger_260513_001';
     sessionDir = join(tmpRoot, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
     // Minimal status.yaml so findActiveSession treats this as non-terminal.

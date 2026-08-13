@@ -294,7 +294,7 @@ const handler = async (input) => {
         hook: 'SessionInitGate',
         what: 'Agent spawn blocked — no active session directory found',
         why: 'Every skill must initialize a session directory with status.yaml before spawning agents (V10.22.0 session init gate)',
-        fix: `Run a skill first (/run, /team, etc.) to create the session. Expected: ${expectedPath}`
+        fix: `Run a skill first (/act, /team, etc.) to create the session. Expected: ${expectedPath}`
       });
     }
   }

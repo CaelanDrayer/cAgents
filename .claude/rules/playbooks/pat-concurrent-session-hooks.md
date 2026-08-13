@@ -21,7 +21,7 @@ metadata:
 # Pattern: Concurrent-Session Hook Contract (v12.15.0+)
 
 When two cAgents sessions run in the same project directory at the same
-time (e.g., two `/run` invocations, or `/run` + `/team`), every hook fired
+time (e.g., two `/act` invocations, or `/act` + `/team`), every hook fired
 by EITHER instance MUST satisfy four invariants:
 
 ## The Four Invariants

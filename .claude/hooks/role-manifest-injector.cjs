@@ -57,11 +57,11 @@ cagents-memory/
   _system/      # configs, commands/, domains/, metrics/, evals/, templates/
   _knowledge/   # semantic/, procedural/, calibration/, analytics/ (cross-session learnings)
   _archive/     # completed sessions
-  sessions/     # live sessions: run_*, team_*, designer_* (org_*, review_*, optimize_* are legacy)
+  sessions/     # live sessions: act_*, team_*, designer_* (run_*, org_*, review_*, optimize_* are legacy)
 \`\`\`
 
 **Session ID format**: \`{command}_{slug}_{YYMMDD}_{NNN}\`
-(e.g. \`run_fix-auth_260317_001\`, \`team_oauth-rollout_260804_002\`).
+(e.g. \`act_fix-auth_260317_001\`, \`team_oauth-rollout_260804_002\`).
 
 **Session folder shape** — \`cagents-memory/sessions/{session_id}/\`:
 

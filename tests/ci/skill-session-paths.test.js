@@ -28,11 +28,15 @@ const GUARD = path.join(REPO_ROOT, 'scripts/ci/check-skill-session-paths.cjs');
 const CI = path.join(REPO_ROOT, 'scripts/ci/cagents-ci.sh');
 const guard = require(GUARD);
 
+// Mirrors DEFAULT_FILES in scripts/ci/check-skill-session-paths.cjs. The
+// `/run` -> `/act` rename moved two of these pins; if the guard's list and
+// this list drift apart, the "shipped bodies PASS" test below silently stops
+// covering what the guard actually scans.
 const SHIPPED_BODIES = [
-  '.claude/skills/run/SKILL.md',
+  '.claude/skills/act/SKILL.md',
   '.claude/skills/team/SKILL.md',
   '.claude/skills/designer/SKILL.md',
-  '.claude/skills/run/reference/session-id-format.md',
+  '.claude/skills/act/reference/session-id-format.md',
 ].map((p) => path.join(REPO_ROOT, p));
 
 function runGuard(args) {
@@ -104,6 +108,16 @@ describe('REC-20 skill session-path CWD-leak guard', () => {
   it('the real shipped skill bodies PASS the guard (exit 0)', () => {
     const r = runGuard([]); // default set = shipped bodies
     expect(r.exitCode).toBe(0);
+  });
+
+  it('SHIPPED_BODIES mirrors the guard\'s DEFAULT_FILES exactly (no drift)', () => {
+    // Without this, a rename in the guard's list (e.g. /run -> /act) leaves
+    // this file asserting against paths the guard no longer scans.
+    expect([...guard.DEFAULT_FILES].sort()).toEqual([...SHIPPED_BODIES].sort());
+    // And every pinned body must actually exist on disk.
+    for (const f of SHIPPED_BODIES) {
+      expect(fs.existsSync(f), `Pinned shipped body missing: ${f}`).toBe(true);
+    }
   });
 
   it('scanFile finds zero violations in each shipped body', () => {

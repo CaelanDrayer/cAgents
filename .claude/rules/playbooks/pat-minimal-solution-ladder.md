@@ -4,7 +4,7 @@ paths:
   - ".claude/rules/core/execution.md"
   - ".claude/rules/playbooks/pat-two-stage-review.md"
   - "agents/**"
-  - ".claude/skills/run/**"
+  - ".claude/skills/act/**"
   - "scripts/**"
   - ".claude/hooks/**"
   - "tests/**"

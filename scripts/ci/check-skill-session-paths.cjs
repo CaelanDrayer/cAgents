@@ -24,10 +24,10 @@ const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const DEFAULT_FILES = [
-  '.claude/skills/run/SKILL.md',
+  '.claude/skills/act/SKILL.md',
   '.claude/skills/team/SKILL.md',
   '.claude/skills/designer/SKILL.md',
-  '.claude/skills/run/reference/session-id-format.md',
+  '.claude/skills/act/reference/session-id-format.md',
 ].map((p) => path.join(REPO_ROOT, p));
 
 // A relative `cagents-memory/(sessions|_system)` used as a WRITE target — the

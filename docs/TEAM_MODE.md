@@ -18,15 +18,15 @@ An OPTIONAL, EXPERIMENTAL path (named background teammates displayed in tmux/iTe
 # Dedicated team command
 /team Implement OAuth2 authentication
 
-# Or use --team flag with /run
-/run Build user dashboard --team
+# Or use --team flag with /act
+/act Build user dashboard --team
 ```
 
 ## What is Team Mode?
 
 Team Mode transforms the standard sequential controller-execution pattern into N-wave parallel execution. It follows a strict **Decompose -> Execute Per-Wave -> Gate** pipeline with quality gates between waves:
 
-**Standard Mode** (`/run`):
+**Standard Mode** (`/act`):
 ```
 Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
                 (sequential)
@@ -57,7 +57,7 @@ Controller -> Agent 1 -> Agent 2 -> Agent 3 -> Results
 
 **Key Principle**: More waves = better quality. Each wave provides a quality gate checkpoint where the lead validates outputs before proceeding. Prefer 5-7 waves over 2-3 waves. There is nothing wrong with more waves.
 
-**Why concurrent `Agent()` calls**: multiple tool uses issued in a single assistant message run concurrently. The lead spawns every teammate for a wave in one message with `run_in_background: false`, so all of that wave's results return together — the lead then validates the gate and proceeds. `run_in_background: false` must be explicit because subagents are background-by-default since Claude Code v2.1.198. Teammates spawn their own execution agents directly rather than re-entering `/run`, which avoids duplicating the enrichment the lead already did in Wave 0.
+**Why concurrent `Agent()` calls**: multiple tool uses issued in a single assistant message run concurrently. The lead spawns every teammate for a wave in one message with `run_in_background: false`, so all of that wave's results return together — the lead then validates the gate and proceeds. `run_in_background: false` must be explicit because subagents are background-by-default since Claude Code v2.1.198. Teammates spawn their own execution agents directly rather than re-entering `/act`, which avoids duplicating the enrichment the lead already did in Wave 0.
 
 ## Key Features
 
@@ -79,7 +79,7 @@ Every teammate is spawned as a controller agent and delegates from there:
 - The controller spawns its own execution agents (e.g., tech-lead -> backend-developer, qa-tester) and a reviewer, nesting up to 5 levels deep
 - Teammates NEVER implement work directly -- they coordinate through execution agents
 - `/team` provides parallelism; controllers provide multi-agent orchestration per item
-- Teammates spawn execution agents directly rather than re-entering `/run`, avoiding a redundant enrichment pass
+- Teammates spawn execution agents directly rather than re-entering `/act`, avoiding a redundant enrichment pass
 
 ### Shared Task Lists
 
@@ -147,18 +147,18 @@ When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interacti
 /team Create dashboard --members 4 --display
 ```
 
-### /run --team Flag
+### /act --team Flag
 
 ```bash
-/run <request> --team [other flags]
+/act <request> --team [other flags]
 ```
 
-Equivalent to `/team` but uses existing `/run` infrastructure.
+Equivalent to `/team` but uses existing `/act` infrastructure.
 
 **Examples**:
 ```bash
-/run Add search feature --team
-/run Implement notifications --team --quiet
+/act Add search feature --team
+/act Implement notifications --team --quiet
 ```
 
 ## When to Use Team Mode
@@ -201,7 +201,7 @@ suitability_criteria:
     - tier 2 with items < 4
 ```
 
-If analysis shows team mode won't provide benefit, gracefully falls back to standard `/run`.
+If analysis shows team mode won't provide benefit, gracefully falls back to standard `/act`.
 
 ## Display Modes
 
@@ -612,7 +612,7 @@ The system behaves as flat parallel execution with no waves or contracts.
 
 ### Team Not Spawning
 
-**Symptom**: `/team` falls back to `/run`
+**Symptom**: `/team` falls back to `/act`
 
 **Causes**:
 - Work items < 3

@@ -1,19 +1,19 @@
 /**
- * v12.1.2 regression: /improve folded into /run via keyword router.
+ * v12.1.2 regression: /improve folded into /act via keyword router.
  *
  * The standalone /improve skill was removed in v12.1.2. The improve modes
- * (review, optimize, full) are now triggered by a first-word keyword in /run:
- *   /run improve <target>  -> --mode full
- *   /run review <target>   -> --mode review
- *   /run audit <target>    -> --mode review (alias)
- *   /run optimize <target> -> --mode optimize
+ * (review, optimize, full) are now triggered by a first-word keyword in /act:
+ *   /act improve <target>  -> --mode full
+ *   /act review <target>   -> --mode review
+ *   /act audit <target>    -> --mode review (alias)
+ *   /act optimize <target> -> --mode optimize
  *
  * Bug-driven testing mandate: this test would have caught a regression where
  *   (a) the .claude/skills/improve/ directory was restored;
  *   (b) the plugin manifest gained an /improve skill reference;
- *   (c) the /run SKILL.md lost the keyword router section.
+ *   (c) the /act SKILL.md lost the keyword router section.
  *
- * Could have caught by: unit test on the plugin file structure + /run
+ * Could have caught by: unit test on the plugin file structure + /act
  * SKILL.md content after the v12.1.2 fold.
  */
 
@@ -23,7 +23,7 @@ import { join } from 'path';
 
 const REPO_ROOT = process.cwd();
 
-describe('v12.1.2: /improve folded into /run via keyword router', () => {
+describe('v12.1.2: /improve folded into /act via keyword router', () => {
   it('removes .claude/skills/improve/ directory entirely', () => {
     const improveDir = join(REPO_ROOT, '.claude', 'skills', 'improve');
     expect(existsSync(improveDir),
@@ -41,7 +41,7 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     expect(existsSync(pluginJsonPath)).toBe(true);
     const pluginJson = JSON.parse(readFileSync(pluginJsonPath, 'utf8'));
     // The description should advertise 4 user skills (v12.2.0 removed /org;
-    // v12.1.2 folded /improve into /run). Pre-v12.2.0 this was "5 user skills".
+    // v12.1.2 folded /improve into /act). Pre-v12.2.0 this was "5 user skills".
     expect(pluginJson.description).toMatch(/4 user skills/i);
     // And it should NOT describe /improve as one of the user skills
     expect(pluginJson.description).not.toMatch(/\/improve audits/i);
@@ -57,8 +57,8 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     ).toEqual([]);
   });
 
-  it('/run SKILL.md contains the keyword router section mentioning all four keywords', () => {
-    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'run', 'SKILL.md');
+  it('/act SKILL.md contains the keyword router section mentioning all four keywords', () => {
+    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
     expect(existsSync(runSkillPath)).toBe(true);
     const content = readFileSync(runSkillPath, 'utf8');
     // The keyword router section must mention the section heading
@@ -70,16 +70,16 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     expect(content).toContain('optimize');
   });
 
-  it('/run SKILL.md references the new improve-mode.md reference doc', () => {
-    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'run', 'SKILL.md');
+  it('/act SKILL.md references the new improve-mode.md reference doc', () => {
+    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
     const content = readFileSync(runSkillPath, 'utf8');
     expect(content).toMatch(/@reference\/improve-mode\.md/);
   });
 
-  it('/run reference directory contains the new improve-mode.md doc', () => {
-    const refPath = join(REPO_ROOT, '.claude', 'skills', 'run', 'reference', 'improve-mode.md');
+  it('/act reference directory contains the new improve-mode.md doc', () => {
+    const refPath = join(REPO_ROOT, '.claude', 'skills', 'act', 'reference', 'improve-mode.md');
     expect(existsSync(refPath),
-      'Expected .claude/skills/run/reference/improve-mode.md to exist'
+      'Expected .claude/skills/act/reference/improve-mode.md to exist'
     ).toBe(true);
     const content = readFileSync(refPath, 'utf8');
     // It must describe the keyword router contract
@@ -90,8 +90,8 @@ describe('v12.1.2: /improve folded into /run via keyword router', () => {
     expect(content).toMatch(/optimize/);
   });
 
-  it('/run SKILL.md --mode parser accepts review|optimize|full in addition to standard|debug', () => {
-    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'run', 'SKILL.md');
+  it('/act SKILL.md --mode parser accepts review|optimize|full in addition to standard|debug', () => {
+    const runSkillPath = join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
     const content = readFileSync(runSkillPath, 'utf8');
     // After v12.1.2, the --mode parser must list the absorbed improve modes
     expect(content).toMatch(/--mode parser/i);

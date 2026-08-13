@@ -51,9 +51,9 @@ TaskUpdate({ taskId: "6", addBlockedBy: ["4", "5"] })
 ```
 for each wave in template.waves:
   if wave.type == "bootstrap" or wave.type == "integration":
-    # Orchestrator executes via /run sequentially
+    # Orchestrator executes via /act sequentially
     for each work_item tagged with wave:
-      Execute via /run (orchestrator handles directly)
+      Execute via /act (orchestrator handles directly)
 
     # Validate quality gate
     Verify gate criteria
@@ -62,7 +62,7 @@ for each wave in template.waves:
   if wave.type == "parallel":
     # Teams execute in parallel via teammates
     # Tasks already created with GATE dependency
-    # Teammates claim and execute via /run
+    # Teammates claim and execute via /act
     # Monitor via TaskList until all complete
 
     # Validate quality gate
@@ -87,17 +87,17 @@ When all tasks in a wave complete, the team lead validates:
 
 | Type | Executor | Parallelism | Use Case |
 |------|----------|-------------|----------|
-| `bootstrap` | Orchestrator (sequential /run) | None | Foundation setup, contracts |
-| `parallel` | Teams (parallel /run per item) | Full | Main build phase |
-| `integration` | Orchestrator (sequential /run) | None | Wiring, testing, polish |
+| `bootstrap` | Orchestrator (sequential /act) | None | Foundation setup, contracts |
+| `parallel` | Teams (parallel /act per item) | Full | Main build phase |
+| `integration` | Orchestrator (sequential /act) | None | Wiring, testing, polish |
 
-**CRITICAL for `parallel` waves**: Each teammate invokes `/run` via the Skill tool. The `/run` spins out its own controller and execution agents. Teammates NEVER implement directly.
+**CRITICAL for `parallel` waves**: Each teammate invokes `/act` via the Skill tool. The `/act` spins out its own controller and execution agents. Teammates NEVER implement directly.
 
 ```
 Parallel wave:
-  Teammate 1 -> Skill({skill: "run", args: "TASK-03"}) -> controller -> execution agents
-  Teammate 2 -> Skill({skill: "run", args: "TASK-04"}) -> controller -> execution agents
-  Teammate 3 -> Skill({skill: "run", args: "TASK-05"}) -> controller -> execution agents
+  Teammate 1 -> Skill({skill: "act", args: "TASK-03"}) -> controller -> execution agents
+  Teammate 2 -> Skill({skill: "act", args: "TASK-04"}) -> controller -> execution agents
+  Teammate 3 -> Skill({skill: "act", args: "TASK-05"}) -> controller -> execution agents
 ```
 
 ## Contract Enforcement

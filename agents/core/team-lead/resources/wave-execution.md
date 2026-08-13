@@ -9,9 +9,9 @@ When the team manifest includes a template with waves, the lead coordinates wave
 ```
 for each wave in manifest.template.waves:
   if wave.type == "bootstrap" or "integration":
-    # Execute foundation/integration items sequentially via /run
+    # Execute foundation/integration items sequentially via /act
     for each task tagged with this wave:
-      Execute via /run (lead coordinates directly)
+      Execute via /act (lead coordinates directly)
     # Validate quality gate criteria
     Verify gate criteria from template
     Mark GATE-{wave.id} as completed (TaskUpdate)

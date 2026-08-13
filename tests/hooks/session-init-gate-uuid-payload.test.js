@@ -4,7 +4,7 @@
  * Background (H1 from run_sessions-hung-single-dir_260602_001):
  *   Claude Code's hook payload `input.session_id` field carries SDK transcript
  *   UUIDs (e.g. "28d9d944-e2f5-4e03-b06b-d367625f1fdd"), NOT cAgents session
- *   directory names (e.g. "run_fix-auth_260317_001"). v12.15.0's deterministic
+ *   directory names (e.g. "act_fix-auth_260317_001"). v12.15.0's deterministic
  *   chain refused to fall through when a sessionHint was unresolvable. Result:
  *   findActiveSession(UUID) always returned null, session-init-gate.cjs:340
  *   HARD-DENIED every Agent spawn, and dependent hooks silently skipped.
@@ -29,17 +29,27 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. DIR_REAL is a
+// non-terminal COORDINATING session — exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to.
+//
+// This file resolves sessions BOTH in-process (freshHookUtils) and via a
+// spawned hook (Test 5), so hookEnv() alone is NOT sufficient: hook-utils.cjs
+// computes AGENT_MEMORY_DIR from CLAUDE_PROJECT_DIR at MODULE LOAD time
+// (hook-utils.cjs:42), so the env var must be set on this process's own
+// process.env BEFORE the fresh require — see beforeEach below.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 // Realistic Claude Code SDK UUID (from run_sessions-hung-single-dir_260602_001
 // agent_spawns.log line 228 — empirical production payload shape).
 const UUID_HINT = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
 
 const TS = Date.now().toString(36);
-const SID_REAL = `run_uuid-payload-test_${TS}`;
+const SID_REAL = `act_uuid-payload-test_${TS}`;
 const DIR_REAL = join(SESSIONS_DIR, SID_REAL);
 
 function makeNonTerminalSession(dir, sid) {
@@ -57,8 +67,15 @@ function freshHookUtils() {
 
 describe('UUID-shaped input.session_id payload (WI-2)', () => {
   let utils;
+  let prevProjectDir;
 
   beforeEach(() => {
+    prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
+    // MUST precede freshHookUtils(): hook-utils.cjs snapshots
+    // AGENT_MEMORY_DIR from CLAUDE_PROJECT_DIR at module load, so setting it
+    // after the require would leave the in-process assertions reading the REAL
+    // sessions dir.
+    Object.assign(process.env, hookEnv());
     if (existsSync(DIR_REAL)) rmSync(DIR_REAL, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
     utils = freshHookUtils();
@@ -67,6 +84,8 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
   afterEach(() => {
     if (existsSync(DIR_REAL)) rmSync(DIR_REAL, { recursive: true, force: true });
     delete process.env.CAGENTS_ACTIVE_SESSION;
+    if (prevProjectDir === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+    else process.env.CLAUDE_PROJECT_DIR = prevProjectDir;
   });
 
   it('Test 1 — UUID hint alone resolves to null on HEAD (FAIL-before, PASS-after with env-var); pre-WI-3 it returns null because chain step 1 fails', () => {
@@ -117,7 +136,7 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
     makeNonTerminalSession(DIR_REAL, SID_REAL);
 
     // Hint is a cAgents-shaped name for a DIFFERENT session that does not exist.
-    const orphanHint = `run_does-not-exist_${TS}`;
+    const orphanHint = `act_does-not-exist_${TS}`;
 
     const result = utils.findActiveSession(orphanHint);
 
@@ -138,7 +157,7 @@ describe('UUID-shaped input.session_id payload (WI-2)', () => {
 
     const result = spawnSync('node', [join(HOOKS_DIR, 'session-init-gate.cjs')], {
       input: payload,
-      env: { ...process.env, CAGENTS_ACTIVE_SESSION: SID_REAL },
+      env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: SID_REAL },
       encoding: 'utf8',
       timeout: 5000,
     });

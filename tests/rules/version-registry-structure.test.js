@@ -43,7 +43,7 @@ describe('version-registry.md structure', () => {
   it('registry table contains all numbered rows (v12.2.0+: 16 locations)', () => {
     // V11.0 shrunk the registry from 21 to 17 (removed 4 SKILL.md entries for
     // context/debug/review/optimize, kept CHANGELOG). v12.1.2 then folded
-    // /improve into /run, and v12.2.0 removed the /org SKILL.md slot when /org
+    // /improve into /act, and v12.2.0 removed the /org SKILL.md slot when /org
     // was folded into /team strategic mode — leaving 16 canonical locations.
     const rowNumbers = [...content.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((m) =>
       Number(m[1]),

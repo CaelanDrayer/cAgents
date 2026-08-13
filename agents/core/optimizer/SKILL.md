@@ -57,7 +57,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 | LOW | 21-40 | Apply with standard validation |
 | MEDIUM | 41-60 | Apply with comprehensive validation |
 | HIGH | 61-80 | Ask user, architect review |
-| CRITICAL | 81-100 | Hand off to /run for full workflow |
+| CRITICAL | 81-100 | Hand off to /act for full workflow |
 
 ## Session Structure
 

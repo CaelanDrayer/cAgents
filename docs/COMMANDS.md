@@ -4,7 +4,7 @@ Comprehensive reference for all cAgents universal commands.
 
 > **Migration Note** (current as of v12.6.0):
 > - `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0.0.
-> - `/improve` was folded into `/run` via the first-word keyword router in v12.1.2: use `/run review`, `/run optimize`, or `/run improve` (equivalent to `/run --mode review|optimize|full`); `/run context <subcmd>` for product context; `/run --mode debug <request>` for systematic debugging.
+> - `/improve` was folded into `/act` via the first-word keyword router in v12.1.2: use `/act review`, `/act optimize`, or `/act improve` (equivalent to `/act --mode review|optimize|full`); `/act context <subcmd>` for product context; `/act --mode debug <request>` for systematic debugging.
 > - `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode (auto-enables when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`).
 >
 > See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 migration baseline and CHANGELOG entries v12.1.2 / v12.2.0 for the v12 follow-ups.
@@ -28,7 +28,7 @@ Structured design engine that transforms vague ideas into comprehensive, impleme
 - **Real-Time Design Building**: Watch the design document form as you answer questions
 - **Template Library**: 6 pre-built templates (product feature, UI/UX, system architecture, API, business process, creative content)
 - **Phase Quality Gates**: Enforced checks before phase transitions - no gaps allowed
-- **Auto-Build Integration**: Automatically triggers `/run` when design is complete
+- **Auto-Build Integration**: Automatically triggers `/act` when design is complete
 
 ### Usage
 
@@ -70,7 +70,7 @@ Phase 4: Specification (25%)
    ├─> Auto-generate artifacts (user stories, specs, diagrams, checklists)
    ├─> 4-level validation (completeness, consistency, feasibility, quality)
    ├─> Design document assembly
-   └─> Build offer → auto-trigger /run
+   └─> Build offer → auto-trigger /act
 ```
 
 ### Key Features
@@ -198,15 +198,15 @@ cagents-memory/sessions/designer_20260204_143022/
     └── validation_report.yaml
 ```
 
-### Integration with /run
+### Integration with /act
 
 When user selects "Build it now", /designer automatically triggers:
 
 ```
-Skill({skill: "run", args: "implement design from designer_20260204_143022"})
+Skill({skill: "act", args: "implement design from designer_20260204_143022"})
 ```
 
-The /run workflow receives the full design document with all decisions, constraints, patterns, and artifacts as implementation context.
+The /act workflow receives the full design document with all decisions, constraints, patterns, and artifacts as implementation context.
 
 ### Tips for Best Results
 
@@ -216,11 +216,11 @@ The /run workflow receives the full design document with all decisions, constrai
 4. **Explore alternatives**: The ideation phase is where you avoid bad decisions
 5. **Look at validation scores**: They catch real issues in your design
 6. **Use templates**: They ensure comprehensive coverage of important areas
-7. **Let it build**: Transition directly to /run when design is complete
+7. **Let it build**: Transition directly to /act when design is complete
 
 ---
 
-## /run - Universal Entry Point
+## /act - Universal Entry Point
 
 **Status**: Production-Ready
 **Domains**: All
@@ -233,11 +233,11 @@ Universal entry point that automatically routes requests to appropriate domain, 
 ### Usage
 
 ```bash
-/run [your request]                # Any task in any domain
-/run Fix auth bug                  # → Engineering domain (tier 2)
-/run Write fantasy story           # → Creative domain (tier 2)
-/run Plan Q4 campaign              # → Revenue domain (tier 3)
-/run Create budget                 # → Finance-Operations (tier 4)
+/act [your request]                # Any task in any domain
+/act Fix auth bug                  # → Engineering domain (tier 2)
+/act Write fantasy story           # → Creative domain (tier 2)
+/act Plan Q4 campaign              # → Revenue domain (tier 3)
+/act Create budget                 # → Finance-Operations (tier 4)
 ```
 
 ### Workflow Phases
@@ -248,29 +248,29 @@ Universal entry point that automatically routes requests to appropriate domain, 
 4. **Executing**: Execute implementation with controller coordination
 5. **Validating**: Ensure all success criteria met
 
-See CLAUDE.md for complete /run documentation.
+See CLAUDE.md for complete /act documentation.
 
 ---
 
-## /run review|optimize|improve — Review and Optimization Modes (v12.1.2+)
+## /act review|optimize|improve — Review and Optimization Modes (v12.1.2+)
 
-**Status**: Folded into `/run` via keyword router (v12.1.2)
+**Status**: Folded into `/act` via keyword router (v12.1.2)
 **Predecessor**: standalone `/improve` skill (V11.0.0–v12.1.1); itself replaced `/review` + `/optimize` (V11.0.0)
 
 ### Overview
 
-Quality review and measurable optimization run inside `/run` via the first-word keyword router introduced in v12.1.2. Mode selection via the keyword (`review`/`audit`/`optimize`/`improve`) — or explicitly via `--mode review|optimize|full` — drives whether the engine reports findings, applies improvements, or chains both with a single baseline.
+Quality review and measurable optimization run inside `/act` via the first-word keyword router introduced in v12.1.2. Mode selection via the keyword (`review`/`audit`/`optimize`/`improve`) — or explicitly via `--mode review|optimize|full` — drives whether the engine reports findings, applies improvements, or chains both with a single baseline.
 
 ### Usage
 
 ```bash
-/run review src/                       # Find issues, no fixes
-/run audit src/                        # Alias for review
-/run optimize src/                     # Apply improvements with metrics
-/run improve src/                      # Review + optimize chained (= --mode full)
-/run review src/ --baseline            # Establish review baseline
-/run review src/ --suppress            # Suppress baselined findings
-/run optimize src/ --benchmark         # Capture before/after benchmark
+/act review src/                       # Find issues, no fixes
+/act audit src/                        # Alias for review
+/act optimize src/                     # Apply improvements with metrics
+/act improve src/                      # Review + optimize chained (= --mode full)
+/act review src/ --baseline            # Establish review baseline
+/act review src/ --suppress            # Suppress baselined findings
+/act optimize src/ --benchmark         # Capture before/after benchmark
 ```
 
 ### Modes
@@ -296,7 +296,7 @@ Quality review and measurable optimization run inside `/run` via the first-word 
 
 The improve modes track predicted vs. actual impact for each pattern applied. Over time the engine boosts patterns that consistently deliver and demotes ones that do not. Atomic rollback is preserved: every change is git-snapshotted, and any failed quality gate triggers automatic revert.
 
-See [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/reference/improve-mode.md) for the full keyword-router contract and flag list.
+See [.claude/skills/act/reference/improve-mode.md](../.claude/skills/act/reference/improve-mode.md) for the full keyword-router contract and flag list.
 
 ---
 
@@ -305,7 +305,7 @@ See [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/referen
 | Command | Purpose | Duration | Interaction | Output |
 |---------|---------|----------|-------------|--------|
 | **/designer** | Structured design | 15-45 min | 4-phase Q&A | Design doc + artifacts + diagrams + validation |
-| **/run** | Implementation (incl. review/optimize/improve modes) | Varies | Autonomous | Working implementation, findings, fixes, before/after metrics |
+| **/act** | Implementation (incl. review/optimize/improve modes) | Varies | Autonomous | Working implementation, findings, fixes, before/after metrics |
 
 ---
 
@@ -314,9 +314,9 @@ See [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/referen
 - **Full Architecture**: See `CLAUDE.md` for complete system documentation
 - **Getting Started**: See `docs/GETTING_STARTED.md` for quick start guide
 - **Architecture**: See `docs/ARCHITECTURE.md` for architecture design
-- **V11 Migration**: See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for `/review`, `/optimize`, `/context`, `/debug` replacements. (v12.1.2 further folded `/improve` into `/run`; v12.2.0 folded `/org` into `/team` strategic mode — see CHANGELOG entries for the v12 migrations.)
+- **V11 Migration**: See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for `/review`, `/optimize`, `/context`, `/debug` replacements. (v12.1.2 further folded `/improve` into `/act`; v12.2.0 folded `/org` into `/team` strategic mode — see CHANGELOG entries for the v12 migrations.)
 
 ---
 
-**Commands**: /run, /designer, /team, /helper (v12.2.0+). `/improve` was folded into `/run` in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.
+**Commands**: /act, /designer, /team, /helper (v12.2.0+). `/improve` was folded into `/act` in v12.1.2; `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode.
 **Last Updated**: 2026-05-22

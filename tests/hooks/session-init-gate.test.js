@@ -61,7 +61,7 @@ describe('session-init-gate.cjs', () => {
   });
 
   it('should allow Agent spawn when active session with status.yaml exists', () => {
-    const sessionId = 'run_test-gate_260320_999';
+    const sessionId = 'act_test-gate_260320_999';
     const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
@@ -80,14 +80,14 @@ describe('session-init-gate.cjs', () => {
     // No session dir exists — but CAGENTS_SESSION_ID signals skill is creating it now
     const result = runHook(
       { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } },
-      { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: 'run_test_260320_001' }
+      { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: 'act_test_260320_001' }
     );
     expect(result.continue).toBe(true);
   });
 
   it('should allow Agent spawn when CAGENTS_SESSION_ID is set and session dir already exists with valid status.yaml', () => {
     // Dir exists with valid status — standard findActiveSession check finds it, so spawn is allowed
-    const sessionId = 'run_test-gate-env_260322_001';
+    const sessionId = 'act_test-gate-env_260322_001';
     const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
@@ -106,7 +106,7 @@ describe('session-init-gate.cjs', () => {
     // Dir exists but findActiveSession cannot find any non-terminal session —
     // no session_id hint is passed in the tool input, and the dir has no status.yaml
     // or any other recognisable session file, so the gate denies the spawn.
-    const sessionId = 'run_test-gate-env-deny_260322_002';
+    const sessionId = 'act_test-gate-env-deny_260322_002';
     const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', sessionId);
     mkdirSync(sessionDir, { recursive: true });
     // No status.yaml, instruction.yaml, or agent_tree.yaml — only the bare directory
@@ -164,7 +164,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     for (const name of ['architect', 'scholar', 'product-owner']) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
-        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `run_test-manifest-absent-${name}_260801_001` }
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-manifest-absent-${name}_260801_001` }
       );
       expect(result.continue).toBe(true);
       expect(result.systemMessage || '').not.toMatch(/is not a registered agent/);
@@ -190,7 +190,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     for (const name of names) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
-        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `run_test-manifest-absent-catalog-${name}_260801_001` }
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-manifest-absent-catalog-${name}_260801_001` }
       );
       if ((result.systemMessage || '').includes('is not a registered agent')) {
         falsePositives.push(name);
@@ -203,7 +203,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     for (const name of ['architect', 'scholar', 'product-owner']) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
-        { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: `run_test-real-root-${name}_260801_001` }
+        { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: `act_test-real-root-${name}_260801_001` }
       );
       expect(result.continue).toBe(true);
       expect(result.systemMessage || '').not.toMatch(/is not a registered agent/);
@@ -213,7 +213,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
   it('still emits a legitimate advisory for a genuinely unknown name when the manifest IS present (no over-correction)', () => {
     const result = runHook(
       { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:totally-made-up-agent-xyz' } },
-      { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: 'run_test-unknown-agent_260801_001' }
+      { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: 'act_test-unknown-agent_260801_001' }
     );
     expect(result.continue).toBe(true);
     expect(result.systemMessage || '').toMatch(/not a registered agent|Did you mean/);

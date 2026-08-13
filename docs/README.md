@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 12.65.0
+**Version**: 12.66.2
 **Last Updated**: 2026-07-16
 
 This index groups every file under `docs/` into three explicit buckets so the
@@ -43,11 +43,11 @@ The current authoritative documentation. Read these first; keep them accurate.
 > related surfaces — consult `SKILLS_REFERENCE.md` first
 > (see the [Skills/commands cluster](#skillscommands-cluster) note below).
 
-- **`SKILLS_REFERENCE.md`** - **Canonical** v12.x skill reference (`/designer`, `/helper`, `/run`, `/team`)
-- `COMMANDS.md` - All 4 active cAgents skills reference (`/improve` folded into `/run` in v12.1.2 via keyword router; `/org` removed in v12.2.0, folded into `/team` strategic mode) → see `SKILLS_REFERENCE.md`
+- **`SKILLS_REFERENCE.md`** - **Canonical** v12.x skill reference (`/designer`, `/helper`, `/act`, `/team`)
+- `COMMANDS.md` - All 4 active cAgents skills reference (`/improve` folded into `/act` in v12.1.2 via keyword router; `/org` removed in v12.2.0, folded into `/team` strategic mode) → see `SKILLS_REFERENCE.md`
 - `COMMAND_SELECTION.md` - Guide for choosing the right command → see `SKILLS_REFERENCE.md`
 - `TEAM_MODE.md` - N-wave parallel team execution guide
-- Per-command deep dives (live under `commands/`): `commands/run.md`, `commands/team.md`, `commands/designer.md`, `commands/helper.md`
+- Per-command deep dives (live under `commands/`): `commands/act.md`, `commands/team.md`, `commands/designer.md`, `commands/helper.md`
 
 ### Security
 - `SECURITY.md` - Vulnerability-reporting policy and security architecture
@@ -75,7 +75,7 @@ These describe past work or planned/future work; they are not the live spec.
 - `DESIGN_NOTES.md` - Aspirational/design-note patterns (not runtime-enforced)
 - `VERSION_REGISTRY_HISTORY.md` - Historical version-registry locations (V10.x)
 - `MIGRATION_GUIDE.md` - General migration guide
-- `MIGRATION-V11.md` - Migration guide for users of removed skills (`/review`, `/optimize`, `/context`, `/debug` → `/run`); v12.1.2 further folded `/improve` into `/run` via keyword router (see CHANGELOG)
+- `MIGRATION-V11.md` - Migration guide for users of removed skills (`/review`, `/optimize`, `/context`, `/debug` → `/act`); v12.1.2 further folded `/improve` into `/act` via keyword router (see CHANGELOG)
 - `PLUGIN_DATA_MIGRATION.md` - Plugin data-directory migration notes
 - `migration/v11.1.0-followups.md` - v11.1.0 archetype-tree follow-up items
 - `migration/v9-to-v10.md` - V9 → V10 migration record
@@ -91,8 +91,8 @@ do not delete them.**
 - `CHANGELOG.md` - Redirect → repository-root `../CHANGELOG.md` (this stub covers only up to V10.0.0)
 - `SKILLS.md` - Redirect → `SKILLS_REFERENCE.md` (moved-skill-docs stub)
 - `commands/org.md` - Redirect → `/team` strategic mode (`/org` removed in v12.2.0)
-- `commands/optimize.md` - Redirect → `/run optimize` (`/optimize` removed in V11.0)
-- `commands/review.md` - Redirect → `/run review` (`/review` removed in V11.0)
+- `commands/optimize.md` - Redirect → `/act optimize` (`/optimize` removed in V11.0)
+- `commands/review.md` - Redirect → `/act review` (`/review` removed in V11.0)
 
 ---
 
@@ -106,14 +106,14 @@ canonical; consult it first**:
 | **`SKILLS_REFERENCE.md`** | **Canonical** — authoritative v12.x skill reference |
 | `COMMANDS.md` | Overview reference — related surface; consult `SKILLS_REFERENCE.md` first |
 | `COMMAND_SELECTION.md` | Choosing-a-command guide — related surface; consult `SKILLS_REFERENCE.md` first |
-| `commands/*.md` | Per-command deep dives (`run`, `team`, `designer`, `helper` are live; `org`, `optimize`, `review` are redirect tombstones) |
+| `commands/*.md` | Per-command deep dives (`act`, `team`, `designer`, `helper` are live; `org`, `optimize`, `review` are redirect tombstones) |
 | `SKILLS.md` | Redirect tombstone → `SKILLS_REFERENCE.md` |
 
 ## Subdirectories
 
 - `agents/` - Agent authoring docs (`agents/index.md`, `agents/creating-agents.md`, `agents/agent-template.md`)
 - `architecture/` - Architecture diagrams and details
-- `commands/` - Per-command deep dives (4 live: `run`, `team`, `designer`, `helper`) + 3 redirect tombstones (`org`, `optimize`, `review`)
+- `commands/` - Per-command deep dives (4 live: `act`, `team`, `designer`, `helper`) + 3 redirect tombstones (`org`, `optimize`, `review`)
 - `config/` - Configuration reference
 - `hooks/` - Hook system details
 - `migration/` - Migration records (see Historical / Superseded)

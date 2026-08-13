@@ -8,7 +8,7 @@
  *
  * Behavior:
  *   - UserPromptSubmit:
- *       1. If the prompt starts with /run or /team, inject a 5-line
+ *       1. If the prompt starts with /act or /team, inject a 5-line
  *          systemMessage that references @.claude/rules/core/delegation.md
  *          (the canonical kill-list). Always on — it only fires when the
  *          user explicitly invokes the skill.
@@ -25,23 +25,23 @@
  *
  * The huge multi-paragraph delegation mandate that delegation-enforcer.cjs
  * injected (~3000 chars) is gone — the model is asked to read the canonical
- * rule file once instead. Net token saving on every /run + /team invocation.
+ * rule file once instead. Net token saving on every /act + /team invocation.
  */
 
 const { createHook } = require('./hook-utils.cjs');
 
-const ENFORCED_SKILLS = ['/run', '/team'];
+const ENFORCED_SKILLS = ['/act', '/team'];
 
 const KEYWORD_ROUTES = [
-  // /run triggers
-  [/^(?:build|create|implement|add|make|write|code|develop|set up|scaffold|generate)\b/i, '/run', 'execute via agent pipeline'],
-  [/^(?:fix|debug|repair|patch|resolve|troubleshoot)\b/i, '/run', 'fix via agent pipeline'],
-  [/^(?:refactor|restructure|reorganize|clean up|migrate)\b/i, '/run', 'refactor via agent pipeline'],
-  [/^(?:update|upgrade|modify|change|edit|adjust)\b/i, '/run', 'update via agent pipeline'],
-  [/^(?:deploy|release|publish|ship)\b/i, '/run', 'deploy via agent pipeline'],
-  // Improve-mode keyword routing (v12.1.2 folded /improve into /run)
-  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/run review', 'review with specialist agents'],
-  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/run optimize', 'optimize with metrics'],
+  // /act triggers
+  [/^(?:build|create|implement|add|make|write|code|develop|set up|scaffold|generate)\b/i, '/act', 'execute via agent pipeline'],
+  [/^(?:fix|debug|repair|patch|resolve|troubleshoot)\b/i, '/act', 'fix via agent pipeline'],
+  [/^(?:refactor|restructure|reorganize|clean up|migrate)\b/i, '/act', 'refactor via agent pipeline'],
+  [/^(?:update|upgrade|modify|change|edit|adjust)\b/i, '/act', 'update via agent pipeline'],
+  [/^(?:deploy|release|publish|ship)\b/i, '/act', 'deploy via agent pipeline'],
+  // Improve-mode keyword routing (v12.1.2 folded /improve into the act skill)
+  [/^(?:review|audit|check|inspect|analyze|assess|evaluate)\b/i, '/act review', 'review with specialist agents'],
+  [/^(?:optimize|speed up|improve performance|benchmark|profile|tune)\b/i, '/act optimize', 'optimize with metrics'],
   // /designer triggers
   [/^(?:design|explore|brainstorm|prototype|sketch|wireframe|mockup)\b/i, '/designer', 'interactive design exploration'],
   // /team triggers

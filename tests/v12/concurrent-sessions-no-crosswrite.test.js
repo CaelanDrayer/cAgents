@@ -17,25 +17,35 @@
  * env → promptHint → null), WI-3 (call-sites consume input.session_id), and
  * WI-7 (manifest.session_id strict match).
  *
- * Test isolation strategy: real cagents-memory/sessions/ test dirs with
- * unique names; explicit cleanup in afterEach. CAGENTS_HOOK_DEDUP_DISABLE=1
- * to bypass the createHook dedup guard (we intentionally fire the same hook
- * many times with the same payload shape).
+ * Test isolation strategy: session dirs with unique names under a per-process
+ * TEMP project root (see the materialize.mjs import below) — NOT the real
+ * cagents-memory/sessions/, which these fixtures used to pollute; plus explicit
+ * cleanup in afterEach. CAGENTS_HOOK_DEDUP_DISABLE=1 to bypass the createHook
+ * dedup guard (we intentionally fire the same hook many times with the same
+ * payload shape).
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, writeFileSync, mkdirSync, rmSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+// Isolation (see materialize.mjs): the two fixtures below are non-terminal
+// COORDINATING sessions with a fresh last_updated_at heartbeat — the most
+// attractive possible target for a sibling test's
+// findActiveSession({fallbackHeuristic}). They now live under a per-process temp
+// project root instead of the real <repo>/cagents-memory/. The secret-backups
+// tree moves with them, so this file no longer writes into the real _system/.
+// PROJECT_ROOT is still the REAL repo and is deliberately kept for HOOKS_DIR —
+// the hooks under test, and the static-scan case below, must read real sources.
+import { hookEnv, PROJECT_DIR, SESSIONS_DIR } from '../hooks/fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
-const SECRET_BACKUPS_DIR = join(PROJECT_ROOT, 'cagents-memory', '_system', 'secret-backups');
+const SECRET_BACKUPS_DIR = join(PROJECT_DIR, 'cagents-memory', '_system', 'secret-backups');
 
 const TS = Date.now().toString(36);
-const SESSION_A = `run_concurrent-test-a_${TS}`;
-const SESSION_B = `run_concurrent-test-b_${TS}`;
+const SESSION_A = `act_concurrent-test-a_${TS}`;
+const SESSION_B = `act_concurrent-test-b_${TS}`;
 const SESSION_A_DIR = join(SESSIONS_DIR, SESSION_A);
 const SESSION_B_DIR = join(SESSIONS_DIR, SESSION_B);
 
@@ -47,7 +57,7 @@ function makeSession(sessionDir, sessionId) {
   );
   writeFileSync(
     join(sessionDir, 'instruction.yaml'),
-    `session_id: ${sessionId}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sessionId}\nraw_request: "test"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   writeFileSync(
     join(sessionDir, 'workflow', 'agent_tree.yaml'),
@@ -59,6 +69,7 @@ function runHook(hookFile, input, extraEnv = {}) {
   const hookPath = join(HOOKS_DIR, hookFile);
   const env = {
     ...process.env,
+    ...hookEnv(),
     CAGENTS_HOOK_DEDUP_DISABLE: '1',
     VITEST: 'true',
     ...extraEnv,
@@ -234,11 +245,15 @@ describe('Concurrent sessions: no cross-write (WI-6)', () => {
  * and every assertion passes. (Reasoned, not `git stash` — the shared working
  * tree carries multiple in-flight changes, so stash-based proof would be unsafe.)
  *
- * In-process resolution needs AGENT_MEMORY_DIR to point at the REAL project
- * cagents-memory (where SESSION_A_DIR / SESSION_B_DIR live). We pin
- * CLAUDE_PROJECT_DIR = PROJECT_ROOT and fresh-require hook-utils so both the
- * sessions dir AND the pointer registry resolve under the project root. Pointers
- * we write are unlinked in afterEach (removeSdkPointer); markers die with the dirs.
+ * In-process resolution needs AGENT_MEMORY_DIR to point at whichever
+ * cagents-memory holds SESSION_A_DIR / SESSION_B_DIR. That used to be the REAL
+ * project root; it is now the isolated temp root from materialize.mjs, so the
+ * SDK-UUID pointer registry this block writes to is the temp one rather than the
+ * real _system/sdk_session_map/. We pin CLAUDE_PROJECT_DIR to that root BEFORE
+ * fresh-requiring hook-utils (it snapshots AGENT_MEMORY_DIR at module load), so
+ * both the sessions dir AND the pointer registry resolve there. Pointers we
+ * write are still unlinked in afterEach (removeSdkPointer); markers die with the
+ * dirs. The env var is restored in afterEach so the pin cannot leak.
  */
 
 const UUID_A_MAP = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
@@ -258,7 +273,7 @@ describe('Concurrent sessions: UUID-map own-session resolution (FIX-1 / WI-7)', 
 
   beforeEach(() => {
     prevProjectDir = process.env.CLAUDE_PROJECT_DIR;
-    process.env.CLAUDE_PROJECT_DIR = PROJECT_ROOT; // deterministic AGENT_MEMORY_DIR
+    Object.assign(process.env, hookEnv()); // deterministic AGENT_MEMORY_DIR (temp root)
     delete process.env.CAGENTS_ACTIVE_SESSION;
     if (existsSync(SESSION_A_DIR)) rmSync(SESSION_A_DIR, { recursive: true, force: true });
     if (existsSync(SESSION_B_DIR)) rmSync(SESSION_B_DIR, { recursive: true, force: true });

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The cAgents pipeline uses a state machine engine (`/run`) that reads `pipeline_config.yaml` and executes agents sequentially. Since v12.0.0 the machine has **5 states**. Two named execution paths drive it: `fast` skips the orchestrator (the `INIT` state) for tier-2-clear requests, and `standard` runs all 5 states (tier 3+, ambiguous domain, or debug mode). What v12.3.0 removed was the old **score-based** 3-path selector (minimal/medium/full, driven by a 9-signal complexity score) — NOT the orchestrator-skip; v12.7.0 (P2-9) then finalized the current two-label model with an enumerated orchestrator-skip allowlist. See the canonical path catalog in `.claude/skills/run/reference/adaptive-pipeline.md`.
+The cAgents pipeline uses a state machine engine (`/act`) that reads `pipeline_config.yaml` and executes agents sequentially. Since v12.0.0 the machine has **5 states**. Two named execution paths drive it: `fast` skips the orchestrator (the `INIT` state) for tier-2-clear requests, and `standard` runs all 5 states (tier 3+, ambiguous domain, or debug mode). What v12.3.0 removed was the old **score-based** 3-path selector (minimal/medium/full, driven by a 9-signal complexity score) — NOT the orchestrator-skip; v12.7.0 (P2-9) then finalized the current two-label model with an enumerated orchestrator-skip allowlist. See the canonical path catalog in `.claude/skills/act/reference/adaptive-pipeline.md`.
 
 ## State Machine
 
@@ -26,7 +26,7 @@ Path selection is governed by an **enumerated orchestrator-skip allowlist**, not
 | `fast` | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | SKIPPED | `tier == 2` AND `!ambiguous_domain` AND `mode != "debug"` |
 | `standard` | INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | RUNS | every other case (tier 3+, ambiguous tier-2, debug mode, disabled-by-flag) |
 
-`standard` is the default; `fast` is the only condition under which the orchestrator is skipped, and tier 3+ ALWAYS runs the orchestrator. When `fast` is selected, `/run` writes a minimal `enriched_context.yaml` inline and records `skipped: true, skipped_reason: tier-2-fast-path` in the `INIT` `state_history` entry. The canonical path catalog and the `skipped_reason` enum (`tier-2-clear` / `tier-2-fast-path` / `disabled-by-flag`) live in `.claude/skills/run/reference/adaptive-pipeline.md`.
+`standard` is the default; `fast` is the only condition under which the orchestrator is skipped, and tier 3+ ALWAYS runs the orchestrator. When `fast` is selected, `/act` writes a minimal `enriched_context.yaml` inline and records `skipped: true, skipped_reason: tier-2-fast-path` in the `INIT` `state_history` entry. The canonical path catalog and the `skipped_reason` enum (`tier-2-clear` / `tier-2-fast-path` / `disabled-by-flag`) live in `.claude/skills/act/reference/adaptive-pipeline.md`.
 
 ## Pipeline Agents (5-state machine since v12.0.0)
 

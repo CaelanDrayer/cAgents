@@ -13,13 +13,19 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { spawn } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. This fixture is a
+// non-terminal session carrying an agent_tree.yaml, i.e. exactly what a sibling
+// test's findActiveSession({fallbackHeuristic}) / findMostRecentSessionDir()
+// binds to. hookEnv() sets CLAUDE_PROJECT_DIR for the spawned hook so the hook
+// resolves the SAME temp root the fixture was written into.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 
 const TS = Date.now().toString(36);
-const SID = `run_concurrent-appends_${TS}`;
+const SID = `act_concurrent-appends_${TS}`;
 const SDIR = join(SESSIONS_DIR, SID);
 
 function setup() {
@@ -39,6 +45,7 @@ function fireSubagentTracker(agentId) {
     const child = spawn('node', [join(HOOKS_DIR, 'subagent-tracker.cjs')], {
       env: {
         ...process.env,
+        ...hookEnv(),
         CAGENTS_HOOK_DEDUP_DISABLE: '1',
         VITEST: 'true',
       },

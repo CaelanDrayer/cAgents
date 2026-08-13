@@ -53,6 +53,17 @@ const fs = require('fs');
 const path = require('path');
 const { createHook, PROJECT_ROOT } = require('./hook-utils.cjs');
 
+// js-yaml is the repo's sole declared external dependency. Per
+// .claude/rules/core/hooks.md best-practice 6, every hook that uses it wraps the
+// require in try/catch with a graceful degraded path so the hook never crashes
+// at load when node_modules is absent.
+let yaml = null;
+try {
+  yaml = require('js-yaml');
+} catch {
+  yaml = null;
+}
+
 // Match validation_report.yaml in any depth (workflow/, outputs/final/, etc.)
 function isValidationReport(filePath) {
   if (!filePath) return false;
@@ -66,9 +77,57 @@ function extractClassification(content) {
   return m ? m[1] : null;
 }
 
-// Parse acceptance_criteria_results entries with minimal regex. Each entry
-// is a YAML list item with verification_method + evidence + met fields.
+// Normalize one parsed acceptance_criteria_results item into the shape the
+// recheck logic consumes. Shared by both parse strategies so they cannot drift.
+function _normalizeEntry(o) {
+  const src = o && typeof o === 'object' ? o : {};
+  return {
+    criterion: src.criterion == null ? '' : String(src.criterion).trim(),
+    verification_method:
+      src.verification_method == null ? null : String(src.verification_method).trim(),
+    evidence: src.evidence == null ? null : String(src.evidence).trim(),
+    met: typeof src.met === 'boolean' ? src.met : null,
+  };
+}
+
+// Strategy 1 (preferred): real YAML. Returns null — NOT [] — when this strategy
+// cannot be applied, so the caller can distinguish "parser unavailable/input
+// malformed" from "parsed fine, zero entries".
+function _parseCriteriaViaYaml(content) {
+  if (!yaml) return null;
+  let doc;
+  try {
+    doc = yaml.load(content);
+  } catch {
+    return null; // malformed YAML — fall back to the tolerant regex reader
+  }
+  if (!doc || typeof doc !== 'object') return null;
+  const list = doc.acceptance_criteria_results;
+  if (!Array.isArray(list)) return null;
+  return list.map(_normalizeEntry);
+}
+
+// Parse acceptance_criteria_results entries.
+//
+// js-yaml FIRST, hand-rolled regex as a deliberate FALLBACK — not a silent
+// strategy swap. The regex reader is retained on purpose: this hook fires
+// PostToolUse on a validation_report.yaml an LLM has just written, and that file
+// is not guaranteed to be well-formed (post-write-validator.cjs exists precisely
+// because agent-written YAML can be broken). If the hook hard-depended on
+// yaml.load() succeeding, a malformed report would silently skip the recheck and
+// disable the PASS-bias defense exactly when the report is sloppiest. So: parse
+// properly when the document is valid, degrade to line-scraping when it is not.
+//
+// The regex reader CANNOT handle block scalars (`evidence: |`) — it captures the
+// literal "|" indicator as the value. That is the defect this two-strategy split
+// fixes; it survives only as the malformed-input path.
 function parseCriteriaResults(content) {
+  const viaYaml = _parseCriteriaViaYaml(content);
+  if (viaYaml !== null) return viaYaml;
+  return _parseCriteriaResultsViaRegex(content);
+}
+
+function _parseCriteriaResultsViaRegex(content) {
   // Grab the block under acceptance_criteria_results:
   const blockMatch = content.match(
     /acceptance_criteria_results:\s*\n([\s\S]*?)(?=\n[a-zA-Z_]+:|$)/
@@ -228,8 +287,15 @@ function mutateReport(filePath, original, failures) {
     '  hook_version: "1"',
     '  downgrade: "PASS -> FAIL"',
     '  failing_entries:',
-    ...failures.map((f) => `    - criterion: ${JSON.stringify(f.criterion)}`),
-    ...failures.map((f) => `      reason: ${JSON.stringify(f.reason)}`),
+    // ONE flatMap emitting each criterion immediately followed by ITS reason.
+    // This was previously two sequential .map() spreads — every `- criterion:`
+    // line was emitted first, then every `reason:` line, so with N>=2 failures
+    // the LAST list item absorbed all N reasons (invalid YAML: `duplicated
+    // mapping key`) and the first N-1 items silently lost their reason entirely.
+    ...failures.flatMap((f) => [
+      `    - criterion: ${JSON.stringify(f.criterion)}`,
+      `      reason: ${JSON.stringify(f.reason)}`,
+    ]),
     '',
   ].join('\n');
   // Avoid double-appending if hook re-runs on same file.
@@ -577,7 +643,7 @@ function runClaimVerificationPass(abs, projectRoot) {
   }
 }
 
-createHook('ValidatorEvidenceRecheck', async (input) => {
+const handler = async (input) => {
   const toolName = input.tool_name || '';
   if (toolName !== 'Write' && toolName !== 'Edit') return null;
   const filePath = (input.tool_input && input.tool_input.file_path) || '';
@@ -637,4 +703,19 @@ createHook('ValidatorEvidenceRecheck', async (input) => {
   }
 
   return { continue: true };
-});
+};
+
+// Registered normally under the production path (`node run-hook.cjs
+// validator-evidence-recheck`, or `node validator-evidence-recheck.cjs`). A
+// `require.main === module` guard is deliberately NOT used: under run-hook.cjs
+// require.main is the launcher, not this module, so such a guard would silently
+// disable the hook. Suppression matches the repo convention in
+// secret-detection.cjs / skill-size-monitor.cjs — an in-process consumer (a unit
+// test) sets CAGENTS_DISPATCH_IMPORT before require() so this top-level
+// createHook() does not also fire and contend for stdin.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) {
+  createHook('ValidatorEvidenceRecheck', handler);
+}
+
+// Export internals for in-process unit testing.
+module.exports = { handler, parseCriteriaResults, extractClassification, mutateReport };

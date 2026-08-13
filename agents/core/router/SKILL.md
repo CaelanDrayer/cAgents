@@ -80,7 +80,7 @@ The keyword-matching pass scans the request against ALL archetype-root catalogs 
 3. Set `domain` to the highest-scoring archetype (back-compat — unchanged semantics).
 4. Set `domain_count` to `len(detected_domains)`.
 
-A `domain_count >= 2` signals a cross-domain request and is consumed by the org-fold trigger in `/run` (v12.1.x+) to route the work through C-suite analysis before the standard pipeline.
+A `domain_count >= 2` signals a cross-domain request and is consumed by the org-fold trigger in `/act` (v12.1.x+) to route the work through C-suite analysis before the standard pipeline.
 
 ## Routing Decision Format
 

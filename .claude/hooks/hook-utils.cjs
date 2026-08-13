@@ -44,7 +44,16 @@ const PROJECT_ROOT = process.env.CLAUDE_PROJECT_DIR
 
 const AGENT_MEMORY_DIR = path.join(PROJECT_ROOT, 'cagents-memory');
 
-const SESSION_PREFIXES = ['run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
+const SESSION_PREFIXES = ['act_', 'run_', 'optimize_', 'review_', 'designer_', 'team_', 'org_'];
+// D2 carve-out (v12.66.0 /run -> /act rename): 'act_' is the go-forward prefix, but
+// 'run_' MUST STAY as a legacy reader. Dropping it would make every pre-v12.66 session
+// directory (at rename time: 21 live under cagents-memory/sessions/, 26 more archived)
+// invisible to the Stop and verify hooks that resolve sessions through this array --
+// (the consumers below readdir sessions/ and keep only prefix matches), including any
+// run_* session still in flight during the cutover. 'run_' now plays exactly the role
+// that 'optimize_', 'review_', and 'org_' already play here: a prefix whose command no
+// longer exists but whose on-disk sessions must stay discoverable. Do NOT "tidy" it
+// away.
 
 // Canonical terminal pipeline/phase vocabulary (single source of truth, REC-01).
 // TERMINAL_STATES holds ONLY canonical forms. Raw variants seen in the wild
@@ -351,9 +360,10 @@ function _makeCacheKey(sessionHint, envSession, promptHint, fallback) {
 /**
  * cAgents session ID format:
  *   `{command}_{slug}_{timestamp_suffix}` where command is one of
- *   run|team|designer|review|optimize|debug|org and the trailing segments
- *   carry a timestamp / counter. Canonical production form is
- *   `{command}_{slug}_{YYMMDD}_{NNN}` (e.g. `run_fix-auth_260317_001`); test
+ *   act|team|designer|debug going forward (legacy run|review|optimize|org are
+ *   still read — see the SESSION_PREFIXES D2 carve-out above), and the
+ *   trailing segments carry a timestamp / counter. Canonical production form is
+ *   `{command}_{slug}_{YYMMDD}_{NNN}` (e.g. `act_fix-auth_260317_001`); test
  *   fixtures often use a shorter base36 timestamp tail (e.g.
  *   `run_findactivesession-a_mpx7w1mu`). Both are valid cAgents shapes.
  *
@@ -795,7 +805,7 @@ function findTeamSession(input = {}) {
     // firing for a NON-team session, so there is no team session to resolve. Return
     // null rather than heuristic-resolving — and writing into — a SIBLING team
     // session. This was the cross-session leak's source: an unpinned non-team
-    // caller (e.g. a Stop/TaskCompleted hook for a /run or test session) was
+    // caller (e.g. a Stop/TaskCompleted hook for an /act or test session) was
     // resolving the newest non-terminal team_ session and mutating its task_list.
     // Production team hooks fire with an SDK UUID, which is excluded above and
     // falls through to the map / env-var / heuristic. Mirrors findActiveSession's

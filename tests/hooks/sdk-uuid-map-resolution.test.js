@@ -57,8 +57,8 @@ const UUID_A = '28d9d944-e2f5-4e03-b06b-d367625f1fdd';
 const UUID_B = '11111111-2222-3333-4444-555555555555';
 const UUID_UNMAPPED = '99999999-8888-7777-6666-555544443333';
 
-const SID_A = 'run_sdkmap-a_001';
-const SID_B = 'run_sdkmap-b_002';
+const SID_A = 'act_sdkmap-a_001';
+const SID_B = 'act_sdkmap-b_002';
 
 function makeNonTerminalSession(sessionsDir, sid) {
   const dir = join(sessionsDir, sid);
@@ -217,9 +217,9 @@ describe('SDK-UUID map resolution (FIX-1 / WI-7 / OBJ-1)', () => {
     const U1 = '11111111-1111-1111-1111-111111111111';
     const U2 = '22222222-2222-2222-2222-222222222222';
     const U3 = '33333333-3333-3333-3333-333333333333';
-    const S1 = 'run_gc-one_001';
-    const S2 = 'run_gc-two_002';
-    const S3 = 'run_gc-three_003';
+    const S1 = 'act_gc-one_001';
+    const S2 = 'act_gc-two_002';
+    const S3 = 'act_gc-three_003';
     const D1 = makeNonTerminalSession(sessionsDir, S1);
     const D2 = makeNonTerminalSession(sessionsDir, S2);
     const D3 = makeNonTerminalSession(sessionsDir, S3);

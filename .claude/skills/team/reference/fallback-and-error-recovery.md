@@ -1,26 +1,26 @@
 # Fallback and Error Recovery
 
-Mandatory /run fallback for non-team-suitable requests, automatic subagent failure recovery, and the /run vs /team decision.
+Mandatory /act fallback for non-team-suitable requests, automatic subagent failure recovery, and the /act vs /team decision.
 
 ## Fallback (MANDATORY)
 
-If the request has fewer than 3 work items or no parallelizable work, you **MUST** pass to /run. Never silently fail or leave a request unhandled:
+If the request has fewer than 3 work items or no parallelizable work, you **MUST** pass to /act. Never silently fail or leave a request unhandled:
 
 ```
-Skill({ skill: "run", args: "<the original request>" })
+Skill({ skill: "act", args: "<the original request>" })
 ```
 
-This ensures every /team invocation produces a result — either via team execution or /run delegation.
+This ensures every /team invocation produces a result — either via team execution or /act delegation.
 
-### When to Fall Back to /run
+### When to Fall Back to /act
 
 | Condition | Action |
 |-----------|--------|
-| Fewer than 3 work items | `Skill({ skill: "run", args: "..." })` |
-| All items strictly sequential (no parallelism) | `Skill({ skill: "run", args: "..." })` |
-| Tier 2 with < 4 items | Prefer `/run` over `/team` |
+| Fewer than 3 work items | `Skill({ skill: "act", args: "..." })` |
+| All items strictly sequential (no parallelism) | `Skill({ skill: "act", args: "..." })` |
+| Tier 2 with < 4 items | Prefer `/act` over `/team` |
 
-The /team skill MUST always either execute as a team OR delegate to /run. There is no third option.
+The /team skill MUST always either execute as a team OR delegate to /act. There is no third option.
 
 ## Automatic Subagent Failure Recovery
 

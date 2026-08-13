@@ -1,7 +1,7 @@
 // Regression test for V10.26.7 — product_context loader helper doc
 // Asserts the orchestrator's read contract is documented and referenced.
 // Failing-before: no named helper existed; future refactors could silently
-// route /run enrichment through the /context skill, breaking the V10.26.10
+// route /act enrichment through the /context skill, breaking the V10.26.10
 // utility demotion. This test locks the READ path in place.
 
 import { describe, it, expect } from 'vitest';

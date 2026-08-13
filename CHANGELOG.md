@@ -10,6 +10,270 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.66.2] - 2026-08-09
+
+Test-infrastructure hardening only. No hook source was touched, no behavior
+changed, and no new capability ships — hence patch.
+
+As with the first half of v12.66.1, everything below was **already latent on
+`main`** and is not `/run` -> `/act` rename fallout. It surfaced only because the
+same test files were under audit. Anyone bisecting a regression into this range
+should not attribute it to the rename.
+
+### Fixed — test isolation (pre-existing on `main`, NOT rename fallout)
+
+- **Eight test files created fixtures inside the real session store**
+  (`956c92cc`). Follow-up to `c829e086`, which fixed six files and named nine
+  more as carrying the same latent hazard; eight of those nine were confirmed
+  and fixed, and the ninth was a false entry (below).
+
+  Each of the eight created session directories inside the shared, real
+  `cagents-memory/sessions/`, where a sibling test asserting *"there is no active
+  session"* could resolve one of them through `hook-utils.cjs`'s
+  `findActiveSession` / `fallbackHeuristic`. They passed, but only by scheduling
+  luck — the green suite was concealing a real cross-test coupling.
+
+  Fixed by routing the fixtures through the **existing** `CLAUDE_PROJECT_DIR`
+  injection point, the same mechanism `c829e086` used. No new interface, no hook
+  signature change.
+
+  Files: `concurrent-appends`, `self-validation-recheck`,
+  `session-catchup-liveness`, `session-init-gate-uuid-payload`,
+  `verify-completion-revision-cap`, `verify-completion-staleness-skip`,
+  `concurrent-sessions-no-crosswrite`, `stop-failure-handler`.
+
+  Measured, not asserted: polling the real sessions dir during one run of those
+  tests showed **16** fixture directories appear before the fix and **zero**
+  after, with the fixtures verified materializing under the temp root instead.
+  The positive control matters — without it a zero could just mean the fixtures
+  stopped being written at all.
+
+  Three findings are recorded because they show the files were individually
+  diagnosed rather than pattern-matched onto one template:
+  - `self-validation-recheck` was the same class via a **different resolution
+    path**. Its fixtures are `pipeline_state: complete` — terminal, and so
+    invisible to `fallbackHeuristic` — but `verify-completion.cjs`'s last-resort
+    `findMostRecentSessionDir({ includeTerminal: true })` picked them up anyway.
+  - `session-init-gate-uuid-payload` needed more than the shared helper. It
+    resolves `AGENT_MEMORY_DIR` at module load, so `CLAUDE_PROJECT_DIR` has to be
+    set on `process.env` **before** the fresh require, and restored afterward.
+  - `stop-failure-handler` used a **fixed, non-timestamped** session id
+    (`act_test-stop-failure_260101_001`), which two concurrent runs would have
+    collided on independently of the shared-directory problem.
+
+### Not changed — one false entry on the list
+
+- **`tests/hooks/tool-failure-tracker.test.js` creates no session directory** and
+  was left untouched. It was listed as a ninth offender, but its
+  `TEST_SESSION_DIR` constant is dead — declared, never referenced — and the hook
+  short-circuits before any write. Verified empirically: it contributed zero
+  directories to the leak measurement above. The dead constant still names the
+  real sessions dir, which is what put the file on the list in the first place;
+  removing it is a different change.
+
+### Reported, not absorbed
+
+- **A tenth file, `tests/hooks/team-stop.test.js`, writes
+  `team_test-stop_260317_999` into the real sessions dir** — same class, not
+  fixed here. It failed once intermittently during this work. Rather than assume
+  causation, all changes were stashed and the full suite re-run on the pre-change
+  tree, where the same file failed at a **different** test. Pre-existing flake,
+  not introduced here. Left for a follow-up.
+
+## [12.66.1] - 2026-08-08
+
+Closing round of the `/run` -> `/act` rename effort begun in v12.66.0. Patch,
+not minor: everything here is a bug fix or a doc correction, and no new
+capability ships.
+
+The entries below are split into two groups deliberately. Roughly half of what
+this round found was **already broken on `main`** and has nothing to do with the
+rename — it was surfaced only because the same files were being audited. Anyone
+bisecting a regression into this range should not attribute the first group to
+the rename.
+
+### Fixed — pre-existing defects on `main` (NOT rename fallout)
+
+- **`validator-evidence-recheck.cjs`: two defects** (`e8dd650a`).
+
+  1. *Block scalars were never parsed.* The hook read `evidence: |` and took the
+     literal string `"|"` as the value. Evidence written as a YAML block scalar
+     therefore looked empty, and a correct PASS was downgraded to FAIL on
+     formatting alone.
+  2. *Duplicate `reason:` keys produced invalid YAML* in
+     `validation_report.yaml` — the very artifact the state machine reads to
+     advance.
+
+  Root cause of (2): `failing_entries` was assembled from two sequential
+  `.map()` spreads that grouped by FIELD instead of pairing by ENTRY. With
+  N >= 2 failures the last list item absorbed all N reasons **and the first
+  N-1 entries silently lost their reason entirely**. That is data loss, not a
+  formatting nit — an operator reading the report saw failing criteria with no
+  explanation attached to them. Fixed with a single `.flatMap()` that emits each
+  criterion immediately followed by its own reason.
+
+  Regression tests were proven RED before the fix (5/8 failing).
+
+  The block-scalar fix is js-yaml-first with a deliberate regex fallback. This
+  hook is `PostToolUse` on a file an LLM just wrote, so a hard js-yaml
+  dependency would silently skip the recheck whenever the input is malformed —
+  disabling the PASS-bias defense at exactly the moment it is most needed.
+
+- **`package.json` description said "58 agents"; disk has 60** (`98aa6b59`).
+  The drift entered at `ca3ab363` (v12.43.0) and survived because
+  `validate-counts.sh` did not cover `package.json` at all — it was the one root
+  manifest sitting outside the guard. Closed by a new Check 15 in
+  `scripts/ci/validate-counts.sh` plus
+  `tests/regressions/package-json-counts-guard.test.js`, both proven RED before
+  landing.
+
+- **Cross-test pollution: fixtures wrote into the real session store**
+  (`c829e086`). `verify-completion` fixtures created session directories inside
+  the live shared `cagents-memory/sessions/`.
+
+  The original diagnosis was only half right. `prompt-router-consolidation`
+  failed even when run **alone**, because its "no active session" control case
+  resolved the live cAgents session that spawned the test runner via
+  `fallbackHeuristic`. Test ordering was never the whole story. Fixed by
+  pointing the fixtures at isolated temp project roots through the **existing**
+  `CLAUDE_PROJECT_DIR` injection point — no new interface was introduced.
+  Verified: session-dir count 39 before and after a full suite run, listing
+  byte-identical.
+
+- **`docs/MIGRATION_GUIDE.md` stale internals** (`ac103501`, plus one further
+  fix in this release). Four corrections measured against live config:
+  - revision cap said 5; live `max_cycles` is 3
+  - hook count said 21; live count is 26
+  - internal-round cap said 3; live `max_internal_rounds` is 2
+    (`cagents-memory/_system/config/pipeline_config.yaml:85` — read the key
+    itself, not the adjacent `LP-27 ... lowered 3 -> 2` comment, which states
+    the superseded value and will mislead anyone who stops there)
+  - one grammar fix
+
+### Fixed — rename fallout (`/run` -> `/act`)
+
+- **`docs/MIGRATION_GUIDE.md` unfrozen and properly fixed** (`25d136cc`). The
+  file had been treated as frozen history. It is not. It is a live user-facing
+  guide that people copy-paste from, so every `/run` sitting in an **invocation
+  position** was a broken instruction rather than a historical record. About 25
+  invocations were corrected across fenced blocks, headers, table cells, and
+  prose. Line 3 was stale on three axes at once: version, agent count, and
+  skill list.
+
+  The appended bottom-of-file warning was **removed** rather than updated: it
+  sat below every example it warned about. A warning that arrives after the
+  reader has already copied the broken command reads as diligence instead of
+  providing it. Genuine historical claims were annotated `(now /act)` rather
+  than falsified.
+
+- **`docs/commands/{optimize,org,review}.md` redirect stubs repointed to
+  `/act`** (`70a63df0`). A redirect stub's entire content is an actionable
+  instruction, so unlike historical prose these were live defects, not stale
+  references.
+
+### Note on detection
+
+Two of the fallout items above were found only because executors were required
+to **enumerate an identifier's unanchored forms before writing the search
+pattern**: `/run` unbackticked inside `###` headers following arrows, and
+`(run / team / designer / helper)` with no leading slash. Both were invisible to
+every previously-sanctioned grep pattern. Worth carrying into the next
+repository-wide identifier rename.
+
+## [12.66.0] - 2026-08-08
+
+### Removed (BREAKING FOR USERS)
+
+- **`/run` is gone. Use `/act`.** Claude Code now ships a **built-in `run`
+  skill**, and the two names collide. There is **no back-compat shim and no
+  alias**. Typing `/run` no longer reaches cAgents at all. It invokes Claude
+  Code's built-in skill, which launches and drives your project's app. That is a
+  completely different operation from the cAgents pipeline, and nothing will
+  warn you that you got the wrong one. Replace every `/run X` with `/act X`.
+
+  Flags, modes, and the first-word keyword router carry over unchanged:
+  `/act review src/`, `/act improve --scope src/auth/`, `/act context ...`,
+  `/act --mode debug ...`.
+
+  We cannot fix this with an alias. Slash commands resolve inside the harness
+  before any cAgents hook observes a tool call, so no hook, config, or alias
+  file in this repository can intercept `/run` and forward it. Renaming was the
+  only option available to us.
+
+  **Why this is a minor bump and not a major one.** It repeats a shape this
+  project has shipped twice: `/improve` was folded into `/run` and its skill
+  directory deleted in **v12.1.2**, and `/org` was removed in favour of `/team`
+  strategic mode in **v12.2.0**. Both dropped a user-typed command with no
+  back-compat alias, and neither took a major bump.
+  `.claude/rules/core/version-registry.md` § Tiny-Bump Cadence sets the bar:
+  removals require "a minor or major bump." Nothing else about the contract
+  surface moved: the 60-agent catalog, hook events, the 5-state pipeline, and
+  the memory layout are all unchanged. One user-facing command name changed.
+
+### Fixed
+
+- **Workspace-skill discovery no longer offers Claude Code's built-in `run`
+  skill to the planner.** Claude Code now ships a built-in `run` skill that
+  launches and drives the project's app. cAgents' skill-awareness discovery
+  procedure excluded cAgents' own pipeline skills *by name*, so renaming `/run`
+  to `/act` silently promoted the harness's `run` into a "discoverable workspace
+  skill" the planner could assign to a work item — reintroducing precisely the
+  run/act ambiguity the rename removes. The exclusion list now names the
+  built-in `run` explicitly and unconditionally, and explains why. The same pass
+  closed the mirror-image half of the defect: the own-skill exclusion tuple
+  still read `run`/`team`/`designer`/`helper`, leaving `act` absent from its own
+  exclusion list, so the planner could emit `assigned_skill: act` and the
+  controller would call `Skill({skill: "act"})` — recursing into the entire
+  pipeline. Fixed in `.claude/skills/act/reference/skill-awareness.md`; both
+  halves are pinned by `tests/regressions/act-rename-collision.test.js`.
+
+- **`scripts/maintenance/session-gc.cjs` held a second, independent
+  `SESSION_PREFIXES` list that never gained `'act_'`.** Found while sweeping the
+  session prefix. The GC's directory scan filters candidates through its own
+  copy of the prefix list, with no shared import from
+  `.claude/hooks/hook-utils.cjs`, so fixing the hook-utils list left this one
+  stale. Every go-forward `act_*` session directory would have been invisible to
+  garbage collection: never archived, never deleted, accumulating forever, with
+  no error to signal it. Reproduced red, fixed at
+  `scripts/maintenance/session-gc.cjs:65`, and now pinned by a drift guard that
+  asserts the two prefix lists agree, so they cannot diverge again.
+
+### Changed
+- Version bump to 12.66.0. See commit message for details.
+- **Session directories: `act_*` going forward, `run_*` still readable.** New
+  sessions are created as `act_{slug}_{YYMMDD}_{NNN}`. Existing session
+  directories are **not** renamed on disk: 21 live sessions under
+  `cagents-memory/sessions/` and 26 under `cagents-memory/_archive/` keep their
+  `run_` prefix. `run_` is retained in `SESSION_PREFIXES`
+  (`.claude/hooks/hook-utils.cjs:47`, mirrored in `session-gc.cjs:65`) as a
+  legacy reader, so those sessions continue to resolve, resume, and get swept by
+  the GC exactly as before. Historical session slugs in documentation are left
+  alone; they name sessions that really were called that.
+- **The rename sweep.** Roughly 250 files across 30+ work items: 1,504 live
+  `/run` slash-form references repointed to `/act` (of 1,691 total; the other
+  187 sit in `CHANGELOG.md`, `docs/RELEASE_NOTES.md`, `docs/MIGRATION_GUIDE.md`
+  and the other history files, where they are an accurate record of what the
+  command was called at the time and are deliberately preserved), plus 117
+  `skills/run` path references. `.claude/skills/run/` moved to
+  `.claude/skills/act/`; `docs/commands/run.md` to `docs/commands/act.md`.
+- **Five silent-failure sites repaired.** Each of these fails with no error
+  message and no test failure, which is why they are called out individually:
+  `SESSION_PREFIXES` in `hook-utils.cjs`; the frontmatter `paths:` globs in 11
+  rules files, which would have stopped matching — and therefore stopped
+  loading — permanently; `ENFORCED_SKILLS` in `prompt-router.cjs`; the
+  skill-awareness exclusion list; and the `session_type` enum in
+  `instruction.schema.json`.
+- **Tests.** The suite is 2,497 tests across 214 files. Six test files were
+  renamed `run-*` → `act-*`, and a new bug-driven guard,
+  `tests/regressions/act-rename-collision.test.js`, pins 8 collision sites with
+  21 assertions.
+- **`scripts/migration/v12-aliases.yaml`** gains a `run: act` entry under
+  `skill_aliases`. It is documentation only. The file's sole consumer,
+  `.claude/hooks/session-init-gate.cjs`, reads the top-level `aliases:` map to
+  resolve `subagent_type` on **agent** spawns; it never reads `skill_aliases`,
+  and it cannot see a slash command at all. The entry does not make `/run`
+  invoke `/act`.
+
 ## [12.65.0] - 2026-08-06
 
 **Version-level reclassification of v12.64.2. No code changed.**

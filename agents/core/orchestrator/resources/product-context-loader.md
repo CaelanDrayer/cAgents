@@ -2,7 +2,7 @@
 
 Documented procedure for the orchestrator's direct read of `product_context.yaml`
 into `enriched_context.yaml`. This helper formalizes the existing INIT-state
-behavior so `/run` loads persistent project knowledge without invoking the
+behavior so `/act` loads persistent project knowledge without invoking the
 `/context` skill. Added V10.26.7 as part of the `/context` utility demotion
 arc (V10.26.6 – V10.26.10).
 

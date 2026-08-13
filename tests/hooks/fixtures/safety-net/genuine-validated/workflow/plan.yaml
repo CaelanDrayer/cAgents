@@ -1,6 +1,6 @@
 # POSITIVE CONTROL plan.yaml — present so the plan-bearing arm of
 # sessionGenuinelyValidated() (which requires a completed coordination_log) applies.
-plan_id: run_genuine-validated_fixture_260717_001
+plan_id: act_genuine-validated_fixture_260717_001
 tier: 2
 domain: engineering
 mission: "A genuinely-validated positive-control session."

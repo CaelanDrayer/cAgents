@@ -4,7 +4,7 @@
  * Background (run_verify-completion-staleness-field_260603_001):
  *   verify-completion.cjs:922 read status.yaml via
  *     extractYamlValue(s, 'updated_at') || extractYamlValue(s, 'created_at')
- *   but /run writes `last_updated_at` + `started_at`. The lookup chain
+ *   but /act writes `last_updated_at` + `started_at`. The lookup chain
  *   never matched on real cAgents sessions, `updatedAt` was always undefined,
  *   and the 24h staleness branch was therefore skipped — so the Stop hook
  *   proceeded to verifyCompletion() against orphaned-at-INIT sessions
@@ -39,14 +39,19 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
+// Isolation (see materialize.mjs): SESSIONS_DIR points at a per-process temp
+// project root, NOT the real <repo>/cagents-memory/sessions/. This fixture is a
+// non-terminal INIT session — exactly what a sibling test's
+// findActiveSession({fallbackHeuristic}) binds to. hookEnv() sets
+// CLAUDE_PROJECT_DIR for the spawned hook so it resolves the same temp root.
+import { hookEnv, SESSIONS_DIR } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const HOOKS_DIR = join(PROJECT_ROOT, '.claude', 'hooks');
-const SESSIONS_DIR = join(PROJECT_ROOT, 'cagents-memory', 'sessions');
 const HOOK = join(HOOKS_DIR, 'verify-completion.cjs');
 
 const TS = Date.now().toString(36);
-const SID = `run_staleness-skip-test_${TS}`;
+const SID = `act_staleness-skip-test_${TS}`;
 const DIR = join(SESSIONS_DIR, SID);
 
 const TWENTY_FIVE_HOURS_AGO = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
@@ -77,7 +82,7 @@ function runHook(sessionId) {
     input: payload,
     encoding: 'utf8',
     timeout: 10000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   if (result.status !== 0 && result.status !== null) {
     throw new Error(
@@ -105,7 +110,7 @@ describe('verify-completion.cjs staleness skip (WI-2)', () => {
   });
 
   it('Test 1 (FAIL-before, PASS-after) — session with only last_updated_at > 24h old is skipped as stale (no block decision)', () => {
-    // Synthetic session with the field-name shape that /run actually writes:
+    // Synthetic session with the field-name shape that /act actually writes:
     // last_updated_at (no updated_at, no created_at). pipeline_state=INIT
     // means findActiveSession will resolve this hint (non-terminal).
     makeSession(

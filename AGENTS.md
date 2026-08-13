@@ -13,7 +13,7 @@ This file is a discoverability surface, not a behavioral contract.
 
 | Skill | Intent | When non-CC tools should suggest |
 |-------|--------|----------------------------------|
-| `/run` | Single-domain task execution via coordinated agents | "build X", "fix Y", "implement Z". Cross-domain strategic work routes here through `/team` strategic mode; quality review/optimize/audit through `/run review\|optimize\|audit ...` |
+| `/act` | Single-domain task execution via coordinated agents | "build X", "fix Y", "implement Z". Cross-domain strategic work routes here through `/team` strategic mode; quality review/optimize/audit through `/act review\|optimize\|audit ...` |
 | `/team` | Parallel multi-agent execution with wave-gated quality; auto-enables strategic mode for cross-domain requests | "build X in parallel", "complex multi-part Y", "strategic Z", "company-wide W" |
 | `/designer` | Interactive design exploration via guided Q&A | "design X", "plan this through" |
 | `/helper` | Command guide and skill recommender | "which command", "how do I", "what can cAgents do" |

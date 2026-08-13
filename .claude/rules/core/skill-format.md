@@ -431,7 +431,7 @@ Skills from `--add-dir` directories are also loaded and support live change dete
 The `output_contract` / `input_from` skill-chaining pattern (previously
 described here with example YAML and a chaining-flag table) was prototyped in
 V10.18.0 but never implemented — no skill ever declared `output_contract` or
-`input_from` frontmatter blocks, and the corresponding /run flags silently
+`input_from` frontmatter blocks, and the corresponding /act flags silently
 no-op'd at runtime. The flag advertisements and design prose were removed in
 v11.2.10 (Q-005 of the v11.2.x improvement pass). The `--brief` flag, originally
 consumed by `/org` (removed in v12.2.0; cross-domain coordination absorbed into

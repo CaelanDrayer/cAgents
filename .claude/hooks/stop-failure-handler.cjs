@@ -108,7 +108,7 @@ recovery:
     To resume this session:
     1. Review the plan at workflow/plan.yaml
     2. Check coordination_log.yaml for completed/pending work items
-    3. Re-run /run with the original request, or continue from the current phase
+    3. Re-run /act with the original request, or continue from the current phase
 `;
 
   try {

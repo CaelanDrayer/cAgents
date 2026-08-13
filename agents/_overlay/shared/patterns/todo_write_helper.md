@@ -26,10 +26,10 @@ Use this pattern for standard tier 2+ workflows (routing -> planning -> coordina
 
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "in_progress", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "pending", "id": "plan"},
+  {"content": "[/act] Route request to domain and tier", "status": "in_progress", "id": "route"},
+  {"content": "[/act] Plan objectives and select controller", "status": "pending", "id": "plan"},
   {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
 
@@ -46,33 +46,33 @@ The TodoWrite list evolves as the workflow progresses and agents are identified:
 **Step 1 -- Initial (before routing)**:
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "in_progress", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "pending", "id": "plan"},
+  {"content": "[/act] Route request to domain and tier", "status": "in_progress", "id": "route"},
+  {"content": "[/act] Plan objectives and select controller", "status": "pending", "id": "plan"},
   {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
 
 **Step 2 -- After routing selects controller** (e.g., `tech-lead`):
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
+  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/act] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
   {"content": "[tech-lead] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
 
 **Step 3 -- After controller identifies execution agents** (e.g., `backend-developer`, `qa-tester`, `security-specialist`):
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/act] Plan objectives and select controller", "status": "completed", "id": "plan"},
   {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Implement authentication fix", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Create regression tests", "status": "pending", "id": "exec2"},
   {"content": "[security-specialist] Review security implications", "status": "pending", "id": "exec3"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
 
@@ -88,11 +88,11 @@ TodoWrite([
 
 | Workflow Agent | Updates TodoWrite When | What Changes |
 |----------------|----------------------|--------------|
-| `/run` (Step 2) | Session initialized | Initial 4-item task list |
-| `/run` (Step 3) | Controller identified | `[controller]` -> `[tech-lead]` |
-| `/run` (Step 5) | Before delegation | Mark coordination as in_progress |
+| `/act` (Step 2) | Session initialized | Initial 4-item task list |
+| `/act` (Step 3) | Controller identified | `[controller]` -> `[tech-lead]` |
+| `/act` (Step 5) | Before delegation | Mark coordination as in_progress |
 | Controller | Execution agents identified | Add individual `[backend-developer]`, `[qa-tester]`, etc. entries |
-| `/run` (Step 6) | After controller returns | Mark all tasks completed |
+| `/act` (Step 6) | After controller returns | Mark all tasks completed |
 
 ## Phase Transition TodoWrite Pattern
 
@@ -119,17 +119,17 @@ After identifying execution agents, update the TodoWrite to add specific executo
 
 ```
 TodoWrite([
-  {"content": "[/run] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/run] Plan objectives and select controller", "status": "completed", "id": "plan"},
+  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
+  {"content": "[/act] Plan objectives and select controller", "status": "completed", "id": "plan"},
   {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
   {"content": "[backend-developer] Answer: What is current auth implementation?", "status": "pending", "id": "exec1"},
   {"content": "[qa-tester] Answer: What test coverage exists?", "status": "pending", "id": "exec2"},
   {"content": "[tech-lead] Synthesize answers into solution", "status": "pending", "id": "synthesize"},
-  {"content": "[/run] Validate outputs and quality", "status": "pending", "id": "validate"}
+  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
 ])
 ```
 
-**Note**: Replace agent names and task descriptions with actuals. The `[/run]` prefix items are preserved from the initial task list.
+**Note**: Replace agent names and task descriptions with actuals. The `[/act]` prefix items are preserved from the initial task list.
 
 ## Usage
 

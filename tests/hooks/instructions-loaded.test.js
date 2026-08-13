@@ -32,7 +32,7 @@ describe('instructions-loaded.cjs', () => {
   });
 
   it('should not throw on minimal input with session_id', () => {
-    expect(() => runHook({ session_id: 'run_test_260101_001' })).not.toThrow();
+    expect(() => runHook({ session_id: 'act_test_260101_001' })).not.toThrow();
   });
 
   describe('source code contracts', () => {

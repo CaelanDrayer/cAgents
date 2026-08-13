@@ -2,39 +2,39 @@
 
 Complete flag tables for all commands, used by `/helper --flags <command>`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/run` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Flag surfaces moved to `/run review|audit|optimize|improve` (keyword router; review/optimize/full modes inferred from first token), `/run context` (passthrough), and `/run --mode debug` (debug mode)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Flag surfaces moved to `/act review|audit|optimize|improve` (keyword router; review/optimize/full modes inferred from first token), `/act context` (passthrough), and `/act --mode debug` (debug mode)._
 
-## /run Flags
+## /act Flags
 
 | Flag | Type | Description | Default | Example |
 |------|------|-------------|---------|---------|
-| `--interactive` | Boolean | Ask user preferences before starting | false | `/run Fix bug --interactive` |
-| `--dry-run` | Boolean | Preview plan without executing | false | `/run Add feature --dry-run` |
-| `--quiet` / `-q` | Boolean | Skip plan display | false | `/run Fix bug --quiet` |
-| `--stream` | Boolean | Real-time progress updates | false | `/run Deploy --stream` |
-| `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/run Hotfix --skip-preflight` |
-| `--team` | Boolean | Parallel team execution | false | `/run Build dashboard --team` |
-| `--template <name>` | String | Use workflow template | auto-match | `/run Budget --template budget_creation` |
-| `--domain <domain>` | String | Override domain detection | auto-detect | `/run Analyze --domain engineering` |
-| `--tier <N>` | Number | Override tier (2-4) | auto-classify | `/run Migrate --tier 4` |
-| `--confidence <N>` | Number | Detection confidence threshold | 0.7 | `/run Request --confidence 0.6` |
-| `--resume <id>` | String | Resume an interrupted session | none | `/run --resume run_20260207_143022` |
-| `--mode debug` | Subcommand-flag | Run the systematic 4-phase debugging protocol (V11 replacement for `/debug`) | none | `/run --mode debug "Auth token expiry causes random logouts"` |
-| `--escalate` | Boolean | Used with `--mode debug`; force escalation report after investigation | false | `/run --mode debug ... --escalate` |
-| `--phase <1-4>` | Number | Used with `--mode debug`; start at a specific debugging phase | 1 | `/run --mode debug ... --phase 3` |
+| `--interactive` | Boolean | Ask user preferences before starting | false | `/act Fix bug --interactive` |
+| `--dry-run` | Boolean | Preview plan without executing | false | `/act Add feature --dry-run` |
+| `--quiet` / `-q` | Boolean | Skip plan display | false | `/act Fix bug --quiet` |
+| `--stream` | Boolean | Real-time progress updates | false | `/act Deploy --stream` |
+| `--skip-preflight` | Boolean | Skip pre-flight validation | false | `/act Hotfix --skip-preflight` |
+| `--team` | Boolean | Parallel team execution | false | `/act Build dashboard --team` |
+| `--template <name>` | String | Use workflow template | auto-match | `/act Budget --template budget_creation` |
+| `--domain <domain>` | String | Override domain detection | auto-detect | `/act Analyze --domain engineering` |
+| `--tier <N>` | Number | Override tier (2-4) | auto-classify | `/act Migrate --tier 4` |
+| `--confidence <N>` | Number | Detection confidence threshold | 0.7 | `/act Request --confidence 0.6` |
+| `--resume <id>` | String | Resume an interrupted session | none | `/act --resume act_20260207_143022` |
+| `--mode debug` | Subcommand-flag | Run the systematic 4-phase debugging protocol (V11 replacement for `/debug`) | none | `/act --mode debug "Auth token expiry causes random logouts"` |
+| `--escalate` | Boolean | Used with `--mode debug`; force escalation report after investigation | false | `/act --mode debug ... --escalate` |
+| `--phase <1-4>` | Number | Used with `--mode debug`; start at a specific debugging phase | 1 | `/act --mode debug ... --phase 3` |
 
-### /run context Passthrough (V11 replacement for /context)
+### /act context Passthrough (V11 replacement for /context)
 
 | Form | Description |
 |------|-------------|
-| `/run context init` | Auto-detect and initialize product context |
-| `/run context show` | Display current product context |
-| `/run context update` | Interactively update product context |
-| `/run context clear` | Remove the product context document |
+| `/act context init` | Auto-detect and initialize product context |
+| `/act context show` | Display current product context |
+| `/act context update` | Interactively update product context |
+| `/act context clear` | Remove the product context document |
 
 The product context document lives at `cagents-memory/_projects/{hash}/product_context.yaml`.
 
-### /run Templates (12)
+### /act Templates (12)
 
 | Template | Tier | Domain | Use Case |
 |----------|------|--------|----------|
@@ -75,18 +75,18 @@ The product context document lives at `cagents-memory/_projects/{hash}/product_c
 
 ---
 
-## /run review|audit|optimize|improve Flags (Keyword Router Modes)
+## /act review|audit|optimize|improve Flags (Keyword Router Modes)
 
-In v12.1.2, the standalone `/improve` skill was folded into `/run` via a first-token keyword router. The mode is inferred from the first request token: `review` and `audit` → review mode; `optimize` → optimize mode; `improve` → full mode. All V11.0 `/improve` mode-specific flags carry through unchanged. Mode selection determines which subset of flags applies.
+In v12.1.2, the standalone `/improve` skill was folded into `/act` via a first-token keyword router. The mode is inferred from the first request token: `review` and `audit` → review mode; `optimize` → optimize mode; `improve` → full mode. All V11.0 `/improve` mode-specific flags carry through unchanged. Mode selection determines which subset of flags applies.
 
 ### Mode Selection (via Keyword Router)
 
 | First-word keyword | Inferred mode | Example |
 |--------------------|---------------|---------|
-| `review` | Run review pipeline | `/run review src/` |
-| `audit` | Run review pipeline (alias) | `/run audit infrastructure --type infrastructure` |
-| `optimize` | Run optimize pipeline | `/run optimize src/ --type code` |
-| `improve` | Run review + optimize with one shared baseline | `/run improve src/` |
+| `review` | Run review pipeline | `/act review src/` |
+| `audit` | Run review pipeline (alias) | `/act audit infrastructure --type infrastructure` |
+| `optimize` | Run optimize pipeline | `/act optimize src/ --type code` |
+| `improve` | Run review + optimize with one shared baseline | `/act improve src/` |
 
 The match is case-insensitive on the first token. An explicit `--mode <value>` flag overrides the inferred mode (treat the first token as part of the request).
 
@@ -94,47 +94,47 @@ The match is case-insensitive on the first token. An explicit `--mode <value>` f
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--scope <path>` | Optional positional / explicit scope | `/run improve src/auth/` |
-| `--dry-run` | Plan without applying changes | `/run optimize --dry-run` |
-| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | `/run review --history` |
+| `--scope <path>` | Optional positional / explicit scope | `/act improve src/auth/` |
+| `--dry-run` | Plan without applying changes | `/act optimize --dry-run` |
+| `--history` | Append run to `_projects/{hash}/improve/history.yaml` | `/act review --history` |
 
 ### Review-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--scope changed\|staged\|all` | Scope filter | `/run review --scope changed` |
-| `--type code\|documentation\|content\|design\|process\|data\|infrastructure` | Review type | `/run review --type infrastructure` |
-| `--focus security\|architecture\|accessibility\|performance\|quality` | Focus area | `/run review --focus security` |
-| `--framework nextjs\|react\|vue\|...` | Force framework detection | `/run review --framework nextjs` |
-| `--auto-fix safe\|all` | Generate or apply auto-fixes | `/run review --auto-fix safe` |
-| `--apply-safe-fixes` | Apply safe auto-fixes automatically | `/run review --apply-safe-fixes` |
-| `--quality-gate strict\|standard\|relaxed` | Quality gate severity | `/run review --quality-gate strict` |
-| `--run-tests` | Run tests after auto-fix | `/run review --run-tests` |
-| `--rollback-on-failure` | Rollback if tests fail | `/run review --rollback-on-failure` |
-| `--baseline <id>` | Use named baseline | `/run review --baseline 2026-q1` |
-| `--suppress <id>` | Suppress findings tagged with id | `/run review --suppress finding-42` |
-| `--confidence <N>` | Only report findings above threshold | `/run review --confidence 0.8` |
-| `--show-confidence` | Display confidence scores | `/run review --show-confidence` |
-| `--git-hotspots` | Prioritize frequently changed files | `/run review --git-hotspots` |
-| `--pr-context <branch>` | Review against branch | `/run review --pr-context main` |
-| `--output json\|markdown\|summary\|detailed` | Output format | `/run review --output json` |
-| `--save-report <path>` | Save report to file | `/run review --save-report ./review.md` |
+| `--scope changed\|staged\|all` | Scope filter | `/act review --scope changed` |
+| `--type code\|documentation\|content\|design\|process\|data\|infrastructure` | Review type | `/act review --type infrastructure` |
+| `--focus security\|architecture\|accessibility\|performance\|quality` | Focus area | `/act review --focus security` |
+| `--framework nextjs\|react\|vue\|...` | Force framework detection | `/act review --framework nextjs` |
+| `--auto-fix safe\|all` | Generate or apply auto-fixes | `/act review --auto-fix safe` |
+| `--apply-safe-fixes` | Apply safe auto-fixes automatically | `/act review --apply-safe-fixes` |
+| `--quality-gate strict\|standard\|relaxed` | Quality gate severity | `/act review --quality-gate strict` |
+| `--run-tests` | Run tests after auto-fix | `/act review --run-tests` |
+| `--rollback-on-failure` | Rollback if tests fail | `/act review --rollback-on-failure` |
+| `--baseline <id>` | Use named baseline | `/act review --baseline 2026-q1` |
+| `--suppress <id>` | Suppress findings tagged with id | `/act review --suppress finding-42` |
+| `--confidence <N>` | Only report findings above threshold | `/act review --confidence 0.8` |
+| `--show-confidence` | Display confidence scores | `/act review --show-confidence` |
+| `--git-hotspots` | Prioritize frequently changed files | `/act review --git-hotspots` |
+| `--pr-context <branch>` | Review against branch | `/act review --pr-context main` |
+| `--output json\|markdown\|summary\|detailed` | Output format | `/act review --output json` |
+| `--save-report <path>` | Save report to file | `/act review --save-report ./review.md` |
 
 ### Optimize-Mode Flags
 
 | Flag | Description | Example |
 |------|-------------|---------|
-| `--type code\|content\|process\|infrastructure\|data\|campaign\|creative\|sales` | Optimization type | `/run optimize --type code` |
-| `--focus performance\|cost\|quality` | Focus area | `/run optimize --focus cost` |
-| `--safety safe\|medium` | Risk tolerance | `/run optimize --safety safe` |
-| `--incremental` | Apply one optimization at a time | `/run optimize --incremental` |
-| `--cross-file` | Enable cross-file analysis | `/run optimize --cross-file` |
-| `--no-cross-file` | Skip cross-file analysis (faster) | `/run optimize --no-cross-file` |
-| `--dependency-graph` | Generate dependency graph | `/run optimize --dependency-graph` |
-| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Choose benchmark tool | `/run optimize --benchmark lighthouse` |
-| `--validation comprehensive` | Full test suite + benchmarks | `/run optimize --validation comprehensive` |
-| `--rollback automatic` | Auto-rollback on failure | `/run optimize --rollback automatic` |
-| `--require-tests-pass` | Must pass all tests | `/run optimize --require-tests-pass` |
+| `--type code\|content\|process\|infrastructure\|data\|campaign\|creative\|sales` | Optimization type | `/act optimize --type code` |
+| `--focus performance\|cost\|quality` | Focus area | `/act optimize --focus cost` |
+| `--safety safe\|medium` | Risk tolerance | `/act optimize --safety safe` |
+| `--incremental` | Apply one optimization at a time | `/act optimize --incremental` |
+| `--cross-file` | Enable cross-file analysis | `/act optimize --cross-file` |
+| `--no-cross-file` | Skip cross-file analysis (faster) | `/act optimize --no-cross-file` |
+| `--dependency-graph` | Generate dependency graph | `/act optimize --dependency-graph` |
+| `--benchmark auto\|lighthouse\|k6\|hyperfine` | Choose benchmark tool | `/act optimize --benchmark lighthouse` |
+| `--validation comprehensive` | Full test suite + benchmarks | `/act optimize --validation comprehensive` |
+| `--rollback automatic` | Auto-rollback on failure | `/act optimize --rollback automatic` |
+| `--require-tests-pass` | Must pass all tests | `/act optimize --require-tests-pass` |
 
 ---
 

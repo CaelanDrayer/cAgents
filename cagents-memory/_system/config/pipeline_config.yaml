@@ -1,10 +1,10 @@
 # Event-driven pipeline configuration
-# Defines the state machine that /run executes sequentially.
+# Defines the state machine that /act executes sequentially.
 # Each state maps to an agent, its inputs/outputs, and the next state.
 #
 # v12.0.0: 7-state -> 5-state collapse. task-decomposer + prompt-engineer
 # absorbed into universal-planner. See revamp-design-v2.md Q1.
-# v12.3.0: Adaptive fast path deleted. Every /run and /team unconditionally
+# v12.3.0: Adaptive fast path deleted. Every /act and /team unconditionally
 # executes all 5 states. Skill-declared pipeline_exemptions + phase stubs
 # substitute for the deleted complexity-scoring shortcut. See
 # revamp-design-v2.md Pillar 1.
@@ -54,11 +54,11 @@ states:
 
 # Revision routing
 # When validator returns FAIL or REVISE, the state machine jumps back.
-# REC-11 (P-5): the /run loop PERSISTS a `revision_cycles` counter to
+# REC-11 (P-5): the /act loop PERSISTS a `revision_cycles` counter to
 # status.yaml and increments it on each FAIL/REVISE route-back to PLANNED
 # (re-added in REC-11; removed in v12.6.0). `max_cycles` below is the SINGLE
-# revision cap — the /run loop (run/SKILL.md Step 3g), the /goal auto-anchor
-# (run/SKILL.md Step 2 ACTION 4), and the verify-completion.cjs Stop hook all
+# revision cap — the /act loop (act/SKILL.md Step 3g), the /goal auto-anchor
+# (act/SKILL.md Step 2 ACTION 4), and the verify-completion.cjs Stop hook all
 # reconcile to it. There is exactly one cap, not two (the pre-REC-11 hard-coded
 # /goal "8" contradicted this and was a defect).
 revision:
@@ -91,7 +91,7 @@ classification_mapping:
   PARTIAL_PASS: PASS           # dead-letter items reported but don't block pipeline
 
 # Pre-enrichment detection removed in v12.3.0.
-# Every /run and /team session unconditionally executes the full 5-state
+# Every /act and /team session unconditionally executes the full 5-state
 # pipeline. /team teammate flows that previously short-circuited INIT or
 # ORCHESTRATED now declare pipeline_exemptions in their spawning skill's
 # SKILL.md metadata and write workflow/{phase}_stub.yaml instead. The
@@ -100,8 +100,8 @@ classification_mapping:
 
 # Signal file intervention (v10.6.0)
 # Pipeline checks for signal files before each state transition.
-# REC-17 (P-10): `enabled: true` is HONOURED — the /run state-machine loop
-# implements the before_transition signal check (run/SKILL.md Step 3e-signals),
+# REC-17 (P-10): `enabled: true` is HONOURED — the /act state-machine loop
+# implements the before_transition signal check (act/SKILL.md Step 3e-signals),
 # and the canonical protocol lives in
 # .claude/rules/core/orchestration-reference.md § Signal File Intervention
 # Protocol. This is no longer a config-`enabled` feature with zero

@@ -65,7 +65,7 @@ describe('v12.0.4: secret sanitize-and-restore protocol', { timeout: 30000 }, ()
   let tempDir;
   let tempFilePath;
   let backupBaseDir;
-  const sessionId = `run_test-sanitize_${Date.now()}_001`;
+  const sessionId = `act_test-sanitize_${Date.now()}_001`;
 
   beforeEach(() => {
     tempDir = join(tmpdir(), `cagents-sanitize-test-${process.pid}-${Date.now()}`);
@@ -181,7 +181,7 @@ describe('v12.0.4: secret sanitize-and-restore protocol', { timeout: 30000 }, ()
   });
 
   it('restore on no manifest is a no-op (does not crash)', () => {
-    const noManifestSession = `run_no-manifest_${Date.now()}_002`;
+    const noManifestSession = `act_no-manifest_${Date.now()}_002`;
     const result = runHook(RESTORE_HOOK, { session_id: noManifestSession });
     expect(result.continue).toBe(true);
     // No errors, no file mutations.

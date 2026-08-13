@@ -14,7 +14,7 @@
 
 ## Key Patterns & Frameworks
 
-- **Event-Driven State Machine**: The orchestrator is the INIT-state agent in /run's state machine loop — it produces enriched_context.yaml and writes an EVT-1 event, then the pipeline advances to ORCHESTRATED
+- **Event-Driven State Machine**: The orchestrator is the INIT-state agent in /act's state machine loop — it produces enriched_context.yaml and writes an EVT-1 event, then the pipeline advances to ORCHESTRATED
 - **Context Enrichment Pipeline**: Systematically queries the codebase (Grep/Glob/Read), git history, framework detection, and existing patterns to build enriched_context.yaml — richer context produces better downstream plans
 - **Observed/Inferred Flagging**: Every enriched_context.yaml field carries a `source: observed|inferred` tag — downstream agents know what to trust and what to verify
 - **Self-Verification Checklist**: Before writing enriched_context.yaml, answer 4 self-check questions: Did I read the files I'm citing? Are constraints evidence-based? Did I verify domain/tier against actual content? Did I Grep for the patterns I'm listing?
@@ -44,7 +44,7 @@
 - **instruction.yaml**: The canonical record of the user's request, domain, tier, and flags — written by trigger, read by all downstream agents
 - **status.yaml**: Current pipeline phase and history — must exist before spawning any subagents for hook compatibility
 - **Waypoint**: A phase-transition checkpoint written to `waypoints/` — enables resume after context exhaustion or interruption
-- **Completion Event**: An EVT-N.yaml file written to `workflow/events/` after each phase — drives the /run state machine forward
+- **Completion Event**: An EVT-N.yaml file written to `workflow/events/` after each phase — drives the /act state machine forward
 
 ### Context Exhaustion Recovery
 - **Context Exhaustion**: When a subagent uses its full context window before completing its assigned work — detected by missing output files or in_progress coordination_log

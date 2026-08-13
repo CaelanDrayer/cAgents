@@ -62,7 +62,7 @@ describe('REC-14: delegation_audit.log rotation + session stamp + no-signal skip
   });
 
   it('stamps the resolving session id (session=<basename>)', () => {
-    const sid = `run_rec14sess_${Date.now().toString(36)}`;
+    const sid = `act_rec14sess_${Date.now().toString(36)}`;
     makeSession(TMP, sid);
     const res = fire(
       { subagent_type: 'cagents:backend-developer', model: 'sonnet', description: 'implement the auth module' },
@@ -84,7 +84,7 @@ describe('REC-14: delegation_audit.log rotation + session stamp + no-signal skip
     const beforeSize = statSync(LOG_FILE).size;
     expect(beforeSize).toBeGreaterThan(1024 * 1024);
 
-    const sid = `run_rec14rot_${Date.now().toString(36)}`;
+    const sid = `act_rec14rot_${Date.now().toString(36)}`;
     makeSession(TMP, sid);
     const res = fire(
       { subagent_type: 'cagents:backend-developer', model: 'sonnet', description: 'trigger rotation' },
@@ -101,7 +101,7 @@ describe('REC-14: delegation_audit.log rotation + session stamp + no-signal skip
   });
 
   it('skips no-signal rows (empty desc AND default model)', () => {
-    const sid = `run_rec14skip_${Date.now().toString(36)}`;
+    const sid = `act_rec14skip_${Date.now().toString(36)}`;
     makeSession(TMP, sid);
     // Empty description, no model → no diagnostic signal → skipped.
     const res = fire(

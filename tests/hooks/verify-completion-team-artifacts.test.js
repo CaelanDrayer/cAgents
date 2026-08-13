@@ -84,7 +84,7 @@ describe('verify-completion team-artifact enforcement (Phase 10 / A8-01)', () =>
   });
 
   it('PASSES a non-team (run_*) terminal-success session missing coordination_log — check is team-scoped', () => {
-    const id = `run_artifacts_scope_${Date.now()}`;
+    const id = `act_artifacts_scope_${Date.now()}`;
     makeSession(id, `pipeline_state: VALIDATED\nresult: success\nupdated_at: "${NOW()}"\n`);
     const r = runHook({ session_id: id });
     expect(r.decision).not.toBe('block');

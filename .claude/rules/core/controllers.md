@@ -23,9 +23,9 @@ paths:
   - "agents/strategist/strategic-planner/**"
   - "agents/writer/editor/**"
   - "agents/writer/narrative-director/**"
-  - ".claude/skills/run/SKILL.md"
-  - ".claude/skills/run/reference/delegation-patterns.md"
-  - ".claude/skills/run/reference/delegation-workaround.md"
+  - ".claude/skills/act/SKILL.md"
+  - ".claude/skills/act/reference/delegation-patterns.md"
+  - ".claude/skills/act/reference/delegation-workaround.md"
   - ".claude/skills/team/SKILL.md"
   - ".claude/hooks/controller-delegation-validator.cjs"
   - "cagents-memory/sessions/**/workflow/coordination_log.yaml"
@@ -116,9 +116,9 @@ controller's surface (nesting ceiling, or a regressed harness), do NOT fail
 the work item — spawn the closest-matching cAgents execution agent instead and
 record `skill_fallback: "{reason}"` in `coordination_log.yaml`. Verify the tool
 is actually absent before falling back. Never route an `assigned_skill` work
-item back into cAgents' own `run`/`team`/`designer`/`helper` skills.
+item back into cAgents' own `act`/`team`/`designer`/`helper` skills.
 
-See @.claude/skills/run/reference/skill-awareness.md for the discovery
+See @.claude/skills/act/reference/skill-awareness.md for the discovery
 procedure, `available_skills.yaml` schema, and the planner contract.
 
 ## Question-Based Delegation Pattern
@@ -141,9 +141,9 @@ Every controller MUST call TaskCreate after identifying execution agents. TaskCr
 
 **Note on TodoWrite (SDK only)**: TodoWrite is the equivalent tool in non-interactive mode and the Agent SDK (per docs.claude.com/docs/en/tools.md). Interactive Claude Code sessions — which is the primary cAgents runtime — MUST use TaskCreate/TaskUpdate/TaskList/TaskGet instead. Historical references to TodoWrite in legacy SKILL.md prompt bodies are being swept; treat any remaining reference as equivalent to TaskCreate unless explicitly marked "(SDK only)".
 
-**TaskCreate scope boundary**: Pipeline-level tasks (tracking which pipeline agent is running) are owned by /run at level 0. Controllers do NOT create TaskCreate tasks that /run expects to clean up -- those tasks live in the controller's scope and /run cannot update them, causing "Task not found" errors during pipeline cleanup.
+**TaskCreate scope boundary**: Pipeline-level tasks (tracking which pipeline agent is running) are owned by /act at level 0. Controllers do NOT create TaskCreate tasks that /act expects to clean up -- those tasks live in the controller's scope and /act cannot update them, causing "Task not found" errors during pipeline cleanup.
 
-Controllers MAY use TaskCreate for their OWN internal sub-spawns (e.g., tracking individual execution agents they spawn at level 2), but these are controller-scoped tasks that the controller itself must clean up before returning. They are invisible to /run's Step 4 task cleanup.
+Controllers MAY use TaskCreate for their OWN internal sub-spawns (e.g., tracking individual execution agents they spawn at level 2), but these are controller-scoped tasks that the controller itself must clean up before returning. They are invisible to /act's Step 4 task cleanup.
 
 Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
 
@@ -434,7 +434,7 @@ See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical p
 After completing coordination:
 - Write coordination_log.yaml (with `schema_version: "1"` at top), handoff document, and completion event
 - Signal completion (coordination_log.yaml with complete status)
-- DO NOT ask user to review or approve — /run auto-proceeds to validation
+- DO NOT ask user to review or approve — /act auto-proceeds to validation
 
 **Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work item definitions. `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to).
 

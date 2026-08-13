@@ -50,7 +50,7 @@ describe('P0-3: verify-completion.cjs MUST NOT stamp placeholders', () => {
     // cagents-memory/sessions/ discovery finds our fixture.
     tempRoot = mkdtempSync(join(tmpdir(), 'p0-3-vfc-'));
     sessionsDir = join(tempRoot, 'cagents-memory', 'sessions');
-    sessionDir = join(sessionsDir, 'run_p0-3-fixture_260522_001');
+    sessionDir = join(sessionsDir, 'act_p0-3-fixture_260522_001');
     mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
 
     // status.yaml: terminal state so autoResolveWarnings would normally
@@ -59,7 +59,7 @@ describe('P0-3: verify-completion.cjs MUST NOT stamp placeholders', () => {
     writeFileSync(
       join(sessionDir, 'status.yaml'),
       [
-        'session_id: run_p0-3-fixture_260522_001',
+        'session_id: act_p0-3-fixture_260522_001',
         'pipeline_state: complete',
         `created_at: "${now}"`,
         `updated_at: "${now}"`,
@@ -124,7 +124,7 @@ describe('P0-3: verify-completion.cjs MUST NOT stamp placeholders', () => {
     // synthetic session.
     const stdinPayload = JSON.stringify({
       hook_event_name: 'Stop',
-      session_id: 'run_p0-3-fixture_260522_001',
+      session_id: 'act_p0-3-fixture_260522_001',
       stop_hook_active: false,
     });
 
@@ -164,7 +164,7 @@ describe('P0-3: verify-completion.cjs MUST NOT stamp placeholders', () => {
   it('emits stderr warning naming the missing self_validation field', () => {
     const stdinPayload = JSON.stringify({
       hook_event_name: 'Stop',
-      session_id: 'run_p0-3-fixture_260522_001',
+      session_id: 'act_p0-3-fixture_260522_001',
       stop_hook_active: false,
     });
 

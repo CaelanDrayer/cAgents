@@ -237,8 +237,8 @@ TaskCreate({ subject: "[validator] Validating outputs against acceptance criteri
 
 **Bad** (state-machine jargon, generic placeholders):
 ```
-[/run] Pipeline: INIT (enriching context)
-[/run] Pipeline: ORCHESTRATED (planning)
+[/act] Pipeline: INIT (enriching context)
+[/act] Pipeline: ORCHESTRATED (planning)
 [controller] Pipeline: PLANNED (coordinating)
 [exec_agent_1] specific_task_1
 ```

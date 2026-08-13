@@ -40,7 +40,7 @@ function makeSession(sid, dirMtimeOffsetMs) {
   );
   writeFileSync(
     join(dir, 'instruction.yaml'),
-    `session_id: ${sid}\nraw_request: "req ${sid}"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/run"\n`
+    `session_id: ${sid}\nraw_request: "req ${sid}"\ncreated_at: "${new Date().toISOString()}"\ncommand: "/act"\n`
   );
   // status.yaml mtime old (>> liveness threshold) so the session is NOT live.
   const statusT = (Date.now() - 5000) / 1000;
@@ -83,6 +83,11 @@ describe('REC-15: session-catchup mtime sort + fixture skip', () => {
 
   it('ranks the mtime-newer session first even when its name sorts lexicographically lower', () => {
     // team_zzz_* would win a reverse-lexicographic sort, but run_aaa_* is newer.
+    // The `run_` prefix here is DELIBERATE and load-bearing on two counts: it is
+    // the standing proof that the hook-utils SESSION_PREFIXES legacy-reader
+    // carve-out still discovers pre-/act sessions (which are never renamed on
+    // disk), and the historical REC-15 framing above depends on 't' > 'r'.
+    // Do not sweep it to act_.
     makeSession('run_aaa_260716', -1000); // newer dir mtime
     makeSession('team_zzz_260101', -100000); // older dir mtime
 
@@ -93,13 +98,13 @@ describe('REC-15: session-catchup mtime sort + fixture skip', () => {
   });
 
   it('skips test-fixture sessions but keeps legit slugs that merely contain "test"', () => {
-    makeSession('run_test-demo_abc', -1000); // fixture token → skipped
+    makeSession('act_test-demo_abc', -1000); // fixture token → skipped
     makeSession('team_fixture-seed_def', -1000); // fixture token → skipped
-    makeSession('run_latest-report_260715', -2000); // "latest" ⊃ "test" but NOT a token → kept
+    makeSession('act_latest-report_260715', -2000); // "latest" ⊃ "test" but NOT a token → kept
 
     const order = runCatchup();
-    expect(order).not.toContain('run_test-demo_abc');
+    expect(order).not.toContain('act_test-demo_abc');
     expect(order).not.toContain('team_fixture-seed_def');
-    expect(order).toContain('run_latest-report_260715');
+    expect(order).toContain('act_latest-report_260715');
   });
 });

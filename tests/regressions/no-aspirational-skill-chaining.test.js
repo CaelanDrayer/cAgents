@@ -5,7 +5,7 @@ import { join } from 'path';
 /**
  * Regression test for V11.2.10 (Q-005 / F-skills-001).
  *
- * Bug: The /run skill and rules/core/skill-format.md advertise two flags —
+ * Bug: The /act skill and rules/core/skill-format.md advertise two flags —
  *      `--from-review` and `--from-designer` — in argument-hint, body parser,
  *      reference/flags.md, reference/strategic-brief-integration.md, and the
  *      "Skill Chaining (V10.18.0)" section of skill-format.md. The underlying
@@ -19,7 +19,7 @@ import { join } from 'path';
  *      never landed. No regression test guarded against advertising flags
  *      whose underlying feature was tagged ASPIRATIONAL.
  *
- * Test added: this file. Scans the three /run views and skill-format.md and
+ * Test added: this file. Scans the three /act views and skill-format.md and
  *      asserts no occurrence of `--from-review` or `--from-designer`. The test
  *      will fail if anyone re-adds these flag advertisements without re-adding
  *      the underlying implementation.
@@ -38,9 +38,9 @@ import { join } from 'path';
 const ROOT = process.cwd();
 
 const SCANNED_FILES = [
-  '.claude/skills/run/SKILL.md',
-  '.claude/skills/run/reference/flags.md',
-  '.claude/skills/run/reference/strategic-brief-integration.md',
+  '.claude/skills/act/SKILL.md',
+  '.claude/skills/act/reference/flags.md',
+  '.claude/skills/act/reference/strategic-brief-integration.md',
   '.claude/rules/core/skill-format.md',
 ];
 

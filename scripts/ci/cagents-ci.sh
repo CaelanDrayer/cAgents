@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.65.0
+# Version: 12.66.2
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -324,7 +324,7 @@ run_evals() {
 # The external-UI schema contract was dropped. tests/contract.test.js,
 # scripts/ci/fetch-schemas.sh, and the `contract` CI subcommand were removed.
 # Session YAML is now an internal-only contract; see
-# .claude/skills/run/reference/session-schema.md.
+# .claude/skills/act/reference/session-schema.md.
 #
 run_contract_tests() {
     log_warn "Contract tests removed in v12.6.0 — skipping (no-op)"
@@ -450,7 +450,7 @@ check_tiny_bump() {
         ".claude-plugin/marketplace.json"
         "CLAUDE.md"
         ".claude/settings.json"
-        ".claude/skills/run/SKILL.md"
+        ".claude/skills/act/SKILL.md"
         ".claude/skills/team/SKILL.md"
         ".claude/skills/designer/SKILL.md"
         ".claude/skills/helper/SKILL.md"
@@ -651,7 +651,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.65.0"
+    log_section "cAgents CI Runner v12.66.2"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

@@ -35,11 +35,15 @@ import {
   materializeFabricatedPass,
   materializeGenuineValidated,
   cleanup,
+  hookEnv,
+  OUTCOMES_JSONL,
 } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
 const VERIFY_HOOK = join(PROJECT_ROOT, '.claude', 'hooks', 'verify-completion.cjs');
-const OUTCOMES_JSONL = join(PROJECT_ROOT, 'cagents-memory', '_knowledge', 'learning', 'session_outcomes.jsonl');
+// OUTCOMES_JSONL is imported from materialize.mjs: the fixtures live in an
+// isolated temp project root, so the learning store the hook appends to lives
+// there too (it used to be appended to the REAL repo's store).
 
 function runStopHook(sid) {
   const payload = JSON.stringify({ session_id: sid, stop_hook_active: false, hook_event_name: 'Stop' });
@@ -53,7 +57,7 @@ function runStopHook(sid) {
     // never ran). Capture the result, raise the budget, and FAIL LOUD so a
     // timeout can never satisfy that absence assertion.
     timeout: 60000,
-    env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' },
+    env: { ...process.env, ...hookEnv(), CAGENTS_ACTIVE_SESSION: '' },
   });
   // verify-completion.cjs (Stop via createHook) ALWAYS exits 0 with one JSON line
   // on stdout, so any abnormal termination is a spawn misfire, not a verdict.

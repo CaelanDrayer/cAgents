@@ -91,12 +91,12 @@ Controllers are the primary coordination layer:
 
 ## Event-Driven Pipeline Integration (V9.23.0)
 
-When spawned by /run's state machine loop, the orchestrator is the INIT state agent. Your job is to enrich the user request with domain context, constraints, and project state.
+When spawned by /act's state machine loop, the orchestrator is the INIT state agent. Your job is to enrich the user request with domain context, constraints, and project state.
 
 ### Pipeline Role
 
 ```
-/run state machine -> INIT -> orchestrator -> enriched_context.yaml + event file
+/act state machine -> INIT -> orchestrator -> enriched_context.yaml + event file
 ```
 
 ### Output: enriched_context.yaml
@@ -121,7 +121,7 @@ Before writing enriched_context.yaml, run self-verification checks (did I actual
 
 ### State Advancement (v12.6.0)
 
-After writing enriched_context.yaml, return control to `/run`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/run` advances state by reading `enriched_context.yaml` directly (the canonical ORCHESTRATED-state output). Do NOT create `workflow/events/`.
+After writing enriched_context.yaml, return control to `/act`'s state machine. v12.6.0 removed the `workflow/events/EVT-*.yaml` completion event — `/act` advances state by reading `enriched_context.yaml` directly (the canonical ORCHESTRATED-state output). Do NOT create `workflow/events/`.
 
 ## Agent Audit Trail
 

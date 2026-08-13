@@ -8,7 +8,7 @@ const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 // prompt-router.cjs. The delegation mandate is now delivered as a CONCISE
 // reminder that references @.claude/rules/core/delegation.md (the canonical
 // Rationalization Kill List) instead of inlining the full ~3000-char mandate
-// on every /run + /team invocation. Assertions below target the new contract.
+// on every /act + /team invocation. Assertions below target the new contract.
 const HOOK_PATH = join(HOOKS_DIR, 'prompt-router.cjs');
 
 function runHook(input) {
@@ -26,19 +26,19 @@ describe('prompt-router.cjs delegation enforcement (formerly delegation-enforcer
     expect(existsSync(HOOK_PATH)).toBe(true);
   });
 
-  describe('/run invocation detection', () => {
-    it('should inject delegation mandate for /run', () => {
-      const result = runHook({ user_prompt: '/run Fix auth bug' });
+  describe('/act invocation detection', () => {
+    it('should inject delegation mandate for /act', () => {
+      const result = runHook({ user_prompt: '/act Fix auth bug' });
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.hookEventName).toBe('UserPromptSubmit');
       expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ACTIVE');
-      expect(result.hookSpecificOutput.additionalContext).toContain('/run');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/act');
     });
 
-    it('should inject delegation mandate for bare /run', () => {
-      const result = runHook({ user_prompt: '/run' });
+    it('should inject delegation mandate for bare /act', () => {
+      const result = runHook({ user_prompt: '/act' });
       expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ACTIVE');
-      expect(result.hookSpecificOutput.additionalContext).toContain('/run');
+      expect(result.hookSpecificOutput.additionalContext).toContain('/act');
     });
   });
 
@@ -67,7 +67,7 @@ describe('prompt-router.cjs delegation enforcement (formerly delegation-enforcer
   describe('non-skill prompts', () => {
     it('should not inject the delegation mandate for regular prompts', () => {
       // P1-7: prompt-router's Layer 1 (delegation mandate) only fires on
-      // /run and /team. A natural-language "Fix ..." prompt does NOT get the
+      // /act and /team. A natural-language "Fix ..." prompt does NOT get the
       // mandate (no hookSpecificOutput/additionalContext). It MAY get a
       // Layer-2 routing suggestion via systemMessage — that is intended and
       // distinct from the delegation mandate.
@@ -101,14 +101,14 @@ describe('prompt-router.cjs delegation enforcement (formerly delegation-enforcer
     // Kill List section). Assert the new delivery mechanism rather than the
     // removed inline phrases.
     it('should reference the canonical Rationalization Kill List', () => {
-      const result = runHook({ user_prompt: '/run Build testing framework' });
+      const result = runHook({ user_prompt: '/act Build testing framework' });
       const ctx = result.hookSpecificOutput.additionalContext;
       expect(ctx).toContain('@.claude/rules/core/delegation.md');
       expect(ctx).toContain('Rationalization Kill List');
     });
 
     it('should mandate delegation to subagents via the Agent tool', () => {
-      const result = runHook({ user_prompt: '/run Fix typo' });
+      const result = runHook({ user_prompt: '/act Fix typo' });
       const ctx = result.hookSpecificOutput.additionalContext;
       expect(ctx).toContain('Agent tool');
       expect(ctx).toMatch(/no direct implementation|no matter how small/i);
@@ -116,14 +116,14 @@ describe('prompt-router.cjs delegation enforcement (formerly delegation-enforcer
   });
 
   describe('prompt format edge cases', () => {
-    it('should detect /run with leading whitespace', () => {
-      const result = runHook({ user_prompt: '  /run Fix something' });
+    it('should detect /act with leading whitespace', () => {
+      const result = runHook({ user_prompt: '  /act Fix something' });
       expect(result.hookSpecificOutput).toBeDefined();
       expect(result.hookSpecificOutput.additionalContext).toContain('DELEGATION ACTIVE');
     });
 
-    it('should detect /run with newline after command', () => {
-      const result = runHook({ user_prompt: '/run\nFix the auth module' });
+    it('should detect /act with newline after command', () => {
+      const result = runHook({ user_prompt: '/act\nFix the auth module' });
       expect(result.hookSpecificOutput).toBeDefined();
     });
   });

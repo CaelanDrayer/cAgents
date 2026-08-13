@@ -16,7 +16,7 @@ cAgents is a multi-domain agent orchestration system built as a Claude Code plug
 
 ### Delegation Chain (5-state pipeline since v12.0.0)
 ```
-User Request -> /run (state machine)
+User Request -> /act (state machine)
   -> orchestrator (context enrichment)
   -> planner (objectives + controller selection + decomposition + prompt assembly)
   -> controller (coordination + reviewer loops)

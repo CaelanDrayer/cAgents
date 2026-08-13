@@ -14,13 +14,13 @@ Flags are optional modifiers that customize command behavior. They follow the co
 
 | Pattern | Commands | What It Does |
 |---------|----------|-------------|
-| `--dry-run` | /run (incl. review/optimize/improve keyword-router modes), /team (incl. strategic mode, v12.2.0+; pre-v12.2.0 also /org) | Preview without executing |
-| `--interactive` | /run (incl. keyword-router modes) | Ask user preferences before starting |
-| `--quiet` / `-q` | /run, /team | Suppress output/plan display |
-| `--domain <name>` | /run, /team | Override automatic domain detection |
-| `--tier <N>` | /run, /team | Override complexity tier (2-4) |
-| `--focus <area>` | /designer, /run (review and optimize keyword-router modes) | Focus on specific area |
-| `--mode review\|optimize\|full` | /run (implicit via keyword router; first-token `review`/`audit`/`optimize`/`improve` infers the mode) | Select pipeline branch (v12.1.2) |
+| `--dry-run` | /act (incl. review/optimize/improve keyword-router modes), /team (incl. strategic mode, v12.2.0+; pre-v12.2.0 also /org) | Preview without executing |
+| `--interactive` | /act (incl. keyword-router modes) | Ask user preferences before starting |
+| `--quiet` / `-q` | /act, /team | Suppress output/plan display |
+| `--domain <name>` | /act, /team | Override automatic domain detection |
+| `--tier <N>` | /act, /team | Override complexity tier (2-4) |
+| `--focus <area>` | /designer, /act (review and optimize keyword-router modes) | Focus on specific area |
+| `--mode review\|optimize\|full` | /act (implicit via keyword router; first-token `review`/`audit`/`optimize`/`improve` infers the mode) | Select pipeline branch (v12.1.2) |
 
 **Flag parsing rules:**
 - Flags start with `--` (or `-` for short versions like `-q`)
@@ -28,11 +28,11 @@ Flags are optional modifiers that customize command behavior. They follow the co
 - Value flags take the next word: `--members 4`, `--domain engineering`
 - Boolean flags are present or absent: `--dry-run`, `--parallel`
 
-**Example**: `/run Fix the auth bug --interactive --tier 3`
+**Example**: `/act Fix the auth bug --interactive --tier 3`
 - Request: "Fix the auth bug"
 - Flags: interactive=true, tier=3
 
-For complete flag references, see `/helper --flags run`, `/helper --flags review`, etc.
+For complete flag references, see `/helper --flags act`, `/helper --flags review`, etc.
 
 ---
 
@@ -53,7 +53,7 @@ Commands are designed to compose into workflows. The most common pipelines:
   |
   User selects "Build it now"
   |
-  /run implement design from {session_id}   <-- auto-triggered
+  /act implement design from {session_id}   <-- auto-triggered
 ```
 
 This is the recommended workflow for features that need planning before implementation.
@@ -75,19 +75,19 @@ Use when the design decomposes into 3+ parallel work items.
 #### Review-Fix Pipeline
 
 ```
-/run review src/ --focus security
+/act review src/ --focus security
   |
   Finds: 3 critical, 7 high issues
   |
   User decides to fix
   |
-  /run Fix critical security issues from improve session {id}
+  /act Fix critical security issues from improve session {id}
 ```
 
 #### Review + Optimize in One Run
 
 ```
-/run improve src/
+/act improve src/
   |
   Single shared baseline measured
   |
@@ -97,10 +97,10 @@ Use when the design decomposes into 3+ parallel work items.
 ```
 
 **Key integration flags:**
-- `/run improve <path>` (keyword router — infers mode=full) -- review + optimize with one shared baseline
-- `--team` (on /run) -- activates /team mode
-- `--mode debug` (on /run) -- systematic 4-phase debugging
-- Build offer (on /designer) -- auto-triggers /run or /team
+- `/act improve <path>` (keyword router — infers mode=full) -- review + optimize with one shared baseline
+- `--team` (on /act) -- activates /team mode
+- `--mode debug` (on /act) -- systematic 4-phase debugging
+- Build offer (on /designer) -- auto-triggers /act or /team
 
 ---
 
@@ -108,7 +108,7 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 9 Archetypes (and legacy domain routing)
 
-cAgents organizes 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). When you use `/run` or `/team`, the planner routes the request via the legacy domain keyword overlays (e.g. engineering, creative, business) to the matching archetype agents. Two legacy domain dirs (`people/`, `shared/`) survive on disk as routing-config-only overlays; the historical per-domain agent breakdown below is retained for reference.
+cAgents organizes 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). When you use `/act` or `/team`, the planner routes the request via the legacy domain keyword overlays (e.g. engineering, creative, business) to the matching archetype agents. Two legacy domain dirs (`people/`, `shared/`) survive on disk as routing-config-only overlays; the historical per-domain agent breakdown below is retained for reference.
 
 #### Engineering (31 agents)
 
@@ -180,7 +180,7 @@ The system uses keyword matching and context analysis to detect the right domain
 
 ### How Agent Orchestration Works Under the Hood
 
-When you use `/run`, here is what happens step by step:
+When you use `/act`, here is what happens step by step:
 
 ```
 Step 1: TRIGGER (domain detection)
@@ -317,7 +317,7 @@ Team mode uses Claude Code's built-in agent teams for parallel execution.
 
 #### The Basic Idea
 
-Instead of running work items one after another (sequential), team mode runs them simultaneously as concurrent subagents (parallel). Each subagent executes their work item via `/run`, getting full orchestration quality per item.
+Instead of running work items one after another (sequential), team mode runs them simultaneously as concurrent subagents (parallel). Each subagent executes their work item via `/act`, getting full orchestration quality per item.
 
 #### Display Modes
 
@@ -333,7 +333,7 @@ Split-pane display (tmux/iTerm2) is available only via the experimental named-te
 
 - 3+ independent work items (items that do not depend on each other)
 - Complex tasks (tier 3+)
-- 40-60% time reduction compared to sequential /run
+- 40-60% time reduction compared to sequential /act
 
 #### When It Does NOT Help
 
@@ -362,7 +362,7 @@ Every command creates a session directory in `cagents-memory/sessions/`.
 
 | Command | Session ID Format | Example |
 |---------|-------------------|---------|
-| `/run` | `run_{slug}_{YYMMDD}_{NNN}` | `run_fix-auth-module_260207_001` |
+| `/act` | `act_{slug}_{YYMMDD}_{NNN}` | `act_fix-auth-module_260207_001` |
 | `/designer` | `designer_{slug}_{YYMMDD}_{NNN}` | `designer_redo-session-names_260207_001` |
 | `/team` | `team_{slug}_{YYMMDD}_{NNN}` | `team_implement-oauth2_260207_001` |
 | `/org` (pre-v12.2.0; removed) | `org_{slug}_{YYMMDD}_{NNN}` | `org_launch-product_260207_001` (legacy sessions on disk still recognized; new strategic-mode work uses `team_*` session IDs) |

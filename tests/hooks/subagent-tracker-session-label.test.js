@@ -1,6 +1,6 @@
 /**
  * REC-10 (v12.51.0) regression: subagent-tracker.cjs must log the RESOLVED
- * session basename (a human-readable run_slug_date) in the global
+ * session basename (a human-readable act_slug_date) in the global
  * agent_spawns.log, plus a short SDK-UUID tail for correlation — NOT the raw
  * full SDK transcript UUID that arrives as input.session_id.
  *
@@ -56,7 +56,7 @@ function fire(input, extraEnv) {
 describe('REC-10: subagent-tracker global audit log session label', () => {
   beforeEach(() => {
     TMP = mkdtempSync(join(tmpdir(), 'rec10-'));
-    SID = `run_rec10sess_${Date.now().toString(36)}`;
+    SID = `act_rec10sess_${Date.now().toString(36)}`;
     makeSession(TMP, SID);
   });
 

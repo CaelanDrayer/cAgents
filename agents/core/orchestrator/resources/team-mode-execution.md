@@ -61,9 +61,9 @@ Instead of polling coordination_log.yaml:
 
 ### Fallback Handling
 
-Execution method priority: tmux -> Agent Teams -> parallel /run.
+Execution method priority: tmux -> Agent Teams -> parallel /act.
 If tmux is unavailable during team mode:
 1. Team-trigger checks Agent Teams availability
-2. Falls back to parallel `/run` Skill invocations if neither available
+2. Falls back to parallel `/act` Skill invocations if neither available
 3. Logs degraded mode in session
 4. Proceeds with reduced functionality (no visual parallelism)

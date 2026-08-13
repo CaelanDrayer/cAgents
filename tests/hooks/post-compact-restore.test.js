@@ -22,7 +22,7 @@ import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'post-compact-restore.cjs');
-const TEST_SESSION = 'run_test-post-compact_260317_999';
+const TEST_SESSION = 'act_test-post-compact_260317_999';
 
 function runHook(input, env = {}) {
   const result = execSync(

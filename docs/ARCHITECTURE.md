@@ -8,7 +8,7 @@
 
 cAgents v12.0.0 is the major consolidation release. Architectural changes:
 
-- **Pipeline state-machine reduction (7 -> 5 states)**: The `/run` event-driven pipeline
+- **Pipeline state-machine reduction (7 -> 5 states)**: The `/act` event-driven pipeline
   collapses from 7 states to 5 by folding `task-decomposer` and `prompt-engineer` into
   the `planner`. The new sequence is `INIT -> ORCHESTRATED -> PLANNED ->
   COORDINATED -> VALIDATED`. Decomposition becomes a planner sub-responsibility;
@@ -23,7 +23,7 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 - **Planner-fold**: `task-decomposer` and `prompt-engineer` are absorbed into the
   planner. Their output schemas (`work_items.yaml`, `delegation_prompts.yaml`) remain
   but are written by the planner directly, eliminating two pipeline transitions and
-  two agent spawns per /run invocation.
+  two agent spawns per /act invocation.
 - **Architecture-reviewer mode flag**: `architecture-reviewer` is removed as a standalone
   agent and becomes `architect --review` mode flag, reducing agent-catalog duplication.
 - **Marketing-sales consolidation (38 -> 25)**: 13 marketing-sales agents absorbed across
@@ -97,7 +97,7 @@ archetype-level routing tables in `core/` and `leadership/`.
 ```
 routing -> planning -> coordinating -> executing -> validating
    |          |           |            |           |
-  /run      /run      Controller    /run        /run
+  /act      /act      Controller    /act        /act
 (inline)  (inline)   (Agent tool)  (monitors)  (inline)
 ```
 
