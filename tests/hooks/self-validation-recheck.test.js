@@ -133,7 +133,7 @@ function makeSession(slug, { svFilePath, svExitCode, outputsBlock = true }) {
     join(dir, 'workflow', 'agent_tree.yaml'),
     [
       `root:`,
-      `  agent: cagents:run`,
+      `  agent: cagents:act`,
       `  depth: 0`,
       `  spawned_at: "${NOW_ISO}"`,
       `  stopped_at: null`,

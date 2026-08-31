@@ -8,7 +8,7 @@ review prompt, a controller (or team lead) can extract just the relevant slice
 to a uniquely-named file and hand the sub-agent a path to read in one call.
 
 These are convenience helpers, **not** load-bearing pipeline code — nothing in
-the `/run` or `/team` pipeline requires them. They exist so an agent that *wants*
+the `/act` or `/team` pipeline requires them. They exist so an agent that *wants*
 a tight handoff artifact can produce one deterministically.
 
 ## Scripts

@@ -40,6 +40,10 @@
 //   6. skill-awareness.md     exclusion list       -> `run` is a BUILT-IN, `act` is ours
 //   7. G2 canary              run-hook.cjs         -> still present, still 26 hooks
 //   8. BOTH SESSION_PREFIXES lists                 -> can never drift apart again
+//   9. handoff/README.md + check-skill-session-paths.cjs -> zero /run at all
+//  10. cagents-ci.sh + sync-versions.sh    -> present tense fixed, HISTORY kept
+//  11. delegation.md `{run,team}`          -> bare brace form, slash-blind site
+//  12. agent-tracking.md                   -> zero `cagents:run` in the examples
 //
 // Scope note (assertion 5): tests/v12/rules-paths-globs-resolve.test.js ALREADY
 // enforces the general "every `paths:` glob resolves to >= 1 file on disk" invariant
@@ -337,5 +341,266 @@ describe('8. both SESSION_PREFIXES lists agree (WI-20 drift guard)', () => {
         'in two trees with no shared import, so a prefix added to one and not the other ' +
         'silently breaks whichever consumer reads the shorter list. Keep them identical.',
     ).toEqual(a);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WI-9 ADDITIONS — six MORE stale /run sites, found by hand, now pinned
+// ---------------------------------------------------------------------------
+// Blocks 1-8 above were written during the rename itself. AFTERWARDS, a closing
+// hand-sweep found SIX further `/run` references that the automated pass had
+// missed entirely — they shipped, silently, across v12.66.0-v12.66.2. Nothing
+// broke loudly; they were simply wrong text pointing readers and future
+// maintainers at a command that no longer exists. Blocks 9-12 pin all six.
+//
+// Why the automated pass missed them, and what that dictates about HOW these
+// assertions are written:
+//
+//   (a) THE ANCHORED-PATTERN BLIND SPOT. The original sweep searched for the
+//       slashed form `/run`. Two of the six sites spell it BARE, inside a comma
+//       catalog or a brace expansion — `(run, team, designer, helper)` and
+//       `{run,team}` — where the slash has been factored out. There is no `/run`
+//       substring to match, so the sweep read those lines as clean. Blocks 10
+//       and 11 pin the bare form explicitly.
+//
+//   (b) THE NAIVE-WHOLE-FILE-SCAN TRAP. The obvious guard ("assert this file
+//       contains no /run") is WRONG for two of these files, because each one
+//       DELIBERATELY RETAINS a historical `/run` describing a v12.1.2-era event
+//       (`/improve` was folded into `/run`, which was only later renamed to
+//       `/act`). A whole-file scan would fail against correct source, and the
+//       natural way to "fix" a failing scan is to delete the history — losing
+//       true provenance to satisfy a lazy assertion. So block 10 pins those two
+//       files by CONTENT, line by line, asserting the present-tense line is
+//       corrected AND the historical line still says `/run`. Where a whole-file
+//       scan genuinely is safe, block 9 says so and shows the check that
+//       established it.
+//
+// This is the same lesson as the NUL-byte trap documented at the top of this
+// file: choose the matching strategy from the target file's actual contents,
+// never from whichever pattern is easiest to type.
+
+function readRepoFile(rel) {
+  return readFileSync(join(ROOT, rel), 'utf8');
+}
+
+// Lines of `text` matching `re`, as `{ n, line }` with n 1-indexed. Assertions
+// below compare against `[]` rather than a count so a failure message names the
+// offending line and its number instead of just reporting "expected 0, got 1".
+// `re` must not carry the /g flag — `.test()` on a global regex is stateful.
+function linesMatching(text, re) {
+  return text
+    .split('\n')
+    .map((line, i) => ({ n: i + 1, line: line.trim() }))
+    .filter(({ line }) => re.test(line));
+}
+
+// ---------------------------------------------------------------------------
+// 9. Prose sites that must carry ZERO /run (whole-file scan verified safe)
+// ---------------------------------------------------------------------------
+// Both files below contain the letters "run" only as the ENGLISH VERB — "Must be
+// run inside a git work tree", "an install run with the cwd inside a session
+// dir". Neither has any legitimate historical command reference. So for these
+// two, and only these two, `zero occurrences of /run` is both correct and the
+// strictest available assertion. (Contrast block 10, where the same assertion
+// would be a bug.)
+describe('9. prose files that must carry zero /run references', () => {
+  const CASES = [
+    {
+      rel: 'scripts/handoff/README.md',
+      present: /`\/act` or `\/team` pipeline requires them/,
+      old: /`\/run` or `\/team` pipeline requires them/,
+      what: 'the "not load-bearing pipeline code" disclaimer',
+    },
+    {
+      rel: 'scripts/ci/check-skill-session-paths.cjs',
+      present: /nested \/act or \/team teammate happens to have/,
+      old: /nested \/run or \/team teammate happens to have/,
+      what: 'the CWD-leak rationale in the file header',
+    },
+  ];
+
+  for (const { rel, present, old, what } of CASES) {
+    describe(rel, () => {
+      const text = readRepoFile(rel);
+
+      test(`${what} names the pipeline as "/act or /team"`, () => {
+        expect(
+          present.test(text),
+          `${rel} no longer describes the pipeline as "/act or /team". This is a SILENT ` +
+            'defect: the file still runs fine, it just documents a command that no longer ' +
+            'exists, sending the next reader to a dead entry point.',
+        ).toBe(true);
+      });
+
+      test('does NOT use the pre-rename "/run or /team" form', () => {
+        expect(old.test(text), `${rel} reverted to the pre-rename "/run or /team" wording.`).toBe(false);
+      });
+
+      test('contains zero /run references anywhere in the file', () => {
+        expect(
+          linesMatching(text, /\/run/),
+          `${rel} gained a /run reference. Verified at pin time: this file's only "run" is ` +
+            'the English verb, and it holds no historical command reference — so any /run ' +
+            'here is a live, wrong pointer at the removed skill. If a genuinely historical ' +
+            'reference is ever added on purpose, NARROW this assertion to exclude that one ' +
+            'line (see block 10 for how) — do not delete the assertion.',
+        ).toEqual([]);
+      });
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 10. Present tense corrected, HISTORY deliberately kept (content-anchored)
+// ---------------------------------------------------------------------------
+// The two files here each hold BOTH a present-tense reference that had to change
+// AND a historical one that must not. Every assertion is anchored to specific
+// line content for that reason. Do not "simplify" any of these into a file-wide
+// /run count — that is the exact mistake this block exists to prevent.
+describe('10. cagents-ci.sh + sync-versions.sh: present tense fixed, history kept', () => {
+  describe('scripts/ci/cagents-ci.sh', () => {
+    const text = readRepoFile('scripts/ci/cagents-ci.sh');
+
+    test('the check_skill_paths CWD-leak comment now reads "/act or /team"', () => {
+      expect(
+        /nested \/act or \/team teammate has a drifted cwd/.test(text),
+        'the present-tense CWD-leak comment above check_skill_paths() no longer says ' +
+          '"/act or /team". It documents which pipelines can drift their cwd — naming a ' +
+          'removed command makes the guard unreadable to the next maintainer.',
+      ).toBe(true);
+    });
+
+    test('no line reverted to "nested /run or /team teammate"', () => {
+      expect(linesMatching(text, /nested \/run or \/team teammate/)).toEqual([]);
+    });
+
+    test('the HISTORICAL /improve comment still says "/run" — MUST KEEP', () => {
+      expect(
+        /\/improve \(folded into \/run,/.test(text),
+        'the historical note in check_tiny_bump() lost its "/run". That "/run" is CORRECT ' +
+          'and load-bearing history: /improve really was folded into /run in v12.1.2, and ' +
+          '/run was renamed to /act only later. Rewriting it to /act would assert a thing ' +
+          'that never happened. If a /run sweep flagged this line, the sweep is wrong.',
+      ).toBe(true);
+    });
+
+    test('the historical line is the ONLY command-form /run left in the file', () => {
+      // `(?![\w-])` excludes `/run-*` PATH tokens — this file names
+      // `scripts/ci/run-advisory.cjs` twice. A naive `/run` grep matches THREE lines
+      // here: one real reference plus two innocent file paths. That is precisely why
+      // this file is pinned by content and not by a count.
+      const hits = linesMatching(text, /\/run(?![\w-])/);
+      expect(
+        hits.map((h) => h.n),
+        'a new command-form /run appeared in cagents-ci.sh (or the historical one was ' +
+          'removed). Exactly one is expected: the v12.1.2 /improve note.',
+      ).toHaveLength(1);
+      expect(hits[0].line).toMatch(/\/improve \(folded into \/run,/);
+    });
+  });
+
+  describe('scripts/sync-versions.sh', () => {
+    const text = readRepoFile('scripts/sync-versions.sh');
+
+    test('the header slot list reads "(act, team, designer, helper)"', () => {
+      expect(
+        /4 skill SKILL\.md frontmatter versions \(act, team, designer, helper\)/.test(text),
+        'the sync-versions.sh header no longer lists the 4 active skills as ' +
+          '(act, team, designer, helper). This is a BARE-FORM site: the slash is factored ' +
+          'out of the catalog, so a /run sweep cannot see it — which is exactly how the ' +
+          'stale "(run, team, designer, helper)" survived the rename.',
+      ).toBe(true);
+    });
+
+    test('the SKILLS[] section comment reads "act, team, designer, helper"', () => {
+      expect(/4 active skills: act, team, designer, helper/.test(text)).toBe(true);
+    });
+
+    test('neither skill catalog lists a bare `run` as an active skill', () => {
+      expect(
+        linesMatching(text, /(frontmatter versions|active skills:)[^\n]*\brun\b/),
+        'a sync-versions.sh skill catalog lists `run` as an ACTIVE skill again. The ' +
+          'catalogs enumerate the 4 SKILL.md files whose frontmatter version gets synced; ' +
+          '`run` is not one of them and its SKILL.md no longer exists.',
+      ).toEqual([]);
+    });
+
+    test('the HISTORICAL /improve comment still says "/run" — MUST KEEP', () => {
+      expect(
+        /\/improve folded into \/run \(now \/act\)/.test(text),
+        'the v12.1.2 historical comment below SKILLS[] lost its "/run (now /act)" wording. ' +
+          'That phrasing is deliberate: it records the real v12.1.2 event AND signposts the ' +
+          'later rename. Do not flatten it to /act — that would erase the fold-in history.',
+      ).toBe(true);
+    });
+
+    test('the historical line is the ONLY /run left in the file', () => {
+      const hits = linesMatching(text, /\/run/);
+      expect(hits.map((h) => h.n)).toHaveLength(1);
+      expect(hits[0].line).toMatch(/\/improve folded into \/run \(now \/act\)/);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. The bare-form brace expansion — a site no /run search can ever find
+// ---------------------------------------------------------------------------
+// `.claude/skills/{run,team}/SKILL.md` is shell brace-expansion shorthand. The
+// slash sits BEFORE the brace, so the token `/run` never appears and every
+// `/run` sweep reports the file clean. This one had to be found by eye.
+describe('11. delegation.md brace expansion uses {act,team}', () => {
+  const text = readRepoFile('.claude/rules/core/delegation.md');
+
+  test('the enforcement-layer table points at `.claude/skills/{act,team}/SKILL.md`', () => {
+    expect(
+      /`\.claude\/skills\/\{act,team\}\/SKILL\.md`/.test(text),
+      'the delegation enforcement table (layer 2) no longer names ' +
+        '`.claude/skills/{act,team}/SKILL.md`. That row tells a reader which skill bodies ' +
+        're-state the delegation rule; pointing it at a path that does not exist makes the ' +
+        'contract untraceable.',
+    ).toBe(true);
+  });
+
+  test('does NOT point at the dead `{run,team}` expansion', () => {
+    expect(
+      linesMatching(text, /skills\/\{run,team\}/),
+      'delegation.md points at `.claude/skills/{run,team}/SKILL.md` again. `.claude/skills/' +
+        'run/` was deleted in the rename, so half this path resolves to nothing. Note this ' +
+        'site is INVISIBLE to a `/run` search — the slash precedes the brace — which is how ' +
+        'it survived the original sweep.',
+    ).toEqual([]);
+  });
+
+  test('carries no /run and no bare `{run,` anywhere', () => {
+    expect(linesMatching(text, /\/run|\{run,/)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 12. agent-tracking.md self-registration examples
+// ---------------------------------------------------------------------------
+// These YAML blocks are COPY TARGETS: /act reads this reference and writes the
+// shown `type:` / `cagents_type:` values straight into agent_tree.yaml. A stale
+// `cagents:run` here is not a typo in prose — it propagates into live session
+// state and mislabels the pipeline root in every agent tree built from it.
+describe('12. agent-tracking.md examples register as cagents:act', () => {
+  const text = readRepoFile('.claude/skills/act/reference/agent-tracking.md');
+
+  test('contains ZERO `cagents:run`', () => {
+    expect(
+      linesMatching(text, /cagents:run/),
+      'agent-tracking.md shows `cagents:run` again. These YAML blocks are copied verbatim ' +
+        'into agent_tree.yaml by /act self-registration, so the stale type propagates into ' +
+        'live session state and every downstream consumer that matches on agent type.',
+    ).toEqual([]);
+  });
+
+  test('all three self-registration examples use `cagents:act`', () => {
+    // Three sites: `type:` and `cagents_type:` in the root-entry block, plus the
+    // `cagents_type:` in the spawned-as-subagent block.
+    expect(
+      (text.match(/cagents:act/g) || []).length,
+      'the agent-tracking.md examples lost one or more `cagents:act` values.',
+    ).toBeGreaterThanOrEqual(3);
   });
 });

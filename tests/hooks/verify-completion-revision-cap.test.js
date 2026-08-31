@@ -91,8 +91,8 @@ function makeStalledSession(slug, revisionCycles) {
     [
       `schema_version: '1'`,
       `root:`,
-      `  agent: run`,
-      `  agent_type: cagents:run`,
+      `  agent: act`,
+      `  agent_type: cagents:act`,
       `  depth: 0`,
       `  spawned_at: "${tx}"`,
       `  stopped_at: null`,

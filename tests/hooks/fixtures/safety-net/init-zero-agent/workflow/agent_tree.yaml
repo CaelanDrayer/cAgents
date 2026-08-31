@@ -4,8 +4,8 @@
 # is the load-bearing signal for REC-04 (INIT 0-child heartbeat gate).
 schema_version: '1'
 root:
-  agent: run
-  agent_type: cagents:run
+  agent: act
+  agent_type: cagents:act
   depth: 0
   spawned_at: "2026-05-27T10:00:00.000Z"
   stopped_at: null

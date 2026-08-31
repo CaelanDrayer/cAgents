@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.66.2
+# Version: 12.67.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -442,8 +442,9 @@ check_tiny_bump() {
     # (3) Non-sync diff size: files changed on HEAD outside the 16 sync targets.
     # The 16 registry files (canonical list: .claude/rules/core/version-registry.md)
     # are auto-updated by sync-versions.sh; a tiny bump should touch <= 5 files
-    # beyond those. NOTE: /org (removed v12.2.0) and /improve (folded into /run
-    # v12.1.2) SKILL.md targets were dropped here — those files no longer exist.
+    # beyond those. NOTE: /org (removed v12.2.0) and /improve (folded into /run,
+    # since renamed to /act, in v12.1.2) SKILL.md targets were dropped here —
+    # those files no longer exist.
     local sync_targets=(
         "package.json"
         ".claude-plugin/plugin.json"
@@ -589,7 +590,7 @@ check_terminal_states() {
 # Fails if a shipped skill body reintroduces a CWD-relative session-path write
 # (relative `cagents-memory/…` mkdir/redirect/SESSION_DIR=) or an npm-into-
 # session/scratch footgun. Both nest a stray tree under a session dir when a
-# nested /run or /team teammate has a drifted cwd. Session writes must anchor on
+# nested /act or /team teammate has a drifted cwd. Session writes must anchor on
 # an absolute "$MEM" ($CAGENTS_ROOT/cagents-memory).
 #
 check_skill_paths() {
@@ -651,7 +652,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.66.2"
+    log_section "cAgents CI Runner v12.67.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

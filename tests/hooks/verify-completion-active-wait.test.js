@@ -178,7 +178,7 @@ function makeSession(slug, { heartbeat, childRunning, transition = TX_RECENT }) 
     [
       `root:`,
       `  agent_id: root-${slug}`,
-      `  agent_type: cagents:run`,
+      `  agent_type: cagents:act`,
       `  depth: 0`,
       `  spawned_at: "${transition}"`,
       `  stopped_at: null`,

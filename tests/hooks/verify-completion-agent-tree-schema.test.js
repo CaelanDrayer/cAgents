@@ -114,7 +114,7 @@ function realTree(sid, agents) {
     `schema_version: '1'`,
     `session_id: ${sid}`,
     `root:`,
-    `  agent: cagents:run`,
+    `  agent: cagents:act`,
     `  spawned_at: '${TX_RECENT}'`,
     `  stopped_at: null`,
     `agents:`,
@@ -343,6 +343,9 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
       [
         `root:`,
         `  agent_id: root-legacy`,
+        // DELIBERATE legacy-session model: `cagents:run` is retained on purpose —
+        // this tree models a pre-rename `/run` session as it exists on disk today
+        // (18 live + 26 archived `run_*` session dirs). Do NOT sweep it to `act`.
         `  agent_type: cagents:run`,
         `  stopped_at: null`,
         `agents:`,

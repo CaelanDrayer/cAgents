@@ -1,10 +1,171 @@
 # cAgents Release Notes
 
-**Current Version**: 12.66.2
-**Release Date**: July 14, 2026
+**Current Version**: 12.67.0
+**Release Date**: August 21, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.67.0 — August 21, 2026 (stale `/run` references swept)
+
+Stale-reference cleanup finishing the rename begun in v12.66.0. The point of the
+round was to separate **stale** `/run` references — text describing the system as
+it exists now, and therefore wrong — from **historical** ones, which are correct
+as written and must survive. Only the first group was touched.
+
+**Why a minor bump.** File count, not blast radius. The repo's own tiny-bump
+guard (`check_tiny_bump` in `scripts/ci/cagents-ci.sh`) caps a patch bump at 5
+files outside the 16 version-registry sync targets, and this release touches 16
+non-sync files. Minor and major bumps are exempt from that cap, so `12.67.0` is
+the classification that lands green. Precedent: commit `31f59397`, which
+reclassified v12.64.2 as a minor bump for the same reason. The content is
+low-risk — every edit is a comment, a doc line, or a test fixture literal. No
+hook source, no skill logic, and no runtime path changed.
+
+**Six stale sites swept.** Four were slash-anchored: `scripts/ci/cagents-ci.sh`,
+`scripts/ci/check-skill-session-paths.cjs`, `scripts/handoff/README.md`, and the
+worked `agent_tree.yaml` example in
+`.claude/skills/act/reference/agent-tracking.md` — the example a reader copies.
+Two more wrote the skill name with no leading slash and were invisible to every
+prior grep: `.claude/rules/core/delegation.md` enumerated the enforcement surface
+as `.claude/skills/{run,team}/SKILL.md`, and `scripts/sync-versions.sh` listed its
+own targets as "(run, team, designer, helper)" — the version-registry sync script
+naming a path that has not existed since the rename. Brace-expansion and
+comma-list forms are the known blind spot of a `/`-anchored pattern; search for
+the bare name too.
+
+**Three historical comments annotated, not rewritten.** Three build-script
+comments record that `/improve` was folded into `/run` in v12.1.2. That is true
+of v12.1.2, and rewriting it would falsify the record, so each was annotated in
+place: "folded into `/run` (now `/act`)".
+
+**Test fixtures**: 12 of 13 `cagents:run` literals became `cagents:act`. The
+thirteenth, in `tests/hooks/verify-completion-agent-tree-schema.test.js`, models
+a pre-rename session as it still exists on disk, so `cagents:run` is the value
+the parser must keep handling; sweeping it would delete the only back-compat
+coverage for legacy trees. Rename-guard tests gained additive pins only — no
+existing pin was loosened.
+
+**Deliberately retained — do not "clean these up".** `CHANGELOG.md` and this file
+(historical entries), `docs/MIGRATION_GUIDE.md` and `docs/MIGRATION-V11.md`
+(migration docs exist to name the old command a reader is migrating from),
+`scripts/migration/v12-aliases.yaml` (a live back-compat key, not prose), and the
+`run_` prefix in `SESSION_PREFIXES` (a real on-disk directory prefix — changing it
+orphans every existing `run_*` session). The remaining hits are the intended end
+state.
+
+## V12.66.2 — August 9, 2026 (test-isolation hardening)
+
+Test-infrastructure hardening only. No hook source was touched, no behavior
+changed, and no new capability ships — hence patch.
+
+As with the first half of v12.66.1, everything here was **already latent on
+`main`** and is not rename fallout. It surfaced only because the same test files
+were under audit. Anyone bisecting a regression into this range should not
+attribute it to the rename.
+
+**Eight test files created fixtures inside the real session store.** Each wrote
+session directories into the shared, live `cagents-memory/sessions/`, where a
+sibling test asserting *"there is no active session"* could resolve one of them
+through `hook-utils.cjs`'s `findActiveSession` / `fallbackHeuristic`. They
+passed, but by scheduling luck — the green suite was concealing a real cross-test
+coupling. Fixed by routing the fixtures through the existing `CLAUDE_PROJECT_DIR`
+injection point, the same mechanism the v12.66.1 fix used. No new interface, no
+hook signature change.
+
+Measured rather than asserted: polling the real sessions directory during one run
+showed **16** fixture directories appear before the fix and **zero** after, with
+the fixtures verified materializing under the temp root instead. The positive
+control matters — without it, a zero could just mean the fixtures had stopped
+being written at all.
+
+Three of the eight needed individual diagnosis rather than one template.
+`self-validation-recheck` leaked through a different resolution path: its fixtures
+are terminal (`pipeline_state: complete`) and so invisible to `fallbackHeuristic`,
+but `verify-completion.cjs`'s last-resort
+`findMostRecentSessionDir({ includeTerminal: true })` picked them up anyway.
+`session-init-gate-uuid-payload` resolves `AGENT_MEMORY_DIR` at module load, so
+`CLAUDE_PROJECT_DIR` had to be set before the fresh require and restored
+afterward. `stop-failure-handler` used a fixed, non-timestamped session id that
+two concurrent runs would have collided on regardless.
+
+**One false entry, left untouched.** `tests/hooks/tool-failure-tracker.test.js`
+creates no session directory. Its `TEST_SESSION_DIR` constant is declared and
+never referenced, and the hook short-circuits before any write; it contributed
+zero directories to the measurement above. The dead constant still names the real
+sessions directory, which is what put the file on the list.
+
+**Reported, not absorbed.** A tenth file, `tests/hooks/team-stop.test.js`, writes
+`team_test-stop_260317_999` into the real sessions directory — same class, not
+fixed here. It failed once intermittently during this work. Rather than assume
+causation, all changes were stashed and the full suite re-run on the pre-change
+tree, where the same file failed at a *different* test. Pre-existing flake, left
+for a follow-up.
+
+## V12.66.1 — August 8, 2026 (closing round of the `/run` rename)
+
+Closing round of the rename effort begun in v12.66.0. Patch, not minor:
+everything here is a bug fix or a doc correction, and no new capability ships.
+
+Roughly half of what this round found was **already broken on `main`** and has
+nothing to do with the rename — it surfaced only because the same files were being
+audited. The two groups are kept separate below so anyone bisecting a regression
+into this range does not attribute the first to the rename.
+
+**Pre-existing defects on `main`:**
+
+- **`validator-evidence-recheck.cjs`, two defects.** Block scalars were never
+  parsed: the hook read `evidence: |` and took the literal string `"|"` as the
+  value, so evidence written as a YAML block scalar looked empty and a correct
+  PASS was downgraded to FAIL on formatting alone. Separately, duplicate `reason:`
+  keys produced invalid YAML in `validation_report.yaml` — the artifact the state
+  machine reads to advance. Root cause of the second: `failing_entries` was
+  assembled from two sequential `.map()` spreads that grouped by field instead of
+  pairing by entry, so with N >= 2 failures the last list item absorbed all N
+  reasons and the first N-1 lost their reason entirely. That is data loss, not a
+  formatting nit — an operator saw failing criteria with no explanation attached.
+  Fixed with a single `.flatMap()`; regression tests proven RED first (5/8
+  failing). The block-scalar fix is js-yaml-first with a deliberate regex
+  fallback, because a hard js-yaml dependency in a `PostToolUse` hook reading
+  LLM-written YAML would silently skip the recheck exactly when malformed input
+  makes it most needed.
+- **`package.json` said "58 agents"; disk has 60.** The drift entered at v12.43.0
+  and survived because `validate-counts.sh` did not cover `package.json` at all —
+  the one root manifest outside the guard. Closed by a new Check 15 plus
+  `tests/regressions/package-json-counts-guard.test.js`, both proven RED before
+  landing.
+- **Fixtures wrote into the real session store.** The original diagnosis was only
+  half right: `prompt-router-consolidation` failed even when run alone, because
+  its "no active session" control case resolved the live cAgents session that
+  spawned the test runner via `fallbackHeuristic`. Test ordering was never the
+  whole story. Fixed through the existing `CLAUDE_PROJECT_DIR` injection point —
+  no new interface. Session-dir count 39 before and after a full suite run,
+  listing byte-identical.
+- **`docs/MIGRATION_GUIDE.md` stale internals.** Four corrections measured against
+  live config: revision cap said 5 (live `max_cycles` is 3), hook count said 21
+  (live is 26), internal-round cap said 3 (live `max_internal_rounds` is 2), plus
+  a grammar fix.
+
+**Rename fallout:**
+
+- **`docs/MIGRATION_GUIDE.md` unfrozen and properly fixed.** The file had been
+  treated as frozen history. It is not — it is a live user-facing guide people
+  copy-paste from, so every `/run` sitting in an **invocation position** was a
+  broken instruction rather than a historical record. About 25 invocations were
+  corrected across fenced blocks, headers, table cells, and prose; line 3 was
+  stale on three axes at once (version, agent count, skill list). The appended
+  bottom-of-file warning was removed rather than updated: it sat below every
+  example it warned about, arriving after the reader had already copied the broken
+  command. Genuine historical claims were annotated rather than falsified.
+- **`docs/commands/{optimize,org,review}.md` redirect stubs repointed to `/act`.**
+  A redirect stub's entire content is an actionable instruction, so unlike
+  historical prose these were live defects.
+
+**On detection.** Two fallout items were found only because executors were
+required to enumerate an identifier's unanchored forms before writing the search
+pattern: the unbackticked form inside `###` headers following arrows, and the
+comma-list form with no leading slash. Both were invisible to every previously
+sanctioned grep. Worth carrying into the next repository-wide identifier rename.
 
 ## V12.66.0 — August 8, 2026 (`/run` renamed to `/act`)
 
@@ -1636,10 +1797,6 @@ make/agents/SKILL.md/
     └── model-routing.md
 ```
 
-### Git Tag
-
-v8.0.0
-
 ---
 
 ## v7.5.1 - January 22, 2026
@@ -1659,8 +1816,6 @@ v8.0.0
 - Standardized controller question patterns documented
 
 **Files Changed**: 33 files archived, 5 domain rule files added
-
-**Git Tag**: v7.5.1
 
 ---
 
@@ -1687,8 +1842,6 @@ v8.0.0
 - Checkpoints: Auto-save every 30 minutes
 
 **Use Case**: Enables workflows with 100+ tasks without context overflow
-
-**Git Tag**: v7.5.0
 **Commit**: 5f0284d
 
 ---
@@ -1703,8 +1856,6 @@ v8.0.0
 - Update references to match V7.4 patterns
 
 **Impact**: Better developer experience with cleaner documentation
-
-**Git Tag**: v7.4.2
 **Commit**: b89fde5
 
 ---
@@ -1717,8 +1868,6 @@ v8.0.0
 - Refinements to task decomposition patterns
 - Minor bug fixes in decomposition edge cases
 - Documentation updates
-
-**Git Tag**: v7.4.1
 **Commit**: d240e98
 
 ---
@@ -1751,8 +1900,6 @@ v8.0.0
 **Breaking Changes**:
 - Commands renamed (aliases available for 30 days)
 - Memory folder structure changed to standardized pattern
-
-**Git Tag**: v7.4.0
 **Commit**: e9ca653
 
 ---
@@ -1765,8 +1912,6 @@ v8.0.0
 - Update marketplace.json to v7.3.2
 - Sync all plugin manifests
 - Documentation consistency updates
-
-**Git Tag**: v7.3.2
 **Commit**: 3c00f2e
 
 ---
@@ -1791,8 +1936,6 @@ v8.0.0
 **Agent Count**: 201 to 229
 
 **Impact**: Full game development pipeline support from concept to live operations
-
-**Git Tag**: v7.3.1
 **Commit**: 26b1111
 
 ---
@@ -1820,8 +1963,6 @@ v8.0.0
 - Update architecture documentation
 
 **Final State**: 201 production agents, clean architecture, ready for Game Dev Edition
-
-**Git Tag**: v7.1.0
 **Commit**: 797dfc9
 
 ---
@@ -1859,8 +2000,6 @@ v8.0.0
 - Atomic update patterns
 
 **Impact**: 70% reduction in directory complexity, improved infrastructure reliability
-
-**Git Tag**: v7.0.3
 **Commits**: 142b4ea, 8e1c6b9, 2072226
 
 ---
@@ -1880,8 +2019,6 @@ v8.0.0
 - **Historical learning** from past workflows
 
 **Enhancement Impact**: 30-50% faster workflow initialization, 92%+ domain detection accuracy
-
-**Git Tag**: v7.0.2
 **Commit**: 37e23ca
 
 ---
@@ -1894,8 +2031,6 @@ v8.0.0
 - Force plugin cache refresh
 - Fix agent discovery issues
 - Minor manifest updates
-
-**Git Tag**: v7.0.1
 **Commit**: af08035
 
 ---
@@ -1912,8 +2047,6 @@ v8.0.0
 - **Production-ready quality** (83% test coverage, 96% documentation)
 
 See full V7.0.0 release notes in archive/docs/ for complete details.
-
-**Git Tag**: v7.0.0
 **Commit**: (initial production release)
 
 ---
@@ -2034,6 +2167,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.66.2
-**Release Date**: July 14, 2026
-**Git Tag**: v12.42.0
+**Current Version**: 12.67.0
+**Release Date**: August 21, 2026

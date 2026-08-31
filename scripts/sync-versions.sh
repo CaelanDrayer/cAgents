@@ -8,7 +8,7 @@
 # Slot #16: CHANGELOG.md (insert new "## [VERSION] - DATE" header under [Unreleased])
 #   .claude-plugin/plugin.json, .claude-plugin/marketplace.json, package.json,
 #   CLAUDE.md, .claude/settings.json,
-#   4 skill SKILL.md frontmatter versions (run, team, designer, helper),
+#   4 skill SKILL.md frontmatter versions (act, team, designer, helper),
 #   session-catchup.cjs context string, and CHANGELOG.md tiny-bump landing zone.
 #
 # NON-TOUCH POLICY (V11.1.12+ per-agent versioning contract):
@@ -98,7 +98,7 @@ SKILLS=(
   "$ROOT/.claude/skills/designer/SKILL.md"
   "$ROOT/.claude/skills/helper/SKILL.md"
 )
-# v12.1.2: /improve folded into /run via keyword router; SKILL.md removed.
+# v12.1.2: /improve folded into /run (now /act) via keyword router; SKILL.md removed.
 # v12.2.0: /org removed; cross-domain coordination folded into /team strategic mode.
 
 for skill in "${SKILLS[@]}"; do

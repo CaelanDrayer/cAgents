@@ -241,8 +241,8 @@ export function materializeInitZeroAgent({
   write(dir, 'workflow/agent_tree.yaml', [
     `schema_version: '1'`,
     `root:`,
-    `  agent: run`,
-    `  agent_type: cagents:run`,
+    `  agent: act`,
+    `  agent_type: cagents:act`,
     `  depth: 0`,
     `  spawned_at: "${start}"`,
     `  stopped_at: null`,
@@ -314,8 +314,8 @@ export function materializeCoordinatedStaleChild({
   write(dir, 'workflow/agent_tree.yaml', [
     `schema_version: '1'`,
     `root:`,
-    `  agent: run`,
-    `  agent_type: cagents:run`,
+    `  agent: act`,
+    `  agent_type: cagents:act`,
     `  depth: 0`,
     `  spawned_at: "${childSpawn}"`,
     `  stopped_at: null`,
@@ -382,8 +382,8 @@ export function materializeFabricatedPass({ pipelineState = 'VALIDATED', heartbe
   write(dir, 'workflow/agent_tree.yaml', [
     `schema_version: '1'`,
     `root:`,
-    `  agent: run`,
-    `  agent_type: cagents:run`,
+    `  agent: act`,
+    `  agent_type: cagents:act`,
     `  depth: 0`,
     `  spawned_at: "${hb}"`,
     `  stopped_at: null`,
@@ -445,8 +445,8 @@ export function materializeGenuineValidated({ heartbeatMsAgo = 2 * MIN } = {}) {
   write(dir, 'workflow/agent_tree.yaml', [
     `schema_version: '1'`,
     `root:`,
-    `  agent: run`,
-    `  agent_type: cagents:run`,
+    `  agent: act`,
+    `  agent_type: cagents:act`,
     `  depth: 0`,
     `  spawned_at: "${start}"`,
     `  stopped_at: "${hb}"`,
