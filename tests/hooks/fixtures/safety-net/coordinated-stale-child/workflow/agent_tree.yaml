@@ -4,8 +4,8 @@
 # and the stall surfaces. (A 10s-old spawned_at would still count -> warn.)
 schema_version: '1'
 root:
-  agent: run
-  agent_type: cagents:run
+  agent: act
+  agent_type: cagents:act
   depth: 0
   spawned_at: "2026-07-08T02:00:00.000Z"
   stopped_at: null

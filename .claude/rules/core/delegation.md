@@ -141,7 +141,7 @@ still explicitly collected via `SendMessage` — never spawned-and-forgotten. Se
 | Layer | Mechanism | Effect |
 |-------|-----------|--------|
 | 1 | `prompt-router.cjs` (UserPromptSubmit) | Layer 1 (always on): detects `/act` or `/team` invocations and injects a 5-line systemMessage referencing this file. Layer 2 (OPT-IN, default OFF via `CAGENTS_ROUTING_SUGGESTIONS`): when enabled, suggests skills for natural-language requests ("build X" → `/act`), suppressed for conversational mode (≥3 sentences). When the env var is unset, no routing suggestions are emitted. |
-| 2 | `.claude/skills/{run,team}/SKILL.md` | The skill body re-states the rule once and `@`-references this file for the kill list. |
+| 2 | `.claude/skills/{act,team}/SKILL.md` | The skill body re-states the rule once and `@`-references this file for the kill list. |
 | 3 | `post-compact-restore.cjs` (PostCompact) | Re-injects goal/phase/work-item progress after context compaction (replaced `attention-injection.cjs` in v12.7.0 — see P2-10). |
 | 4 | `controller-delegation-validator.cjs` (PreToolUse[Write/Edit]) | DENIES writes to `src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/` while a controller is active; WARNS for other implementation paths. |
 | 5 | `verify-completion.cjs` (Stop) | Checks coordination_log + agent_tree for evidence of delegation. |

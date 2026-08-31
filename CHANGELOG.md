@@ -10,6 +10,90 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.67.0] - 2026-08-21
+
+Stale-reference cleanup finishing the `/run` -> `/act` rename. Shipped as a
+**minor** bump because of file count, not blast radius: the repo's own
+tiny-bump guard (`check_tiny_bump` in `scripts/ci/cagents-ci.sh`) caps a patch
+bump at 5 files outside the 16 version-registry sync targets, and this release
+touches 16 non-sync files. Minor and major bumps are explicitly exempt from
+that cap, so `12.67.0` is the classification that lands green. Precedent:
+commit `31f59397` ("merge: reclassify v12.64.2 as minor bump (v12.65.0)").
+The content itself stays low-risk: every edit is a comment, a doc line, or a
+test fixture literal, and no hook source, no skill logic, and no runtime path
+changed.
+
+The whole point of this round was to separate **stale** `/run` references — text
+that describes the system as it exists *now* and is therefore wrong — from
+**historical** ones, which are correct as written and must survive. Only the
+first group was touched. See "Deliberately retained" below before sweeping
+anything else.
+
+### Changed — stale present-tense `/run` swept to `/act` (6 sites)
+
+- **Four slash-anchored sites**: `scripts/ci/cagents-ci.sh` (the
+  `check_terminal_states` cwd-footgun note), `scripts/ci/check-skill-session-paths.cjs`
+  (the same note in that guard's header block), `scripts/handoff/README.md` (the
+  "nothing in the `/run` or `/team` pipeline requires them" disclaimer), and
+  `.claude/skills/act/reference/agent-tracking.md` (three `cagents:run` literals
+  in the worked `agent_tree.yaml` example — the example a reader copies).
+
+- **Two bare-form sites the slash-anchored search could not see.** Both write the
+  skill name without a leading `/`, so every prior `/run` grep missed them:
+  `.claude/rules/core/delegation.md` enumerated the enforcement surface as
+  `.claude/skills/{run,team}/SKILL.md`, and `scripts/sync-versions.sh` listed its
+  own targets as "4 skill SKILL.md frontmatter versions (run, team, designer,
+  helper)". The latter is the version-registry sync script naming a path that has
+  not existed since the rename. Brace-expansion and comma-list forms are the
+  known blind spot of a `/`-anchored pattern; a future rename sweep should search
+  for the bare name too.
+
+### Changed — historical build-script comments annotated, not rewritten (3 sites)
+
+- Three comments record that `/improve` was folded into `/run` in v12.1.2. That
+  statement is **true of v12.1.2** and rewriting it to say `/act` would falsify
+  the record. Each was annotated in place instead, preserving the original claim
+  and adding the present-day name: `scripts/sync-versions.sh` and
+  `scripts/ci/validate-versions.sh` now read "folded into `/run` (now `/act`)" /
+  "folded into `/run`, since renamed to `/act`", and `scripts/ci/cagents-ci.sh`'s
+  `check_tiny_bump` sync-target note carries the same annotation.
+
+### Changed — test fixture literals
+
+- **12 of 13 `cagents:run` fixture literals updated to `cagents:act`** across the
+  `tests/hooks/fixtures/safety-net/` agent trees and their materializer, plus the
+  inline fixture strings in four `tests/hooks/` specs. These model *current*
+  pipeline output, so a `cagents:run` agent type in them was simply stale.
+
+- **One literal deliberately retained** in
+  `tests/hooks/verify-completion-agent-tree-schema.test.js`. That tree models a
+  **pre-rename `/run` session as it still exists on disk** (18 live + 26 archived
+  `run_*` session dirs), so `cagents:run` is the value the parser must keep
+  handling. It carries an inline comment saying so; sweeping it would delete the
+  only back-compat coverage for legacy trees.
+
+- Rename-guard tests were extended with **additive** pins only — new assertions
+  covering the bare-form and annotated-comment cases. No existing pin was
+  loosened or removed.
+
+### Deliberately retained — do not "clean these up"
+
+This is the load-bearing decision of the round. The following `/run` references
+are **correct** and were left untouched on purpose:
+
+- `CHANGELOG.md` and `docs/RELEASE_NOTES.md` — historical entries describing what
+  shipped when. Editing them rewrites the release record.
+- `docs/MIGRATION_GUIDE.md` and `docs/MIGRATION-V11.md` — migration docs exist
+  precisely to name the *old* command a reader is migrating from.
+- `scripts/migration/v12-aliases.yaml` — the alias table that keeps pre-v12 names
+  resolving. `run` here is a live back-compat key, not prose.
+- The `run_` prefix in `SESSION_PREFIXES` — a real on-disk session-directory
+  prefix. Changing it orphans every existing `run_*` session.
+
+A future agent that greps for `/run` and "fixes" the remaining hits will break
+back-compat resolution and falsify the changelog. The remaining hits are the
+intended end state.
+
 ## [12.66.2] - 2026-08-09
 
 Test-infrastructure hardening only. No hook source was touched, no behavior

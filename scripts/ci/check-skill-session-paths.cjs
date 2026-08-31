@@ -5,7 +5,7 @@
  * Fails if a shipped skill body reintroduces a CWD-relative session-path write
  * or an npm-into-session/scratch footgun. Both are CWD-leak vectors: a relative
  * `cagents-memory/…` write (or an install run with the cwd inside a session dir)
- * resolves against whatever cwd a nested /run or /team teammate happens to have,
+ * resolves against whatever cwd a nested /act or /team teammate happens to have,
  * nesting a whole `cagents-memory/` tree — or `node_modules/` — under a session.
  *
  * The fix is to anchor every session/_system write to an absolute `$MEM`
