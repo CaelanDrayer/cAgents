@@ -46,10 +46,12 @@ const SUBAGENT_ALIGNMENT = path.join(REPO_ROOT, '.claude', 'rules', 'core', 'sub
 // bold token is one of these, the REST of the line is a comma/plus agent list.
 const STRUCTURAL_LABEL = /^(?:Tier \d+|Primary|Supporting|Executive)$/i;
 
-/** Live agent leaf-names derived from plugin.json `agents` paths. */
+/** Live agent names derived from the flat agents/ directory (v12.68.0). */
 function diskAgentNames() {
-  const plugin = JSON.parse(fs.readFileSync(PLUGIN_JSON, 'utf8'));
-  return plugin.agents.map((p) => p.replace(/.*\/([^/]+)\/SKILL\.md$/, '$1'));
+  return fs
+    .readdirSync(path.join(REPO_ROOT, 'agents'), { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => e.name.slice(0, -'.md'.length));
 }
 
 /** `old:` alias keys (without the cagents: prefix) from v12-aliases.yaml. */

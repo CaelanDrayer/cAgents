@@ -7,7 +7,10 @@ echo "=== CONFIG YAML REVIEW ==="
 echo ""
 
 # Find all config YAML files
-config_files=$(find "$REPO_ROOT"/{core,shared,make,grow,operate,people,serve}/config -type f -name "*.yaml" 2>/dev/null | sort)
+# v12.8.0 moved the surviving per-domain config under agents/; the pipeline
+# configs live in cagents-memory/_system/config.
+config_files=$(find "$REPO_ROOT/agents" "$REPO_ROOT/cagents-memory/_system/config" \
+                 -type f -name "*.yaml" 2>/dev/null | sort)
 
 echo "Config files found: $(echo "$config_files" | wc -l)"
 echo ""
@@ -19,7 +22,9 @@ syntax_errors=0
 while IFS= read -r file; do
     if [ -f "$file" ]; then
         # Try to parse with Python
-        python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null
+        # safe_load_all, not safe_load: several config templates legitimately
+        # carry a second YAML document (usage notes) after a --- separator.
+        python3 -c "import yaml,sys; list(yaml.safe_load_all(open(sys.argv[1])))" "$file" 2>/dev/null
         if [ $? -ne 0 ]; then
             echo "SYNTAX ERROR: $file"
             ((syntax_errors++))
@@ -33,45 +38,33 @@ echo ""
 # Check for controller_catalog consistency
 echo "=== CHECKING CONTROLLER CATALOGS ==="
 
-for domain in make grow operate people serve; do
-    planner_config="$REPO_ROOT/$domain/config/planner_config.yaml"
-    
-    if [ -f "$planner_config" ]; then
-        echo "Domain: $domain"
-        
-        # Extract controller names from catalog
-        controllers=$(python3 -c "
-import yaml
-try:
-    with open('$planner_config') as f:
-        config = yaml.safe_load(f)
-        catalog = config.get('controller_catalog', {})
-        for tier, controllers in catalog.items():
-            if isinstance(controllers, list):
-                for ctrl in controllers:
-                    if isinstance(ctrl, dict) and 'controller' in ctrl:
-                        print(ctrl['controller'])
-except Exception as e:
-    print(f'Error: {e}', file=sys.stderr)
-" 2>&1)
-        
-        if [ -n "$controllers" ]; then
-            # Check if controller agents exist
-            while IFS= read -r controller; do
-                if [ -n "$controller" ]; then
-                    # Remove domain prefix if present
-                    controller_name="${controller#*:}"
-                    
-                    # Check for agent file
-                    agent_file="$REPO_ROOT/$domain/agents/$controller_name.md"
-                    agent_dir="$REPO_ROOT/$domain/agents/$controller_name/SKILL.md"
-                    
-                    if [ ! -f "$agent_file" ] && [ ! -f "$agent_dir" ]; then
-                        echo "  MISSING: $controller (expected: $agent_file or $agent_dir)"
-                    fi
-                fi
-            done <<< "$controllers"
-        fi
+# v12.68.0: the surviving overrides live under agents/, and agent definitions
+# are flat (agents/<name>.md).
+for overrides in \
+    "$REPO_ROOT/agents/core/config/domain_overrides.yaml" \
+    "$REPO_ROOT/agents/leadership/config/domain_overrides.yaml" \
+    "$REPO_ROOT/agents/_overlay/people/config/domain_overrides.yaml" \
+    "$REPO_ROOT/agents/_overlay/shared/config/domain_overrides.yaml"; do
+
+    [ -f "$overrides" ] || continue
+    echo "Config: ${overrides#$REPO_ROOT/}"
+
+    # controller_catalog uses array form: tier_N: [agent-a, agent-b]
+    controllers=$(grep -E "^[[:space:]]*tier_[0-9]+:[[:space:]]*\[" "$overrides" 2>/dev/null \
+                  | sed -E 's/^[^[]*\[//; s/\].*$//' \
+                  | tr ',' '\n' \
+                  | tr -d "\"'" \
+                  | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
+    if [ -n "$controllers" ]; then
+        while IFS= read -r controller; do
+            [ -n "$controller" ] || continue
+            controller_name="${controller#*:}"
+            agent_file="$REPO_ROOT/agents/$controller_name.md"
+            if [ ! -f "$agent_file" ]; then
+                echo "  MISSING: $controller (expected: agents/$controller_name.md)"
+            fi
+        done <<< "$controllers"
     fi
 done
 

@@ -37,7 +37,8 @@ Ensure `node` is in your PATH — hooks rely on it.
    Optional but recommended: `model`, `vibe` (personality one-liner, max 80 chars), `capabilities` (also inside `metadata:`).
 
 3. **Register in plugin.json**:
-   Run `bash scripts/sync-agents.sh` to register the agent in `.claude-plugin/plugin.json` automatically.
+   No registration step is needed: Claude Code discovers plugin agents by scanning `agents/`,
+   so creating `agents/<name>.md` registers it. Verify with `bash scripts/ci/validate-agents.sh`.
 
 4. **Validate**:
    ```bash

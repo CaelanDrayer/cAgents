@@ -1,5 +1,5 @@
 #!/bin/bash
-# lint-agents.sh — 25-check spec linter for all SKILL.md files
+# lint-agents.sh — 25-check spec linter for all agent definition files
 #
 # Usage: ./scripts/lint-agents.sh [--fail-fast] [path/to/agents/...]
 #
@@ -42,24 +42,17 @@ const VALID_COLORS  = new Set([
   'black','gray','grey',
 ]);
 const VALID_MODELS  = new Set(['opus','opusplan','sonnet','haiku']);
-// v12.8.0 archetype roots — SKILL.md files live at agents/{archetype}/{branch?}/{agent}/SKILL.md
-const ARCHETYPES_PARENT = 'agents';
-const ARCHETYPE_DIRS = [
-  'developer','operator','advisor','analyst','creator',
-  'writer','strategist','core','leadership',
-];
+// v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude Code
+// discovers plugin agents with a non-recursive scan of agents/.
+const AGENTS_DIR = 'agents';
 
 // ─── Agent discovery ─────────────────────────────────────────────────────────
 
-function findSkillMds(dir) {
-  const results = [];
-  if (!fs.existsSync(dir)) return results;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) results.push(...findSkillMds(fullPath));
-    else if (entry.isFile() && entry.name === 'SKILL.md') results.push(fullPath);
-  }
-  return results;
+function findAgentFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true })
+    .filter(e => e.isFile() && e.name.endsWith('.md'))
+    .map(e => path.join(dir, e.name));
 }
 
 let agentFiles;
@@ -67,11 +60,11 @@ if (pathArgs.length > 0) {
   // Lint specific paths provided as arguments
   agentFiles = pathArgs.flatMap(p => {
     const abs = path.isAbsolute(p) ? p : path.join(ROOT, p);
-    if (abs.endsWith('SKILL.md') && fs.existsSync(abs)) return [abs];
-    return findSkillMds(abs);
+    if (abs.endsWith('.md') && fs.existsSync(abs) && fs.statSync(abs).isFile()) return [abs];
+    return findAgentFiles(abs);
   });
 } else {
-  agentFiles = ARCHETYPE_DIRS.flatMap(d => findSkillMds(path.join(ROOT, ARCHETYPES_PARENT, d)));
+  agentFiles = findAgentFiles(path.join(ROOT, AGENTS_DIR));
 }
 
 agentFiles.sort();
@@ -143,8 +136,8 @@ function runChecks(filePath, parsed) {
     failures.push({ check: checkNum, msg });
   }
 
-  // Derive directory name from path
-  const dirName = path.basename(path.dirname(filePath));
+  // The agent name is the file basename (flat layout, v12.68.0)
+  const dirName = path.basename(filePath, '.md');
 
   // Check 14 first (frontmatter structure) — needed for all other checks
   if (parsed.frontmatterRaw === null) {

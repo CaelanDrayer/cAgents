@@ -142,4 +142,4 @@ Verify the tool is actually absent before falling back; do not assume.
 
 - `.claude/rules/playbooks/pat-minimal-solution-ladder.md` — reuse-before-rebuild
 - `.claude/rules/core/controllers.md` § Invoking Workspace Skills
-- `agents/core/planner/SKILL.md` § Workspace Skill Reuse
+- `agents/planner.md` § Workspace Skill Reuse

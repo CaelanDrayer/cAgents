@@ -1,12 +1,15 @@
 /**
  * LP-16 (v12.x): model-routing-advisor.cjs KNOWN_AGENTS auto-generation
  *
+ * v12.68.0: the catalog moved from plugin.json's `agents` array to the flat
+ * agents/ directory (Claude Code discovers plugin agents with a non-recursive
+ * scan of agents/, so agents/<name>.md IS the registration). This test now
+ * pins the helper to that directory listing.
+ *
  * Asserts:
  *   (a) the hook module exports a `loadKnownAgents()` helper
- *   (b) the helper reads `.claude-plugin/plugin.json` and returns a map
- *       whose key-set equals the agent names in plugin.json's agents array
- *       (modulo `_deprecated/` entries, which are excluded by sync-agents.sh
- *       and therefore never appear in plugin.json in the first place)
+ *   (b) the helper reads the flat agents/ directory and returns a map whose
+ *       key-set equals the agent names on disk (modulo `_deprecated/`)
  *   (c) the helper is memoized per-process — subsequent calls return the
  *       same object reference
  *   (d) each value is one of the recognized tier strings
@@ -25,25 +28,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const HOOK_PATH = path.join(REPO_ROOT, '.claude', 'hooks', 'model-routing-advisor.cjs');
-const PLUGIN_JSON = path.join(REPO_ROOT, '.claude-plugin', 'plugin.json');
+const AGENTS_DIR = path.join(REPO_ROOT, 'agents');
 
 const require = createRequire(import.meta.url);
 
-function pluginAgentNames() {
-  const plugin = JSON.parse(fs.readFileSync(PLUGIN_JSON, 'utf8'));
+function diskAgentNames() {
   const names = new Set();
-  for (const p of plugin.agents || []) {
-    // Skip any _deprecated path entries (sync-agents.sh excludes them, but
-    // defensive — the contract is "modulo _deprecated/")
-    if (/\/_deprecated\//.test(p)) continue;
-    // Path shape: "./<archetype>/[<branch>/]<agent-name>/SKILL.md"
-    const m = p.match(/\/([^/]+)\/SKILL\.md$/);
-    if (m) names.add(m[1]);
+  for (const entry of fs.readdirSync(AGENTS_DIR, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    names.add(entry.name.slice(0, -'.md'.length));
   }
   return names;
 }
 
-describe('LP-16: model-routing-advisor KNOWN_AGENTS auto-generated from plugin.json', () => {
+describe('LP-16: model-routing-advisor KNOWN_AGENTS auto-generated from agents/', () => {
   it('hook file exists', () => {
     expect(fs.existsSync(HOOK_PATH)).toBe(true);
   });
@@ -55,21 +53,21 @@ describe('LP-16: model-routing-advisor KNOWN_AGENTS auto-generated from plugin.j
     expect(typeof mod.loadKnownAgents).toBe('function');
   });
 
-  it('loadKnownAgents() key-set equals plugin.json agent names (modulo _deprecated/)', () => {
+  it('loadKnownAgents() key-set equals the flat agents/ directory listing', () => {
     delete require.cache[require.resolve(HOOK_PATH)];
     const { loadKnownAgents } = require(HOOK_PATH);
     const known = loadKnownAgents();
     expect(known).toBeTypeOf('object');
 
     const knownNames = new Set(Object.keys(known));
-    const pluginNames = pluginAgentNames();
+    const diskNames = diskAgentNames();
 
     // Diagnostics on mismatch
-    const missingFromKnown = [...pluginNames].filter(n => !knownNames.has(n));
-    const extraInKnown = [...knownNames].filter(n => !pluginNames.has(n));
+    const missingFromKnown = [...diskNames].filter(n => !knownNames.has(n));
+    const extraInKnown = [...knownNames].filter(n => !diskNames.has(n));
 
-    expect(missingFromKnown, `Agents in plugin.json but not in loadKnownAgents(): ${missingFromKnown.join(', ')}`).toEqual([]);
-    expect(extraInKnown, `Agents in loadKnownAgents() but not in plugin.json: ${extraInKnown.join(', ')}`).toEqual([]);
+    expect(missingFromKnown, `Agents on disk but not in loadKnownAgents(): ${missingFromKnown.join(', ')}`).toEqual([]);
+    expect(extraInKnown, `Agents in loadKnownAgents() but not on disk: ${extraInKnown.join(', ')}`).toEqual([]);
   });
 
   it('loadKnownAgents() is memoized per-process (same reference across calls)', () => {

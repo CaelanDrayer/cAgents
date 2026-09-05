@@ -1,11 +1,11 @@
 ---
 paths:
-  - "agents/core/orchestrator/**"
-  - "agents/core/planner/**"
-  - "agents/core/router/**"
-  - "agents/core/execution-monitor/**"
-  - "agents/core/validator/**"
-  - "agents/core/self-correct/**"
+  - "agents/orchestrator/**"
+  - "agents/planner/**"
+  - "agents/router/**"
+  - "agents/execution-monitor/**"
+  - "agents/validator/**"
+  - "agents/self-correct/**"
   - ".claude/skills/act/**"
   - "cagents-memory/_system/config/**"
 ---

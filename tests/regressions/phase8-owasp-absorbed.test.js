@@ -25,19 +25,10 @@ import { resolve } from 'node:path';
 
 const REPO_ROOT = resolve(__dirname, '..', '..');
 // security-owasp absorbed into security-engineer as the owasp-audit mode.
-const SKILL_PATH = resolve(
-  REPO_ROOT,
-  'agents',
-  'developer',
-  'infrastructure',
-  'security-engineer',
-  'SKILL.md'
-);
+const SKILL_PATH = resolve(REPO_ROOT, 'agents', 'security-engineer.md');
 const OWASP_RESOURCE = resolve(
   REPO_ROOT,
   'agents',
-  'developer',
-  'infrastructure',
   'security-engineer',
   'resources',
   'owasp-audit.md'

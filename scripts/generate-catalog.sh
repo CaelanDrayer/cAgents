@@ -35,16 +35,12 @@ done
 echo "name,domain,tier,model,description,capabilities,tools,related-agents,not-my-scope,maxTurns,permissionMode" > "$OUTPUT_FILE"
 
 AGENT_COUNT=0
-DOMAINS=("core" "engineering" "creative" "business" "people" "service" "leadership" "shared" "growth")
 
-for domain_dir in "${DOMAINS[@]}"; do
-  DOMAIN_PATH="${ROOT_DIR}/${domain_dir}/agents"
-  if [[ ! -d "$DOMAIN_PATH" ]]; then
-    continue
-  fi
-
-  for agent_dir in "$DOMAIN_PATH"/*/; do
-    SKILL_FILE="${agent_dir}SKILL.md"
+# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code discovers
+# plugin agents with a non-recursive scan of agents/). The `domain` CSV column is
+# filled from each agent's `archetype:` frontmatter, which replaced it in v11.1.0.
+{
+  for SKILL_FILE in "${ROOT_DIR}"/agents/*.md; do
     if [[ ! -f "$SKILL_FILE" ]]; then
       continue
     fi
@@ -82,7 +78,10 @@ for domain_dir in "${DOMAINS[@]}"; do
     }
 
     name=$(extract_field "name" "$frontmatter")
-    domain=$(extract_field "domain" "$frontmatter")
+    # v11.1.0 replaced top-level `domain:` with `archetype:`; fall back to the
+    # legacy field so an old-schema agent still exports a grouping value.
+    domain=$(extract_field "archetype" "$frontmatter")
+    [[ -z "$domain" ]] && domain=$(extract_field "domain" "$frontmatter")
     tier=$(extract_field "tier" "$frontmatter")
     model=$(extract_field "model" "$frontmatter")
     description=$(extract_field "description" "$frontmatter")
@@ -95,9 +94,9 @@ for domain_dir in "${DOMAINS[@]}"; do
     # Extract capabilities (multi-line YAML list - may be inside metadata: block)
     capabilities=$(echo "$frontmatter" | sed -n '/^\s*capabilities:/,/^\s*[a-z]/p' | { grep '^\s*-' || true; } | sed 's/^\s*-\s*//' | tr '\n' ';' | sed 's/;$//')
 
-    # Default domain from directory if not in frontmatter
+    # Fall back to the file basename when neither field is present.
     if [[ -z "$domain" ]]; then
-      domain="$domain_dir"
+      domain="$(basename "$SKILL_FILE" .md)"
     fi
 
     # Escape double quotes in description for CSV
@@ -108,7 +107,7 @@ for domain_dir in "${DOMAINS[@]}"; do
 
     AGENT_COUNT=$((AGENT_COUNT + 1))
   done
-done
+}
 
 echo "Generated ${OUTPUT_FILE} with ${AGENT_COUNT} agents"
 

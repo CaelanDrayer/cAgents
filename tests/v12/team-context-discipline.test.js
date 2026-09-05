@@ -30,8 +30,8 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const TEAM_SKILL_PATH = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'SKILL.md');
 const PLUGIN_JSON_PATH = path.join(REPO_ROOT, '.claude-plugin', 'plugin.json');
-const WAVE_REVIEWER_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'wave-reviewer', 'SKILL.md');
-const COORD_LOG_WRITER_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'coord-log-writer', 'SKILL.md');
+const WAVE_REVIEWER_SKILL = path.join(REPO_ROOT, 'agents', 'wave-reviewer.md');
+const COORD_LOG_WRITER_SKILL = path.join(REPO_ROOT, 'agents', 'coord-log-writer.md');
 const PER_WAVE_DECOMP_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'per-wave-decomposition.md');
 const SPAWN_BRIEF_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'spawn-brief-schema.md');
 const INTEGRATION_HANDOFF_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'integration-handoff.md');
@@ -122,28 +122,15 @@ describe('WI-7 (v12.1.0): /team lead-context-discipline contract', () => {
       expect(fs.existsSync(COORD_LOG_WRITER_SKILL)).toBe(true);
     });
 
-    // Plugin manifest registration is wired by scripts/sync-agents.sh during
-    // WI-8 version-bump. The test asserts BOTH new agents are registered.
-    it('cagents:wave-reviewer registered in plugin.json agents list', () => {
-      const manifest = JSON.parse(fs.readFileSync(PLUGIN_JSON_PATH, 'utf8'));
-      const agents = manifest.agents || [];
-      // The plugin manifest stores agent SKILL.md paths. Match either the
-      // archetype path or a substring match for resilience.
-      const found = agents.some((entry) => {
-        const p = typeof entry === 'string' ? entry : entry?.path || '';
-        return p.includes('agents/core/wave-reviewer');
-      });
-      expect(found).toBe(true);
+    // v12.68.0: registration IS the flat agent file — Claude Code discovers
+    // plugin agents with a non-recursive scan of agents/, so agents/<name>.md
+    // being on disk is exactly what makes the agent spawnable.
+    it('cagents:wave-reviewer is registered (agents/wave-reviewer.md on disk)', () => {
+      expect(fs.existsSync(WAVE_REVIEWER_SKILL)).toBe(true);
     });
 
-    it('cagents:coord-log-writer registered in plugin.json agents list', () => {
-      const manifest = JSON.parse(fs.readFileSync(PLUGIN_JSON_PATH, 'utf8'));
-      const agents = manifest.agents || [];
-      const found = agents.some((entry) => {
-        const p = typeof entry === 'string' ? entry : entry?.path || '';
-        return p.includes('agents/core/coord-log-writer');
-      });
-      expect(found).toBe(true);
+    it('cagents:coord-log-writer is registered (agents/coord-log-writer.md on disk)', () => {
+      expect(fs.existsSync(COORD_LOG_WRITER_SKILL)).toBe(true);
     });
   });
 });

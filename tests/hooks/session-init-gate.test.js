@@ -128,9 +128,14 @@ describe('session-init-gate.cjs', () => {
 });
 
 describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 regression)', () => {
+  // v12.68.0: the catalog source moved from .claude-plugin/plugin.json's
+  // `agents` array to the flat agents/ directory (Claude Code discovers plugin
+  // agents with a non-recursive scan of agents/). The regression this block
+  // pins is unchanged — only the thing that can go missing is now agents/.
+  //
   // Root cause (v12.62.2): loadRegisteredAgents() returned an EMPTY Set — not a
-  // distinct "cannot verify" signal — whenever .claude-plugin/plugin.json could
-  // not be found at PROJECT_ROOT. That is exactly what happens inside a /team
+  // distinct "cannot verify" signal — whenever the catalog source could not be
+  // read at PROJECT_ROOT. That is exactly what happens inside a /team
   // worktree-isolated subagent, because `.claude-plugin/` was missing from
   // `worktree.sparsePaths` in .claude/settings.json (only `.claude/`,
   // `cagents-memory/_system/`, `agents/`, `scripts/`, `tests/`, `docs/` were
@@ -140,19 +145,19 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
   // — as "not a registered agent", because it could not distinguish "the
   // catalog is empty" from "the catalog could not be read".
   //
-  // BEFORE FIX: a PROJECT_ROOT with no .claude-plugin/plugin.json (this test's
+  // BEFORE FIX: a PROJECT_ROOT with no catalog on disk (this test's empty
   // tmpDir, mirroring the worktree's incomplete sparse checkout) makes every
   // one of these names — including architect/scholar/product-owner — receive
   // the false "is not a registered agent" advisory. Verified via git-stash:
   // reverting session-init-gate.cjs to HEAD~1 (pre-fix) and re-running this
   // block fails both catalog assertions below with non-empty falsePositives.
   // AFTER FIX: loadRegisteredAgents() returns `null` (not an empty Set) when
-  // the manifest is absent, and aliasLookup() treats `null` as "cannot verify
-  // — stay silent" instead of "confirmed unregistered".
+  // the catalog is unreadable, and aliasLookup() treats `null` as "cannot
+  // verify — stay silent" instead of "confirmed unregistered".
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = join(tmpdir(), 'cagents-test-sig-manifest-absent-' + Date.now());
+    tmpDir = join(tmpdir(), 'cagents-test-sig-catalog-absent-' + Date.now());
     mkdirSync(tmpDir, { recursive: true });
   });
 
@@ -160,28 +165,25 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered when the manifest is absent (worktree-sparse-checkout simulation)', () => {
+  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered when the catalog is absent (worktree-sparse-checkout simulation)', () => {
     for (const name of ['architect', 'scholar', 'product-owner']) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
-        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-manifest-absent-${name}_260801_001` }
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-catalog-absent-${name}_260801_001` }
       );
       expect(result.continue).toBe(true);
       expect(result.systemMessage || '').not.toMatch(/is not a registered agent/);
     }
   });
 
-  it('does NOT flag ANY agent from the live catalog as unregistered when the manifest is absent (whole-catalog guard, catches future catalog drift)', () => {
+  it('does NOT flag ANY agent from the live catalog as unregistered when the catalog is absent (whole-catalog guard, catches future catalog drift)', () => {
     // 60 agents x one spawnSync'd node process each ⇒ needs more than the 5s
     // vitest default. Timeout raised via the third `it()` argument below.
-    const manifestPath = join(process.cwd(), '.claude-plugin', 'plugin.json');
-    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
-    const names = [];
-    for (const rel of manifest.agents) {
-      if (typeof rel !== 'string') continue;
-      const m = rel.match(/\/([a-zA-Z0-9_\-]+)\/SKILL\.md$/) || rel.match(/\/([a-zA-Z0-9_\-]+)\.md$/);
-      if (m) names.push(m[1]);
-    }
+    const agentsDir = join(process.cwd(), 'agents');
+    const names = require('fs')
+      .readdirSync(agentsDir, { withFileTypes: true })
+      .filter((e) => e.isFile() && e.name.endsWith('.md'))
+      .map((e) => e.name.slice(0, -'.md'.length));
     // Sanity: the live catalog should have a substantial number of agents —
     // if this drops to 0 the test below would vacuously pass, so guard it.
     expect(names.length).toBeGreaterThan(0);
@@ -190,7 +192,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     for (const name of names) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
-        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-manifest-absent-catalog-${name}_260801_001` }
+        { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: `act_test-catalog-absent-catalog-${name}_260801_001` }
       );
       if ((result.systemMessage || '').includes('is not a registered agent')) {
         falsePositives.push(name);
@@ -199,7 +201,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     expect(falsePositives).toEqual([]);
   }, 30000);
 
-  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered at the real project root (manifest present)', () => {
+  it('does NOT flag cagents:architect / cagents:scholar / cagents:product-owner as unregistered at the real project root (catalog present)', () => {
     for (const name of ['architect', 'scholar', 'product-owner']) {
       const result = runHook(
         { tool_name: 'Agent', tool_input: { subagent_type: `cagents:${name}` } },
@@ -210,7 +212,7 @@ describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 
     }
   });
 
-  it('still emits a legitimate advisory for a genuinely unknown name when the manifest IS present (no over-correction)', () => {
+  it('still emits a legitimate advisory for a genuinely unknown name when the catalog IS present (no over-correction)', () => {
     const result = runHook(
       { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:totally-made-up-agent-xyz' } },
       { CLAUDE_PROJECT_DIR: process.cwd(), CAGENTS_SESSION_ID: 'act_test-unknown-agent_260801_001' }

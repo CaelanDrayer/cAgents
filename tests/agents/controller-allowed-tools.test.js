@@ -28,13 +28,13 @@ const ROOT = resolve(__dirname, '..', '..');
 // replaced with security-engineer and marketing-strategist.
 // If a controller is renamed or relocated, update this list.
 const CANONICAL_CONTROLLERS = [
-  'agents/developer/fullstack/tech-lead/SKILL.md',
-  'agents/developer/fullstack/architect/SKILL.md',
-  'agents/developer/infrastructure/security-engineer/SKILL.md',
-  'agents/developer/quality/qa-lead/SKILL.md',
-  'agents/operator/business-ops/operations-manager/SKILL.md',
-  'agents/operator/marketing-sales/marketing-strategist/SKILL.md',
-  'agents/operator/people-ops/hr-manager/SKILL.md',
+  'agents/tech-lead.md',
+  'agents/architect.md',
+  'agents/security-engineer.md',
+  'agents/qa-lead.md',
+  'agents/operations-manager.md',
+  'agents/marketing-strategist.md',
+  'agents/hr-manager.md',
 ];
 
 function getAllowedToolsLine(content) {

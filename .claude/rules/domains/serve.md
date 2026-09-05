@@ -1,7 +1,13 @@
 ---
 paths:
-  - "agents/operator/support/**"
-  - "agents/advisor/legal/**"
+  - "agents/customer-success-manager.md"
+  - "agents/customer-success-manager/**"
+  - "agents/support-director.md"
+  - "agents/support-director/**"
+  - "agents/technical-writer.md"
+  - "agents/technical-writer/**"
+  - "agents/general-counsel.md"
+  - "agents/general-counsel/**"
 ---
 
 # Service Domain Guidelines

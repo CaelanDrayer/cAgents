@@ -19,18 +19,11 @@ import { join } from 'path';
  */
 
 const ROOT = process.cwd();
-// v12.8.0 (eef900a7) moved the 9 archetype roots under agents/.
+// v12.68.0 flattened the agent tree: definitions are agents/<name>.md and the
+// per-agent playbooks they reference live under agents/<name>/resources/.
 const SCAN_DIRS = [
   '.claude/skills',
-  'agents/developer',
-  'agents/operator',
-  'agents/advisor',
-  'agents/analyst',
-  'agents/creator',
-  'agents/writer',
-  'agents/strategist',
-  'agents/core',
-  'agents/leadership',
+  'agents',
 ];
 
 // Imperative patterns that should not appear in agent/skill prompt bodies
@@ -76,7 +69,9 @@ function findSkillFiles(dir) {
     }
     if (stat.isDirectory()) {
       results.push(...findSkillFiles(join(dir, entry)));
-    } else if (entry === 'SKILL.md') {
+    } else if (entry === 'SKILL.md' || (dir === 'agents' && entry.endsWith('.md'))) {
+      // .claude/skills/*/SKILL.md plus the flat agent definitions agents/*.md
+      // (v12.68.0 — agent bodies are prompt bodies too, and must obey the rule).
       results.push(fullPath);
     }
   }

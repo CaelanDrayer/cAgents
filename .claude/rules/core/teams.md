@@ -2,8 +2,11 @@
 paths:
   - ".claude/rules/core/teams.md"
   - ".claude/rules/playbooks/pat-cross-teammate-request.md"
-  - "agents/core/team-*/**"
-  - "agents/core/wave-reviewer/**"
+  - "agents/team-bootstrap.md"
+  - "agents/team-bootstrap/**"
+  - "agents/team-lead.md"
+  - "agents/team-lead/**"
+  - "agents/wave-reviewer/**"
   - ".claude/skills/team/**"
   - ".claude/hooks/team-*.cjs"
   - ".claude/hooks/teammate-*.cjs"

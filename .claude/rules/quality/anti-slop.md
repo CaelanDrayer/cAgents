@@ -1,8 +1,21 @@
 ---
 paths:
-  - "agents/writer/**"
-  - "agents/**/technical-writer/**"
-  - "agents/operator/marketing-sales/**"
+  - "agents/ai-writing-editor.md"
+  - "agents/ai-writing-editor/**"
+  - "agents/editor.md"
+  - "agents/editor/**"
+  - "agents/narrative-director.md"
+  - "agents/narrative-director/**"
+  - "agents/worldbuilder.md"
+  - "agents/worldbuilder/**"
+  - "agents/technical-writer.md"
+  - "agents/technical-writer/**"
+  - "agents/marketing-analyst.md"
+  - "agents/marketing-analyst/**"
+  - "agents/marketing-strategist.md"
+  - "agents/marketing-strategist/**"
+  - "agents/sales-strategist.md"
+  - "agents/sales-strategist/**"
   - ".claude/skills/*/SKILL.md"
 ---
 

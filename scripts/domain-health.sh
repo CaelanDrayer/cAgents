@@ -44,7 +44,8 @@ def check_domain(domain):
     total += 1
 
     config_path = os.path.join(root, domain, 'config', 'domain_overrides.yaml')
-    agents_dir  = os.path.join(root, domain, 'agents')
+    # v12.68.0: one global flat catalog, agents/<name>.md.
+    agents_dir  = os.path.join(root, 'agents')
 
     if not os.path.exists(config_path):
         print(f"{RED}{domain:<13}{RESET} ERROR (no domain_overrides.yaml)")
@@ -58,11 +59,24 @@ def check_domain(domain):
     warnings = []
     info = {}
 
-    # Check 1: controller_catalog has tier_2
+    # The leadership catalog is the C-suite roster consumed by /team strategic
+    # mode. It is deliberately NOT directly routable (see CLAUDE.md: "Leadership
+    # 9 (C-suite, /team strategic mode, not directly routable)"), so it carries
+    # an executive tier_4 catalog and no router keywords by design.
+    executive_only = domain.rstrip('/').endswith('leadership')
+
+    # Check 1: controller_catalog has tier_2 (tier_4 for the executive catalog)
     planner = d.get('planner') or {}
     cc      = planner.get('controller_catalog') or {}
     tier2   = cc.get('tier_2') or []
-    if not tier2:
+    tier4   = cc.get('tier_4') or []
+    if executive_only:
+        if not tier4:
+            issues.append("executive controller_catalog missing tier_4")
+            info['controller'] = 'NONE'
+        else:
+            info['controller'] = tier4[0] if isinstance(tier4, list) else str(tier4)
+    elif not tier2:
         issues.append("controller_catalog missing tier_2")
         info['controller'] = 'NONE'
     else:
@@ -73,7 +87,9 @@ def check_domain(domain):
     keywords = router.get('keywords') or []
     kw_count = len(keywords)
     info['keywords'] = kw_count
-    if kw_count == 0:
+    if executive_only:
+        pass  # not directly routable -- zero keywords is correct
+    elif kw_count == 0:
         issues.append("no router keywords")
     elif kw_count < 20:
         warnings.append(f"only {kw_count} router keywords (need >= 20)")
@@ -96,41 +112,17 @@ def check_domain(domain):
 
     missing_agents = []
     for agent in sorted(all_catalog_agents):
-        # Check in own domain first
-        skill_local = os.path.join(agents_dir, agent, 'SKILL.md')
-        skill_flat  = os.path.join(agents_dir, agent + '.md')
-        found = os.path.exists(skill_local) or os.path.exists(skill_flat)
-        if not found:
-            # Search sibling domains (e.g. C-suite agents live in leadership/)
-            for other in os.scandir(root):
-                if not other.is_dir():
-                    continue
-                other_skill = os.path.join(other.path, 'agents', agent, 'SKILL.md')
-                other_flat  = os.path.join(other.path, 'agents', agent + '.md')
-                if os.path.exists(other_skill) or os.path.exists(other_flat):
-                    found = True
-                    break
-        if not found:
+        if not os.path.exists(os.path.join(agents_dir, agent + '.md')):
             missing_agents.append(agent)
     if missing_agents:
-        warnings.append(f"catalog agents missing SKILL.md: {', '.join(missing_agents)}")
+        warnings.append(f"catalog agents missing from agents/: {', '.join(missing_agents)}")
 
     # Check 4: orphan agents (SKILL.md exists but not referenced anywhere)
-    agent_count = 0
+    # The per-domain count is the size of THAT domain's catalog. Counting the
+    # global agents/ dir would report the same 60 for every domain, and the
+    # orphan notion is meaningless per-domain now that the catalog is shared.
+    agent_count = len(all_catalog_agents)
     orphans = []
-    if os.path.isdir(agents_dir):
-        for entry in sorted(os.scandir(agents_dir), key=lambda e: e.name):
-            if entry.is_dir():
-                skill = os.path.join(entry.path, 'SKILL.md')
-                if os.path.exists(skill):
-                    agent_count += 1
-                    if entry.name not in all_referenced:
-                        orphans.append(entry.name)
-            elif entry.is_file() and entry.name.endswith('.md') and entry.name != 'SKILL.md':
-                agent_count += 1
-                name = entry.name[:-3]
-                if name not in all_referenced:
-                    orphans.append(name)
     info['agent_count'] = agent_count
 
     if orphans:
@@ -161,15 +153,19 @@ def check_domain(domain):
         if not quiet:
             print(f"{GREEN}{label:<13}{RESET} HEALTHY ({ac} agents, {kw} keywords, controller: {ctrl})")
 
-# Scan all domain directories that have a config file
+# v12.8.0 moved the surviving domain_overrides.yaml files under agents/
+# (agents/{core,leadership}/config and agents/_overlay/{people,shared}/config).
+# Scan those roots rather than the repo-root domain dirs, which are long gone.
 domains = []
-for entry in sorted(os.scandir(root), key=lambda e: e.name):
-    if not entry.is_dir():
+for base in ('agents', os.path.join('agents', '_overlay')):
+    base_path = os.path.join(root, base)
+    if not os.path.isdir(base_path):
         continue
-    if entry.name.startswith('.') or entry.name in ('scripts', 'docs', 'tests', 'archive', 'core', 'node_modules'):
-        continue
-    if os.path.exists(os.path.join(entry.path, 'config', 'domain_overrides.yaml')):
-        domains.append(entry.name)
+    for entry in sorted(os.scandir(base_path), key=lambda e: e.name):
+        if not entry.is_dir() or entry.name.startswith('.'):
+            continue
+        if os.path.exists(os.path.join(entry.path, 'config', 'domain_overrides.yaml')):
+            domains.append(os.path.relpath(entry.path, root))
 
 for domain in domains:
     check_domain(domain)

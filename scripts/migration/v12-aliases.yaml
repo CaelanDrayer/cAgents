@@ -43,14 +43,14 @@ aliases:
     type: absorb
     decision: Q1
     notes: "Content folded into core/planner/resources/decomposition.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:task-decomposer -> cagents:planner (which currently maps to core/planner/). Source dir core/task-decomposer/ scheduled for deletion by lead after sync-agents.sh."
-    new_path: agents/core/planner/resources/decomposition.md
+    new_path: agents/planner/resources/decomposition.md
 
   - old: cagents:prompt-engineer
     new: cagents:planner
     type: absorb
     decision: Q1
     notes: "Content folded into core/planner/resources/prompt-templates.md (Three-Tier Progressive Disclosure). Router fallback resolves cagents:prompt-engineer -> cagents:planner (which currently maps to core/planner/). Source dir core/prompt-engineer/ scheduled for deletion by lead after sync-agents.sh."
-    new_path: agents/core/planner/resources/prompt-templates.md
+    new_path: agents/planner/resources/prompt-templates.md
 
   # ---------------------------------------------------------------------------
   # Q2: Agent moves to developer/backend/
@@ -345,14 +345,14 @@ aliases:
     type: rename
     decision: Q8
     notes: "284 spawns. v11 'universal-planner' renamed to core/planner in the v12 pipeline collapse. Same decomposition + controller-selection scope. Use mode=(default)."
-    new_path: agents/core/planner/SKILL.md
+    new_path: agents/planner.md
 
   - old: cagents:universal-validator
     new: cagents:validator
     type: rename
     decision: Q8
     notes: "124 spawns. v11 'universal-validator' renamed to core/validator. Same PASS/FAIL/REVISE quality-gate scope. Use mode=(default)."
-    new_path: agents/core/validator/SKILL.md
+    new_path: agents/validator.md
 
   - old: cagents:code-reviewer
     new: cagents:qa-lead
@@ -549,15 +549,15 @@ aliases:
     new: cagents:execution-monitor
     type: rename
     decision: Q8
-    notes: "REC-38 (v12.53.0): core 'executor' renamed to 'execution-monitor' — the agent monitors controller execution progress, it does not execute work items (the name previously said the opposite of what it does). Same monitoring/aggregation scope; dir moved to agents/core/execution-monitor/."
-    new_path: agents/core/execution-monitor/SKILL.md
+    notes: "REC-38 (v12.53.0): core 'executor' renamed to 'execution-monitor' — the agent monitors controller execution progress, it does not execute work items (the name previously said the opposite of what it does). Same monitoring/aggregation scope; dir moved to agents/execution-monitor/."
+    new_path: agents/execution-monitor.md
 
   - old: cagents:team
     new: cagents:team-bootstrap
     type: rename
     decision: Q8
-    notes: "REC-38 (v12.53.0): core 'team' renamed to 'team-bootstrap' to remove the naming collision with the /team skill AND the team-lead agent. Same team-init / wave-bootstrap scope; dir moved to agents/core/team-bootstrap/."
-    new_path: agents/core/team-bootstrap/SKILL.md
+    notes: "REC-38 (v12.53.0): core 'team' renamed to 'team-bootstrap' to remove the naming collision with the /team skill AND the team-lead agent. Same team-init / wave-bootstrap scope; dir moved to agents/team-bootstrap/."
+    new_path: agents/team-bootstrap.md
 
   # ---------------------------------------------------------------------------
   # REC-27 (audit team_plugin-full-audit_260717_001, v12.55.0): film-director
@@ -565,7 +565,7 @@ aliases:
   # agent. The former `music-composer` (folded into film-director's `music`
   # mode in the v12.0 consolidation) now resolves to `composer`, its true
   # specialist home. type: fold ⇒ `new` must resolve to a live SKILL.md
-  # (agents/creator/composer/). decision: Q8.
+  # (agents/composer/). decision: Q8.
   # ---------------------------------------------------------------------------
   - old: cagents:music-composer
     new: cagents:composer

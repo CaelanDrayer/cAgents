@@ -14,23 +14,14 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import { agentFiles } from '../helpers/agent-catalog.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
-const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
-
+// v12.68.0: agent definitions are flat (agents/<name>.md) — see
+// tests/helpers/agent-catalog.js.
 function findAllSkillMd() {
-  const results = [];
-  function walk(dir) {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name === 'SKILL.md') results.push(full);
-    }
-  }
-  for (const archetype of ARCHETYPES) walk(join(ROOT, 'agents', archetype));
-  return results;
+  return agentFiles();
 }
 
 function parseFrontmatter(filepath) {

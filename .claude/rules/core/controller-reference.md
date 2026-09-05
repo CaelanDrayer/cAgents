@@ -1,8 +1,8 @@
 ---
 paths:
-  - "agents/core/planner/**"
-  - "agents/core/execution-monitor/**"
-  - "agents/core/validator/**"
+  - "agents/planner/**"
+  - "agents/execution-monitor/**"
+  - "agents/validator/**"
   - "**/config/planner_config.yaml"
 ---
 

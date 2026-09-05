@@ -7,7 +7,8 @@ echo "=== AGENT REVIEW PHASE 2 ==="
 echo ""
 
 # Find all agent files
-agent_files=$(find "$REPO_ROOT"/{core,shared,make,grow,operate,people,serve}/agents -type f -name "*.md" 2>/dev/null | sort)
+# v12.68.0: agent definitions are flat — agents/<name>.md.
+agent_files=$(find "$REPO_ROOT/agents" -maxdepth 1 -type f -name "*.md" 2>/dev/null | sort)
 
 echo "Total agent files found: $(echo "$agent_files" | wc -l)"
 echo ""
@@ -16,7 +17,7 @@ echo ""
 echo "=== CHECKING FRONTMATTER ==="
 missing_name=0
 missing_tier=0
-missing_domain=0
+missing_archetype=0
 missing_description=0
 
 while IFS= read -r file; do
@@ -36,14 +37,21 @@ while IFS= read -r file; do
             ((missing_name++))
         fi
 
-        if ! echo "$frontmatter" | grep -q "^tier:"; then
-            echo "MISSING tier: $file"
+        # tier lives inside the metadata: block (v11.1.0 schema)
+        if ! echo "$frontmatter" | grep -qE "^  tier:"; then
+            echo "MISSING metadata.tier: $file"
             ((missing_tier++))
         fi
 
-        if ! echo "$frontmatter" | grep -q "^domain:"; then
-            echo "MISSING domain: $file"
-            ((missing_domain++))
+        # archetype replaced domain at top level in v11.1.0; a top-level
+        # domain: is FORBIDDEN, so flag its presence, not its absence.
+        if ! echo "$frontmatter" | grep -q "^archetype:"; then
+            echo "MISSING archetype: $file"
+            ((missing_archetype++))
+        fi
+        if echo "$frontmatter" | grep -q "^domain:"; then
+            echo "FORBIDDEN top-level domain: $file"
+            ((missing_archetype++))
         fi
 
         if ! echo "$frontmatter" | grep -q "^description:"; then
@@ -56,8 +64,8 @@ done <<< "$agent_files"
 echo ""
 echo "Summary:"
 echo "  Missing name: $missing_name"
-echo "  Missing tier: $missing_tier"
-echo "  Missing domain: $missing_domain"
+echo "  Missing metadata.tier: $missing_tier"
+echo "  Missing archetype (or forbidden domain): $missing_archetype"
 echo "  Missing description: $missing_description"
 echo ""
 
@@ -91,7 +99,7 @@ echo ""
 
 # Check for directory structure agents
 echo "=== CHECKING DIRECTORY STRUCTURE ==="
-dir_agents=$(find $REPO_ROOT/{core,shared,make,grow,operate,people,serve}/agents -type d -name "*" -not -name "agents" 2>/dev/null | wc -l)
+dir_agents=$(find "$REPO_ROOT/agents" -maxdepth 1 -type f -name "*.md" 2>/dev/null | wc -l)
 echo "Agent directories found: $dir_agents"
 echo ""
 

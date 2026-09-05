@@ -11,11 +11,11 @@ import { createHash } from 'node:crypto';
 
 const HELPER_PATH = resolve(
   process.cwd(),
-  'agents/core/orchestrator/resources/product-context-loader.md'
+  'agents/orchestrator/resources/product-context-loader.md'
 );
 const ORCHESTRATOR_SKILL = resolve(
   process.cwd(),
-  'agents/core/orchestrator/SKILL.md'
+  'agents/orchestrator.md'
 );
 const ORCHESTRATION_REFERENCE = resolve(
   process.cwd(),
@@ -45,9 +45,9 @@ describe('V10.26.7 product_context loader helper', () => {
     expect(content).toMatch(/pwd/i);
   });
 
-  it('orchestrator SKILL.md references the new helper via @resources/', () => {
+  it('orchestrator agent file references the new helper via @<agent>/resources/', () => {
     const content = readFileSync(ORCHESTRATOR_SKILL, 'utf8');
-    expect(content).toMatch(/@resources\/product-context-loader\.md/);
+    expect(content).toMatch(/@orchestrator\/resources\/product-context-loader\.md/);
   });
 
   it('orchestration-reference.md still describes project_summary in enriched_context', () => {

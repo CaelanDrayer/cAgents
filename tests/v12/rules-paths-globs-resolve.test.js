@@ -130,7 +130,7 @@ describe('.claude/rules paths: globs resolve (A3-01 v12.8.0 archetype-move drift
     expect(PRE_MOVE_ROOTS.has(firstSegment('core/planner/**'))).toBe(true);
     // ...and the corrected forms are NOT flagged:
     expect(PRE_MOVE_ROOTS.has(firstSegment('agents/developer/**'))).toBe(false);
-    expect(PRE_MOVE_ROOTS.has(firstSegment('agents/core/planner/**'))).toBe(false);
+    expect(PRE_MOVE_ROOTS.has(firstSegment('agents/planner/**'))).toBe(false);
   });
 
   test.each(GLOB_PAIRS)('$rel :: $glob', ({ glob }) => {

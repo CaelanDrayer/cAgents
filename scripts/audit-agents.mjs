@@ -114,14 +114,23 @@ function parseFrontmatter(text) {
 function loadAgents() {
   // Returns array<{ name, path, archetype, branch?, description, capabilities, vibe,
   //                  tier, allowed_tools, body, bodyLines, tokens }>
-  const plugin = JSON.parse(fs.readFileSync(PLUGIN_JSON, 'utf8'));
+  // v12.68.0: the catalog is the flat agents/ directory — Claude Code discovers
+  // plugin agents with a non-recursive scan of it, so plugin.json no longer
+  // carries an `agents` array.
+  const agentsDir = path.join(ROOT, 'agents');
   const out = [];
-  for (const rel of plugin.agents || []) {
-    const abs = path.resolve(ROOT, rel.replace(/^\.\//, ''));
-    if (!fs.existsSync(abs)) continue;
+  const entries = fs.existsSync(agentsDir)
+    ? fs.readdirSync(agentsDir, { withFileTypes: true })
+        .filter((e) => e.isFile() && e.name.endsWith('.md'))
+        .map((e) => e.name)
+        .sort()
+    : [];
+  for (const fileName of entries) {
+    const rel = `agents/${fileName}`;
+    const abs = path.join(agentsDir, fileName);
     const text = fs.readFileSync(abs, 'utf8');
     const { fm, body } = parseFrontmatter(text);
-    const name = fm.name || path.basename(path.dirname(abs));
+    const name = fm.name || path.basename(abs, '.md');
     const capabilities = Array.isArray(fm.capabilities) ? fm.capabilities : [];
     const description = String(fm.description || '');
     const vibe = String(fm.vibe || '');

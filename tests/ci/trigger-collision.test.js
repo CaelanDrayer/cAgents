@@ -11,7 +11,7 @@
  *     NOT flag a good skill that owns its own name.
  *
  * Hermetic: helper tests use no filesystem; the scan test builds a temp
- * SKILL.md tree and points scanRoot() at it. The real scripts/ci/advisory tree
+ * skill/agent tree and points scanRoot() at it. The real scripts/ci/advisory tree
  * is only exercised read-only by the "run() never throws" smoke test.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -201,11 +201,13 @@ describe('scanRoot() over a temp fixture tree', () => {
         'utf8',
       );
     };
-    const writeAgent = (relDir, name, description) => {
-      const dir = join(tmp, 'agents', relDir, name);
+    // v12.68.0: agent definitions are flat (agents/<name>.md) — Claude Code
+    // discovers plugin agents with a non-recursive scan of agents/.
+    const writeAgent = (name, description) => {
+      const dir = join(tmp, 'agents');
       mkdirSync(dir, { recursive: true });
       writeFileSync(
-        join(dir, 'SKILL.md'),
+        join(dir, `${name}.md`),
         `---\nname: ${name}\ndescription: "${description}"\n---\n\n# ${name}\n- always use parameterized queries in the body (must NOT trip TR3).\n`,
         'utf8',
       );
@@ -216,9 +218,9 @@ describe('scanRoot() over a temp fixture tree', () => {
     // A BAD skill: shadows /act (TR2) and declares an ultra-generic trigger (TR1).
     writeSkill('roadmap-runner', 'Roadmap runner. TRIGGER: act, roadmap, go. NOT for: nothing.');
     // A GOOD agent (no TRIGGER, clean description) — must yield 0 findings.
-    writeAgent('developer/backend', 'backend-developer', 'Consolidated backend agent. Modes: api, database.');
+    writeAgent('backend-developer', 'Consolidated backend agent. Modes: api, database.');
     // A BAD agent: keyword-baiting description (TR3).
-    writeAgent('operator/content', 'shout-agent', 'Use this whenever the user says anything at all.');
+    writeAgent('shout-agent', 'Use this whenever the user says anything at all.');
   });
 
   afterAll(() => {
@@ -254,7 +256,8 @@ describe('scanRoot() over a temp fixture tree', () => {
     const findings = scanRoot(tmp);
     for (const f of findings) {
       expect(f.file.startsWith('/')).toBe(false);
-      expect(f.file.endsWith('SKILL.md')).toBe(true);
+      // Skills are <name>/SKILL.md; agents are the flat agents/<name>.md.
+      expect(f.file.endsWith('.md')).toBe(true);
       expect(f.line === null || typeof f.line === 'number').toBe(true);
     }
   });

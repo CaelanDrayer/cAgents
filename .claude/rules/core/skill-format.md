@@ -2,11 +2,11 @@
 paths:
   - ".claude/rules/core/skill-format.md"
   - ".claude/rules/core/progressive-disclosure.md"
-  - "agents/**/SKILL.md"
+  - "agents/*.md"
   - ".claude/skills/**/SKILL.md"
   - ".claude/rules/playbooks/README.md"
   - "scripts/scaffold-agent.sh"
-  - "scripts/sync-agents.sh"
+  - "scripts/ci/validate-agents.sh"
   - "scripts/lint-agents.sh"
   - "scripts/ci/validate-agents.sh"
   - "tests/skills/skill-structure.test.js"
@@ -16,7 +16,9 @@ paths:
 
 # SKILL.md Agent and Skill Format Specification
 
-V11.1.0 agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io). The v11.1.0 builder-role archetype tree replaced the per-domain `{domain}/agents/` layout — agents now live under one of 9 archetype roots, with a `branch:` segment for the three 3-level archetypes.
+Agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io).
+
+**Layout (v12.68.0)**: agent definitions are FLAT — `agents/<agent-name>.md` — because Claude Code discovers plugin agents with a NON-RECURSIVE scan of the plugin's `agents/` directory. A definition parked in a subdirectory is never registered (the symptom is `claude plugin details` reporting `Agents (0)`). The 9 builder-role archetypes and their branches survive as the `archetype:` / `branch:` frontmatter fields that the v11.1.0 tree encoded as directory levels. Per-agent tier-3 resources live at `agents/<agent-name>/resources/`.
 
 ## Frontmatter Schema
 
@@ -188,12 +190,13 @@ the regression test enforcing the ≥10 floor.
 ### Directory Structure (High-Value Agents)
 
 ```
-developer/fullstack/tech-lead/
-├── SKILL.md                    # Tier 1 + 2: Frontmatter + Instructions
-└── resources/
-    ├── typical-questions.md    # Tier 3: Full question catalog
-    ├── coordination-examples.md # Tier 3: Example workflows
-    └── anti-patterns.md        # Tier 3: What NOT to do
+agents/
+├── tech-lead.md                     # Tier 1 + 2: Frontmatter + Instructions
+└── tech-lead/
+    └── resources/
+        ├── typical-questions.md     # Tier 3: Full question catalog
+        ├── coordination-examples.md # Tier 3: Example workflows
+        └── anti-patterns.md         # Tier 3: What NOT to do
 ```
 
 ### Loading Strategy
@@ -218,16 +221,17 @@ loading_tiers:
 
 ### @path Reference Syntax
 
-In SKILL.md body, reference tier 3 resources:
+In an agent body, reference tier 3 resources. Paths are agent-file-relative,
+so they carry the agent's own name:
 
 ```markdown
 ## Detailed Questions
 
-See @resources/typical-questions.md for the full question catalog.
+See @tech-lead/resources/typical-questions.md for the full question catalog.
 
 ## Coordination Examples
 
-Reference @resources/coordination-examples.md for workflow examples.
+Reference @tech-lead/resources/coordination-examples.md for workflow examples.
 ```
 
 The `@path` syntax triggers on-demand loading when the resource is needed.
@@ -262,11 +266,11 @@ developer/backend/backend-developer/
     └── testing-guide.md       # Testing best practices
 ```
 
-For a 2-level archetype (e.g. `analyst`), the path is `analyst/{agent-name}/SKILL.md` and only `archetype:` is required (no `branch:`):
+For a 2-level archetype (e.g. `analyst`) only `archetype:` is required (no
+`branch:`). The file path is the same flat shape either way:
 
 ```
-analyst/data-scientist/
-└── SKILL.md
+agents/data-scientist.md
     ---
     name: data-scientist
     archetype: analyst
@@ -276,37 +280,37 @@ analyst/data-scientist/
 
 ## Conversion Checklist
 
-When creating a new agent in the v11.1.0 archetype tree:
+When creating a new agent:
 
-- [ ] Pick the archetype root (`developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`, `strategist`, `core`, `leadership`)
+- [ ] Pick the archetype (`developer`, `operator`, `advisor`, `analyst`, `creator`, `writer`, `strategist`, `core`, `leadership`)
 - [ ] If 3-level archetype, pick the branch (see valid branches above)
-- [ ] Create `{archetype}/{branch?}/{agent-name}/SKILL.md`
+- [ ] Create `agents/{agent-name}.md` — the file basename MUST equal `name:`
 - [ ] Frontmatter: `name`, `archetype`, `branch` (3-level only), `description` at top level; `tier` in `metadata:`
-- [ ] Extract detailed content to `resources/`
-- [ ] Add `@path` references in SKILL.md body
-- [ ] Run `bash scripts/sync-agents.sh` to register the agent in `.claude-plugin/plugin.json`
-- [ ] Run `bash scripts/lint-agents.sh` and `bash scripts/ci/validate-agents.sh` to verify
+- [ ] Extract detailed content to `agents/{agent-name}/resources/`
+- [ ] Add `@{agent-name}/resources/<file>.md` references in the body
+- [ ] No registration step — the flat `agents/` scan IS the registry
+- [ ] Run `bash scripts/ci/validate-agents.sh` to verify
 - [ ] Test agent loading
 - [ ] Measure token savings
 
 ## Deprecation: `_deprecated/` Bucket Pattern (v12.0.5+)
 
-Agents slated for removal should be moved to a `_deprecated/` bucket
-within their archetype root (e.g., `operator/_deprecated/old-agent/SKILL.md`).
-Agents under `_deprecated/`:
+Agents slated for removal should be moved to the `_deprecated/` bucket
+(e.g., `agents/_deprecated/old-agent/SKILL.md`). Agents under `_deprecated/`:
 
 - **Are kept on disk** — `scripts/migration/v12-aliases.yaml` can still
   resolve old user references to the deprecated agent.
-- **Are excluded from `.claude-plugin/plugin.json`** — `scripts/sync-agents.sh`
-  skips them, so the planner and router will not select them for new work.
+- **Are structurally unregistered** — the `agents/` scan is non-recursive, so
+  anything in a subdirectory is invisible to discovery, and the planner and
+  router will not select it for new work.
 - **Should not appear in CLAUDE.md catalog counts** — the catalog reflects
   only active agents.
 
 ### Promotion path
 
-An agent moved to `_deprecated/` can be restored by moving its directory
-back to its prior archetype/branch location. `scripts/sync-agents.sh` will
-pick it up on the next run.
+An agent in `_deprecated/` is restored by moving its definition back up to
+`agents/<name>.md` (and its playbooks to `agents/<name>/resources/`). It is
+discovered on the next session load — there is nothing to re-register.
 
 ### Eventual removal
 

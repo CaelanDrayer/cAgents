@@ -23,19 +23,10 @@ import yaml from 'js-yaml';
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // playwright-test-engineer was absorbed into qa-lead as the `playwright` mode.
-const SKILL_PATH = path.join(
-  REPO_ROOT,
-  'agents',
-  'developer',
-  'quality',
-  'qa-lead',
-  'SKILL.md'
-);
+const SKILL_PATH = path.join(REPO_ROOT, 'agents', 'qa-lead.md');
 const PLAYWRIGHT_RESOURCE = path.join(
   REPO_ROOT,
   'agents',
-  'developer',
-  'quality',
   'qa-lead',
   'resources',
   'playwright.md'

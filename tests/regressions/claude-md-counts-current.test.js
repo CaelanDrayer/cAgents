@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, lstatSync, existsSync, statSync } from 'fs';
+import { ARCHETYPES, archetypeCounts } from '../helpers/agent-catalog.js';
 import { join } from 'path';
 
 /**
@@ -26,30 +27,17 @@ import { join } from 'path';
 
 const ROOT = process.cwd();
 
-function countSkillMd(dir) {
-  let count = 0;
-  if (!existsSync(dir)) return 0;
-  for (const entry of readdirSync(dir)) {
-    // v12.4.0: skip _deprecated/ buckets (culled agents kept for alias resolution)
-    if (entry === '_deprecated') continue;
-    const full = join(dir, entry);
-    let lst;
-    try { lst = lstatSync(full); } catch { continue; }
-    if (lst.isDirectory()) {
-      count += countSkillMd(full);
-    } else if (entry === 'SKILL.md') {
-      count++;
-    }
-  }
-  return count;
+// v12.68.0: agent definitions are flat (agents/<name>.md) and archetype is a
+// frontmatter field — see tests/helpers/agent-catalog.js.
+const ARCH_COUNTS = archetypeCounts();
+function countSkillMd(arch) {
+  return ARCH_COUNTS[arch] || 0;
 }
 
 function countCjs(dir) {
   if (!existsSync(dir)) return 0;
   return readdirSync(dir).filter((f) => f.endsWith('.cjs')).length;
 }
-
-const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
 
 describe('CLAUDE.md count claims match reality', () => {
   const claudeMd = readFileSync(join(ROOT, 'CLAUDE.md'), 'utf8');
@@ -58,7 +46,7 @@ describe('CLAUDE.md count claims match reality', () => {
     let total = 0;
     const perArchetype = {};
     for (const arch of ARCHETYPES) {
-      const c = countSkillMd(join(ROOT, 'agents', arch));
+      const c = countSkillMd(arch);
       perArchetype[arch] = c;
       total += c;
     }
@@ -75,7 +63,7 @@ describe('CLAUDE.md count claims match reality', () => {
   it('claim about archetype distribution lists current per-archetype counts', () => {
     const counts = {};
     for (const arch of ARCHETYPES) {
-      counts[arch] = countSkillMd(join(ROOT, 'agents', arch));
+      counts[arch] = countSkillMd(arch);
     }
     // Each archetype's current count must appear adjacent to its name somewhere in CLAUDE.md
     // (allowing for either "developer 33" or "developer (33)" or similar formatting)

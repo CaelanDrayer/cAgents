@@ -95,7 +95,7 @@ domains — see WI-2 acceptance criteria).
 2. **No software examples in non-software domain files.** A `research.md`
    that talks about JWT or API endpoints fails review.
 3. **Name a real follow-up dispatch agent** that exists in the cAgents
-   catalog (use `bash scripts/sync-agents.sh && grep <name> .claude-plugin/plugin.json`
+   catalog (use `ls agents/<name>.md`
    to verify). If no perfect match exists, fall back to the
    nearest neighbor (e.g. `cagents:technical-writer` for Education,
    `cagents:market-research-analyst` for Research).

@@ -1,7 +1,7 @@
 ---
 paths:
   - "**/agents/**/*.md"
-  - "**/agents/**/SKILL.md"
+  - "**/agents/*.md"
 ---
 
 # Claude Search Optimization (CSO) Guidelines

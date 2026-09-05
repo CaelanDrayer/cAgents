@@ -397,6 +397,9 @@ function scanContentSecurity(text, filePath) {
 // ---------------------------------------------------------------------------
 
 function walkSkillFiles(dir, acc) {
+  // v12.68.0: agent definitions are FLAT (agents/<name>.md) because Claude
+  // Code discovers plugin agents with a non-recursive scan of agents/. Files
+  // in subdirectories are per-agent resources, not definitions.
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -404,14 +407,8 @@ function walkSkillFiles(dir, acc) {
     return acc;
   }
   for (const e of entries) {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) {
-      if (e.name === '_deprecated' || e.name === 'node_modules') continue;
-      walkSkillFiles(full, acc);
-    } else if (e.isFile() && e.name === 'SKILL.md') {
-      if (full.includes(`${path.sep}_deprecated${path.sep}`)) continue;
-      acc.push(full);
-    }
+    if (!e.isFile() || !e.name.endsWith('.md')) continue;
+    acc.push(path.join(dir, e.name));
   }
   return acc;
 }

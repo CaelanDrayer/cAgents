@@ -26,8 +26,8 @@ readonly CAGENTS_ROOT="${CAGENTS_ROOT:-$(pwd)}"
 discover_agents() {
   local base_dir="${1:-$CAGENTS_ROOT}"
 
-  # Find all .md files in */agents/ directories
-  find "$base_dir" -type f -name "*.md" -path "*/agents/*" 2>/dev/null | \
+  # v12.68.0: agent definitions are flat — agents/<name>.md.
+  find "$base_dir/agents" -maxdepth 1 -type f -name "*.md" 2>/dev/null | \
     grep -v "_archive" | \
     grep -v "node_modules" | \
     sort

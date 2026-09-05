@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.67.0
+# Version: 12.68.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -256,7 +256,10 @@ quality_checks() {
     log_info "Checking directory structure..."
     ((checks_total++))
     local dirs_ok=true
-    for dir in "agents" "agents/core" "agents/developer" "agents/operator" "agents/advisor" "agents/analyst" "agents/creator" "agents/writer" "agents/strategist" "agents/leadership" "agents/_overlay/people" "agents/_overlay/shared" ".claude/hooks" ".claude/rules"; do
+    # v12.68.0: agent definitions are flat (agents/<name>.md) — there are no
+    # per-archetype directories to check. agents/core and agents/leadership
+    # survive because they hold config/memory/shared resources, not agents.
+    for dir in "agents" "agents/core" "agents/leadership" "agents/_overlay/people" "agents/_overlay/shared" ".claude/hooks" ".claude/rules"; do
         if [[ ! -d "$PROJECT_ROOT/$dir" ]]; then
             log_error "Missing directory: $dir"
             dirs_ok=false
@@ -652,7 +655,7 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.67.0"
+    log_section "cAgents CI Runner v12.68.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

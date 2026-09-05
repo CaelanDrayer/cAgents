@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'fs';
+import { agentFiles } from '../helpers/agent-catalog.js';
 import { join } from 'path';
 
 /**
@@ -32,37 +33,18 @@ import { join } from 'path';
  */
 
 const ROOT = process.cwd();
-const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
 
-function* walkSkillMd(dir) {
-  let entries;
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    // v12.4.0: skip _deprecated/ buckets (culled agents, not part of active catalog)
-    if (entry === '_deprecated') continue;
-    const full = join(dir, entry);
-    let stat;
-    try { stat = statSync(full); } catch { continue; }
-    if (stat.isDirectory()) {
-      yield* walkSkillMd(full);
-    } else if (entry === 'SKILL.md') {
-      yield full;
-    }
-  }
+// v12.68.0: agent definitions are flat (agents/<name>.md) — see
+// tests/helpers/agent-catalog.js.
+function* walkSkillMd() {
+  yield* agentFiles();
 }
 
 function collectAllAgentNames() {
   const names = new Set();
-  for (const arch of ARCHETYPES) {
-    for (const skillMd of walkSkillMd(join(ROOT, 'agents', arch))) {
-      const content = readFileSync(skillMd, 'utf8');
-      const m = content.match(/^name:\s*([a-z0-9-]+)\s*$/m);
-      if (m) names.add(m[1]);
-    }
+  for (const agentMd of agentFiles()) {
+    const m = readFileSync(agentMd, 'utf8').match(/^name:\s*([a-z0-9-]+)\s*$/m);
+    if (m) names.add(m[1]);
   }
   return names;
 }
@@ -87,14 +69,12 @@ describe('related_agents references resolve to real agents', () => {
     expect(allAgents.size).toBeGreaterThan(50);  // sanity: v12 consolidation floor 57
 
     const broken = [];
-    for (const arch of ARCHETYPES) {
-      for (const skillMd of walkSkillMd(join(ROOT, 'agents', arch))) {
-        const content = readFileSync(skillMd, 'utf8');
-        const refs = extractRelatedAgentNames(content);
-        for (const ref of refs) {
-          if (!allAgents.has(ref)) {
-            broken.push({ skill: skillMd.replace(ROOT + '/', ''), broken_ref: ref });
-          }
+    for (const skillMd of walkSkillMd()) {
+      const content = readFileSync(skillMd, 'utf8');
+      const refs = extractRelatedAgentNames(content);
+      for (const ref of refs) {
+        if (!allAgents.has(ref)) {
+          broken.push({ skill: skillMd.replace(ROOT + '/', ''), broken_ref: ref });
         }
       }
     }

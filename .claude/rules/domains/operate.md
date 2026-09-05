@@ -1,6 +1,7 @@
 ---
 paths:
-  - "agents/operator/business-ops/**"
+  - "agents/operations-manager.md"
+  - "agents/operations-manager/**"
 ---
 
 # Operations & Finance Guidelines

@@ -1,7 +1,17 @@
 ---
 paths:
-  - "agents/operator/marketing-sales/**"
-  - "agents/strategist/**"
+  - "agents/marketing-analyst.md"
+  - "agents/marketing-analyst/**"
+  - "agents/marketing-strategist.md"
+  - "agents/marketing-strategist/**"
+  - "agents/sales-strategist.md"
+  - "agents/sales-strategist/**"
+  - "agents/game-designer.md"
+  - "agents/game-designer/**"
+  - "agents/product-owner.md"
+  - "agents/product-owner/**"
+  - "agents/strategic-planner.md"
+  - "agents/strategic-planner/**"
 ---
 
 # Business Domain Guidelines
