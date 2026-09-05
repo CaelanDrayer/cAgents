@@ -1,10 +1,37 @@
 # cAgents Release Notes
 
-**Current Version**: 12.68.0
+**Current Version**: 12.68.1
 **Release Date**: September 4, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.68.1 — September 4, 2026 (test-isolation hardening)
+
+Two load-dependent test flakes fixed at the root rather than tolerated. Both
+passed standalone and failed intermittently in the full parallel run — which is
+exactly what kept them mislabelled as ambient noise on a busy machine.
+
+**`team-stop.test.js`** built its fixture inside the REAL shared
+`cagents-memory/sessions/` store under a fixed session id. `team-stop.cjs`
+resolves `anySession` through `findActiveSession({fallbackHeuristic: true})`
+when the hinted directory is absent, so a concurrently-running LIVE session
+could satisfy `teamSessionActivelyWorking`. The liveness guard then fills only
+the `completed_at`/`result` placeholders and deliberately leaves
+`phase`/`pipeline_state` alone — precisely the observed failure. The fixture now
+lives in a per-run temp project dir injected via `CLAUDE_PROJECT_DIR` (which
+`hook-utils.cjs` resolves `AGENT_MEMORY_DIR` from) and `CAGENTS_TEST_ROOT`.
+This is the same fix applied to 8 sibling files in v12.52.0 / v12.60.1; this
+one had been left behind.
+
+**`session-catchup-liveness.test.js`** used a 200 ms liveness window, then
+stamped `mtime = now` and read it back from a freshly spawned node process.
+Under full-suite parallelism that round trip exceeded 200 ms, so the test's own
+"fresh" session aged out before it was read and appeared in the resume offer it
+was asserting against. Window widened to 10 s (still far below any real
+session's idle time), stale fixture pushed to 2 minutes back.
+
+Two consecutive full-suite runs: **2714 passing, 0 failed**.
 
 ## V12.68.0 — September 4, 2026 (flat agent layout — the plugin registered zero agents)
 
@@ -2205,5 +2232,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.68.0
+**Current Version**: 12.68.1
 **Release Date**: August 21, 2026

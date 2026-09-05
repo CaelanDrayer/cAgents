@@ -10,6 +10,40 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.68.1] - 2026-09-04
+
+Two load-dependent test flakes fixed at the root rather than tolerated. Both
+passed standalone and failed intermittently in the full parallel run, which is
+what kept them mislabelled as ambient noise.
+
+### Fixed
+- **`tests/hooks/team-stop.test.js` — shared-sessions-dir isolation.** The
+  fixture was built inside the REAL `cagents-memory/sessions/` store under a
+  fixed session id. `team-stop.cjs` resolves `anySession` via
+  `findActiveSession({fallbackHeuristic: true})` whenever the hinted directory
+  is absent, so a concurrently-running LIVE session (running child agent or
+  fresh heartbeat) could satisfy `teamSessionActivelyWorking`. The liveness
+  guard then deliberately fills only the `completed_at`/`result` placeholders
+  and leaves `phase`/`pipeline_state` alone — producing exactly the observed
+  failure (`expected 'phase: executing...' to contain 'phase: completed'`).
+  The fixture now lives in a per-run temp project dir injected through
+  `CLAUDE_PROJECT_DIR` (which `hook-utils.cjs` resolves `AGENT_MEMORY_DIR`
+  from) plus `CAGENTS_TEST_ROOT` (which `team-stop.cjs`'s own
+  `resolveMemoryRoot` honors). Same fix as the 8 files closed in v12.52.0 /
+  v12.60.1 — this file was left behind.
+- **`tests/hooks/session-catchup-liveness.test.js` — window tighter than the
+  spawn cost.** The test used a 200 ms liveness threshold, then stamped
+  `mtime = now` and read it back from a freshly spawned node process. Under
+  full-suite parallelism that round trip exceeded 200 ms, so the "fresh"
+  session aged out before it was read, appeared in the resume offer, and the
+  filter assertion failed. Threshold raised to 10 s (still far below any real
+  session's idle time) and the stale fixture pushed to 2 minutes back, so
+  neither side can be crossed by scheduling jitter.
+
+### Testing
+- Two consecutive full-suite runs: 2714 passing, 0 failed (previously 1
+  intermittent failure per run).
+
 ## [12.68.0] - 2026-09-04
 
 Flat agent layout, so Claude Code can actually discover the catalog. Shipped as

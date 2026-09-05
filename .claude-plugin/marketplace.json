@@ -14,7 +14,7 @@
     {
       "name": "cagents",
       "description": "Universal multi-domain agent orchestration framework. Your AI workforce: 60 specialized agents across 9 builder-role archetypes, coordinated by an intelligent pipeline. /act routes any task through controller + specialist agents (review/audit/optimize/improve modes via keyword router), /team runs parallel execution waves with Strategic Mode for cross-domain initiatives, /designer guides design exploration, /helper recommends commands.",
-      "version": "12.68.0",
+      "version": "12.68.1",
       "author": {
         "name": "CaelanDrayer",
         "email": "caelan@caelandrayer.ca"

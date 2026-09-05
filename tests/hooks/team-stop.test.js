@@ -1,19 +1,50 @@
+/**
+ * ISOLATION (v12.68.0): this suite used to build its fixture inside the REAL
+ * shared `cagents-memory/sessions/` store under a fixed session id. That made
+ * it load-flaky in the full run: team-stop resolves `anySession` via
+ * `findActiveSession({fallbackHeuristic: true})` whenever the hinted directory
+ * is not present, and a concurrently-running LIVE session (running child agent
+ * or fresh heartbeat) would satisfy `teamSessionActivelyWorking`. The liveness
+ * guard then deliberately fills only the `completed_at`/`result` placeholders
+ * and leaves `phase`/`pipeline_state` untouched — exactly the observed failure
+ * ("expected 'phase: executing...' to contain 'phase: completed'").
+ *
+ * The fixture now lives in a per-run temp project dir injected through
+ * CLAUDE_PROJECT_DIR (which hook-utils.cjs resolves AGENT_MEMORY_DIR from) plus
+ * CAGENTS_TEST_ROOT (which team-stop.cjs's own resolveMemoryRoot honors), so no
+ * live session is reachable and the guard cannot be tripped by a neighbour.
+ * Same fix as the 8 files closed in v12.52.0 / v12.60.1.
+ */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'team-stop.cjs');
-const AGENT_MEMORY = join(process.cwd(), 'cagents-memory');
 const TEST_SESSION = 'team_test-stop_260317_999';
-const SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
+
+let PROJECT_DIR;
+let AGENT_MEMORY;
+let SESSION_DIR;
 
 function runHook(input, opts = {}) {
   try {
     const result = execSync(
       `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-      { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, CAGENTS_ACTIVE_SESSION: '' } }
+      {
+        encoding: 'utf8',
+        timeout: 5000,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          ...process.env,
+          CAGENTS_ACTIVE_SESSION: '',
+          CLAUDE_PROJECT_DIR: PROJECT_DIR,
+          CAGENTS_TEST_ROOT: PROJECT_DIR,
+          ...opts,
+        },
+      }
     );
     return JSON.parse(result.trim());
   } catch (e) {
@@ -24,6 +55,12 @@ function runHook(input, opts = {}) {
 
 describe('team-stop.cjs', () => {
   beforeEach(() => {
+    PROJECT_DIR = join(
+      tmpdir(),
+      `cagents-team-stop-${process.pid.toString(36)}-${Math.floor(process.hrtime()[1] % 1e6).toString(36)}`
+    );
+    AGENT_MEMORY = join(PROJECT_DIR, 'cagents-memory');
+    SESSION_DIR = join(AGENT_MEMORY, 'sessions', TEST_SESSION);
     mkdirSync(join(SESSION_DIR, 'team', 'metrics'), { recursive: true });
     writeFileSync(join(SESSION_DIR, 'status.yaml'),
       'phase: executing\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
@@ -32,7 +69,7 @@ describe('team-stop.cjs', () => {
   });
 
   afterEach(() => {
-    rmSync(SESSION_DIR, { recursive: true, force: true });
+    rmSync(PROJECT_DIR, { recursive: true, force: true });
   });
 
   it('should exist', () => {

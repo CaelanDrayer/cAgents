@@ -32,8 +32,13 @@ const SID_STALE = `act_liveness-stale_${TS}`;
 const DIR_FRESH = join(SESSIONS_DIR, SID_FRESH);
 const DIR_STALE = join(SESSIONS_DIR, SID_STALE);
 
-// Short liveness threshold for the test (200ms).
-const LIVENESS_MS = '200';
+// Liveness threshold for the test. This must comfortably exceed the wall-clock
+// cost of spawning the hook (node cold start + fs reads) on a LOADED machine --
+// the fixture stamps mtime=now and the hook reads it in a child process, so a
+// too-tight window ages the "fresh" session out before it is ever read and the
+// filter assertion fails spuriously. 200ms was not enough under full-suite
+// parallelism; 10s is far below any real session's idle time.
+const LIVENESS_MS = '10000';
 
 function makeSession(dir, sid, mtimeOffsetMs) {
   mkdirSync(join(dir, 'workflow'), { recursive: true });
@@ -71,8 +76,9 @@ describe('session-catchup liveness filter (WI-4)', () => {
     if (existsSync(DIR_STALE)) rmSync(DIR_STALE, { recursive: true, force: true });
     // Fresh session: mtime = now.
     makeSession(DIR_FRESH, SID_FRESH, 0);
-    // Stale session: mtime = 2 × threshold in the past.
-    makeSession(DIR_STALE, SID_STALE, -1000); // 1 second in the past >> 200ms threshold
+    // Stale session: mtime well beyond the threshold, so no amount of load can
+    // make it look fresh (the inverse of the flake fixed above).
+    makeSession(DIR_STALE, SID_STALE, -120_000); // 2 minutes in the past >> 10s threshold
   });
 
   afterEach(() => {
