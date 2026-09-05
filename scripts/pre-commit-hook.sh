@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # pre-commit-hook.sh — Git pre-commit hook for cAgents
 #
-# Runs lint-agents.sh and sync-agents.sh before each commit.
+# Runs lint-agents.sh before each commit.
 #
 # Install:
 #   bash scripts/pre-commit-hook.sh --install
@@ -29,7 +29,7 @@ if [[ "${1:-}" == "--install" ]]; then
   cp "${BASH_SOURCE[0]}" "$TARGET"
   chmod +x "$TARGET"
   echo "✓ Pre-commit hook installed at .git/hooks/pre-commit"
-  echo "  Runs: lint-agents.sh (if present), sync-agents.sh (if present)"
+  echo "  Runs: lint-agents.sh (if present)"
   exit 0
 fi
 
@@ -46,7 +46,6 @@ else
 fi
 
 LINT_SCRIPT="$ROOT/scripts/lint-agents.sh"
-SYNC_SCRIPT="$ROOT/scripts/sync-agents.sh"
 
 echo "[pre-commit] cAgents pre-commit checks"
 
@@ -64,34 +63,11 @@ else
   echo "[pre-commit] ⚠ lint-agents.sh not found — skipping agent lint"
 fi
 
-# ── Step 2: Sync agents ──────────────────────────────────────────────────────
-if [[ -f "$SYNC_SCRIPT" ]]; then
-  echo "[pre-commit] Running sync-agents.sh ..."
-  if ! bash "$SYNC_SCRIPT"; then
-    echo ""
-    echo "ERROR: sync-agents.sh failed. See output above." >&2
-    exit 1
-  fi
-  echo "[pre-commit] ✓ sync-agents.sh completed"
-
-  # Stage plugin.json if it was modified by sync-agents.sh
-  PLUGIN_JSON="$ROOT/.claude-plugin/plugin.json"
-  if [[ -f "$PLUGIN_JSON" ]]; then
-    if ! git -C "$ROOT" diff --quiet -- ".claude-plugin/plugin.json" 2>/dev/null; then
-      echo "[pre-commit] Staging updated .claude-plugin/plugin.json"
-      git -C "$ROOT" add ".claude-plugin/plugin.json"
-    fi
-  fi
-  # Also stage domain plugin.json files if they changed
-  while IFS= read -r changed_file; do
-    if [[ "$changed_file" == *".claude-plugin/plugin.json" ]]; then
-      echo "[pre-commit] Staging $changed_file"
-      git -C "$ROOT" add "$changed_file"
-    fi
-  done < <(git -C "$ROOT" diff --name-only 2>/dev/null)
-else
-  echo "[pre-commit] ⚠ sync-agents.sh not found — skipping plugin.json sync"
-fi
+# ── Step 2: (removed) ────────────────────────────────────────────────────────
+# v12.68.0 deleted scripts/sync-agents.sh. Claude Code discovers plugin agents
+# by scanning agents/, so plugin.json no longer carries an `agents` array and
+# there is nothing to regenerate or stage. Creating agents/<name>.md registers
+# the agent; scripts/ci/validate-agents.sh verifies the layout.
 
 echo "[pre-commit] ✓ All checks passed"
 exit 0
