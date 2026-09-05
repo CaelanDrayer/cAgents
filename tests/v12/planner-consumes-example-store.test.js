@@ -11,9 +11,9 @@
  * between them.
  *
  * Asserts:
- *   1. agents/core/planner/SKILL.md references the example store (its catalog
+ *   1. agents/planner.md references the example store (its catalog
  *      `docs/example-store/_index.yaml` or the `docs/example-store` dir).
- *   2. The resource doc agents/core/planner/resources/example-store-selection.md
+ *   2. The resource doc agents/planner/resources/example-store-selection.md
  *      exists.
  *   3. The SKILL.md @path-references that resource doc.
  *   4. The resource doc itself references the example store / its catalog.
@@ -27,11 +27,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'planner', 'SKILL.md');
+const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'planner.md');
 const RESOURCE_DOC = path.join(
   REPO_ROOT,
   'agents',
-  'core',
   'planner',
   'resources',
   'example-store-selection.md'
@@ -54,14 +53,14 @@ describe('H1 (v12.x): planner consumes the example store', () => {
   it('the resource doc example-store-selection.md exists', () => {
     expect(
       fs.existsSync(RESOURCE_DOC),
-      'agents/core/planner/resources/example-store-selection.md does not exist'
+      'agents/planner/resources/example-store-selection.md does not exist'
     ).toBe(true);
   });
 
   it('planner SKILL.md @path-references the resource doc', () => {
     const body = fs.readFileSync(PLANNER_SKILL, 'utf8');
     expect(
-      body.includes('@agents/core/planner/resources/example-store-selection.md'),
+      body.includes('@agents/planner/resources/example-store-selection.md'),
       'planner SKILL.md does not @path-reference resources/example-store-selection.md'
     ).toBe(true);
   });

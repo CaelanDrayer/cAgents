@@ -10,6 +10,90 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.68.0] - 2026-09-04
+
+Flat agent layout, so Claude Code can actually discover the catalog. Shipped as
+a **minor** bump: 60 agent definitions move, and the change touches hooks,
+CI scripts, rules, docs, and tests — far past the patch-level 5-non-sync-file
+cap in `check_tiny_bump`.
+
+### Fixed
+- **Plugin registered ZERO agents.** `claude plugin details cagents` reported
+  `Agents (0)` and plugin validation reported *"No agent files found in
+  specified directories"*. Two independent mismatches with Claude Code's
+  discovery contract caused it:
+  1. **Nesting.** Definitions lived at
+     `agents/{archetype}/[{branch}/]{agent-name}/SKILL.md`. Claude Code
+     discovers plugin agents with a **non-recursive** scan of the plugin's
+     `agents/` directory, so nothing below the top level was ever seen.
+     (Verified empirically against CC 2.1.260: nested files and symlinks are
+     both ignored; only `agents/*.md` registers.)
+  2. **The `agents` manifest array.** Its accepted shape differs across Claude
+     Code versions — 2.1.260's schema requires `./`-prefixed `.md` **file**
+     paths and hard-errors on a directory, while the validator that reported
+     this bug treats the same entries as **directories**. No single value
+     satisfies both. Omitting the field and shipping flat files is the only
+     form that works everywhere, and is what every first-party Anthropic
+     plugin does.
+
+  Fix: `agents/<name>.md` with per-agent resources at
+  `agents/<name>/resources/`, and no `agents` key in `.claude-plugin/plugin.json`.
+  Verified: `claude plugin details` now reports **`Agents (60)`**.
+- **Plugin description exceeded the 500-character cap** — validation reported
+  *"Plugin description must be at most 500 characters"*. `plugin.json` was 566
+  and `marketplace.json` `plugins[0]` was 514; both trimmed (483 / 438) while
+  keeping the `60 agents` + `9 builder-role archetypes` tokens that
+  `manifest-description-accuracy.test.js` requires.
+
+### Changed
+- **Archetype and branch are frontmatter, not directories.** The 9 builder-role
+  archetypes and their branches are unchanged as a taxonomy — they now live
+  only in each agent's `archetype:` / `branch:` fields, which every agent
+  already declared. Per-archetype counts are identical (developer 8, operator 8,
+  advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16,
+  leadership 9).
+- **Resource references are agent-qualified**: `@resources/<file>.md` ->
+  `@<agent-name>/resources/<file>.md` (still agent-file-relative; the agent file
+  now sits in `agents/`, so the path carries the owner's name). 57 agents with
+  resources updated.
+- **Agent registration is structural.** Creating `agents/<name>.md` registers
+  the agent — there is no sync step. `scripts/sync-agents.sh` (whose only job
+  was regenerating the manifest array) and its test are **removed**.
+- `agents/core/{config,memory}`, `agents/leadership/{config,resources}`, and
+  `agents/_overlay/**` are unchanged — they hold config and shared playbooks,
+  not agent definitions.
+- `_deprecated/` agents are now structurally unregistered (a subdirectory is
+  invisible to the non-recursive scan) rather than filtered by a script.
+
+### Internal
+- Hooks repointed from the manifest array to the flat directory:
+  `session-init-gate.cjs` (preserving the `null` = "cannot verify" signal from
+  v12.62.2 — the sentinel is now an unreadable `agents/`),
+  `model-routing-advisor.cjs`, and `controller-delegation-validator.cjs` (whose
+  archetype/branch candidate-path grid resolved no tiers under the flat layout,
+  making every writer look controller-tier and over-denying; the pre-v12.68.0
+  paths are kept as a fallback).
+- CI/tooling updated for the flat catalog: `validate-agents.sh` (checks 1/5/6/7/
+  8/14 now frontmatter-driven, plus a new nested-definition guard),
+  `validate-counts.sh`, `lint-agents.sh`, `audit-orphans.sh`, and the three
+  `scripts/ci/advisory/` scanners — which had silently degraded to scanning
+  **zero** agents while still reporting "ok".
+- `.claude/rules/**` `paths:` globs expanded from archetype directories to the
+  agents they scope (29 globs across 15 rule files), so path-conditional rules
+  keep loading for the same work.
+- New `tests/helpers/agent-catalog.js` — one shared source for the flat catalog,
+  replacing per-test archetype walkers.
+
+### Testing
+- **New**: `tests/regressions/flat-agent-discovery.test.js` — pins the
+  discovery contract that broke: flat `agents/*.md` exist, no nested
+  `SKILL.md`, `plugin.json` has no `agents` key, and every agent's `name`
+  matches its filename (discovery keys off the filename).
+- **New**: 500-character cap on all three manifest descriptions, added to
+  `tests/v12/manifest-description-accuracy.test.js`.
+- Suite: 2713 passing (up from 2524 — the pre-existing `team-stop.cjs`
+  isolation flake is unchanged and passes standalone).
+
 ## [12.67.0] - 2026-08-21
 
 Stale-reference cleanup finishing the `/run` -> `/act` rename. Shipped as a

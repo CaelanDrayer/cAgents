@@ -124,38 +124,40 @@ const ALLOWED_PATTERNS = [
 // automatically: a renamed, added, or consolidated agent is picked up on the
 // next lookup with no hook edit required.
 //
-// Candidate paths are built from the fixed v11.1.0 archetype/branch grid
-// (skill-format.md) rather than a recursive directory walk — the grid is
-// small (~20 combinations) and static, so this is the minimal-solution-ladder
-// rung (cheap fixed lookup beats a repo-wide recursive scan on every write).
-const ARCHETYPES_3LEVEL = {
+// v12.68.0: agent definitions are flat (agents/<name>.md), so the name maps
+// to exactly ONE path — no archetype/branch grid to walk. The pre-v12.68.0
+// nested path is kept as a fallback so the hook still resolves tiers when it
+// runs against an older checkout (a miss here means "unresolved", which the
+// handler fail-safes to controller-tier and DENIES, so a stale layout must not
+// silently change the verdict).
+const LEGACY_ARCHETYPES_3LEVEL = {
   developer: ['backend', 'frontend', 'fullstack', 'infrastructure', 'quality'],
   operator: ['support', 'business-ops', 'people-ops', 'marketing-sales', 'content'],
   advisor: ['legal', 'health', 'education', 'personal'],
 };
-const ARCHETYPES_FLAT = ['analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
+const LEGACY_ARCHETYPES_FLAT = ['analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
 
 function _candidateSkillPaths(bareName) {
-  const candidates = [];
-  for (const archetype of Object.keys(ARCHETYPES_3LEVEL)) {
-    for (const branch of ARCHETYPES_3LEVEL[archetype]) {
+  const candidates = [path.join(PLUGIN_ROOT, 'agents', `${bareName}.md`)];
+  for (const archetype of Object.keys(LEGACY_ARCHETYPES_3LEVEL)) {
+    for (const branch of LEGACY_ARCHETYPES_3LEVEL[archetype]) {
       candidates.push(path.join(PLUGIN_ROOT, 'agents', archetype, branch, bareName, 'SKILL.md'));
     }
   }
-  for (const archetype of ARCHETYPES_FLAT) {
+  for (const archetype of LEGACY_ARCHETYPES_FLAT) {
     candidates.push(path.join(PLUGIN_ROOT, 'agents', archetype, bareName, 'SKILL.md'));
   }
   return candidates;
 }
 
 // Module-level cache: name -> tier ('controller'|'execution'|'infrastructure'|
-// 'support'|null). Avoids re-walking the candidate grid for repeated writes by
-// the same agent within one hook process lifetime.
+// 'support'|null). Avoids re-resolving for repeated writes by the same agent
+// within one hook process lifetime.
 const _tierCache = new Map();
 
 /**
  * Resolve a bare agent name (e.g. "tech-lead", "cagents:backend-developer") to
- * its declared `metadata.tier` by reading its SKILL.md frontmatter. Returns
+ * its declared `metadata.tier` by reading its agent-file frontmatter. Returns
  * null when the agent cannot be found or its frontmatter has no `tier:` field
  * — callers MUST treat a null result as "unresolved" and apply their own
  * fail-safe (see handler() below: unresolved is treated as controller-tier for

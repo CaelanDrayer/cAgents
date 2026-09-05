@@ -42,33 +42,12 @@ let agentSkillByName = null;
 function indexAgentSkills() {
   if (agentSkillByName) return agentSkillByName;
   agentSkillByName = new Map();
-  // Find all SKILL.md under the 9 archetype roots, excluding ignored paths.
-  const archetypes = [
-    'developer',
-    'operator',
-    'advisor',
-    'analyst',
-    'creator',
-    'writer',
-    'strategist',
-    'core',
-    'leadership',
-  ];
-  for (const root of archetypes) {
-    const rootAbs = path.join(REPO_ROOT, 'agents', root);
-    if (!fs.existsSync(rootAbs)) continue;
-    const out = execSync(`find "${rootAbs}" -type f -name SKILL.md 2>/dev/null || true`, {
-      encoding: 'utf8',
-      maxBuffer: 10 * 1024 * 1024,
-    });
-    for (const line of out.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      // Leaf agent name = last directory component before SKILL.md
-      const parts = trimmed.split(path.sep);
-      const leaf = parts[parts.length - 2];
-      if (leaf) agentSkillByName.set(leaf, trimmed);
-    }
+  // v12.68.0: agent definitions are flat — agents/<name>.md — so the file
+  // basename IS the agent name.
+  const agentsDir = path.join(REPO_ROOT, 'agents');
+  for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    agentSkillByName.set(entry.name.slice(0, -'.md'.length), path.join(agentsDir, entry.name));
   }
   return agentSkillByName;
 }

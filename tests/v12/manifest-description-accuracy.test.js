@@ -45,7 +45,11 @@ function loadJSON(p) {
 }
 
 // DERIVED from disk — the single source of truth for the catalog size.
-const ACTIVE_AGENTS = loadJSON(PLUGIN_JSON).agents.length;
+// v12.68.0: that source is the flat agents/ directory (Claude Code discovers
+// plugin agents by scanning it), not a plugin.json `agents` array.
+const ACTIVE_AGENTS = fs
+  .readdirSync(path.join(REPO_ROOT, 'agents'), { withFileTypes: true })
+  .filter((e) => e.isFile() && e.name.endsWith('.md')).length;
 
 const STALE_CURRENT_STATE_CLAIMS = [
   '243 agents',
@@ -126,5 +130,35 @@ describe('WI-13: plugin manifest description accuracy', () => {
       mp.plugins[0].description,
       '.claude-plugin/marketplace.json plugins[0].description'
     );
+  });
+});
+
+/**
+ * Regression guard (plugin-validation issue, 2026-09-04): Claude Code's plugin
+ * validator caps a plugin `description` at 500 characters and reports
+ * "Plugin description must be at most 500 characters" when it is longer.
+ * plugin.json (566) and marketplace.json plugins[0] (514) both tripped it.
+ *
+ * Failing-before / passing-after: this block fails on the pre-fix manifests.
+ */
+const MAX_PLUGIN_DESCRIPTION_CHARS = 500;
+
+describe('plugin manifest description length cap', () => {
+  it.each([
+    ['.claude-plugin/plugin.json description', () => loadJSON(PLUGIN_JSON).description],
+    [
+      '.claude-plugin/marketplace.json metadata.description',
+      () => loadJSON(MARKETPLACE_JSON).metadata.description,
+    ],
+    [
+      '.claude-plugin/marketplace.json plugins[0].description',
+      () => loadJSON(MARKETPLACE_JSON).plugins[0].description,
+    ],
+  ])('%s is at most 500 characters', (source, read) => {
+    const description = read();
+    expect(
+      description.length,
+      `${source} is ${description.length} chars; Claude Code rejects anything over ${MAX_PLUGIN_DESCRIPTION_CHARS}`
+    ).toBeLessThanOrEqual(MAX_PLUGIN_DESCRIPTION_CHARS);
   });
 });

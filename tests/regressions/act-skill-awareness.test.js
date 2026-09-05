@@ -25,7 +25,7 @@ import path from 'path';
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const ACT_SKILL = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'SKILL.md');
 const SKILL_AWARENESS = path.join(REPO_ROOT, '.claude', 'skills', 'act', 'reference', 'skill-awareness.md');
-const PLANNER = path.join(REPO_ROOT, 'agents', 'core', 'planner', 'SKILL.md');
+const PLANNER = path.join(REPO_ROOT, 'agents', 'planner.md');
 const CONTROLLERS_MD = path.join(REPO_ROOT, '.claude', 'rules', 'core', 'controllers.md');
 const AGENTS_DIR = path.join(REPO_ROOT, 'agents');
 

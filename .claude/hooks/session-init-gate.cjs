@@ -67,30 +67,26 @@ const { createHook, findActiveSession, AGENT_MEMORY_DIR, PROJECT_ROOT, denyWithR
 let _registeredAgentsCache = null;
 function loadRegisteredAgents(rootDir) {
   if (_registeredAgentsCache !== null) return _registeredAgentsCache;
-  const manifestPath = path.join(rootDir, '.claude-plugin', 'plugin.json');
-  if (!fs.existsSync(manifestPath)) {
-    // Do NOT cache `null` — a later call in the same process (e.g. once the
-    // manifest becomes available) should re-check rather than being pinned to
+  // v12.68.0: the catalog is the flat agents/ directory, not a manifest array.
+  // Claude Code discovers plugin agents with a non-recursive scan of agents/,
+  // so agents/<name>.md IS the registration — plugin.json no longer lists them.
+  const agentsDir = path.join(rootDir, 'agents');
+  let entries;
+  try {
+    entries = fs.readdirSync(agentsDir, { withFileTypes: true });
+  } catch {
+    // Directory absent/unreadable — "cannot verify", NOT "nothing registered".
+    // Do NOT cache `null`: a later call in the same process (e.g. once the
+    // checkout completes) should re-check rather than being pinned to
     // "unavailable" forever. In practice each hook invocation is a fresh
     // process, so this only matters for in-process test harnesses.
     return null;
   }
   const set = new Set();
-  try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    const agents = Array.isArray(manifest.agents) ? manifest.agents : [];
-    for (const rel of agents) {
-      if (typeof rel !== 'string') continue;
-      // Pattern: ./some/path/<agent-name>/SKILL.md OR ./some/path/<agent-name>.md
-      const m1 = rel.match(/\/([a-zA-Z0-9_\-]+)\/SKILL\.md$/);
-      const m2 = rel.match(/\/([a-zA-Z0-9_\-]+)\.md$/);
-      if (m1) set.add(m1[1]);
-      else if (m2) set.add(m2[1]);
-    }
-  } catch {
-    // Manifest exists but failed to parse — fall through with empty set (this
-    // IS a legitimate "zero registered agents" signal, distinct from "file
-    // absent", so it is still cached and used normally below).
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    const name = entry.name.slice(0, -'.md'.length);
+    if (/^[a-zA-Z0-9_-]+$/.test(name)) set.add(name);
   }
   _registeredAgentsCache = set;
   return set;

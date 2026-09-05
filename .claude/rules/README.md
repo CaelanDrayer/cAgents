@@ -198,7 +198,7 @@ Removed/folded skills (do not appear as current):
 ### Scripts (validation / sync)
 
 - `scripts/sync-versions.sh` — Update the 16 version-registry locations
-- `scripts/sync-agents.sh` — Rebuild `.claude-plugin/plugin.json` agent list
+- `scripts/ci/validate-agents.sh` — Validate the flat `agents/<name>.md` catalog
 - `scripts/ci/cagents-ci.sh` — Quality-gate CI runner (includes tiny-bump guard)
 - `scripts/ci/validate-agents.sh` — Agent frontmatter and archetype validation
 - `scripts/ci/validate-counts.sh` — Disk-derived counts guard (P1-5; checks CLAUDE.md, hooks.md, settings.json, version-registry.md, docs/agents/index.md, docs/12-FACTOR-COMPLIANCE.md)

@@ -350,26 +350,18 @@ function diffToolsVsCaps(declared, caps, opts) {
 // ---------------------------------------------------------------------------
 
 function walkSkillFiles(dir) {
-  const out = [];
+  // v12.68.0: agent definitions are FLAT (agents/<name>.md) because Claude
+  // Code discovers plugin agents with a non-recursive scan of agents/. Files
+  // in subdirectories are per-agent resources, not definitions.
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch {
-    return out;
+    return [];
   }
-  for (const ent of entries) {
-    const full = path.join(dir, ent.name);
-    try {
-      if (ent.isDirectory()) {
-        out.push(...walkSkillFiles(full));
-      } else if (ent.isFile() && ent.name === 'SKILL.md') {
-        out.push(full);
-      }
-    } catch {
-      // ignore unreadable entries
-    }
-  }
-  return out;
+  return entries
+    .filter((ent) => ent.isFile() && ent.name.endsWith('.md'))
+    .map((ent) => path.join(dir, ent.name));
 }
 
 function scanFile(file) {

@@ -112,35 +112,33 @@ function parseSkillTier(skillPath) {
 }
 
 /**
- * Build the {agent-name: tier} map by walking plugin.json's agents array.
+ * Build the {agent-name: tier} map by reading the flat agents/ directory.
  * Memoized: subsequent calls return the same object reference until process exit.
- * Excludes any `_deprecated/` paths (sync-agents.sh already excludes them from
- * plugin.json, so this is defensive — the contract is "modulo _deprecated/").
+ *
+ * v12.68.0: agent definitions live at agents/<name>.md (Claude Code discovers
+ * plugin agents with a non-recursive scan of agents/), so the directory listing
+ * IS the catalog — plugin.json no longer carries an `agents` array.
  */
 function loadKnownAgents() {
   if (_knownAgentsCache !== null) return _knownAgentsCache;
 
   const root = resolveRepoRoot();
-  const pluginPath = path.join(root, '.claude-plugin', 'plugin.json');
+  const agentsDir = path.join(root, 'agents');
   const result = {};
 
-  let plugin;
+  let entries;
   try {
-    plugin = JSON.parse(fs.readFileSync(pluginPath, 'utf8'));
+    entries = fs.readdirSync(agentsDir, { withFileTypes: true });
   } catch {
     _knownAgentsCache = result; // empty map; hook degrades to pass-through
     return _knownAgentsCache;
   }
 
-  const agents = Array.isArray(plugin.agents) ? plugin.agents : [];
-  for (const rel of agents) {
-    if (typeof rel !== 'string') continue;
-    if (rel.indexOf('/_deprecated/') !== -1) continue;
-    const m = rel.match(/\/([^/]+)\/SKILL\.md$/);
-    if (!m) continue;
-    const agentName = m[1];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    const agentName = entry.name.slice(0, -'.md'.length);
 
-    const skillPath = path.resolve(root, rel);
+    const skillPath = path.join(agentsDir, entry.name);
     const tier = parseSkillTier(skillPath);
     // Default to 'execution' when tier is unparseable so the hook still has
     // a routing opinion (matches the previous literal's bias).

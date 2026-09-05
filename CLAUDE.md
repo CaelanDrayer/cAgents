@@ -64,7 +64,7 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Total**: 60 agents across 9 builder-role archetypes (back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
-**Canonical structure — 9 archetypes** (`{archetype}/` dirs; per-archetype counts also in Quick Reference): Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
+**Canonical structure — 9 archetypes** (declared in each agent's `archetype:` frontmatter, NOT as directories — agent files are flat at `agents/<name>.md` because Claude Code discovers plugin agents with a non-recursive scan of `agents/`; per-archetype counts also in Quick Reference): Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
 
 **Domain overlay (legacy — routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files; they hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted and their router keywords + controller catalogs consolidated into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/` — they are not orphans.
 
@@ -229,7 +229,7 @@ cagents-memory/
 
 See `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md` for full agent authoring guidelines.
 
-**Quick steps**: Choose tier + archetype (+ branch if 3-level) → create `{archetype}/{branch?}/{agent-name}/SKILL.md` with YAML frontmatter → run `bash scripts/sync-agents.sh` → test with `bash scripts/ci/validate-agents.sh`.
+**Quick steps**: Choose tier + archetype (+ branch if 3-level) → create `agents/{agent-name}.md` with YAML frontmatter (`archetype:` / `branch:` are frontmatter fields, not directories) → put any tier-3 playbooks in `agents/{agent-name}/resources/` and reference them as `@{agent-name}/resources/<file>.md` → test with `bash scripts/ci/validate-agents.sh`. There is no registration step: the flat `agents/` scan IS the registry.
 
 ## Hooks System
 
@@ -295,10 +295,10 @@ Counts below are pinned to disk by `scripts/ci/validate-counts.sh` and
 rather than hand-edit. Everything else in this file that a session could
 reconstruct with `ls` has been removed deliberately.
 
-**Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -rhoE 'absorbed from [a-z0-9/_-]+' agents --include=SKILL.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
+**Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
 **Tests**: `npm test` runs 1807+ Vitest tests across 214+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.67.0
+**Version**: 12.68.0
 
 ## Troubleshooting
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { agentFiles, archetypeCounts, ARCHETYPES } from '../helpers/agent-catalog.js';
 
 const PROJECT_ROOT = process.cwd();
 
@@ -40,26 +41,20 @@ describe('root plugin.json', () => {
     expect(plugin.hooks).toBe('./.claude/settings.json');
   });
 
-  it('should have agents array in v12.consolidation band [40, 70]', () => {
-    // v12.consolidation pass reduced the active catalog from 141 -> 57
-    // (41 routable + 16 core). The post-consolidation floor/ceiling is [40, 70].
+  it('omits the agents array — discovery is the flat agents/ scan (v12.68.0)', () => {
+    // Claude Code discovers plugin agents with a NON-RECURSIVE scan of agents/,
+    // and the accepted shape of an explicit `agents` array differs across
+    // versions (file paths vs directories). Omitting it is the only form that
+    // works everywhere; agents/<name>.md IS the registration.
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(Array.isArray(plugin.agents)).toBe(true);
-    expect(plugin.agents.length).toBeGreaterThanOrEqual(40);
-    expect(plugin.agents.length).toBeLessThanOrEqual(70);
+    expect('agents' in plugin).toBe(false);
   });
 
-  it('all agent paths should point to existing SKILL.md files', () => {
-    const plugin = loadPluginJson(PLUGIN_PATH);
-    const missing = plugin.agents.filter(
-      agentPath => {
-        // Paths use ./ prefix — plugin root is the project root
-        const stripped = agentPath.startsWith('./') ? agentPath.slice(2) : agentPath;
-        const resolved = join(PROJECT_ROOT, stripped);
-        return !existsSync(resolved);
-      }
-    );
-    expect(missing).toEqual([]);
+  it('the flat agents/ catalog is in the v12.consolidation band [40, 70]', () => {
+    // v12.consolidation pass reduced the active catalog from 141 -> 57
+    // (41 routable + 16 core). The post-consolidation floor/ceiling is [40, 70].
+    expect(agentFiles().length).toBeGreaterThanOrEqual(40);
+    expect(agentFiles().length).toBeLessThanOrEqual(70);
   });
 
   it('description reflects v12.2.0 4-skill catalog (no standalone /improve, no /org)', () => {
@@ -74,12 +69,10 @@ describe('root plugin.json', () => {
   });
 
   it('should include agents from all 9 archetype roots (v11.1.0 builder-role tree)', () => {
-    const plugin = loadPluginJson(PLUGIN_PATH);
-    const agents = plugin.agents;
-    const archetypes = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
-    for (const archetype of archetypes) {
-      const archetypeAgents = agents.filter(a => a.startsWith(`./agents/${archetype}/`));
-      expect(archetypeAgents.length, `archetype ${archetype} should have at least one agent`).toBeGreaterThan(0);
+    // v12.68.0: archetype is a frontmatter field, not a directory level.
+    const counts = archetypeCounts();
+    for (const archetype of ARCHETYPES) {
+      expect(counts[archetype], `archetype ${archetype} should have at least one agent`).toBeGreaterThan(0);
     }
   });
 });

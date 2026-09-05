@@ -2,7 +2,7 @@
 paths:
   - ".cagents/**"
   - "**/config/*.yaml"
-  - "**/agents/**/SKILL.md"
+  - "**/agents/*.md"
 ---
 
 # Model Routing Guidelines

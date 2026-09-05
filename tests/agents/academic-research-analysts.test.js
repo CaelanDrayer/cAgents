@@ -23,7 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
 
 // v12.consolidation absorbed citation-graph-analyzer and methodology-critic into
-// scholar (agents/analyst/scholar/SKILL.md). literature-review-author was culled
+// scholar (agents/scholar.md). literature-review-author was culled
 // earlier (LP-13/v12.8.0). The active-agent assertions below run against the
 // surviving consolidated agent; absorbed agents are listed in PHASE_12_ARCHIVED_AGENTS
 // so their absence from the active tree is explicitly asserted.
@@ -41,7 +41,7 @@ const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 const MAX_LINES = 400;
 
 function agentPath(name) {
-  return join(ROOT, 'agents', 'analyst', name, 'SKILL.md');
+  return join(ROOT, 'agents', `${name}.md`);
 }
 
 function archivedAgentPath(name) {
@@ -125,7 +125,7 @@ describe('Phase 12 (V11.1.13): academic-research analyst agents (v12.consolidati
 
   test('(e) validate-agents.sh --file passes for each (back-compat preserved)', () => {
     for (const name of PHASE_12_AGENTS) {
-      const rel = `agents/analyst/${name}/SKILL.md`;
+      const rel = `agents/${name}.md`;
       let exitCode = 0;
       try {
         execSync(`bash scripts/ci/validate-agents.sh --file ${rel}`, {

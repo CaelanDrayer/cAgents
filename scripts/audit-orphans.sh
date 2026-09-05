@@ -74,19 +74,20 @@ import path from "node:path";
 const REPO = process.env.REPO_ROOT;
 const OUT = process.env.OUT_FILE;
 const GREP_OUT = process.env.GREP_OUT;
-const PLUGIN = JSON.parse(fs.readFileSync(path.join(REPO, ".claude-plugin", "plugin.json"), "utf8"));
-
 // Build catalog: name -> { archetype, skillPath }
-// v12.8.0: paths are "./agents/{archetype}/{branch?}/{agent}/SKILL.md"
+// v12.68.0: agent definitions are flat — "agents/<name>.md" — because Claude
+// Code discovers plugin agents with a non-recursive scan of agents/. The
+// directory listing IS the catalog; archetype comes from frontmatter.
+const AGENTS_DIR = path.join(REPO, "agents");
 const catalog = [];
-for (const rel of PLUGIN.agents) {
-  if (rel.includes("/_deprecated/")) continue;
-  const parts = rel.replace(/^\.\//, "").split("/");
-  // parts[0] === "agents"; archetype is parts[1] under the new layout, parts[0]
-  // under the legacy layout. Tolerate both for forward-compat.
-  const archetype = parts[0] === "agents" ? parts[1] : parts[0];
-  const name = parts[parts.length - 2];
-  catalog.push({ name, archetype, skillPath: rel.replace(/^\.\//, "") });
+for (const entry of fs.readdirSync(AGENTS_DIR, { withFileTypes: true })) {
+  if (!entry.isFile() || !entry.name.endsWith(".md")) continue;
+  const name = entry.name.slice(0, -".md".length);
+  const rel = `agents/${entry.name}`;
+  const text = fs.readFileSync(path.join(AGENTS_DIR, entry.name), "utf8");
+  const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const archMatch = fm && fm[1].match(/^archetype:\s*["\x27]?([a-z-]+)["\x27]?/m);
+  catalog.push({ name, archetype: archMatch ? archMatch[1] : "unknown", skillPath: rel });
 }
 
 // Build refs-in-codebase counts from the single grep pass.
@@ -101,8 +102,8 @@ for (const line of grepText.split("\n")) {
   refCounts.set(name, (refCounts.get(name) || 0) + 1);
 }
 
-// Subtract 1 self-reference for each agents own SKILL.md (the SKILL.md
-// frontmatter declares `name: <name>` but does NOT contain `cagents:<name>`
+// Subtract 1 self-reference for each agent own file (the frontmatter
+// declares `name: <name>` but does NOT contain `cagents:<name>`
 // in most cases; still, the body sometimes mentions itself). To stay safe
 // and conservative, we DO NOT subtract — orphans defined as refs==0 are
 // rock-solid even with this over-count, and a single self-ref bumps the

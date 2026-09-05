@@ -1,10 +1,48 @@
 # cAgents Release Notes
 
-**Current Version**: 12.67.0
-**Release Date**: August 21, 2026
+**Current Version**: 12.68.0
+**Release Date**: September 4, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.68.0 — September 4, 2026 (flat agent layout — the plugin registered zero agents)
+
+The plugin shipped 60 agents that Claude Code never registered.
+`claude plugin details cagents` reported `Agents (0)`, and plugin validation
+reported *"No agent files found in specified directories"*.
+
+**Two independent causes**, both mismatches with the discovery contract:
+
+1. **Nesting.** Definitions lived at
+   `agents/{archetype}/[{branch}/]{agent-name}/SKILL.md`. Claude Code discovers
+   plugin agents with a **non-recursive** scan of `agents/` — nothing below the
+   top level is seen. Probed directly against CC 2.1.260: nested files and
+   symlinks are both ignored; only `agents/*.md` registers.
+2. **The `agents` manifest array.** Its accepted shape differs by Claude Code
+   version — 2.1.260's schema requires `./`-prefixed `.md` **file** paths and
+   hard-errors on a directory, while the validator that reported this bug reads
+   the same entries as **directories**. No single value satisfies both.
+
+**Fix**: `agents/<name>.md`, resources at `agents/<name>/resources/`, and no
+`agents` key in `plugin.json` — the shape every first-party Anthropic plugin
+uses, and the only one that works across versions. Discovery verified at
+**`Agents (60)`**.
+
+**What did NOT change**: the 9 builder-role archetypes and their branches. They
+were always declared in each agent's `archetype:` / `branch:` frontmatter; only
+the redundant directory encoding is gone. Per-archetype counts are identical.
+
+Also in this release: both plugin descriptions trimmed under the 500-character
+validation cap (566 -> 483, 514 -> 438); hooks repointed from the manifest array
+to the flat directory (including `controller-delegation-validator.cjs`, whose
+tier lookup would otherwise resolve nothing and over-deny every write); the
+three `scripts/ci/advisory/` scanners fixed after silently degrading to scanning
+zero agents; and a `flat-agent-discovery` regression test pinning the contract.
+
+**Why a minor bump.** 60 definitions move and the change reaches hooks, CI
+scripts, rules, docs, and tests — far past the patch-level 5-non-sync-file cap
+in `check_tiny_bump`.
 
 ## V12.67.0 — August 21, 2026 (stale `/run` references swept)
 
@@ -2167,5 +2205,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.67.0
+**Current Version**: 12.68.0
 **Release Date**: August 21, 2026

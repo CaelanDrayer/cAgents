@@ -177,10 +177,10 @@ describe('F4 — false-positive controls', () => {
   it('(a) does NOT fire when a security agent DOCUMENTS curl|bash as an attack (path skip)', () => {
     const text = `Threat example — attackers may run:\n\n    ${PIPE_TO_SHELL}\n`;
     expect(
-      scanContentSecurity(text, 'agents/developer/infrastructure/security-engineer/SKILL.md'),
+      scanContentSecurity(text, 'agents/security-engineer.md'),
     ).toHaveLength(0);
     expect(
-      isSecurityContextPath('agents/developer/infrastructure/security-engineer/SKILL.md'),
+      isSecurityContextPath('agents/security-engineer.md'),
     ).toBe(true);
   });
 

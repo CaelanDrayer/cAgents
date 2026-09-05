@@ -23,19 +23,26 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 # ---- Derivation -------------------------------------------------------------
-# Active agent entries in plugin.json (derived dynamically; currently 60 after the
-# post-v12.20.0 catalog consolidation — do NOT hardcode, jq reads it live).
-ACTIVE_AGENTS=$(jq -r '.agents | length' .claude-plugin/plugin.json)
+# v12.68.0: agent definitions are flat — agents/<name>.md — because Claude Code
+# discovers plugin agents with a NON-RECURSIVE scan of agents/. The directory
+# listing is therefore the catalog (plugin.json no longer carries an `agents`
+# array), and archetype membership is read from each file's frontmatter.
+ACTIVE_AGENTS=$(find agents -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
 
-# Per-archetype SKILL.md counts (excluding _deprecated/ buckets).
+# Per-archetype counts, derived from the top-level `archetype:` frontmatter
+# field of each flat agent file (excluding _deprecated/ buckets).
 declare -A ARCH_COUNTS
 for arch in developer operator advisor analyst creator writer strategist core leadership; do
-  if [ -d "agents/$arch" ]; then
-    ARCH_COUNTS[$arch]=$(find "agents/$arch" -name "SKILL.md" -not -path "*/_deprecated/*" 2>/dev/null | wc -l | tr -d ' ')
-  else
-    ARCH_COUNTS[$arch]=0
-  fi
+  ARCH_COUNTS[$arch]=0
 done
+while IFS= read -r agent_md; do
+  case "$agent_md" in */_deprecated/*) continue ;; esac
+  arch=$(awk '/^---$/{n++; next} n==1 && /^archetype:/{sub(/^archetype:[[:space:]]*/,""); gsub(/["'"'"']/,""); print; exit} n>=2{exit}' "$agent_md")
+  [ -z "$arch" ] && continue
+  if [ -n "${ARCH_COUNTS[$arch]+set}" ]; then
+    ARCH_COUNTS[$arch]=$(( ARCH_COUNTS[$arch] + 1 ))
+  fi
+done < <(find agents -maxdepth 1 -name '*.md' -type f 2>/dev/null)
 
 # Hook file count (.cjs files including utilities and launcher).
 # Count working-tree files — this matches what the user sees on disk.

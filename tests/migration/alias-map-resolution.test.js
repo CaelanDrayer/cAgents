@@ -56,23 +56,24 @@ beforeAll(() => {
   expect(fs.existsSync(ALIAS_MAP_PATH), `missing ${ALIAS_MAP_PATH}`).toBe(true);
   aliasMap = yaml.load(fs.readFileSync(ALIAS_MAP_PATH, 'utf8'));
 
-  // ---- live agents from plugin.json ----
-  expect(fs.existsSync(PLUGIN_JSON_PATH), `missing ${PLUGIN_JSON_PATH}`).toBe(true);
-  const plugin = JSON.parse(fs.readFileSync(PLUGIN_JSON_PATH, 'utf8'));
-  expect(Array.isArray(plugin.agents), 'plugin.json .agents must be an array').toBe(true);
+  // ---- live agents from the flat agents/ catalog (v12.68.0) ----
+  const agentsDir = path.join(REPO_ROOT, 'agents');
+  expect(fs.existsSync(agentsDir), `missing ${agentsDir}`).toBe(true);
+  const agentEntries = fs
+    .readdirSync(agentsDir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => `agents/${e.name}`);
+  expect(agentEntries.length, 'agents/ must hold the flat agent catalog').toBeGreaterThan(0);
 
   liveAgents = new Map();
-  for (const entry of plugin.agents) {
-    const rel = typeof entry === 'string' ? entry : (entry.path || entry.source);
+  for (const rel of agentEntries) {
     const abs = path.resolve(REPO_ROOT, rel);
-    // A registered agent MUST have a SKILL.md on disk.
-    expect(fs.existsSync(abs), `plugin.json references missing SKILL.md: ${rel}`).toBe(true);
     const raw = fs.readFileSync(abs, 'utf8');
     const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
     expect(fmMatch, `no YAML frontmatter in ${rel}`).toBeTruthy();
     const fm = yaml.load(fmMatch[1]);
     const name = fm && fm.name;
-    expect(name, `SKILL.md ${rel} has no frontmatter name`).toBeTruthy();
+    expect(name, `${rel} has no frontmatter name`).toBeTruthy();
     const modes =
       fm.metadata && fm.metadata.supported_modes
         ? Object.keys(fm.metadata.supported_modes)

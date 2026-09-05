@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # cAgents Agent Schema Validation
-# Validates all agent SKILL.md files across all 9 archetype roots
-# Version: 12.67.0
+# Validates all agent definition files (flat layout: agents/<name>.md)
+# Version: 12.68.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -12,20 +12,21 @@
 #   ./scripts/ci/validate-agents.sh --count            # Just print counts
 #
 # Checks:
-#   1. SKILL.md exists for each agent directory
+#   1. Agent file exists at agents/<name>.md
 #   2. Frontmatter starts with ---
 #   3. Required fields: name (ERROR), tier (ERROR), archetype (ERROR)
 #   4. Tier value is valid (controller, execution, support, executive, infrastructure)
-#   5. Agent path matches plugin.json registration
-#   6. No orphan agents (in directory but not in plugin.json)
-#   7. Archetype/path consistency (top-level archetype matches dir-1)
-#   8. Branch field required for 3-level archetypes; must match dir-2
+#   5. Agent path matches plugin.json registration (skipped by design: the
+#      manifest no longer carries an `agents` array — see check 6)
+#   6. No stale nested SKILL.md left under agents/ (flat-layout regression guard)
+#   7. Archetype field required + one of the 9 builder-role archetypes
+#   8. Branch field required for 3-level archetypes; must be valid for it
 #   9. Top-level `domain:` field forbidden (REMOVED in v11.1.0)
 #  10. Description length validation (10-1024 chars)
 #  11. related_agents resolution (referenced agents must exist somewhere in tree)
 #  12. Vibe field presence check (advisory)
 #  13. Agent Skills spec: name max 64 chars
-#  14. Agent Skills spec: name matches directory name (ERROR)
+#  14. Agent Skills spec: name matches file basename (ERROR)
 #  15. Agent Skills spec: description max 1024 chars
 #  16. Legacy `related-agents` (hyphen) field warns -> use `related_agents` underscore
 #  17. plugin.json structural validation (required: name field)
@@ -55,8 +56,11 @@ STRICT=false
 COUNT_ONLY=false
 FILTER_ARCHETYPE=""
 
-# v12.8.0: archetypes live under agents/. Layout: agents/{archetype}/...
-ARCHETYPES_PARENT="agents"
+# v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude
+# Code discovers plugin agents with a non-recursive scan of agents/. Archetype
+# and branch survive as frontmatter fields, not as directory levels. Per-agent
+# resources live at agents/<name>/resources/.
+AGENTS_DIR="agents"
 # 9 builder-role archetype roots
 ARCHETYPES=(developer operator advisor analyst creator writer strategist core leadership)
 
@@ -120,19 +124,24 @@ get_branches_for() {
 }
 
 #
-# Build agent-name -> SKILL.md-path index for related_agents lookup.
-# Indexed once for performance (avoids 243*N find calls).
+# Build agent-name -> agent-file-path index for related_agents lookup.
+# Indexed once for performance (avoids N*N find calls).
 #
 declare -A AGENT_INDEX
 build_agent_index() {
-    local archetype skill_md name dir
-    for archetype in "${ARCHETYPES[@]}"; do
-        [[ ! -d "$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype" ]] && continue
-        while IFS= read -r skill_md; do
-            dir=$(basename "$(dirname "$skill_md")")
-            AGENT_INDEX[$dir]="$skill_md"
-        done < <(find "$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype" -name SKILL.md -type f 2>/dev/null)
-    done
+    local agent_md name
+    while IFS= read -r agent_md; do
+        name=$(basename "$agent_md" .md)
+        AGENT_INDEX[$name]="$agent_md"
+    done < <(find "$PROJECT_ROOT/$AGENTS_DIR" -maxdepth 1 -name '*.md' -type f 2>/dev/null)
+}
+
+#
+# Read the top-level `archetype:` field of an agent file without parsing the
+# whole frontmatter (used to group flat files by archetype for reporting).
+#
+archetype_of() {
+    awk '/^---$/{n++; next} n==1 && /^archetype:/{sub(/^archetype:[[:space:]]*/,""); gsub(/["'"'"']/,""); print; exit} n>=2{exit}' "$1"
 }
 
 #
@@ -239,13 +248,13 @@ validate_agent() {
         fi
     fi
 
-    # v11.1.0 path layout
-    local dir_archetype dir_branch dir_name
-    # v12.8.0: paths are agents/{archetype}/..., so cut f2 (skip leading "agents/")
-    dir_archetype=$(echo "$relative_path" | cut -d'/' -f2)
-    dir_name=$(basename "$(dirname "$skill_md")")
+    # v12.68.0 flat layout: the file basename IS the agent name; archetype and
+    # branch are frontmatter-only (there are no archetype/branch directories to
+    # cross-check against any more).
+    local file_name
+    file_name=$(basename "$skill_md" .md)
 
-    # Check 7: archetype field required + must match directory
+    # Check 7: archetype field required + must be one of the 9 archetypes
     local archetype_value
     archetype_value=$(get_top_field "archetype")
     if [[ -z "$archetype_value" ]]; then
@@ -256,29 +265,19 @@ validate_agent() {
         log_fail "Unknown archetype '$archetype_value' (must be one of: ${ARCHETYPES[*]}): $relative_path"
         return
     fi
-    if [[ "$archetype_value" != "$dir_archetype" ]]; then
-        log_fail "Archetype mismatch: frontmatter says '$archetype_value' but file is in '$dir_archetype/': $relative_path"
-        return
-    fi
 
-    # Check 8: branch field required for 3-level archetypes; must match dir-2
-    if is_in_array "$dir_archetype" "${THREE_LEVEL_ARCHETYPES[@]}"; then
-        # v12.8.0: paths are agents/{archetype}/{branch}/..., so cut f3
-        dir_branch=$(echo "$relative_path" | cut -d'/' -f3)
+    # Check 8: branch field required for 3-level archetypes; must be valid
+    if is_in_array "$archetype_value" "${THREE_LEVEL_ARCHETYPES[@]}"; then
         local branch_value
         branch_value=$(get_top_field "branch")
         if [[ -z "$branch_value" ]]; then
-            log_fail "Missing 'branch' field (required for $dir_archetype): $relative_path"
+            log_fail "Missing 'branch' field (required for $archetype_value): $relative_path"
             return
         fi
         local valid_branches
-        valid_branches=$(get_branches_for "$dir_archetype")
+        valid_branches=$(get_branches_for "$archetype_value")
         if ! echo " $valid_branches " | grep -q " $branch_value "; then
-            log_fail "Unknown branch '$branch_value' for archetype '$dir_archetype' (valid: $valid_branches): $relative_path"
-            return
-        fi
-        if [[ "$branch_value" != "$dir_branch" ]]; then
-            log_fail "Branch mismatch: frontmatter says '$branch_value' but file is in '$dir_archetype/$dir_branch/': $relative_path"
+            log_fail "Unknown branch '$branch_value' for archetype '$archetype_value' (valid: $valid_branches): $relative_path"
             return
         fi
     fi
@@ -301,9 +300,10 @@ validate_agent() {
         fi
     fi
 
-    # Check 14: Agent Skills spec - name MUST match directory name (ERROR)
-    if [[ -n "$name_value" ]] && [[ "$name_value" != "$dir_name" ]]; then
-        log_fail "Name/directory mismatch: frontmatter name '$name_value' != directory '$dir_name': $relative_path"
+    # Check 14: Agent Skills spec - name MUST match the file basename (ERROR).
+    # Discovery keys agents off the filename, so a mismatch ships a wrong id.
+    if [[ -n "$name_value" ]] && [[ "$name_value" != "$file_name" ]]; then
+        log_fail "Name/filename mismatch: frontmatter name '$name_value' != file basename '$file_name': $relative_path"
         return
     fi
 
@@ -334,7 +334,7 @@ validate_agent() {
             related="${related#name:}"
             related="${related#cagents:}"
             if [[ -z "${AGENT_INDEX[$related]:-}" ]]; then
-                log_warn "related_agents '$related' not found in any archetype: $relative_path"
+                log_warn "related_agents '$related' not found in agents/: $relative_path"
             fi
         done <<< "$related_agents"
     fi
@@ -368,54 +368,63 @@ validate_agent() {
 }
 
 #
-# Validate all agents in an archetype tree (walks the whole tree)
+# Validate every flat agent file declaring the given archetype in frontmatter.
 #
 validate_archetype() {
     local archetype="$1"
-    local archetype_dir="$PROJECT_ROOT/$ARCHETYPES_PARENT/$archetype"
+    local agent_md printed=false
 
-    if [[ ! -d "$archetype_dir" ]]; then
-        return
-    fi
-
-    if [[ $COUNT_ONLY != true ]]; then
-        echo -e "\n${BLUE}[$archetype]${NC}"
-    fi
-
-    while IFS= read -r skill_md; do
+    while IFS= read -r agent_md; do
         # Skip _deprecated/ buckets — per `.claude/rules/core/skill-format.md`
-        # § Deprecation, agents under `_deprecated/` are intentionally excluded
-        # from `.claude-plugin/plugin.json` (alias-only) and must not be
+        # § Deprecation, deprecated agents are alias-only and must not be
         # validated against the live registry.
-        case "$skill_md" in
+        case "$agent_md" in
             */_deprecated/*) continue ;;
         esac
-        validate_agent "$skill_md"
-    done < <(find "$archetype_dir" -name SKILL.md -type f 2>/dev/null | sort)
+        [[ "$(archetype_of "$agent_md")" == "$archetype" ]] || continue
+        if [[ $printed == false ]] && [[ $COUNT_ONLY != true ]]; then
+            echo -e "\n${BLUE}[$archetype]${NC}"
+            printed=true
+        fi
+        validate_agent "$agent_md"
+    done < <(find "$PROJECT_ROOT/$AGENTS_DIR" -maxdepth 1 -name '*.md' -type f 2>/dev/null | sort)
 }
 
 #
-# Check for orphan agents (in plugin.json but file doesn't exist)
+# Flat-layout guard. Claude Code discovers plugin agents with a NON-RECURSIVE
+# scan of agents/, so an agent definition parked in a subdirectory (the pre-
+# v12.68.0 agents/{archetype}/{branch}/{name}/SKILL.md shape) is invisible at
+# runtime — the plugin loads with zero agents. Fail loudly if one reappears.
 #
 check_orphans() {
-    if [[ -z "$REGISTERED_AGENTS" ]]; then
-        return
-    fi
-
     if [[ $COUNT_ONLY != true ]]; then
-        echo -e "\n${BLUE}[orphan check]${NC}"
+        echo -e "\n${BLUE}[flat-layout check]${NC}"
     fi
 
-    local orphans=0
-    while IFS= read -r agent_path; do
-        if [[ ! -f "$PROJECT_ROOT/$agent_path" ]]; then
-            log_fail "Registered but missing: $agent_path"
-            orphans=$((orphans + 1))
-        fi
-    done <<< "$REGISTERED_AGENTS"
+    local stale=0 nested
+    while IFS= read -r nested; do
+        [[ -z "$nested" ]] && continue
+        # _deprecated/ buckets are SUPPOSED to be undiscoverable — they are kept
+        # on disk for alias resolution only, never registered.
+        case "$nested" in */_deprecated/*) continue ;; esac
+        log_fail "Nested agent definition is undiscoverable (move to agents/<name>.md): ${nested#$PROJECT_ROOT/}"
+        stale=$((stale + 1))
+    done < <(find "$PROJECT_ROOT/$AGENTS_DIR" -mindepth 2 -name 'SKILL.md' -type f 2>/dev/null)
 
-    if [[ $orphans -eq 0 ]] && [[ $COUNT_ONLY != true ]]; then
-        echo -e "  ${GREEN}No orphan agents found${NC}"
+    # Registered-but-missing check, kept for manifests that still pin an
+    # `agents` array (the cAgents manifest deliberately does not).
+    if [[ -n "$REGISTERED_AGENTS" ]]; then
+        while IFS= read -r agent_path; do
+            [[ -z "$agent_path" ]] && continue
+            if [[ ! -f "$PROJECT_ROOT/$agent_path" ]]; then
+                log_fail "Registered but missing: $agent_path"
+                stale=$((stale + 1))
+            fi
+        done <<< "$REGISTERED_AGENTS"
+    fi
+
+    if [[ $stale -eq 0 ]] && [[ $COUNT_ONLY != true ]]; then
+        echo -e "  ${GREEN}All agent definitions are flat and discoverable${NC}"
     fi
 }
 
@@ -519,10 +528,10 @@ validate_domain_overrides() {
         # v12.8.0: people/shared live under agents/_overlay/, leadership/core
         # under agents/. Try both layouts.
         local overrides_file=""
-        if [[ -f "$PROJECT_ROOT/$ARCHETYPES_PARENT/_overlay/$legacy_domain/config/domain_overrides.yaml" ]]; then
-            overrides_file="$PROJECT_ROOT/$ARCHETYPES_PARENT/_overlay/$legacy_domain/config/domain_overrides.yaml"
-        elif [[ -f "$PROJECT_ROOT/$ARCHETYPES_PARENT/$legacy_domain/config/domain_overrides.yaml" ]]; then
-            overrides_file="$PROJECT_ROOT/$ARCHETYPES_PARENT/$legacy_domain/config/domain_overrides.yaml"
+        if [[ -f "$PROJECT_ROOT/$AGENTS_DIR/_overlay/$legacy_domain/config/domain_overrides.yaml" ]]; then
+            overrides_file="$PROJECT_ROOT/$AGENTS_DIR/_overlay/$legacy_domain/config/domain_overrides.yaml"
+        elif [[ -f "$PROJECT_ROOT/$AGENTS_DIR/$legacy_domain/config/domain_overrides.yaml" ]]; then
+            overrides_file="$PROJECT_ROOT/$AGENTS_DIR/$legacy_domain/config/domain_overrides.yaml"
         fi
         if [[ -z "$overrides_file" ]]; then
             continue
@@ -541,7 +550,7 @@ validate_domain_overrides() {
         while IFS= read -r agent_ref; do
             [[ -z "$agent_ref" ]] && continue
             if [[ -z "${AGENT_INDEX[$agent_ref]:-}" ]]; then
-                log_warn "domain_overrides.yaml references agent '$agent_ref' not found in archetype tree: $legacy_domain/config/domain_overrides.yaml"
+                log_warn "domain_overrides.yaml references agent '$agent_ref' not found in agents/: $legacy_domain/config/domain_overrides.yaml"
                 overrides_errors=$((overrides_errors + 1))
             fi
         done <<< "$agent_refs"
@@ -583,7 +592,7 @@ main() {
         esac
     done
 
-    # --file mode: validate a single SKILL.md and exit with status (0=pass, 1=fail)
+    # --file mode: validate a single agent file and exit with status (0=pass, 1=fail)
     if [[ -n "$single_file" ]]; then
         if [[ ! -f "$single_file" ]]; then
             echo "File not found: $single_file" >&2

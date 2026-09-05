@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, lstatSync, existsSync, mkdtempSync, writeFileSync, rmSync } from 'fs';
+import { agentFiles } from '../helpers/agent-catalog.js';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { tmpdir } from 'os';
@@ -76,16 +77,17 @@ describe('FU-1: package.json description counts match disk', () => {
   const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'));
 
   it('agent-count claim matches the actual SKILL.md count on disk', () => {
-    const total = ARCHETYPES.reduce((sum, arch) => sum + countSkillMd(join(REPO_ROOT, 'agents', arch)), 0);
+    const total = agentFiles().length;
     expect(
       pkg.description,
       `package.json description must state "${total} agents" (actual SKILL.md count across the 9 archetypes)`,
     ).toContain(`${total} agents`);
   });
 
-  it('agent-count claim agrees with plugin.json (the canonical registry)', () => {
-    const plugin = JSON.parse(readFileSync(join(REPO_ROOT, '.claude-plugin', 'plugin.json'), 'utf8'));
-    expect(pkg.description).toContain(`${plugin.agents.length} agents`);
+  it('agent-count claim agrees with the flat agents/ catalog (the canonical registry)', () => {
+    // v12.68.0: plugin.json no longer pins an `agents` array — Claude Code
+    // discovers agents by scanning agents/, so the directory IS the registry.
+    expect(pkg.description).toContain(`${agentFiles().length} agents`);
   });
 
   it('user-skill claim matches the actual .claude/skills tree', () => {

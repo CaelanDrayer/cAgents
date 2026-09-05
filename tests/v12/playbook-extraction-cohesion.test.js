@@ -121,20 +121,20 @@ describe('P1-8: playbook extraction cohesion', () => {
     }
   });
 
-  it('agents/core/team-lead/SKILL.md body <= 250 lines', () => {
-    const f = path.join(REPO_ROOT, 'agents/core/team-lead/SKILL.md');
+  it('agents/team-lead.md body <= 250 lines', () => {
+    const f = path.join(REPO_ROOT, 'agents/team-lead.md');
     const lines = bodyLineCount(f);
     expect(lines, `core/team-lead/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
   });
 
-  it('agents/core/validator/SKILL.md body <= 250 lines', () => {
-    const f = path.join(REPO_ROOT, 'agents/core/validator/SKILL.md');
+  it('agents/validator.md body <= 250 lines', () => {
+    const f = path.join(REPO_ROOT, 'agents/validator.md');
     const lines = bodyLineCount(f);
     expect(lines, `core/validator/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
   });
 
-  it('agents/core/team-bootstrap/SKILL.md body <= 250 lines', () => {
-    const f = path.join(REPO_ROOT, 'agents/core/team-bootstrap/SKILL.md');
+  it('agents/team-bootstrap.md body <= 250 lines', () => {
+    const f = path.join(REPO_ROOT, 'agents/team-bootstrap.md');
     const lines = bodyLineCount(f);
     expect(lines, `core/team-bootstrap/SKILL.md body has ${lines} lines (cap: 250)`).toBeLessThanOrEqual(250);
   });

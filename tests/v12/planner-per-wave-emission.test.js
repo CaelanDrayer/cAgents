@@ -39,12 +39,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'core', 'planner', 'SKILL.md');
+const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'planner.md');
 const PER_WAVE_DECOMP_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'per-wave-decomposition.md');
 
 describe('FU-2 (v12.1.1): universal-planner per-wave emission contract', () => {
   describe('Invariant 1 — planner SKILL.md documents the dual-emission contract', () => {
-    it('agents/core/planner/SKILL.md exists', () => {
+    it('agents/planner.md exists', () => {
       expect(fs.existsSync(PLANNER_SKILL)).toBe(true);
     });
 

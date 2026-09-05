@@ -20,7 +20,7 @@
 //
 // It scans the `TRIGGER:` clause + `description:` frontmatter of the four skills
 // (.claude/skills/*/SKILL.md) and the `description:` frontmatter of every agent
-// (agents/**/SKILL.md, excluding _deprecated/). Only *declared* trigger keywords
+// (agents/<name>.md, excluding _deprecated/). Only *declared* trigger keywords
 // (comma-separated TRIGGER: entries) are classified for TR1/TR2; the description
 // text is scanned for TR3 baiting phrases. Agent SKILL.md *bodies* are NOT
 // scanned (they are full of legitimate "always use parameterized queries"-style
@@ -236,25 +236,20 @@ function lineOf(text, re) {
   return null;
 }
 
-// Recursively collect SKILL.md files under dir, skipping _deprecated/ buckets.
+// Collect agent definition files under dir.
+// v12.68.0: definitions are FLAT (agents/<name>.md) because Claude Code
+// discovers plugin agents with a non-recursive scan of agents/; subdirectories
+// hold per-agent resources and _deprecated/ buckets, neither of which register.
 function collectSkillMd(dir) {
-  const out = [];
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch {
-    return out;
+    return [];
   }
-  for (const ent of entries) {
-    if (ent.name === '_deprecated') continue;
-    const full = path.join(dir, ent.name);
-    if (ent.isDirectory()) {
-      out.push(...collectSkillMd(full));
-    } else if (ent.isFile() && ent.name === 'SKILL.md') {
-      out.push(full);
-    }
-  }
-  return out;
+  return entries
+    .filter((ent) => ent.isFile() && ent.name.endsWith('.md'))
+    .map((ent) => path.join(dir, ent.name));
 }
 
 // Discover the scan targets: { file, kind } where kind is 'skill' | 'agent'.

@@ -33,11 +33,11 @@ const TIER1_SKILLS = [
   '.claude/skills/team/SKILL.md',
   '.claude/skills/designer/SKILL.md',
   '.claude/skills/helper/SKILL.md',
-  'agents/core/planner/SKILL.md',
-  'agents/core/validator/SKILL.md',
-  'agents/core/orchestrator/SKILL.md',
-  'agents/core/team-lead/SKILL.md',
-  'agents/core/execution-monitor/SKILL.md',
+  'agents/planner.md',
+  'agents/validator.md',
+  'agents/orchestrator.md',
+  'agents/team-lead.md',
+  'agents/execution-monitor.md',
 ];
 
 // A line is "removing/dropping/no-longer-writes" content if it contains

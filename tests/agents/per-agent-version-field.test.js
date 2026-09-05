@@ -11,7 +11,8 @@
 //   - example/external-skills/RESUME_W6_PARTIAL_PROMPT.md § Section E
 
 import { describe, test, expect } from 'vitest';
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { agentFiles } from '../helpers/agent-catalog.js';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
@@ -19,24 +20,12 @@ import yaml from 'js-yaml';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..', '..');
-const ARCHETYPES = ['developer', 'operator', 'advisor', 'analyst', 'creator', 'writer', 'strategist', 'core', 'leadership'];
 const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 
+// v12.68.0: agent definitions are flat (agents/<name>.md) — see
+// tests/helpers/agent-catalog.js for why.
 function findAllSkillMd() {
-  const results = [];
-  function walk(dir) {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      // Skip _deprecated/ buckets — those are culled agents kept on disk
-      // for alias resolution but not part of the active catalog.
-      if (entry.name === '_deprecated') continue;
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name === 'SKILL.md') results.push(full);
-    }
-  }
-  for (const a of ARCHETYPES) walk(join(ROOT, 'agents', a));
-  return results;
+  return agentFiles();
 }
 
 function parseFrontmatter(content) {
