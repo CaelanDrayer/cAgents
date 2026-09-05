@@ -50,7 +50,9 @@ hook_count=0
 if [[ -d "$CAGENTS_ROOT/.claude/hooks" ]]; then
     while IFS= read -r -d '' hook; do
         chmod 644 "$hook" 2>/dev/null || true
-        ((hook_count++))
+        # `((hook_count++))` returns the PRE-increment value, so the first
+        # increment exits non-zero and `set -e` would abort the install here.
+        hook_count=$((hook_count + 1))
     done < <(find "$CAGENTS_ROOT/.claude/hooks" -name "*.cjs" -print0)
     print_status "ok" "CJS hook files are readable ($hook_count files in .claude/hooks/)"
 else

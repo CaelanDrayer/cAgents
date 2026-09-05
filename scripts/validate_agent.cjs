@@ -6,8 +6,8 @@
  * Validates agent structure and content
  *
  * Usage:
- *   node validate_agent.js <agent-dir>
- *   node validate_agent.js developer/backend/backend-developer/
+ *   node validate_agent.cjs <agent-dir>
+ *   node validate_agent.cjs developer/backend/backend-developer/
  */
 
 const fs = require('fs');
@@ -56,27 +56,30 @@ function validateAgent(agentDir) {
   let skillMdPath;
   let isDirectory = false;
 
-  if (stat.isDirectory()) {
-    skillMdPath = path.join(agentDir, 'SKILL.md');
-    isDirectory = true;
-
-    // For directory structure, check for SKILL.md
-    if (!fs.existsSync(skillMdPath)) {
-      // Try legacy .md file
-      const legacyPath = agentDir + '.md';
-      if (fs.existsSync(legacyPath)) {
-        skillMdPath = legacyPath;
-        warnings.push('Using legacy single-file format - consider migrating to directory structure');
-      } else {
-        errors.push('Missing SKILL.md in agent directory');
-        return { errors, warnings };
-      }
-    }
-  } else if (stat.isFile() && agentDir.endsWith('.md')) {
+  // v12.68.0: the canonical shape is a single flat file, agents/<name>.md.
+  // A directory is accepted only as the pre-flatten <agent>/SKILL.md layout,
+  // which is NOT discoverable by Claude Code and therefore warns.
+  if (stat.isFile() && agentDir.endsWith('.md')) {
     skillMdPath = agentDir;
-    warnings.push('Using legacy single-file format - consider migrating to directory structure');
+  } else if (stat.isDirectory()) {
+    isDirectory = true;
+    const flatPath = agentDir.replace(/\/+$/, '') + '.md';
+    const nestedPath = path.join(agentDir, 'SKILL.md');
+    if (fs.existsSync(flatPath)) {
+      skillMdPath = flatPath;
+      isDirectory = false;
+    } else if (fs.existsSync(nestedPath)) {
+      skillMdPath = nestedPath;
+      warnings.push(
+        'Nested <agent>/SKILL.md layout is NOT discovered by Claude Code ' +
+        '(agents/ is scanned non-recursively) - move it to agents/<name>.md'
+      );
+    } else {
+      errors.push('No agent definition found (expected agents/<name>.md)');
+      return { errors, warnings };
+    }
   } else {
-    errors.push('Agent path must be a directory with SKILL.md or a .md file');
+    errors.push('Agent path must be an agents/<name>.md file');
     return { errors, warnings };
   }
 
@@ -117,9 +120,9 @@ function validateAgent(agentDir) {
 
   // Validate domain (may be inside metadata: after migration)
   const validDomains = ['core', 'shared', 'engineering', 'creative', 'business', 'growth', 'people', 'service', 'leadership'];
-  const domain = fm('domain');
+  const domain = fm('archetype');
   if (!domain) {
-    warnings.push("Missing 'domain' in frontmatter");
+    warnings.push("Missing 'archetype' in frontmatter");
   } else if (!validDomains.includes(domain)) {
     warnings.push(`Unusual domain '${domain}' - standard domains are: ${validDomains.join(', ')}`);
   }
@@ -196,11 +199,11 @@ const args = process.argv.slice(2);
 if (args.length === 0) {
   console.log('cAgents Agent Validator');
   console.log('');
-  console.log('Usage: node validate_agent.js <agent-dir>');
+  console.log('Usage: node validate_agent.cjs <agent-dir>');
   console.log('');
   console.log('Examples:');
-  console.log('  node validate_agent.js developer/backend/backend-developer/');
-  console.log('  node validate_agent.js developer/backend/backend-developer.md');
+  console.log('  node validate_agent.cjs developer/backend/backend-developer/');
+  console.log('  node validate_agent.cjs developer/backend/backend-developer.md');
   process.exit(0);
 }
 
@@ -239,7 +242,7 @@ if (frontmatter) {
   console.log('Frontmatter:');
   console.log(`  name: ${frontmatter.name}`);
   console.log(`  tier: ${fmGet('tier') || '(not set)'}`);
-  console.log(`  domain: ${fmGet('domain') || '(not set)'}`);
+  console.log(`  domain: ${fmGet('archetype') || '(not set)'}`);
   console.log(`  model: ${fmGet('model') || '(not set)'}`);
   console.log('');
 }

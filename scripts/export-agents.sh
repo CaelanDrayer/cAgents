@@ -4,14 +4,14 @@
 #
 # Usage:
 #   ./scripts/export-agents.sh --format cursor|markdown|bundle --output dist/
-#   ./scripts/export-agents.sh --format cursor --output dist/cursor --domain engineering
+#   ./scripts/export-agents.sh --format cursor --output dist/cursor --domain developer
 #   ./scripts/export-agents.sh --format markdown --output dist/md --tier execution
 #   ./scripts/export-agents.sh --list  # List all agents without exporting
 #
 # Formats:
 #   cursor   - Cursor rules (.mdc files) with frontmatter stripped
 #   markdown - Generic markdown (agency-agents compatible) with unified format
-#   bundle   - Bare SKILL.md bundle (all agents concatenated per domain)
+#   bundle   - Bare agent bundle (all agents concatenated per archetype)
 
 set -euo pipefail
 
@@ -40,10 +40,10 @@ while [[ $# -gt 0 ]]; do
       echo "Formats:"
       echo "  cursor   - Cursor rules (.mdc files)"
       echo "  markdown - Generic markdown (agency-agents compatible)"
-      echo "  bundle   - Bare SKILL.md bundle per domain"
+      echo "  bundle   - Bare agent bundle per archetype"
       echo ""
       echo "Options:"
-      echo "  --domain <domain>  Filter by domain (engineering, creative, business, etc.)"
+      echo "  --domain <name>    Filter by archetype (developer, operator, analyst, ...)"
       echo "  --tier <tier>      Filter by tier (controller, execution, support)"
       echo "  --list             List all agents without exporting"
       exit 0
@@ -68,17 +68,23 @@ if ! $LIST_ONLY; then
   fi
 fi
 
-# Domains to scan
-DOMAINS=(engineering creative business growth people service leadership core shared)
+# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code discovers
+# plugin agents with a non-recursive scan of agents/). Grouping is by the
+# `archetype:` frontmatter field, which replaced the per-domain directories.
+ARCHETYPES=(developer operator advisor analyst creator writer strategist core leadership)
 
-# Find all agent SKILL.md files
+# Grouping key for an agent: `archetype:` (v11.1.0+), falling back to the
+# legacy top-level `domain:` so an old-schema file still groups somewhere.
+extract_group() {
+  local file="$1" value
+  value=$(extract_field "$file" "archetype")
+  [[ -z "$value" ]] && value=$(extract_field "$file" "domain")
+  echo "$value"
+}
+
+# Find all agent definition files
 find_agents() {
-  for domain in "${DOMAINS[@]}"; do
-    local domain_dir="$PROJECT_ROOT/$domain/agents"
-    if [[ -d "$domain_dir" ]]; then
-      find "$domain_dir" -name "SKILL.md" -type f 2>/dev/null | sort
-    fi
-  done
+  find "$PROJECT_ROOT/agents" -maxdepth 1 -name "*.md" -type f 2>/dev/null | sort
 }
 
 # Extract frontmatter field value
@@ -128,7 +134,7 @@ if $LIST_ONLY; then
   printf "%-30s %-15s %-12s %s\n" "----" "------" "----" "-----------"
   while IFS= read -r file; do
     name=$(extract_field "$file" "name")
-    domain=$(extract_field "$file" "domain")
+    domain=$(extract_group "$file")
     tier=$(extract_field "$file" "tier")
     desc=$(extract_field "$file" "description" | cut -c1-60)
     printf "%-30s %-15s %-12s %s\n" "$name" "$domain" "$tier" "$desc"
@@ -142,7 +148,7 @@ fi
 filter_agent() {
   local file="$1"
   if [[ -n "$DOMAIN_FILTER" ]]; then
-    local domain=$(extract_field "$file" "domain")
+    local domain=$(extract_group "$file")
     [[ "$domain" == "$DOMAIN_FILTER" ]] || return 1
   fi
   if [[ -n "$TIER_FILTER" ]]; then
@@ -156,7 +162,7 @@ filter_agent() {
 export_cursor() {
   local file="$1"
   local name=$(extract_field "$file" "name")
-  local domain=$(extract_field "$file" "domain")
+  local domain=$(extract_group "$file")
   local desc=$(extract_field "$file" "description")
   local body=$(extract_body "$file")
 
@@ -179,7 +185,7 @@ EOF
 export_markdown() {
   local file="$1"
   local name=$(extract_field "$file" "name")
-  local domain=$(extract_field "$file" "domain")
+  local domain=$(extract_group "$file")
   local tier=$(extract_field "$file" "tier")
   local desc=$(extract_field "$file" "description")
   local vibe=$(extract_field "$file" "vibe")
@@ -209,7 +215,7 @@ export_markdown() {
 
 export_bundle() {
   local file="$1"
-  local domain=$(extract_field "$file" "domain")
+  local domain=$(extract_group "$file")
   local name=$(extract_field "$file" "name")
 
   local out_dir="$OUTPUT_DIR"
@@ -233,14 +239,14 @@ echo ""
 
 # For bundle format, initialize domain files
 if [[ "$FORMAT" == "bundle" ]]; then
-  for domain in "${DOMAINS[@]}"; do
+  for domain in "${ARCHETYPES[@]}"; do
     local_file="$OUTPUT_DIR/${domain}-agents.md"
     if [[ -n "$DOMAIN_FILTER" && "$domain" != "$DOMAIN_FILTER" ]]; then
       continue
     fi
-    echo "# ${domain^} Domain Agents" > "$local_file"
+    echo "# ${domain^} Archetype Agents" > "$local_file"
     echo "" >> "$local_file"
-    echo "Auto-generated bundle of all ${domain} domain agent definitions." >> "$local_file"
+    echo "Auto-generated bundle of all ${domain} archetype agent definitions." >> "$local_file"
   done
 fi
 
@@ -251,7 +257,10 @@ while IFS= read -r file; do
       markdown) export_markdown "$file" ;;
       bundle)   export_bundle "$file" ;;
     esac
-    ((count++))
+    # NOTE: `((count++))` returns the PRE-increment value, so the first
+    # increment (0) is a non-zero exit status and `set -e` would abort the
+    # loop after exactly one agent. Use arithmetic assignment instead.
+    count=$((count + 1))
   fi
 done < <(find_agents)
 

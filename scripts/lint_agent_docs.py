@@ -32,7 +32,11 @@ YELLOW = '\033[93m'
 BLUE = '\033[94m'
 RESET = '\033[0m'
 
-REQUIRED_FIELDS = ['name', 'tier', 'description', 'tools', 'model']
+# v11.1.0+ schema: name/archetype/description are top-level; tier and model
+# live inside the metadata: block (the pre-v11.1.0 top-level `tier`/`model`
+# and the `tools` spelling are gone -- it is `allowed-tools` now).
+REQUIRED_FIELDS = ['name', 'archetype', 'description']
+REQUIRED_METADATA_FIELDS = ['tier', 'model']
 VALID_TIERS = ['controller', 'execution', 'support', 'core', 'infrastructure']
 VALID_MODELS = ['sonnet', 'opus', 'haiku']
 
@@ -60,18 +64,15 @@ class AgentLinter:
 
         agent_files = []
 
-        # Search all directories with agents/ subdirectory (core, shared, domains)
+        # v12.68.0: agent definitions are FLAT - agents/<name>.md - because
+        # Claude Code discovers plugin agents with a non-recursive scan of
+        # agents/. Files in subdirectories are per-agent resources, not agents.
         skip_filenames = {'README.md', 'CHANGELOG.md', 'INDEX.md'}
-        for item in self.project_root.iterdir():
-            if item.is_dir() and not item.name.startswith('.') and not item.name.startswith('_'):
-                agents_dir = item / "agents"
-                if agents_dir.exists():
-                    # Flat agent files (agent-name.md), excluding non-agent files
-                    for f in agents_dir.glob("*.md"):
-                        if f.name not in skip_filenames:
-                            agent_files.append(f)
-                    # Directory agent files (agent-name/SKILL.md)
-                    agent_files.extend(agents_dir.glob("*/SKILL.md"))
+        agents_dir = self.project_root / "agents"
+        if agents_dir.is_dir():
+            for f in agents_dir.glob("*.md"):
+                if f.is_file() and f.name not in skip_filenames:
+                    agent_files.append(f)
 
         return sorted(agent_files)
 
@@ -173,6 +174,21 @@ class AgentLinter:
         # Validate required fields
         has_errors = False
 
+        metadata = frontmatter.get('metadata') or {}
+        for field in REQUIRED_METADATA_FIELDS:
+            # Tolerate either location, exactly like scripts/ci/validate-agents.sh:
+            # most agents put tier/model under metadata:, but `model:` is also
+            # valid at top level per the Agent Skills spec (translator does that).
+            if field not in metadata and field not in frontmatter:
+                issues.append(AgentIssue(
+                    file_path=agent_file,
+                    severity='error',
+                    issue_type='missing_field',
+                    message=f"Missing required field: metadata.{field}",
+                    field=field
+                ))
+                has_errors = True
+
         for field in REQUIRED_FIELDS:
             if field not in frontmatter:
                 issues.append(AgentIssue(
@@ -193,8 +209,9 @@ class AgentLinter:
                 ))
 
         # Validate field values
-        if 'tier' in frontmatter:
-            tier = frontmatter['tier']
+        _tier_src = frontmatter.get('metadata') or {}
+        if 'tier' in _tier_src or 'tier' in frontmatter:
+            tier = _tier_src.get('tier', frontmatter.get('tier'))
             if tier not in VALID_TIERS:
                 issues.append(AgentIssue(
                     file_path=agent_file,
@@ -249,7 +266,7 @@ class AgentLinter:
 
         # Check name matches filename/directory
         if 'name' in frontmatter:
-            # For SKILL.md files, expected name is the parent directory name
+            # v12.68.0: the agent name is the file basename (flat layout)
             # For flat .md files, expected name is the file stem
             if agent_file.name == 'SKILL.md':
                 expected_name = agent_file.parent.name
@@ -315,8 +332,9 @@ class AgentLinter:
                 self.add_issue(agent_file, 'warning', 'empty_field', f"Empty field: {field}", field)
 
         # Validate field values
-        if 'tier' in frontmatter:
-            tier = frontmatter['tier']
+        _tier_src = frontmatter.get('metadata') or {}
+        if 'tier' in _tier_src or 'tier' in frontmatter:
+            tier = _tier_src.get('tier', frontmatter.get('tier'))
             if tier not in VALID_TIERS:
                 self.add_issue(
                     agent_file, 'error', 'invalid_tier',

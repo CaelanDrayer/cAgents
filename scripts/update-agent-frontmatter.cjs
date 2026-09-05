@@ -20,15 +20,9 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 // Directories to scan (exclude example/)
-const AGENT_DIRS = [
-  'core/agents',
-  'make/agents',
-  'grow/agents',
-  'operate/agents',
-  'people/agents',
-  'serve/agents',
-  'shared/agents',
-];
+// v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude Code
+// discovers plugin agents with a non-recursive scan of agents/.
+const AGENT_DIRS = ['agents'];
 
 // Infrastructure agent maxTurns overrides.
 // Note: pre-v12.0.0 standalone decomposer + prompt-crafting agents were absorbed
@@ -66,20 +60,16 @@ const stats = {
 };
 
 /**
- * Find all SKILL.md files in agent directories.
+ * Find all agent definition files (agents/<name>.md).
  */
 function findAgentFiles() {
   const files = [];
   for (const dir of AGENT_DIRS) {
     const fullDir = path.join(ROOT, dir);
     if (!fs.existsSync(fullDir)) continue;
-    const entries = fs.readdirSync(fullDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const skillPath = path.join(fullDir, entry.name, 'SKILL.md');
-      if (fs.existsSync(skillPath)) {
-        files.push(skillPath);
-      }
+    for (const entry of fs.readdirSync(fullDir, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+      files.push(path.join(fullDir, entry.name));
     }
   }
   return files;

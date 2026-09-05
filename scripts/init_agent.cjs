@@ -6,11 +6,11 @@
  * Creates a new agent with proper SKILL.md structure and resources directory
  *
  * Usage:
- *   node init_agent.js <agent-name> [--path <output-dir>] [--tier <tier>] [--domain <domain>]
+ *   node init_agent.cjs <agent-name> [--path <output-dir>] [--tier <tier>] [--domain <domain>]
  *
  * Examples:
- *   node init_agent.js backend-developer --path developer/{branch}/ --tier execution --domain engineering
- *   node init_agent.js tech-lead --tier controller
+ *   node init_agent.cjs backend-developer --path agents/ --tier execution --domain developer
+ *   node init_agent.cjs tech-lead --tier controller
  */
 
 const fs = require('fs');
@@ -19,10 +19,12 @@ const path = require('path');
 // SKILL.md template
 const SKILL_MD_TEMPLATE = `---
 name: {agent_name}
+archetype: {domain}
 description: Replace with description of what this agent does and when to use it.
-tier: {tier}
-domain: {domain}
-model: {model}
+metadata:
+  version: "1.0.0"
+  tier: {tier}
+  model: {model}
 ---
 
 # {title}
@@ -165,12 +167,16 @@ function getDefaultModel(tier) {
  */
 function initAgent(agentName, options) {
   const {
-    outputPath = '.',
+    outputPath = 'agents',
     tier = 'execution',
-    domain = 'engineering',
+    domain = 'developer',
     model = getDefaultModel(tier)
   } = options;
 
+  // v12.68.0: the definition is a FLAT file (agents/<name>.md) because Claude
+  // Code discovers plugin agents with a non-recursive scan of agents/. Tier-3
+  // resources live in a sibling directory named after the agent.
+  const agentFile = path.join(outputPath, `${agentName}.md`);
   const agentDir = path.join(outputPath, agentName);
 
   // Create directories
@@ -199,8 +205,8 @@ function initAgent(agentName, options) {
     content += EXECUTION_ADDITIONS;
   }
 
-  // Write SKILL.md
-  fs.writeFileSync(path.join(agentDir, 'SKILL.md'), content);
+  // Write the flat agent definition
+  fs.writeFileSync(agentFile, content);
 
   // Create resources files based on tier
   if (tier === 'controller') {
@@ -274,7 +280,7 @@ function initAgent(agentName, options) {
 
   console.log(`Initialized agent at: ${agentDir}`);
   console.log('Created:');
-  console.log('  - SKILL.md');
+  console.log('  - ' + agentName + '.md');
   console.log('  - resources/');
   if (tier === 'controller') {
     console.log('    - typical-questions.md');
@@ -284,10 +290,10 @@ function initAgent(agentName, options) {
   console.log('    - output-template.md');
   console.log('');
   console.log('Next steps:');
-  console.log('  1. Edit SKILL.md with agent-specific instructions');
+  console.log('  1. Edit ' + agentName + '.md with agent-specific instructions');
   console.log('  2. Add resources and templates as needed');
-  console.log('  3. Run: node validate_agent.js ' + agentDir);
-  console.log('  4. Add to plugin.json');
+  console.log('  3. Run: node validate_agent.cjs ' + agentFile);
+  console.log('  4. Nothing to register - the flat agents/ scan IS the registry');
 
   return agentDir;
 }
@@ -298,7 +304,7 @@ const args = process.argv.slice(2);
 if (args.length === 0) {
   console.log('cAgents Agent Initializer');
   console.log('');
-  console.log('Usage: node init_agent.js <agent-name> [options]');
+  console.log('Usage: node init_agent.cjs <agent-name> [options]');
   console.log('');
   console.log('Options:');
   console.log('  --path <dir>    Output directory (default: current dir)');
@@ -307,8 +313,8 @@ if (args.length === 0) {
   console.log('  --model <model> Model: opus, sonnet, haiku (default based on tier)');
   console.log('');
   console.log('Examples:');
-  console.log('  node init_agent.js backend-developer --path developer/{branch}/ --tier execution');
-  console.log('  node init_agent.js tech-lead --tier controller --domain engineering');
+  console.log('  node init_agent.cjs backend-developer --path agents/ --tier execution');
+  console.log('  node init_agent.cjs tech-lead --tier controller --domain engineering');
   process.exit(0);
 }
 

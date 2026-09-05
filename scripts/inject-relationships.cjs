@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Batch-inject related_agents into SKILL.md frontmatter.
+ * Batch-inject related_agents into agent frontmatter (agents/<name>.md).
  * Reads relationship_map.yaml and applies to all agents.
  *
  * Usage: node scripts/inject-relationships.cjs <map_file>
@@ -118,7 +118,9 @@ for (const [domain, agents] of Object.entries(relationshipMap)) {
   for (const [agent, relationships] of Object.entries(agents)) {
     if (!relationships || relationships.length === 0) continue;
 
-    const skillPath = path.join(domain, 'agents', agent, 'SKILL.md');
+    // v12.68.0: agent definitions are flat — agents/<name>.md. The map's
+    // domain key is now only a grouping label, not a path segment.
+    const skillPath = path.join('agents', `${agent}.md`);
     if (!fs.existsSync(skillPath)) {
       console.error(`NOT FOUND: ${skillPath}`);
       notFound++;

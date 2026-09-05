@@ -8,7 +8,9 @@ echo "=== DEEP AGENT ANALYSIS ==="
 echo ""
 
 # Find all SKILL.md files (primary agent files)
-skill_files=$(find "$PROJECT_ROOT"/{core,shared,make,grow,operate,people,serve}/agents -name "SKILL.md" -o -name "*.md" -not -path "*/resources/*" 2>/dev/null | grep -v "/resources/" | sort)
+# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code
+# discovers plugin agents with a non-recursive scan of agents/).
+skill_files=$(find "$PROJECT_ROOT/agents" -maxdepth 1 -name "*.md" -type f 2>/dev/null | sort)
 
 echo "Agent files found: $(echo "$skill_files" | wc -l)"
 echo ""
