@@ -383,6 +383,74 @@ no-collateral benign/destructive rows).
 
 ---
 
+### 5.4 Heredoc bodies are skipped, not lexed (v12.69.0)
+
+§5.3 made an un-parseable command soft-fail to `ask` instead of hard-denying.
+That contained the damage but left the *cause* in place: the lexer recognized
+`<<` as a redirect operator and never consumed the heredoc **body**, so body
+text was lexed as shell source. One odd apostrophe in a body — overwhelmingly a
+commit message containing "it's" or "don't" — threw `unterminated single quote`
+and downgraded a wholly benign command to a confirmation prompt.
+
+Measured on a 439-command corpus of real session history, this was the **single
+largest source of interactive approval prompts**: 8 of 22 friction events, ahead
+of every genuine dual-use warning combined.
+
+**Closed by** both lexers consuming heredoc bodies. There are TWO: `tokenize()`
+(the main lexer) and `extractParen()` (which finds the extent of a `$(...)`).
+Fixing only the first would have left §5.3's own motivating report unfixed —
+`git commit -m "$(cat <<'EOF' ... EOF)"` with a prose apostrophe goes through
+`extractParen`, where the stray quote desynced paren matching and threw
+`unbalanced command substitution`. Both now share the same terminator rule via
+`skipHeredocFrom()`. In the `$(...)` case the body text remains INSIDE the
+returned `inner`, so the substitution is still recursed through the evaluator in
+full — a nested heredoc feeding a shell is unaffected and still denies.
+
+In `tokenize()`, On the newline that ends a
+command line, each heredoc queued by a `<<` redirect has its body skipped up to
+its terminator, matching bash exactly: the delimiter must stand alone on its
+line, `<<-` additionally strips leading tabs, and an unterminated heredoc runs to
+EOF. `<<<` herestrings are unaffected (their word is data on the same line, with
+no body).
+
+Matching bash *exactly* on the terminator rule is load-bearing in both
+directions. A terminator with trailing whitespace is **not** a terminator in
+bash, and an unterminated heredoc consumes the rest of the input — so in both
+cases the trailing text is body, never executed, and allowing it is correct
+rather than a miss. Conversely, a properly terminated heredoc must hand the
+scanner back so a destructive command *after* it is still analyzed; that
+round-trip is pinned by tests.
+
+**Why skipping is sound, not a relaxation.** It rests on the same argument as the
+§5.2 `#`-comment skip: bash does not execute this text. A heredoc body is fed to
+the command on **stdin**. The guard therefore still inspects exactly the argv bash
+will `execve()`.
+
+**The one shape where the body IS executed** — a shell reading its script from a
+heredoc (`bash <<'EOF' … EOF`, `sh -s <<EOF`) — is **not** skipped-and-forgotten.
+The body is recorded on its segment and recursed through the evaluator on exactly
+the same terms as a `-c` payload (bounded by `MAX_SHELL_C_DEPTH`), so a shell
+heredoc whose body is a protected-path delete still **denies**. A heredoc whose
+delimiter is itself computed (`<<$D`) is deliberately **not** skipped — the body
+extent is unknowable, so the pre-existing fail-closed behavior is kept rather than
+guessed at.
+
+**Constant propagation for variable delete targets.** Shipped alongside: a
+recursive-force delete whose target is a bare `$VAR` **assigned a literal earlier
+in the same command string** (`S=/tmp/scratch; rm -rf $S`) is now resolved and
+judged on the real path. This is sharper in **both** directions — a variable
+holding a protected path now **denies** where it previously only asked, and one
+holding an ordinary scratch path stops prompting. A variable assigned anywhere
+else (the environment, an earlier Bash call) stays unknown and still asks, so
+residual #3 is untouched.
+
+Verified by `tests/hooks/bash-guard-heredoc.test.js` (16 rows: false-positive
+allow rows, the two shell-heredoc **deny** rows that pin the no-bypass property,
+the computed-delimiter and herestring rows, and the constant-propagation
+allow/deny/still-ask rows).
+
+---
+
 ## 6. Test harness & CI gate (implemented)
 
 A single-source-of-truth probe corpus at
@@ -423,7 +491,11 @@ These gaps remain open by construction; each is stated, not absorbed:
 
 1. **Cross-Bash-call sequential payloads.** `echo 'rm -rf /' > /tmp/x` then
    `bash /tmp/x` — the guard is stateless per call and cannot correlate.
-2. **Heredoc-built payloads.** The heredoc body is data we do not execution-trace.
+2. **Heredoc-built payloads.** The heredoc body is data we do not execution-trace
+   when the consuming command does not execute it. Since v12.69.0 (§5.4) the ONE
+   executed shape — a shell reading its script from a heredoc — IS recursed through
+   the evaluator, so that sub-case is closed; a body handed to a non-shell consumer
+   (which never runs it) remains untraced by construction.
 3. **Runtime-constructed indirection.** `IFS=x; c=rmx-rfx/; eval $c`; `printf`-assembled
    command names; env var set in a prior statement; alias/function redefinition.
 4. **Command-position single-variable indirection under `bypassPermissions`.**

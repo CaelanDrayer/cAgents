@@ -230,8 +230,55 @@ function decodeAnsiC(s) {
   );
 }
 
+// Read the heredoc delimiter word that follows a `<<` at str[k], and return the
+// index of the newline ENDING that heredoc's terminator line (or -1 when the
+// delimiter is computed/absent and the body extent is therefore unknowable, and
+// str.length when the heredoc is unterminated and so runs to EOF). Shared shape
+// with tokenize()'s consumeHeredocs: the terminator must stand alone on its
+// line, and `<<-` additionally strips leading TABS.
+function skipHeredocFrom(str, k) {
+  let strip = false;
+  if (str[k] === '-') { strip = true; k++; }
+  while (k < str.length && (str[k] === ' ' || str[k] === '\t')) k++;
+  let delim = '', q = null;
+  while (k < str.length) {
+    const c = str[k];
+    if (q) { if (c === q) { q = null; k++; continue; } delim += c; k++; continue; }
+    if (c === "'" || c === '"') { q = c; k++; continue; }
+    if (c === '$' || c === '`') return -1;          // computed delimiter -> unknowable
+    if (/[\s;|&()<>]/.test(c)) break;
+    delim += c; k++;
+  }
+  if (delim === '') return -1;
+  const nl = str.indexOf('\n', k);
+  if (nl < 0) return -1;                            // no body at all on this line
+  let p = nl + 1;
+  while (p <= str.length) {
+    let le = str.indexOf('\n', p);
+    if (le < 0) le = str.length;
+    let line = str.slice(p, le);
+    if (line.endsWith('\r')) line = line.slice(0, -1);
+    const cand = strip ? line.replace(/^\t+/, '') : line;
+    if (cand === delim) return le;                  // index of the terminator's newline
+    if (le >= str.length) break;
+    p = le + 1;
+  }
+  return str.length;                                // unterminated -> body runs to EOF
+}
+
 // Extract a balanced $(...) starting at str[i] === '(' . Quote-aware,
-// depth-capped. Returns { inner, end } (end = index AFTER the ')').
+// heredoc-aware, depth-capped. Returns { inner, end } (end = index AFTER the ')').
+//
+// Heredoc-awareness matters because this scanner is the OTHER half of the
+// apostrophe false positive fixed in tokenize(): for the shape
+// `git commit -m "$(cat <<'EOF' ... EOF)"`, a prose apostrophe in the heredoc
+// body ("the model's unit test") flipped this scanner into single-quote mode,
+// desynced paren matching, and threw 'unbalanced command substitution' — which
+// fail-closed the whole benign command to a confirmation prompt (the motivating
+// report behind threat-model 5.3). Skipping the body here is sound for the same
+// reason it is in tokenize(): bash never lexes a heredoc body as shell. The body
+// text stays INSIDE the returned `inner`, so the substitution is still recursed
+// through the evaluator in full — a heredoc feeding a shell is unaffected.
 function extractParen(str, i) {
   let depth = 0, inq = null;
   for (let j = i; j < str.length; j++) {
@@ -240,6 +287,11 @@ function extractParen(str, i) {
       if (ch === '\\' && inq === '"') { j++; continue; }
       if (ch === inq) inq = null;
       continue;
+    }
+    if (ch === '<' && str[j + 1] === '<' && str[j + 2] !== '<') {
+      const skipTo = skipHeredocFrom(str, j + 2);
+      if (skipTo >= 0) { j = skipTo; continue; }     // resume after the terminator line
+      continue;                                      // unknowable -> scan as before
     }
     if (ch === "'" || ch === '"') { inq = ch; continue; }
     if (ch === '(') { depth++; if (depth > MAX_SUBST_DEPTH) throw new Error('substitution depth exceeded'); }
@@ -316,14 +368,28 @@ function tokenize(command) {
   let curToken = null;
   let pendingRedirect = null;
   let curIfsSplit = false;   // segment was assembled via unquoted $IFS/${IFS} field-split
+  let pendingHeredocStrip = false;  // the pending << was written <<- (strip leading tabs)
+  const heredocQueue = [];          // heredocs declared on the current line, in bash's read order
 
-  function freshToken() { return { canon: '', litLen: 0, varCount: 0, substCount: 0, substInners: [] }; }
+  function freshToken() { return { canon: '', litLen: 0, varCount: 0, substCount: 0, substInners: [], varNames: [] }; }
   function ensureToken() { if (!curToken) curToken = freshToken(); }
   function endToken() {
     if (!curToken) return;
     const t = curToken;
     curToken = null;
-    if (pendingRedirect) { curRedirects.push({ op: pendingRedirect, target: t }); pendingRedirect = null; }
+    if (pendingRedirect) {
+      // The word after << is the terminator. Queue it (with the segment index it
+      // belongs to) so the newline handler can skip that heredoc's body. A
+      // delimiter that is itself computed (<<$X) is NOT queued: we cannot know
+      // where the body ends, so the old fail-closed behaviour is kept.
+      if (pendingRedirect === '<<') {
+        if (t.varCount === 0 && t.substCount === 0) {
+          heredocQueue.push({ delim: t.canon, strip: pendingHeredocStrip, ownerIdx: segments.length });
+        }
+        pendingHeredocStrip = false;
+      }
+      curRedirects.push({ op: pendingRedirect, target: t }); pendingRedirect = null;
+    }
     else curArgv.push(t);
   }
   function endSegment(op) {
@@ -336,9 +402,44 @@ function tokenize(command) {
     curIfsSplit = false;
   }
 
+  // Skip the BODY of every heredoc declared on the line just ended. A heredoc
+  // body is DATA: bash feeds it to the command on stdin and never tokenizes it
+  // as shell source. Leaving it in the token stream meant one odd apostrophe in
+  // a commit message ("it's") threw 'unterminated single quote' and fail-closed
+  // the whole benign command to `ask`. Skipping is SOUND for exactly the reason
+  // the '#' comment skip above is sound — bash does not execute this text — and
+  // the terminator rule matches bash precisely (the delimiter must stand alone
+  // on its line; <<- additionally strips leading TABS; an unterminated heredoc
+  // runs to EOF). The ONE shape where a body IS executed — `bash <<'EOF'`, where
+  // the shell reads the body as its own script — is not lost: the body is
+  // recorded on the segment and recursed through the evaluator in
+  // checkDisabledList, exactly like a `-c` payload.
+  function consumeHeredocs(nlIdx) {
+    let p = (str[nlIdx] === '\r' && str[nlIdx + 1] === '\n') ? nlIdx + 2 : nlIdx + 1;
+    while (heredocQueue.length) {
+      const hd = heredocQueue.shift();
+      const owner = segments[hd.ownerIdx] || segments[segments.length - 1] || null;
+      const bodyStart = p;
+      let bodyEnd = len, after = len;
+      let q = p;
+      while (q < len) {
+        let lineEnd = str.indexOf('\n', q);
+        if (lineEnd < 0) lineEnd = len;
+        let line = str.slice(q, lineEnd);
+        if (line.endsWith('\r')) line = line.slice(0, -1);
+        const cand = hd.strip ? line.replace(/^\t+/, '') : line;
+        if (cand === hd.delim) { bodyEnd = q; after = Math.min(lineEnd + 1, len); break; }
+        q = lineEnd + 1;
+      }
+      if (owner) (owner.heredocs || (owner.heredocs = [])).push({ delim: hd.delim, body: str.slice(bodyStart, bodyEnd) });
+      p = after;
+    }
+    return p;
+  }
+
   const ctx = {
     appendLit(s) { ensureToken(); curToken.canon += s; curToken.litLen += s.length; },
-    addVar() { ensureToken(); curToken.varCount++; },
+    addVar(name) { ensureToken(); curToken.varCount++; curToken.varNames.push(name || ''); },
     addSubst(inner) { ensureToken(); curToken.substCount++; curToken.substInners.push(inner); },
     splitField() { curIfsSplit = true; endToken(); }
   };
@@ -349,7 +450,11 @@ function tokenize(command) {
 
     // unquoted whitespace -> token boundary
     if (c === ' ' || c === '\t') { endToken(); i++; continue; }
-    if (c === '\n' || c === '\r') { endSegment(';'); i++; continue; }
+    if (c === '\n' || c === '\r') {
+      endSegment(';');
+      if (heredocQueue.length) { i = consumeHeredocs(i); continue; }
+      i++; continue;
+    }
 
     // '#' begins a comment ONLY at a word boundary — bash ignores a word that
     // begins with '#' and everything after it on that line. We are at a word
@@ -460,7 +565,13 @@ function tokenize(command) {
     }
     if (c === '<') {
       endToken();
-      if (str[i + 1] === '<') { pendingRedirect = '<<'; i += 2; }
+      if (str[i + 1] === '<') {
+        // <<< is a HERESTRING (its word is data on the same line, no body to
+        // skip); <<- is a heredoc whose terminator may be tab-indented.
+        if (str[i + 2] === '<') { pendingRedirect = '<<<'; i += 3; }
+        else if (str[i + 2] === '-') { pendingRedirect = '<<'; pendingHeredocStrip = true; i += 3; }
+        else { pendingRedirect = '<<'; pendingHeredocStrip = false; i += 2; }
+      }
       else { pendingRedirect = '<'; i++; }
       continue;
     }
@@ -516,10 +627,23 @@ function isForkBomb(raw) {
 }
 
 // ── Component 2: variable-expansion detection ───────────────────────────────
+// A leading NAME=VALUE token, used to resolve a later `$NAME` back to the
+// literal it was assigned in the SAME command string (see checkVariableExpansion).
+const INLINE_ASSIGN_RE = /^([A-Za-z_][A-Za-z0-9_]*)=([\s\S]*)$/;
+
 function checkVariableExpansion(segments) {
   let ask = null;
+  // NAME -> literal value, accumulated in command order. Only FULLY literal
+  // values are recorded (varCount/substCount === 0): a value that itself
+  // expands is not statically known and is deliberately left unresolved.
+  const assign = new Map();
   for (const seg of segments) {
     if (!seg.argv.length) continue;
+    for (const t of seg.argv) {
+      const m = (t.litLen > 0 && t.varCount === 0 && t.substCount === 0) && INLINE_ASSIGN_RE.exec(t.canon);
+      if (!m) break;               // assignments only ever PREFIX a segment
+      assign.set(m[1], m[2]);
+    }
     const ft = seg.argv[0];
     if (isPureVar(ft)) {
       const rest = seg.argv.slice(1);
@@ -530,7 +654,22 @@ function checkVariableExpansion(segments) {
     } else {
       const cmd = basename(ft.canon);
       if (isDestructiveFileCmd(cmd) && hasRecursiveForce(seg.argv)) {
-        const unknownTarget = seg.argv.slice(1).some(t => isPureVar(t) || isCmdSubstPosition(t));
+        let unknownTarget = false;
+        for (const t of seg.argv.slice(1)) {
+          if (isCmdSubstPosition(t)) { unknownTarget = true; continue; }
+          if (!isPureVar(t)) continue;
+          // Constant propagation: `S=/tmp/scratch; rm -rf $S` IS statically
+          // resolvable — the value was assigned a literal earlier in the same
+          // command string, so judge the REAL path instead of asking blindly.
+          // This is sharper in BOTH directions: a variable holding a protected
+          // path now DENIES (it previously only asked), and one holding an
+          // ordinary scratch path stops prompting. A variable assigned anywhere
+          // else (the environment, an earlier Bash call) stays unknown.
+          const name = (t.varNames && t.varNames[0]) || '';
+          if (!name || !assign.has(name)) { unknownTarget = true; continue; }
+          const val = assign.get(name);
+          if (isDangerousPath(val)) return D('recursive/forced delete of a protected path (' + name + '=' + val + ')');
+        }
         if (unknownTarget) ask = ask || A('recursive/forced delete with a variable/substitution target (path unknown at analysis time)');
       }
     }
@@ -741,6 +880,21 @@ function checkDisabledList(segments, canon, depth) {
             if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('shell -c payload requires confirmation: ' + (inner.reason || ''));
             break;
           }
+        }
+      }
+
+      // A heredoc fed to a shell IS that shell's script (`bash <<'EOF' ... EOF`,
+      // `sh -s <<EOF`), so the body the tokenizer skipped as inert data is
+      // recursed here on exactly the same terms as a `-c` payload. Without this,
+      // skipping heredoc bodies would open a bypass; with it, a shell heredoc
+      // whose body is a protected-path delete still DENIES. Non-shell heredoc
+      // consumers (cat, python3, git commit -F -) never execute the body, so
+      // their heredocs correctly stay inert.
+      if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth < MAX_SHELL_C_DEPTH) {
+        for (const hd of (seg.heredocs || [])) {
+          const inner = evaluateInternal(hd.body, depth + 1);
+          if (inner && inner.kind === 'deny') return D('heredoc script payload is destructive: ' + (inner.reason || ''));
+          if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('heredoc script payload requires confirmation: ' + (inner.reason || ''));
         }
       }
 
