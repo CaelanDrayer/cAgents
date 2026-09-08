@@ -1,10 +1,48 @@
 # cAgents Release Notes
 
-**Current Version**: 12.68.1
-**Release Date**: September 4, 2026
+**Current Version**: 12.69.0
+**Release Date**: September 7, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.69.0 — September 7, 2026 (heredoc lexing — approval-prompt fatigue fixed at the root)
+
+Reported as "the hook prompting for approvals is a bit too strong — too many to
+the point of fatigue". Replaying the 439 Bash commands from 7 real sessions
+through the hook located the load precisely: 417 silent allows, 20 `ask`, 2
+`deny`. Because the user's `defaultMode` is `auto`, ordinary commands never
+prompt — so those 22 hook verdicts WERE essentially the entire interactive
+prompt load, and they clustered into three causes rather than being diffuse.
+
+The largest cause, 8 of 22, was a plain bug. Both lexers recognized `<<` as a
+redirect operator but never consumed the heredoc **body**, so body text was
+lexed as shell source. A single odd apostrophe — overwhelmingly a commit
+message containing "it's" or "don't" — threw `unterminated single quote` and
+downgraded a wholly benign command to a confirmation prompt. v12.62.1 had
+contained this symptom (hard deny to soft ask); this release removes the cause.
+
+Both lexers are fixed and now share one terminator rule: `tokenize()` and
+`extractParen()` (which finds the extent of a `$(...)`). Fixing only the former
+would have left v12.62.1's own motivating report unfixed, since
+`git commit -m "$(cat <<'EOF' ... EOF)"` goes through the latter.
+
+Skipping is sound, not a relaxation: bash feeds a heredoc body to the command on
+**stdin** and never executes it, so the guard still inspects exactly the argv
+bash will `execve()`. The one shape where a body IS executed — a shell reading
+its script from a heredoc — is recursed through the evaluator like a `-c`
+payload and still denies. A computed delimiter (`<<$D`) is deliberately not
+skipped, since the body extent is unknowable.
+
+Shipped alongside: constant propagation for a recursive-force delete whose
+target is a bare `$VAR` assigned a literal earlier in the same command string.
+`S=/tmp/scratch; rm -rf $S` is statically resolvable, so it is now judged on the
+real path — sharper in both directions, denying when the literal is a protected
+path and no longer prompting for an ordinary scratch path.
+
+17 of the 22 friction events now pass silently. The remaining 5 were left
+deliberately: pipe-into-interpreter and command-substitution-inner asks are
+genuine dual-use warnings, and two protected-path deletes correctly deny.
 
 ## V12.68.1 — September 4, 2026 (test-isolation hardening)
 
@@ -2232,5 +2270,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.68.1
+**Current Version**: 12.69.0
 **Release Date**: August 21, 2026

@@ -493,11 +493,14 @@ describe('fail-closed soft-fail (un-parseable → ask, catastrophic floor preser
   const SUBST_APOS = 'echo "$(echo don' + q + 't)"';
 
   // ---- evaluator level: un-parseable input is tagged failClosed ----
-  it('evaluate() tags an un-parseable heredoc-apostrophe deny with failClosed:true', () => {
-    const r = evaluate(HEREDOC_APOS);
-    expect(r, 'must be a deny at the evaluator level (conservative library)').toBeTruthy();
-    expect(r.deny).toBe(true);
-    expect(r.failClosed, 'un-parseable input must carry failClosed:true').toBe(true);
+  // NOTE (v12.69.0, §5.4): HEREDOC_APOS is no longer un-parseable at all. §5.3
+  // contained this shape's symptom (hard deny -> soft ask); §5.4 removed its
+  // CAUSE by making both lexers skip heredoc bodies, which bash never executes.
+  // It is kept here, flipped to the allow it should always have been, so the
+  // regression stays pinned from this suite too. The soft-fail machinery below
+  // is still fully exercised by SUBST_APOS, which IS genuinely un-parseable.
+  it('no longer treats the heredoc-apostrophe commit as un-parseable (§5.4)', () => {
+    expect(evaluate(HEREDOC_APOS), 'heredoc bodies are skipped, so this parses cleanly').toBe(null);
   });
 
   it('evaluate() tags the minimal $(echo don\'t) deny with failClosed:true', () => {
@@ -512,9 +515,11 @@ describe('fail-closed soft-fail (un-parseable → ask, catastrophic floor preser
     expect(r.failClosed, 'a proven-destructive deny must not be soft').toBeUndefined();
   });
 
-  // ---- hook level: the false positive now ASKS instead of DENYING ----
-  it('ALLOWS-to-ASK the reported heredoc-apostrophe commit (was hard DENY)', () => {
-    expect(hookVerdict(HEREDOC_APOS)).toBe('ask');
+  // ---- hook level: the false positive now passes silently ----
+  it('ALLOWS the reported heredoc-apostrophe commit (hard DENY -> ask -> allow)', () => {
+    // v12.62.1 (§5.3) took this from deny to ask; v12.69.0 (§5.4) takes it to
+    // allow by fixing the lexer instead of softening the verdict.
+    expect(hookVerdict(HEREDOC_APOS)).toBe('allow');
   });
 
   it('ASKS for the minimal unbalanced-apostrophe $(...) (was hard DENY)', () => {
@@ -522,8 +527,11 @@ describe('fail-closed soft-fail (un-parseable → ask, catastrophic floor preser
   });
 
   it('the fail-closed soft-fail holds under warn AND off', () => {
-    expect(hookVerdict(HEREDOC_APOS, 'warn')).toBe('ask');
-    expect(hookVerdict(HEREDOC_APOS, 'off')).toBe('ask');
+    // Uses SUBST_APOS: after §5.4, HEREDOC_APOS parses cleanly and so no longer
+    // exercises this path. SUBST_APOS (a bare unbalanced apostrophe inside
+    // $(...), no heredoc) remains genuinely un-parseable and still soft-fails.
+    expect(hookVerdict(SUBST_APOS, 'warn')).toBe('ask');
+    expect(hookVerdict(SUBST_APOS, 'off')).toBe('ask');
   });
 
   // ---- SECURITY: the catastrophic floor survives even when un-parseable ----

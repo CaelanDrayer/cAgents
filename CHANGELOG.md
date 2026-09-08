@@ -10,6 +10,82 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.69.0] - 2026-09-07
+
+Approval-prompt fatigue traced to its cause and fixed at the root. Replaying the
+439 Bash commands from 7 real sessions through the hook gave 417 silent allows,
+20 `ask`, 2 `deny` — and because the user's `defaultMode` is `auto`, those 22
+hook verdicts WERE essentially the entire interactive prompt load. 17 of the 22
+now pass silently, with no genuine warning removed.
+
+### Fixed
+- **Heredoc bodies are skipped, not lexed** (`bash-guard-evaluator.cjs`,
+  8 of the 22 friction events — the single largest source). `tokenize()`
+  recognized `<<` as a redirect operator but never consumed the heredoc BODY, so
+  body text was lexed as shell source. One odd apostrophe in a body —
+  overwhelmingly a commit message containing "it's" or "don't" — threw
+  `unterminated single quote`, fail-closed the evaluator, and downgraded a wholly
+  benign command to a confirmation prompt. The lexer now consumes heredoc bodies
+  to their terminator, matching bash exactly: the delimiter must stand alone on
+  its line, `<<-` strips leading tabs, an unterminated heredoc runs to EOF, and
+  `<<<` herestrings are untouched. Sound for the same reason the v12.62.x
+  `#`-comment skip is sound — bash feeds the body to the command on **stdin** and
+  never executes it, so the guard still inspects exactly the argv bash will
+  `execve()`. Both lexers were affected and both are fixed: `tokenize()` and
+  `extractParen()` (which finds the extent of a `$(...)`) now share one
+  terminator rule via `skipHeredocFrom()`. Fixing only the former would have left
+  v12.62.1's OWN motivating report unfixed — `git commit -m "$(cat <<'EOF' ...
+  EOF)"` with a prose apostrophe goes through `extractParen`. That shape has now
+  gone hard-deny (pre-v12.62.1) -> ask (v12.62.1) -> allow.
+- **No bypass introduced.** The ONE shape where a heredoc body IS executed — a
+  shell reading its script from a heredoc (`bash <<'EOF' ... EOF`, `sh -s <<EOF`)
+  — is recorded on its segment and recursed through the evaluator on exactly the
+  same terms as a `-c` payload, so a shell heredoc whose body is a protected-path
+  delete still DENIES. A heredoc with a computed delimiter (`<<$D`) is
+  deliberately NOT skipped: the body extent is unknowable, so the pre-existing
+  fail-closed behaviour is kept rather than guessed at.
+
+### Changed
+- **Constant propagation for variable delete targets** (7 of the 22 friction
+  events). A recursive-force delete whose target is a bare `$VAR` assigned a
+  literal earlier in the SAME command string (`S=/tmp/scratch; rm -rf $S`) is now
+  resolved and judged on the real path instead of prompting blindly. Sharper in
+  BOTH directions: a variable holding a protected path now **denies** where it
+  previously only asked, and one holding an ordinary scratch path stops
+  prompting. A variable assigned anywhere else (the environment, an earlier Bash
+  call) stays unknown and still asks, so threat-model residual #3 is untouched.
+- Tokens now carry `varNames` so an expansion can be traced back to its
+  assignment; this is what makes the propagation above possible.
+
+### Added
+- `tests/hooks/bash-guard-heredoc.test.js` — 16 regression rows (bug-driven test
+  mandate). Verified failing-before / passing-after against `HEAD`'s evaluator:
+  the apostrophe heredoc was a fail-closed deny, and both variable-target cases
+  were asks. Includes the two shell-heredoc **deny** rows that pin the no-bypass
+  property, plus computed-delimiter, herestring, and constant-propagation
+  allow/deny/still-ask rows, the `$(...)`-nested rows, and terminator-matching
+  rows (properly-terminated heredocs hand the scanner back so a following
+  destructive command is still analyzed; unterminated ones and `EOF `-with-
+  trailing-space correctly run to EOF as bash does).
+- Three assertions in `tests/hooks/bash-guard-guardfall.test.js` updated, not
+  deleted: the heredoc-apostrophe fixture no longer exercises the §5.3
+  soft-fail path because it now parses cleanly, so those rows record the
+  allow, and the warn/off soft-fail row was repointed at `SUBST_APOS` (a bare
+  unbalanced apostrophe, genuinely un-parseable) so §5.3's machinery keeps its
+  coverage.
+- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.4 documenting the change, its
+  soundness argument, and the narrowing of residual #2 (the executed sub-case of
+  heredoc-built payloads is now closed; a body handed to a non-shell consumer
+  remains untraced by construction).
+
+### Not changed (deliberate)
+- Pipe-into-interpreter (`cat x | node -e`, `| python3`) and
+  command-substitution-inner asks are genuine dual-use warnings and still fire
+  (4 of the 22). The raw-string catastrophic belt in `bash-validator.cjs` also
+  still scans whole command strings, so a dangerous literal appearing as heredoc
+  DATA can still trip it — that belt is the catastrophic floor for un-parseable
+  input and was left alone on purpose.
+
 ## [12.68.1] - 2026-09-04
 
 Two load-dependent test flakes fixed at the root rather than tolerated. Both
