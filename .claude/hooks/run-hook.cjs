@@ -34,8 +34,12 @@ const fs = require('fs');
 const hookName = process.argv[2];
 
 if (!hookName) {
-  console.error('[run-hook] Error: No hook name provided');
-  console.log(JSON.stringify({ continue: true }));
+  const msg = '[run-hook] No hook name provided — the hook registration in .claude/settings.json ' +
+              'is malformed (expected `node run-hook.cjs <hook-name>`). No hook ran for this event.';
+  console.error(msg);
+  // RF-5 (FS-3): stderr is not surfaced to the model. A hook system that
+  // silently no-ops is indistinguishable from one that ran and found nothing.
+  console.log(JSON.stringify({ continue: true, systemMessage: msg }));
   process.exit(0);
 }
 
@@ -59,9 +63,19 @@ for (const root of candidates) {
 }
 
 if (!hookPath) {
-  console.error(`[run-hook] Error: Could not find hook '${hookName}.cjs' in any search path`);
-  console.error(`[run-hook] Searched: ${candidates.map(c => path.join(c, '.claude/hooks/')).join(', ')}`);
-  console.log(JSON.stringify({ continue: true }));
+  // RF-5 (FS-3): this used to print to stderr and emit a bare {continue:true}.
+  // stderr never reaches the model, so on a partial checkout (or a stale /
+  // half-installed plugin) the ENTIRE hook system silently no-ops and nothing
+  // tells anyone. Emit the notice as a systemMessage so the breakage is
+  // self-reporting instead of requiring a forensic dig.
+  const searched = candidates.map(c => path.join(c, '.claude/hooks/')).join(', ');
+  const msg =
+    `[run-hook] HOOK NOT FOUND: '${hookName}.cjs' is not present in any search path, so this hook ` +
+    `DID NOT RUN — its checks contributed nothing to this tool call. Searched: ${searched}. ` +
+    'FIX: the cAgents plugin install is incomplete or stale (partial/sparse checkout, interrupted ' +
+    'update). Run `/plugin update cagents`, or verify CLAUDE_PLUGIN_ROOT points at a complete checkout.';
+  console.error(msg);
+  console.log(JSON.stringify({ continue: true, systemMessage: msg }));
   process.exit(0);
 }
 

@@ -26,8 +26,10 @@ On the DEFAULT concurrent-Agent path, keep `run_in_background: false` and OMIT t
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",  # MUST be the controller from plan.yaml, NEVER an execution agent
   run_in_background: false,                     # DEFAULT: synchronous, so the lead collects all wave results together (v2.1.198 background-by-default)
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",      # EXPERIMENTAL named-teammate path only — omit on the default path
-  team_name: "{team_name}",                     # EXPERIMENTAL only — accepted-but-ignored (teams are implicit since v2.1.178)
+  # NO `name` and NO `team_name` on this path. Passing `name` promotes the spawn to a
+  # named background teammate and SILENTLY overrides `run_in_background: false` (ENG-OBS-7),
+  # so the lead never collects the result. Named teammates belong to the EXPERIMENTAL path
+  # only, which spawns with `run_in_background: true` and collects via SendMessage.
   description: "Wave {K} - Execute TASK-{N}: <short description>",
   prompt: "You are a subagent executing a work item in wave {K} of the pipeline.
 

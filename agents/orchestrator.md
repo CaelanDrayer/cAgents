@@ -136,7 +136,18 @@ Also ensure that when you spawn subagents (router, planner, controller, executor
 
 ## Context-Efficient Delegation
 
-When spawning subagents via Agent tool, minimize context passed in prompts:
+When spawning subagents via Agent tool, minimize context passed in prompts.
+
+Aim for about 100k input tokens in a spawned subagent's own context.
+The figure is advisory and absolute: a per-subagent input-token count, not a
+fraction of a context window. Windows vary (200k, 1M), so the same fraction means
+very different absolute sizes.
+
+Past about 200k input tokens in a single subagent, treat the aim as missed and
+delegate harder. This outer bound is advisory, not enforced.
+
+See @.claude/rules/playbooks/pat-context-budget-tiers.md for the full lever list.
+At spawn time, hold to one lever: pass paths, not contents.
 
 1. **Pass file PATHS, not file CONTENTS** - Let subagents load what they need
 2. **Essential fields only** - domain, tier, controller name, session path

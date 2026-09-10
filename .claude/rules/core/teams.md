@@ -68,6 +68,8 @@ Wave subagents MAY also spawn deeper sub-agents within the 5-level nesting budge
 - Having wave subagents implement work items directly instead of spawning execution agents *(except the Nesting-Ceiling fallback below, when the `Agent` tool is verifiably absent)*
 - Having wave subagents answer questions directly instead of delegating *(except when `Agent` is verifiably absent)*
 
+Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them. It applies to every wave subagent you spawn, and to every agent they spawn beneath them.
+
 ## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
 **Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to **5 levels deep** (skill loop = depth 0). The `Agent` tool is present at every level from depth 1 through depth 5, so subagent controllers reliably spawn execution agents and reviewers — delegation is the expected behavior at every level.
@@ -313,6 +315,8 @@ Agent({
 })
 // (issued together in the same assistant message → they run in parallel)
 ```
+
+**Do NOT pass `name` on this path.** `name` forces the spawn into the background and overrides `run_in_background: false` silently (CONFIRMED on Claude Code 2.1.221), so the lead returns believing the wave completed and ends up doing the wave's work itself. An unnamed spawn is the only way to get a blocking one. Track each subagent with a `TaskCreate` whose subject matches its `description` — that is where per-subagent visibility comes from, not from `name`. `name` belongs only to the experimental named-teammate path below, where results are collected explicitly via `SendMessage`. See @.claude/rules/core/delegation.md § Synchronous Spawning for the precedence.
 
 ### Task Distribution
 

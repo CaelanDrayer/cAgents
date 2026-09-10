@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.69.0"
+  version: "12.70.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -37,7 +37,7 @@ This skill is designed so the lead can complete 5-10 wave workflows without exha
 3. **Delegated gate validation** — `cagents:wave-reviewer` runs the 7-check protocol against on-disk evidence and returns a 1-line verdict. Lead never reads raw gate evidence.
 4. **Delegated final assembly** — `cagents:coord-log-writer` builds `coordination_log.yaml` from on-disk artifacts and returns a 1-line confirmation. Lead never re-reads N waves of WI status.
 
-If you find yourself loading more than the current wave's WIs, OR re-reading prior waves' outputs in lead context, STOP — that is the failure mode this refactor exists to prevent.
+If you find yourself loading more than the current wave's WIs, OR re-reading prior waves' outputs in lead context, STOP — that is the failure mode this refactor exists to prevent. Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them — the four disciplines above are how a lead holds it, and a wave subagent holds it by delegating and by writing bodies to disk instead of carrying them.
 
 ## Wave Report Cap and Lead Read Whitelist
 

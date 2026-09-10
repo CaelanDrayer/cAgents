@@ -101,6 +101,21 @@ gate, no warning. It holds on instruction quality alone. Any future
 proposal to add a size check, a token gate, or a blocking threshold has
 already been considered and rejected.
 
+### Two actors, two rules
+
+Two different actors, two different rules. `.claude/rules/core/delegation.md`
+§ The Size Rule governs WHAT THE MAIN SESSION CARRIES: a size class, never a
+token count, and its rejection of token gates for that purpose stands unchanged.
+The per-subagent aim governs a different thing — HOW LARGE A SPAWNED SUBAGENT'S
+OWN CONTEXT GETS — measured per spawn, advisory, with no gate. Neither rule is an
+exception to the other; they describe different actors.
+
+Spawned subagents carry an advisory per-subagent context aim; see
+`.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the
+delegation levers that hold them. It is unenforced, exactly as this rule is, and
+it weakens nothing above: the per-subagent aim is not about the main session at
+all.
+
 ## Controller-Side Corollary
 
 Controllers (tier-2 agents like `tech-lead`, `architect`,
@@ -135,6 +150,33 @@ exception is the OPTIONAL experimental named-background-teammate path
 (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), where a named teammate's result is
 still explicitly collected via `SendMessage` — never spawned-and-forgotten. See
 `.claude/rules/core/controllers.md` § CRITICAL: Synchronous Spawning.
+
+**`name` wins over `run_in_background: false`.** Passing `name` to the Agent tool
+promotes the spawn to a named background teammate and silently overrides an
+explicit `run_in_background: false` — no error, no warning (CONFIRMED on Claude
+Code 2.1.221). The call returns immediately, the caller believes it holds a
+completed result and yields, the child's result is never collected, and the parent
+re-does the work inline — absorbing the entire cost it meant to delegate. There is
+no such thing as a named blocking spawn: `name` implies background, so it cannot be
+combined with a blocking call. This is the canonical statement of the precedence;
+the other surfaces that mandate synchronous spawning point here.
+
+| You need | Spawn it as | Where visibility comes from |
+|----------|-------------|-----------------------------|
+| A result you must collect in this turn (the default for all execution work) | UNNAMED, `run_in_background: false` | A `TaskCreate` whose subject matches the agent's `description` |
+| A genuinely resumable conversation you will collect later via `SendMessage` | A named teammate — background by definition | `TaskCreate` before the spawn, `TaskUpdate(status: completed)` when you collect it |
+
+`CLAUDE.md` § CRITICAL: Task Lifecycle requires a `TaskCreate` per background
+spawn so the user sees each subagent. It does not ask you to pass `name` to the
+Agent tool, and the two rules are satisfiable together only if you read it that
+way: **name the TASK, never the SPAWN.**
+
+**Collect before you yield.** A spawn that is never collected is
+indistinguishable from work never delegated — it costs the child's tokens AND the
+parent's, because the parent ends up doing the work itself anyway. If a child's
+hand-back is missing, check the session `outputs/` directory BEFORE re-spawning:
+a child that wrote its artifact to disk has already done the work, and re-running
+it pays for that work a second time.
 
 ## Enforcement
 

@@ -68,6 +68,7 @@ The table below tells you at a glance which coordination protocols in this file 
 | Dead-letter promotion contract | agent-self-reported (this section itself notes "no hook currently enforces it") | Advisory |
 | Two-stage review, blind review + Devil's Advocate | agent-self-reported | Advisory |
 | Confidence tiers | agent-self-reported | Advisory |
+| Per-subagent context-budget aim (how large a spawned subagent's own context gets) | agent-self-reported; no hook measures subagent context fill | Advisory |
 
 For the cross-cutting checks that ARE hook-enforced (exactly 5), see @.claude/rules/quality/resources/validation-checklist-active.md.
 
@@ -100,6 +101,8 @@ For EVERY question: formulate -> spawn execution agent via Agent -> record answe
 
 Question prompts should be **under 300 tokens**. Include only: the question, where to look, what to report. Do NOT include plan/decomposition/instruction contents.
 
+Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them.
+
 ## CRITICAL: Synchronous Spawning (never background-and-yield)
 
 Controllers (and `/team` leads) MUST spawn execution agents **synchronously** and collect each result before yielding the turn. Concretely: every `Agent(...)` call is issued with `run_in_background: false` (explicit — subagents are background-by-default since Claude Code 2.1.198), and the controller waits for the spawned agent's result in the same turn it spawned it.
@@ -107,6 +110,10 @@ Controllers (and `/team` leads) MUST spawn execution agents **synchronously** an
 **Never background a sub-agent and then yield.** A backgrounded child plus a parent that returns/yields before collecting the child's result produces an **hours-long stall**: the child sits with `stopped_at: null` in `agent_tree.yaml`, so the session *looks* alive (a null-stop child reads as "actively working"), yet nothing progresses because no agent is awaiting the child. This is the controller-background-yield stall (REC-05, session `run_bash-guard-evaluator_260708_001`). The Stop-hook stale-child freshness gate (`verify-completion.cjs` `sessionActivelyWorking`) now discounts a null-stop child whose `spawned_at` is older than `CAGENTS_STALE_CHILD_MS` (default 30 min) specifically to surface this stall — but the primary fix is behavioral: **spawn synchronously, collect, then proceed.**
 
 The one exception is the OPTIONAL experimental named-background-teammate path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), where a named background teammate is coordinated via `SendMessage` and its result is still explicitly collected — never spawned-and-forgotten. On the default concurrent-Agent path, always `run_in_background: false`.
+
+**`name` wins over `run_in_background: false`** — passing `name` promotes the spawn to a named background teammate and discards your blocking request without an error (CONFIRMED on Claude Code 2.1.221), so you yield holding nothing and re-do the work yourself. Spawn UNNAMED with `run_in_background: false` for anything you must collect in-turn; reserve named teammates for the experimental resumable path where you collect explicitly via `SendMessage`. Per-subagent visibility comes from the `TaskCreate` subject (§ MANDATORY: TaskCreate below), not from `name` — name the task, never the spawn. Mechanism and the choose-which table: @.claude/rules/core/delegation.md § Synchronous Spawning.
+
+**If a child's hand-back is missing, look on disk before re-spawning.** A child that wrote its artifact to `outputs/` has already done the work even if you never collected its summary; re-running it pays for that work a second time.
 
 ## Invoking Workspace Skills (reuse-before-rebuild)
 

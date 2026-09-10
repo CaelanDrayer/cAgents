@@ -209,15 +209,31 @@ describe('session-init-gate flake regression — sticky lazy-reap of a LIVE poin
   });
 
   // ------------------------------------------------------------------
-  // Case 3 — INVARIANT: genuine absence STILL DENIES (guards against an
-  //   over-correction to "always allow"). No pointer, no session dir, no env.
+  // Case 3 — INVARIANT (restated for RF-1, v12.70.0): genuine absence is
+  //   REPORTED, not silently waved through.
+  //
+  //   This case previously asserted a DENY. The deny turned out to be the
+  //   larger bug: `cagents-memory/` is git-ignored, so "no session directory"
+  //   is the default shape of every fresh clone and every first-time plugin
+  //   install — the gate denied every Agent spawn (including Claude Code's own
+  //   Explore/general-purpose subagents) on any machine without a dev box's
+  //   accumulated litter. The presence check is now advisory.
+  //
+  //   The over-correction this case still guards against has moved: it is no
+  //   longer "always allow" but "allow SILENTLY". A degraded resolution that
+  //   the model cannot see is exactly how an abandoned month-old session spent
+  //   months authorising live spawns unnoticed.
   // ------------------------------------------------------------------
-  it('still DENIES a genuine orphan spawn — no pointer, no session dir, no env', async () => {
+  it('reports a genuine orphan spawn loudly (advisory, not silent) — no pointer, no session dir, no env', async () => {
     // sessionsDir exists but is EMPTY; no pointer seeded; env vars unset.
     utils._resetActiveSessionCache();
     const v = await gate.handler(gateInput(UUID));
-    expect(isDenyVerdict(v)).toBe(true);
-    expect(denyReason(v)).toMatch(/no active session directory found/);
+    expect(isDenyVerdict(v)).toBe(false);
+    const surfaced = `${v?.systemMessage || ''}\n${denyReason(v)}`;
+    expect(surfaced).toMatch(/SESSION PRESENCE/);
+    expect(surfaced).toMatch(/CAUSE:/);
+    // NOT a bare {continue:true}: something must reach the model.
+    expect(surfaced.trim().length).toBeGreaterThan(0);
   });
 
   // ------------------------------------------------------------------

@@ -134,6 +134,32 @@ Example: Controller → backend-developer (question) → answer → synthesis
 
 Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
 
+## Write Your Output to Disk, Return a Pointer
+
+Before returning, write your work product to disk and return its path. Pass file
+paths, not contents.
+
+**This is crash tolerance before it is token thrift.** Your summary can be lost — a
+parent can yield, compact, or die before it ever collects you — and **your file
+cannot.** In session `act_subagent-token-budget_260909_001` two children's artifacts
+(4194 bytes and 32690 bytes) each survived their parent's death and needed no
+re-run. The parent had concluded "nothing landed"; it was wrong, because the work
+was already on disk.
+
+A lost parent destroys the *collection* — the hand-back summary — never the artifact
+you wrote down. Anything you did not persist exists in exactly one place: a return
+value nobody is guaranteed to read.
+
+**Corollary when you are the parent.** If a child's hand-back is missing, check the
+session `outputs/` directory BEFORE re-spawning it. The work may already be
+complete, and re-running it pays twice. A stalled parent recovers from its
+children's artifacts, not from zero — see
+@.claude/rules/playbooks/pat-gate-taxonomy.md § Stall-detection rule (a parent that
+has spawned children).
+
+Full statement of this lever: @.claude/rules/playbooks/pat-context-budget-tiers.md
+§ Lever 2 is crash tolerance, not thrift.
+
 ## Minimal-Solution Ladder
 
 Before writing new code for a work item, walk the minimal-solution ladder (YAGNI -> stdlib -> native platform feature -> existing dependency -> one-liner -> minimum viable change) and only write new code when every cheaper rung fails. cAgents biases toward aggressive decomposition; the ladder is the implementation-side counterweight.

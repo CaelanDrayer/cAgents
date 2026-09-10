@@ -15,15 +15,22 @@
  *       every bundle through the one builder that concatenates it.
  *   (c) the settings.json registration exists and the two pre-existing
  *       SubagentStart hooks survive;
- *   (d) fail-open — a throwing input and malformed stdin never fail the spawn.
+ *   (d) fail-open — a throwing input and malformed stdin never fail the spawn;
+ *   (e) the SAME complement check for the SECOND shared stanza, the context-budget
+ *       aim stanza, plus its single-definition, advisory-wording, and authoring-
+ *       size guards.
  *
- * DELIBERATELY ABSENT: any assertion on the SIZE of the injected context (byte
- * budget, token gate, blocking threshold). Automated size-gating was explicitly
- * overruled for this program; these tests assert presence and structure only.
+ * ON SIZE: these tests assert nothing about the size of a spawned agent's actual
+ * context and introduce no token gate, no blocking threshold, and no measurement
+ * of a running agent. Automated size-gating was explicitly overruled for this
+ * program. The one size assertion present is an AUTHORING cap on the context-
+ * budget stanza's own source text (<= 700 chars) — that text is charged to every
+ * spawn, so a fat budget stanza would defeat its own purpose. It caps a string
+ * literal in this repo, never an agent.
  */
 
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { createRequire } from 'module';
@@ -57,6 +64,21 @@ const STANZA_MARKERS = [
   'Session-scoped',
   'Parallel-safe',
   'Git-ignored',
+];
+
+// Structural fingerprints of the context-budget aim stanza (the SECOND shared
+// stanza). Every bundle must carry all of them. Each is unique to that stanza —
+// none appears in any ROLE_POINTERS value or in the memory-layout stanza — so
+// finding one in a bundle proves the budget stanza itself travelled, not some
+// neighbouring text. These are the strings to pin verbatim elsewhere.
+const BUDGET_MARKERS = [
+  'Context budget (advisory',
+  'Aim for about 100k input tokens',
+  'Past about 200k input',
+  'delegate harder',
+  'nothing measures them',
+  'artifact bodies to disk',
+  'pat-context-budget-tiers.md',
 ];
 
 /** Load the CJS module without triggering its standalone createHook() registration. */
@@ -181,6 +203,129 @@ describe('role-manifest-injector.cjs', () => {
           .not.toContain('cAgents memory layout');
       }
       expect(MEMORY_LAYOUT_STANZA).toContain('cAgents memory layout');
+    });
+  });
+
+  // ---- (e) THE COMPLEMENT CHECK, context-budget aim stanza --------------
+  describe('context-budget aim stanza reaches EVERY bundle', () => {
+    const {
+      ROLE_POINTERS, buildRoleBundle, resolveRole, extractAgentName,
+      BUDGET_AIM_STANZA, handler,
+    } = loadModule();
+    const roleKeys = Object.keys(ROLE_POINTERS);
+
+    // One probe agent type per role key, DERIVED from the real on-disk agent
+    // catalog via the module's own resolveRole(). The live-emission coverage
+    // below is therefore driven by Object.keys(ROLE_POINTERS) + resolveRole(),
+    // never by a hardcoded role list that could drift away from the map.
+    const probes = new Map();
+    for (const agentType of [
+      ...readdirSync(join(process.cwd(), 'agents'))
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => `cagents:${f.replace(/\.md$/, '')}`),
+      'general-purpose', // a non-cagents type -> the `default` fallback key
+    ]) {
+      const key = resolveRole(extractAgentName({ agent_type: agentType }));
+      if (!probes.has(key)) probes.set(key, agentType);
+    }
+
+    it('every role key is reachable from a real agent type (probe coverage is complete)', () => {
+      expect([...probes.keys()].sort()).toEqual([...roleKeys].sort());
+    });
+
+    // Iterates EVERY key present in the map, exactly as the memory-stanza
+    // complement check does — a future role inherits this coverage unedited.
+    it.each([...roleKeys, '__unknown_role_key__', '', undefined, null])(
+      'buildRoleBundle(%p) carries the full context-budget aim stanza',
+      (key) => {
+        const bundle = buildRoleBundle(key);
+        expect(typeof bundle).toBe('string');
+        for (const marker of BUDGET_MARKERS) {
+          expect(bundle).toContain(marker);
+        }
+      },
+    );
+
+    it('the stanza reaches the REAL emitted additionalContext for every role key', async () => {
+      for (const [key, agentType] of probes) {
+        const result = await handler({ hook_event_name: 'SubagentStart', agent_type: agentType });
+        const ctx = result.hookSpecificOutput.additionalContext;
+        expect(ctx, `${agentType} -> ${key}`).toContain(`role manifest (${key})`);
+        for (const marker of BUDGET_MARKERS) {
+          expect(ctx, `${agentType} -> ${key} is missing ${marker}`).toContain(marker);
+        }
+      }
+    });
+
+    it('the stanza survives the wire, direct and via the registered launcher', () => {
+      const direct = runHook({
+        hook_event_name: 'SubagentStart',
+        agent_type: 'cagents:backend-developer',
+        agent_id: 'agent_test_budget',
+      });
+      const viaLauncher = runHook(
+        { hook_event_name: 'SubagentStart', agent_type: 'cagents:backend-developer' },
+        { viaLauncher: true },
+      );
+      for (const marker of BUDGET_MARKERS) {
+        expect(direct.hookSpecificOutput.additionalContext).toContain(marker);
+        expect(viaLauncher.hookSpecificOutput.additionalContext).toContain(marker);
+      }
+    });
+
+    // Single-definition guarantee, identical in shape to the memory stanza's:
+    // the builder's unconditional concatenation is the ONLY route into a bundle.
+    it('BUDGET_AIM_STANZA is defined exactly once and is non-empty', () => {
+      expect(typeof BUDGET_AIM_STANZA).toBe('string');
+      expect(BUDGET_AIM_STANZA.trim().length).toBeGreaterThan(0);
+      const source = readFileSync(HOOK_PATH, 'utf8');
+      const assignments = source.match(/^\s*(?:const|let|var)\s+BUDGET_AIM_STANZA\s*=/gm) || [];
+      expect(assignments.length, 'exactly one module-scope assignment expected').toBe(1);
+      for (const [key, pointer] of Object.entries(ROLE_POINTERS)) {
+        expect(pointer, `ROLE_POINTERS.${key} must not inline the budget stanza`)
+          .not.toContain('Context budget (advisory');
+      }
+    });
+
+    it('the stanza stays small — it is charged to EVERY spawn', () => {
+      // AUTHORING cap on this string literal. Not a gate, not a measurement of
+      // any running agent's context; see the ON SIZE note in the file header.
+      expect(BUDGET_AIM_STANZA.length).toBeLessThanOrEqual(700);
+    });
+
+    it('the stanza states an aim, never an enforced gate', () => {
+      const lower = BUDGET_AIM_STANZA.toLowerCase();
+      for (const enforcement of ['must not exceed', 'hard limit', 'will be killed', 'aborted']) {
+        expect(lower, `the stanza must not promise enforcement: "${enforcement}"`)
+          .not.toContain(enforcement);
+      }
+      expect(lower).toContain('advisory');
+    });
+
+    it('emits no permissionDecision / deny / block field for ANY role key', async () => {
+      for (const [key, agentType] of probes) {
+        const result = await handler({ hook_event_name: 'SubagentStart', agent_type: agentType });
+        // Purely additive: additionalContext and nothing else.
+        expect(Object.keys(result), `${key} returned extra top-level fields`)
+          .toEqual(['hookSpecificOutput']);
+        expect(Object.keys(result.hookSpecificOutput).sort())
+          .toEqual(['additionalContext', 'hookEventName']);
+        expect(result.hookSpecificOutput.permissionDecision).toBeUndefined();
+        expect(result.decision).toBeUndefined();
+        expect(result.continue).not.toBe(false);
+        expect(result.stopReason).toBeUndefined();
+        const blob = JSON.stringify(result);
+        for (const field of ['permissionDecision', '"deny"', '"block"']) {
+          expect(blob, `${key} bundle leaked ${field}`).not.toContain(field);
+        }
+      }
+      // And on the wire, where createHook() adds only `continue: true`.
+      const wire = JSON.stringify(
+        runHook({ hook_event_name: 'SubagentStart', agent_type: 'cagents:backend-developer' }),
+      );
+      expect(wire).not.toContain('permissionDecision');
+      expect(wire).not.toContain('"deny"');
+      expect(wire).not.toContain('"block"');
     });
   });
 

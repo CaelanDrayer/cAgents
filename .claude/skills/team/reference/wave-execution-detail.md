@@ -94,8 +94,10 @@ CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
 Agent({
   subagent_type: "cagents:{CONTROLLER_TYPE}",
   run_in_background: false,                   # DEFAULT: synchronous, lead collects results together
-  name: "w{K}-task-{N}-{CONTROLLER_TYPE}",    # EXPERIMENTAL named-teammate path only — omit on the default path
-  team_name: "{team_name}",                   # EXPERIMENTAL only — accepted-but-ignored (teams are implicit)
+  # NO `name` and NO `team_name` on this path. Passing `name` promotes the spawn to a
+  # named background teammate and SILENTLY overrides `run_in_background: false` (ENG-OBS-7),
+  # so the lead never collects the result. Named teammates belong to the EXPERIMENTAL path
+  # only, which spawns with `run_in_background: true` and collects via SendMessage.
   description: "Wave {K} - Execute TASK-{N}: <short description>",
   prompt: "<see reference/teammate-spawning-template.md for full prompt>"
 })
