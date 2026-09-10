@@ -29,7 +29,7 @@ try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, resolveSdkUuidOwner, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
 
 /**
  * LP-22: Pattern heuristics for MEMORY.md auto-append.
@@ -173,10 +173,22 @@ createHook('SubagentStopTracker', async (input) => {
     return { continue: true };
   }
 
-  // Find session to update agent_tree.yaml
+  // Find session to update agent_tree.yaml.
+  // ENG-OBS-2 (v12.70.0): the OWNERSHIP pass sits between the deterministic
+  // resolver and the newest-session guess, for the same reason as in
+  // subagent-tracker.cjs — a stop event MUST land in the session that owns this
+  // transcript even when that session's status.yaml currently reads terminal.
+  // Without it, a start recorded in session A (via ownership) could have its stop
+  // recorded in session B (via the guess), permanently orphaning the entry as
+  // `stopped_at: null` and making a completed agent look like a running one to
+  // every staleness / stall probe that reads this file.
   let sessionDir = findActiveSession(input.session_id);
+  if (!sessionDir) sessionDir = resolveSdkUuidOwner(input.session_id);
   if (!sessionDir) {
     sessionDir = findMostRecentSessionDir();
+    if (sessionDir) {
+      console.error(`[SubagentStopTracker] no deterministic resolution; GUESSING newest session: ${path.basename(sessionDir)} — this stop event may be filed against the wrong session.`);
+    }
   }
 
   if (!sessionDir) {

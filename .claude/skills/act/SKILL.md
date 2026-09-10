@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.69.0"
+  version: "12.70.0"
   argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
   user-invocable: "true"
   context: "none"
@@ -38,6 +38,10 @@ You are the **event-driven pipeline engine** that executes a state machine loop,
 **What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
 
 See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract. If you catch yourself reasoning toward any phrase in that list, STOP — you are rationalizing a violation. Delegate.
+
+Spawned subagents carry an advisory per-subagent context aim; see
+`.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the
+delegation levers that hold them.
 
 ## Architecture: Event-Driven State Machine (v12.0.0)
 
@@ -114,7 +118,7 @@ Special flag handling:
 
 **ACTION 0**: Check `process.env.CAGENTS_SESSION_ID`. If set, use it verbatim as SESSION_ID. If SESSION_DIR exists, treat as RESUME. Otherwise auto-generate.
 
-**ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register as root agent in `workflow/agent_tree.yaml`. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
+**ACTION 1**: Generate SESSION_ID, mkdir SESSION_DIR with `workflow/` and `outputs/` subdirs, write `instruction.yaml`, `status.yaml`, and self-register in `workflow/agent_tree.yaml` as the FIRST ENTRY of a top-level `agents:` LIST (`agents:` then `  - id: "pipeline"` … `depth: 0`). The `agents:` key is MANDATORY and is the only shape any reader understands. Do NOT write a `root:`/`children:` tree: the Stop hook reads such a file as "no child agents spawned", and although the tracker hook now repairs the shape on the next spawn, every spawn attempted before that repair is lost from the audit trail. See @reference/agent-tracking.md for the exact block to write. (v12.6.0: `workflow/events/` is no longer created — primary output files are the canonical state-advancement signal.)
 
 **ACTION 1 — ABSOLUTE session-path anchor (REC-20)**: Anchor ALL session writes to an absolute project root, NEVER a relative `cagents-memory/…` literal. A relative path resolves against the current working directory, and a nested `/act` (or a `/team` subagent) can run with its cwd inside a parent session dir — a relative write then nests a whole `cagents-memory/` tree under that session (the CWD-leak). Define once and reuse `$MEM` for every session/`_system` write below:
 
@@ -130,7 +134,7 @@ Never run `npm install` / `npm ci` (or any dependency install / build) with the 
 
 See @reference/session-id-format.md for slug rules, NNN counter generation, and required initial files.
 
-See @reference/agent-tracking.md for agent_tree.yaml format and lineage fields.
+See @reference/agent-tracking.md for the canonical agent_tree.yaml schema, lineage fields, and the `spawn_failures:` records that a denied or failed spawn leaves behind.
 
 **ACTION 1b**: After writing status.yaml, set `process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;` so hooks resolve to the correct session without heuristic discovery. Critical for concurrent /team-spawned /act instances.
 

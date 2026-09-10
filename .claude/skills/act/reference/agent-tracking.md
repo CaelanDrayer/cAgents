@@ -2,9 +2,43 @@
 
 How /act records agent spawns into agent_tree.yaml and the global audit log.
 
+## The Canonical Schema (one shape, writer and readers agree)
+
+`agent_tree.yaml` has exactly ONE valid shape: a **mandatory top-level `agents:`
+key holding a LIST**, whose entries are keyed `- id:`.
+
+```yaml
+agents:            # MANDATORY top-level key, a LIST
+  - id: "..."      # entries keyed `- id:`
+```
+
+**Forbidden shapes.** A tree with no top-level `agents:` key — in particular the
+`root:` + `children:` tree that a loose reading of ACTION 1 invites — breaks the
+audit trail in BOTH directions at once:
+
+- `subagent-tracker.cjs` bails at its "missing agents: key" guard and appends
+  **nothing** for the remaining life of the session. Every later spawn is lost.
+- Every reader in `verify-completion.cjs` counts spawns from `agents:` / `- id:`,
+  so the same file reads as "no child agents spawned".
+
+That mismatch once produced a `DELEGATION VIOLATION ... no child agents spawned`
+that blocked Stop **twice** on a session which had really spawned five agents.
+Do not reintroduce it.
+
+An optional `root:` **metadata** block MAY precede the list — the readers
+explicitly scope around it — but it never substitutes for `agents:`.
+
+`subagent-tracker.cjs` now self-heals a non-canonical tree instead of bailing: it
+ADDS the missing `agents:` key, folds any `children:` entries in, preserves
+`root:` untouched, and announces the repair on stderr **and** in the spawned
+agent's `additionalContext`. Repair is not a licence to write the wrong shape —
+spawns attempted before the repair are already gone.
+
 ## Self-Registration on Session Init
 
-When /act creates a session, it writes itself as the root entry in `${SESSION_DIR}/workflow/agent_tree.yaml`:
+When /act creates a session, it writes itself as the first entry of the `agents:`
+list in `${SESSION_DIR}/workflow/agent_tree.yaml` (never as a `root:`/`children:`
+tree):
 
 ```yaml
 # Agent Tree - cAgents Audit Trail
@@ -52,6 +86,55 @@ Each entry in `agents:` includes:
 | `completion_summary` | Captured by SubagentStop hook on completion |
 | `duration_seconds` | Wall-clock duration computed at stop |
 | `session` | Session ID this agent belongs to |
+
+Entries under `spawn_failures:` use a deliberately DISJOINT key set
+(`attempt_id`, `attempted_type`, `attempted_depth`, `status`, `reason`,
+`recorded_at`, `source`) so no reader can confuse an attempt with a spawn.
+
+## Denied and Failed Spawn Records
+
+Only a successful **and** successfully-recorded spawn ever reaches `agents:`. A
+spawn that was DENIED at the `PreToolUse|Agent` gate, or that happened but could
+not be tracked, would otherwise leave no trace at all — which makes "my subagent
+spawns keep getting blocked" impossible to diagnose from artifacts, by
+construction. Those attempts are recorded in a separate top-level list:
+
+```yaml
+spawn_failures:
+  - attempt_id: "a1b2c3"
+    attempted_type: "cagents:backend-developer"
+    status: denied            # denied | failed | untracked
+    reason: "session-init-gate: no active session"
+    recorded_at: "{ISO_TIMESTAMP}"
+    attempted_depth: 2
+    source: "subagent-tracker.cjs:no-session"
+```
+
+| Status | Meaning |
+|--------|---------|
+| `denied` | A gate refused the spawn. It never started. |
+| `failed` | The spawn was attempted and errored. |
+| `untracked` | The spawn really happened but could not be recorded (no session resolved, `js-yaml` absent, unusable tree). |
+
+**These records are deliberately invisible to every reader regex** — the keys are
+`- attempt_id:` / `attempted_type:` / `attempted_depth:`, and no entry ever
+carries `stopped_at: null`. So a denial can never be miscounted as a spawned
+child, satisfy a pipeline-advance check, or mask a stall. A denied spawn is
+evidence, not credit. Keep it that way when adding fields.
+
+Every record is ALSO written to the global audit log (below) as a
+`SPAWN_DENIED` / `SPAWN_FAILED` / `SPAWN_UNTRACKED` line, which survives even
+when no session resolves and when `js-yaml` is unavailable.
+
+**Recording a denial from another hook.** `subagent-tracker.cjs` is registered
+for `SubagentStart` only, and that event never fires for a spawn denied at
+`PreToolUse|Agent`. A gate hook records one in a single line:
+
+```js
+spawnSync('node', [path.join(__dirname, 'subagent-tracker.cjs'), '--record-failure',
+  JSON.stringify({ attempt_id, attempted_type, status: 'denied', reason, session_dir })],
+  { timeout: 3000 });
+```
 
 ## Global Audit Log
 

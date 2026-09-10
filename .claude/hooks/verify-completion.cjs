@@ -201,7 +201,48 @@ function countChildAgents(agentTreeContent) {
     const idMatches = agentTreeContent.match(/^\s*- id:/gm);
     count = idMatches ? idMatches.length : 0;
   }
+  // WI-B6: LAST-RESORT tolerance for a legacy non-canonical `children:` tree.
+  // Tolerant, but never silent — a tree in this shape is a BLIND instrument
+  // (subagent-tracker.cjs could not append to it), so whatever we count here is
+  // a floor, not a total. The caller reports the schema problem itself.
+  if (count === 0) {
+    const diag = agentTreeSchemaDiagnosis(agentTreeContent);
+    if (!diag.canonical) {
+      const legacyChildren = (agentTreeContent.split(/^children:/m)[1] || '').match(/^\s*- /gm);
+      count = legacyChildren ? legacyChildren.length : 0;
+      console.error(`[VerifyCompletion] agent_tree.yaml is NOT canonical (${diag.note}) — counted ${count} child entr${count === 1 ? 'y' : 'ies'} from the legacy \`children:\` list. Treat this as a FLOOR: the tracker cannot append to this shape, so real spawns are almost certainly under-counted.`);
+    }
+  }
   return count;
+}
+
+/**
+ * WI-B6: is this agent_tree.yaml in the canonical shape every reader here
+ * assumes — a top-level `agents:` list keyed `- id:`?
+ *
+ * The `root:` + `children:` shape (what an /act ACTION 1 self-registration used
+ * to produce) has no `agents:` key at all. That single mismatch blinded BOTH
+ * sides at once: subagent-tracker.cjs bailed at its "missing agents: key" guard
+ * and appended NOTHING for the rest of the session, while the counters below
+ * read the resulting file as "no child agents spawned" and reported a DELEGATION
+ * VIOLATION against a session that had in fact spawned five agents.
+ *
+ * Callers must use this to distinguish "nothing was spawned" (a real finding)
+ * from "the instrument is blind" (a schema defect). Reporting the second as the
+ * first is a fabricated claim about the user's work.
+ */
+function agentTreeSchemaDiagnosis(agentTreeContent) {
+  if (!agentTreeContent) return { canonical: true, note: null };
+  if (/^agents:/m.test(agentTreeContent)) return { canonical: true, note: null };
+  const hasChildren = /^children:/m.test(agentTreeContent);
+  const hasRoot = /^root:/m.test(agentTreeContent);
+  if (hasChildren || hasRoot) {
+    return {
+      canonical: false,
+      note: `no top-level \`agents:\` key; found ${[hasRoot ? '`root:`' : null, hasChildren ? '`children:`' : null].filter(Boolean).join(' + ')} instead`,
+    };
+  }
+  return { canonical: false, note: 'no top-level `agents:` key' };
 }
 
 /**
@@ -247,7 +288,10 @@ function sessionActivelyWorking(sessionDir, statusContent) {
     try {
       const agentTreeContent = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
       if (agentTreeContent) {
-        const parts = agentTreeContent.split(/^agents:/m);
+        // WI-B6: tolerate a legacy `children:` tree so a genuinely-running child
+        // in a non-canonical file cannot be mistaken for an idle session.
+        let parts = agentTreeContent.split(/^agents:/m);
+        if (parts.length === 1) parts = agentTreeContent.split(/^children:/m);
         const childRegion = parts.length > 1 ? parts[1] : '';
         runningChild = hasFreshRunningChild(childRegion);
         childCount = countChildAgents(agentTreeContent);
@@ -889,13 +933,25 @@ function verifyCompletion(sessionDir) {
         }
       }
 
+      // WI-B6: before claiming "no agents were spawned", establish that the
+      // instrument could have SEEN a spawn. A non-canonical tree cannot — the
+      // tracker never appends to it — so a zero count there is unknown, not zero.
+      const treeDiagVC = agentTreeSchemaDiagnosis(agentTreeContent);
+
       if (childAgentCount === 0) {
         const sessionName = path.basename(sessionDir);
-        const delegationMsg =
-          `DELEGATION VIOLATION: Session '${sessionName}' stopped in '${pipelineStateForVC}' state ` +
-          `with no child agents spawned. This indicates the pipeline was not executed — ` +
-          `work was self-handled or the session was abandoned before delegation. ` +
-          `Expected: agent_tree.yaml with depth>0 entries showing spawned orchestrator/planner/controller agents.`;
+        const delegationMsg = !treeDiagVC.canonical
+          ? `AGENT TREE SCHEMA DEFECT (delegation UNKNOWN, not violated): Session '${sessionName}' stopped in ` +
+            `'${pipelineStateForVC}' state and its workflow/agent_tree.yaml is not in the canonical shape ` +
+            `(${treeDiagVC.note}). subagent-tracker.cjs cannot append to this shape, so the file records ZERO ` +
+            `spawns no matter how much delegation actually happened — this is NOT evidence that work was ` +
+            `self-handled. Repair the file to a top-level \`agents:\` list (see .claude/skills/act/reference/` +
+            `agent-tracking.md) and cross-check the real spawn history in ` +
+            `cagents-memory/_system/logs/agent_spawns.log.`
+          : `DELEGATION VIOLATION: Session '${sessionName}' stopped in '${pipelineStateForVC}' state ` +
+            `with no child agents spawned. This indicates the pipeline was not executed — ` +
+            `work was self-handled or the session was abandoned before delegation. ` +
+            `Expected: agent_tree.yaml with depth>0 entries showing spawned orchestrator/planner/controller agents.`;
 
         // REC-13: promote the delegation-violation check from a WARNING to a
         // hard BLOCK so the aggressive-delegation contract is enforced at the
@@ -920,7 +976,14 @@ function verifyCompletion(sessionDir) {
         const gracefulDegradationVC = !!coordForDegradationVC
           && coordForDegradationVC.includes('Agent/subagent-spawn tool was not available');
 
-        if (!activelyWorkingVC && !recentlyTransitionedVC && !gracefulDegradationVC) {
+        // WI-B6: a schema defect is a defect in OUR instrument, not proof of the
+        // user's misconduct. Fail OPEN (warn, never block) when the tree could
+        // not have recorded a spawn — blocking Stop on an unreadable audit file
+        // is exactly the false-positive deadlock this work item exists to kill.
+        if (!treeDiagVC.canonical) {
+          warnings.push(delegationMsg);
+          console.error(`[VerifyCompletion] agent_tree.yaml schema defect (WARNING, never blocking — delegation is UNKNOWN): ${sessionName} in ${pipelineStateForVC}; ${treeDiagVC.note}`);
+        } else if (!activelyWorkingVC && !recentlyTransitionedVC && !gracefulDegradationVC) {
           issues.push(delegationMsg);
           console.error(`[VerifyCompletion] Delegation violation (BLOCKING — genuinely abandoned): ${sessionName} stopped in ${pipelineStateForVC} with no spawned agents`);
         } else {

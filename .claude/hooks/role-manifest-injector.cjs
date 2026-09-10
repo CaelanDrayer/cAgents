@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Role Manifest Injector Hook - per-role rules pointer + memory-layout stanza
+ * Role Manifest Injector Hook - per-role rules pointer + two shared stanzas
  * cAgents WO-03 surface (d) — session team_load-cut-program_260804_001
  *
  * WHY THIS EXISTS
@@ -10,18 +10,29 @@
  * eats every rule file on every spawn. Hooks can only ADD context, never un-load
  * it — so this hook is the RESTORATION half of that cut: on SubagentStart it hands
  * the spawned role a compact POINTER to the rules that matter for that role (an L1
- * index it can `Read` on demand), plus the memory-layout stanza that every role
- * needs in order to write session artifacts at all.
+ * index it can `Read` on demand), plus TWO shared stanzas every role needs:
+ *
+ *   1. `MEMORY_LAYOUT_STANZA` — where to write session artifacts at all.
+ *   2. `BUDGET_AIM_STANZA` — the advisory per-subagent context aim and the
+ *      delegation levers that hold it. This stanza is the ONLY mechanism that
+ *      routes the aim to every spawn: its own home,
+ *      `.claude/rules/playbooks/pat-context-budget-tiers.md`, is `paths:`-scoped
+ *      and does not match arbitrary application code, so an agent editing
+ *      `src/**` would otherwise never see the figures. Advisory only — it states
+ *      an aim, and nothing in this repo measures or enforces it.
  *
  * STRUCTURAL GUARANTEE (the acceptance criterion)
  * ----------------------------------------------
- * `MEMORY_LAYOUT_STANZA` is defined EXACTLY ONCE and is never copied into a role
- * bundle. `ROLE_POINTERS` values are pointer-only text. `buildRoleBundle()` is the
- * SINGLE place a bundle is assembled, and it unconditionally concatenates the
- * stanza onto whichever pointer was selected (including the fallback). A future
- * contributor who adds a new key to `ROLE_POINTERS` gets the stanza automatically,
- * without knowing it exists — omission is structurally impossible, not merely
- * tested against. The handler NEVER emits a bundle by any other route.
+ * BOTH shared stanzas — `MEMORY_LAYOUT_STANZA` and `BUDGET_AIM_STANZA` — are each
+ * defined EXACTLY ONCE at module scope, and neither is ever copied into a role
+ * pointer. `ROLE_POINTERS` values are pointer-only text. `buildRoleBundle()` is
+ * the SINGLE place a bundle is assembled, and it unconditionally concatenates both
+ * stanzas onto whichever pointer was selected (including the fallback). A future
+ * contributor who adds a new key to `ROLE_POINTERS` gets both stanzas
+ * automatically, without knowing they exist — omission is structurally impossible,
+ * not merely tested against. The handler NEVER emits a bundle by any other route,
+ * so a third shared stanza would be one more concatenation there, never a copy
+ * into a pointer.
  *
  * FAIL-OPEN
  * ---------
@@ -100,6 +111,29 @@ IDs + status + assigned_to, NOT a second source of work-item truth —
 
 Full detail on demand: \`.claude/rules/memory/agent-memory.md\` and
 \`.claude/rules/memory/agent-memory-reference.md\`.`;
+
+// ---------------------------------------------------------------------------
+// The context-budget aim stanza. Defined ONCE. Never inlined into a role pointer.
+// Source of truth: .claude/rules/playbooks/pat-context-budget-tiers.md. That file
+// is `paths:`-scoped, so it does not load for an agent editing arbitrary
+// application code — this stanza is the only thing that carries the aim to every
+// spawn. It is ADVISORY: an aim, with nothing measuring it and nothing acting on
+// it. Keep it SHORT (a regression test caps it at 700 chars): it is charged to
+// every spawn, so a fat budget stanza would defeat its own purpose.
+// ---------------------------------------------------------------------------
+const BUDGET_AIM_STANZA = `
+### Context budget (advisory — nothing measures this)
+
+Aim for about 100k input tokens in your own context. Past about 200k input
+tokens, treat the aim as missed and delegate harder. Both are aims: no hook
+gates, stops, or cuts short a spawn over them, and nothing measures them.
+
+Levers: spawn a child for a unit of work instead of doing it inline; write
+artifact bodies to disk and pass file paths, not contents; read targeted ranges
+(\`sed -n 'A,Bp'\`), not whole files; collect every child before you yield
+(\`run_in_background: false\`).
+
+Figures and full lever list: \`.claude/rules/playbooks/pat-context-budget-tiers.md\`.`;
 
 // ---------------------------------------------------------------------------
 // Role pointers. POINTER TEXT ONLY — never include the memory stanza here.
@@ -245,16 +279,17 @@ function resolveRole(agentName) {
  * THE SINGLE ASSEMBLY POINT.
  *
  * Selects a role pointer (falling back to `default` for any key not present in
- * ROLE_POINTERS) and unconditionally concatenates MEMORY_LAYOUT_STANZA onto it.
- * There is deliberately no other code path that produces a bundle, so a new role
- * added to ROLE_POINTERS inherits the stanza with no action by its author.
+ * ROLE_POINTERS) and unconditionally concatenates BOTH shared stanzas —
+ * MEMORY_LAYOUT_STANZA and BUDGET_AIM_STANZA — onto it. There is deliberately no
+ * other code path that produces a bundle, so a new role added to ROLE_POINTERS
+ * inherits both stanzas with no action by its author.
  */
 function buildRoleBundle(roleKey) {
   const key = Object.prototype.hasOwnProperty.call(ROLE_POINTERS, roleKey)
     ? roleKey
     : 'default';
   const pointer = ROLE_POINTERS[key];
-  return `## cAgents role manifest (${key})\n\n${pointer}\n${MEMORY_LAYOUT_STANZA}\n`;
+  return `## cAgents role manifest (${key})\n\n${pointer}\n${MEMORY_LAYOUT_STANZA}\n${BUDGET_AIM_STANZA}\n`;
 }
 
 const handler = async (input) => {
@@ -289,4 +324,5 @@ module.exports = {
   extractAgentName,
   ROLE_POINTERS,
   MEMORY_LAYOUT_STANZA,
+  BUDGET_AIM_STANZA,
 };

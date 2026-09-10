@@ -110,24 +110,53 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
     expect(decisionOf(parsed)).not.toBe('deny');
   });
 
-  it('H4 — session-init-gate still DENIES when there is genuinely no active session (gate intact)', () => {
+  // RF-1 (v12.70.0): the two cases below used to assert `deny`. That deny is the
+  // bug, not the contract. `cagents-memory/` is git-ignored, so "no session at
+  // all" is the DEFAULT shape of every fresh clone and every first-time plugin
+  // install — the gate was denying delegation outright on any machine that
+  // wasn't a cAgents dev box. Terminal-only is just as legitimate: a SUCCESSFUL
+  // /act writes pipeline_state: VALIDATED and could then not spawn a single
+  // follow-up agent. The presence check is now ADVISORY: it self-heals the
+  // scaffold, allows, and says loudly what it found. What these cases still
+  // pin — and what genuinely matters — is that the gate does not go SILENT: it
+  // must report the branch it took, with that branch's remediation.
+  it('H4 — genuinely no active session: ALLOWS but reports the branch (advisory, not silent)', () => {
     // Empty sessions dir — no fallback target exists.
     const parsed = runHook('session-init-gate', {
       tool_name: 'Agent',
       tool_input: { subagent_type: 'cagents:backend-developer' },
       session_id: UUID,
     });
-    expect(decisionOf(parsed)).toBe('deny');
+    expect(decisionOf(parsed)).not.toBe('deny');
+    const surfaced = `${parsed.systemMessage || ''}\n${parsed.hookSpecificOutput?.permissionDecisionReason || ''}`;
+    expect(surfaced).toMatch(/SESSION PRESENCE/);
+    expect(surfaced).toMatch(/CAUSE:/);
   });
 
-  it('H4 — terminal-only sessions do NOT satisfy the gate (still denies)', () => {
+  it('H4 — terminal-only sessions do not RESOLVE, but no longer block the spawn', () => {
     makeSession('act_h4-terminal_001', { controller: true, terminal: true });
     const parsed = runHook('session-init-gate', {
       tool_name: 'Agent',
       tool_input: { subagent_type: 'cagents:backend-developer' },
       session_id: UUID,
     });
-    expect(decisionOf(parsed)).toBe('deny');
+    expect(decisionOf(parsed)).not.toBe('deny');
+    const surfaced = `${parsed.systemMessage || ''}\n${parsed.hookSpecificOutput?.permissionDecisionReason || ''}`;
+    // Branch-specific: it must say TERMINAL, not the old generic "run a skill first".
+    expect(surfaced).toMatch(/TERMINAL/);
+  });
+
+  it('H4 — RF-2: a non-cAgents subagent_type is never touched by this gate', () => {
+    // Empty sessions dir. Explore/general-purpose/Plan are the HARNESS's own
+    // delegation; gating them turned a cAgents-internal invariant into a global
+    // "the parent must do everything itself" failure.
+    const parsed = runHook('session-init-gate', {
+      tool_name: 'Agent',
+      tool_input: { subagent_type: 'Explore' },
+      session_id: UUID,
+    });
+    expect(decisionOf(parsed)).not.toBe('deny');
+    expect(parsed.systemMessage || '').not.toMatch(/SESSION PRESENCE/);
   });
 
   // ---- H3: controller-delegation-validator must NOT silently fail-open ----

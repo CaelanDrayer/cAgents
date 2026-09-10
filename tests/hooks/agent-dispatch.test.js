@@ -120,6 +120,119 @@ describe('agent-dispatch.cjs (PreToolUse[Agent] dispatcher)', () => {
     });
   });
 
+  // ── RF-4: fail-closed vs fail-open on gate throw ──────────────────────────
+  // Failing CLOSED on an I/O error conflates "I could not look" with "there is
+  // nothing there". A chmod-000 sessions dir, an unmounted network home, a
+  // container bind-mount, SELinux, or a half-populated worktree threw out of
+  // findActiveSession's readdirSync and DENIED every Agent spawn for as long as
+  // the condition lasted — total blast radius, from a transient filesystem
+  // state the gate had no opinion about. Genuine LOGIC faults still deny.
+  //
+  // BEFORE FIX both cases below deny; the EACCES assertions fail.
+  describe('fail-closed vs fail-open on gate throw', () => {
+    let makeDispatchHandler;
+    beforeEach(() => { ({ makeDispatchHandler } = loadFactory()); });
+
+    /** Build an error shaped exactly like Node's fs errors. */
+    function fsError(code, syscall, target) {
+      const err = new Error(`${code}: ${code === 'EACCES' ? 'permission denied' : 'i/o failure'}, ${syscall} '${target}'`);
+      err.code = code;
+      err.syscall = syscall;
+      err.path = target;
+      return err;
+    }
+
+    const SESSIONS = '/mnt/nfs-home/proj/cagents-memory/sessions';
+
+    it('EACCES-shaped throw => ALLOWS with a reason naming the errno and the path', async () => {
+      const sessionGate = vi.fn(async () => { throw fsError('EACCES', 'scandir', SESSIONS); });
+      const modelAdvisor = vi.fn(NULL);
+      const h = makeDispatchHandler({ sessionGate, modelAdvisor });
+      const verdict = await h({ tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } });
+
+      expect(verdict.deny).toBeUndefined();
+      expect(verdict.hookSpecificOutput?.permissionDecision).not.toBe('deny');
+      expect(verdict.continue).toBe(true);
+
+      const reason = `${verdict.systemMessage || ''}\n${verdict.hookSpecificOutput?.permissionDecisionReason || ''}`;
+      expect(reason).toMatch(/FAIL-OPEN/);
+      expect(reason).toContain('EACCES');
+      expect(reason).toContain(SESSIONS);
+    });
+
+    it.each(['ENOENT', 'EIO', 'ENOTDIR', 'ELOOP'])(
+      '%s-shaped throw also fails OPEN with errno + path in the reason',
+      async (code) => {
+        const sessionGate = vi.fn(async () => { throw fsError(code, 'scandir', SESSIONS); });
+        const h = makeDispatchHandler({ sessionGate, modelAdvisor: vi.fn(NULL) });
+        const verdict = await h({ tool_name: 'Agent', tool_input: {} });
+
+        expect(verdict.deny).toBeUndefined();
+        const reason = `${verdict.systemMessage || ''}\n${verdict.hookSpecificOutput?.permissionDecisionReason || ''}`;
+        expect(reason).toContain(code);
+        expect(reason).toContain(SESSIONS);
+      }
+    );
+
+    it('a genuine TypeError still DENIES (fail-closed preserved — this is not an over-correction)', async () => {
+      const sessionGate = vi.fn(async () => { throw new TypeError("Cannot read properties of undefined (reading 'x')"); });
+      const modelAdvisor = vi.fn(NULL);
+      const h = makeDispatchHandler({ sessionGate, modelAdvisor });
+      const verdict = await h({ tool_name: 'Agent', tool_input: {} });
+
+      expect(verdict.deny).toBe(true);
+      expect(verdict.reason).toMatch(/FAIL-CLOSED/);
+      expect(verdict.reason).toMatch(/session-init-gate/);
+      expect(verdict.reason).toMatch(/LOGIC fault/);
+      expect(modelAdvisor).not.toHaveBeenCalled();
+    });
+
+    it('an errno-less Error whose message carries the ERRNO prefix is still classified as I/O', async () => {
+      // A rethrow can lose `err.code` while keeping Node's `ERRNO: msg` prefix.
+      const sessionGate = vi.fn(async () => {
+        throw new Error(`EACCES: permission denied, scandir '${SESSIONS}'`);
+      });
+      const h = makeDispatchHandler({ sessionGate, modelAdvisor: vi.fn(NULL) });
+      const verdict = await h({ tool_name: 'Agent', tool_input: {} });
+
+      expect(verdict.deny).toBeUndefined();
+      expect(`${verdict.systemMessage}`).toContain('EACCES');
+      expect(`${verdict.systemMessage}`).toContain(SESSIONS);
+    });
+  });
+
+  // ── RF-4 (FS-4): the two invocation routes must agree ─────────────────────
+  // The SAME throw failed CLOSED under agent-dispatch and OPEN (silently) under
+  // the standalone `node run-hook.cjs session-init-gate` path, because that
+  // route is handled by createHook's outer catch. Opposite semantics for one
+  // condition is not a policy, it is an accident.
+  describe('invocation-route parity (createHook outer catch)', () => {
+    it('handlerFailureVerdict applies the same I/O-vs-logic split for SessionInitGate', () => {
+      const utils = require('../../.claude/hooks/hook-utils.cjs');
+
+      const io = new Error("EACCES: permission denied, scandir '/x/sessions'");
+      io.code = 'EACCES';
+      io.path = '/x/sessions';
+      const ioVerdict = utils.handlerFailureVerdict('SessionInitGate', io);
+      expect(ioVerdict.continue).toBe(true);
+      expect(ioVerdict.hookSpecificOutput.permissionDecision).toBeUndefined();
+      expect(ioVerdict.hookSpecificOutput.permissionDecisionReason).toContain('EACCES');
+      expect(ioVerdict.hookSpecificOutput.permissionDecisionReason).toContain('/x/sessions');
+
+      const logic = utils.handlerFailureVerdict('SessionInitGate', new TypeError('boom'));
+      expect(logic.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(logic.hookSpecificOutput.permissionDecisionReason).toMatch(/FAIL-CLOSED/);
+    });
+
+    it('a NON-gate hook never denies on a logic throw, but is never silent either', () => {
+      const utils = require('../../.claude/hooks/hook-utils.cjs');
+      const v = utils.handlerFailureVerdict('SomeAdvisoryHook', new TypeError('boom'));
+      expect(v.continue).toBe(true);
+      expect(v.hookSpecificOutput?.permissionDecision).toBeUndefined();
+      expect(v.systemMessage).toMatch(/threw and was caught/);
+    });
+  });
+
   // ── (c) heterogeneous returns ─────────────────────────────────────────────
   describe('(c) heterogeneous returns', () => {
     let makeDispatchHandler;
@@ -177,17 +290,22 @@ describe('agent-dispatch.cjs (PreToolUse[Agent] dispatcher)', () => {
       return JSON.parse(lines[0]);
     }
 
-    it('Agent spawn with NO active session => deny (session-init-gate, real)', () => {
+    it('Agent spawn with NO active session => ALLOW with a loud advisory (RF-1, was deny)', () => {
       const tmpDir = join(tmpdir(), 'cagents-test-agent-dispatch-' + Date.now());
       mkdirSync(tmpDir, { recursive: true });
       try {
         const verdict = runDispatch(
           { tool_name: 'Agent', tool_input: { subagent_type: 'cagents:backend-developer' } },
-          // Empty project dir => findActiveSession returns null => deny. Clear the
-          // CAGENTS_SESSION_ID/ACTIVE_SESSION bypasses so the presence gate fires.
+          // Empty project dir => findActiveSession returns null. Pre-RF-1 this was
+          // a hard deny, which is precisely what stopped delegation on every clean
+          // machine (cagents-memory/ is git-ignored, so a fresh clone has none).
+          // Clear the CAGENTS_SESSION_ID/ACTIVE_SESSION bypasses so the presence
+          // path is genuinely exercised.
           { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: '', CAGENTS_ACTIVE_SESSION: '' }
         );
-        expect(verdict.hookSpecificOutput.permissionDecision).toBe('deny');
+        expect(verdict.hookSpecificOutput?.permissionDecision).not.toBe('deny');
+        expect(verdict.continue).toBe(true);
+        expect(verdict.systemMessage || '').toMatch(/SESSION PRESENCE/);
       } finally {
         rmSync(tmpDir, { recursive: true, force: true });
       }

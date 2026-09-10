@@ -1,10 +1,65 @@
 # cAgents Release Notes
 
-**Current Version**: 12.69.0
-**Release Date**: September 7, 2026
+**Current Version**: 12.70.0
+**Release Date**: September 9, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.70.0 — September 9, 2026 (subagent spawning unblocked; denials made visible)
+
+Reported as "sub agent spawning is getting blocked a lot". The presence gate
+enforced "a session must exist before you may delegate" by checking for
+`cagents-memory/` — which is **git-ignored**, so it does not exist in a fresh
+clone or a fresh plugin install. Dev machines had accumulated stale non-terminal
+session directories that kept the gate satisfied; clean machines had none. Same
+code, same config, opposite behaviour. On the clean machine every Agent spawn was
+denied, the parent stopped delegating, and it absorbed all the work itself —
+which is the token blow-up that started the investigation.
+
+The denial was also invisible by construction. `subagent-tracker.cjs` is
+registered for `SubagentStart`, and `SubagentStart` never fires for a spawn
+denied at `PreToolUse|Agent`, so `agent_tree.yaml` could only ever contain
+successes. The one event you most need to count was the one event nothing
+counted, which is why the symptom presented as "the parent is just slow" rather
+than "delegation is being refused".
+
+Five fixes to the gate itself. It now **self-heals** the missing scaffold and
+allows, instead of denying — an absent directory was never evidence of a rule
+violation, it is the normal state of a machine that has not run a workflow yet.
+Non-`cagents:*` agents (`Explore`, `Plan`, `general-purpose`, bare user agent
+names) are **never gated**: they belong to the harness, and a cAgents session
+gate had no business having an opinion about them. The agent catalog resolves
+from **PLUGIN_ROOT, not PROJECT_ROOT** — the catalog lives with the plugin but
+was being looked for in the user's project, so every spawn on a cross-project
+install carried a false "not a registered agent" advisory. **I/O errnos now fail
+OPEN and loud**: `EACCES`/`ENOENT`/`EIO`/`ENOTDIR`/`ELOOP` mean the gate could
+not LOOK, which is not evidence that there is nothing to find, and treating the
+two as the same denied every spawn for as long as a chmod-000 dir, unmounted
+home, bind-mount, SELinux label, or half-populated worktree lasted. A genuine
+LOGIC throw still fails CLOSED — that is a bug in the hook, not a fact about the
+environment. And every block, degrade, and heuristic resolution is now **visible
+to the model** rather than `console.error`-only; a non-degraded spawn stays
+quiet, because the invariant is not satisfied by shouting always.
+
+Denials now leave a trace across three independently fail-open layers: a global
+audit-log line (works with no session and no js-yaml), a per-session lifecycle
+event, and a `spawn_failures:` record in `agent_tree.yaml` (an unparseable tree
+is left byte-intact and the record degrades to audit-log-only, loudly). A denial
+is EVIDENCE, NOT CREDIT — the record's `- attempt_id:` / `attempted_type:` keys
+are deliberately unmatchable by the child-counting and stall-detection probes, so
+it can never fake delegation or mask a stall. Recording is observability, not
+policy: it is wrapped in try/catch with a 3s timeout, runs only on the now
+near-dead deny path, and returns the deny verdict byte-identically whether the
+record succeeded or not.
+
+Also in this release: the `agent_tree.yaml` schema is pinned so writer and
+readers agree on the canonical flat `agents:` list keyed `- id:`; passing `name`
+to the Agent tool is documented as **implying background** (it silently
+overrides `run_in_background: false`, so a spawn that must be synchronous must
+not pass `name`), with a regression test flagging the impossible combination;
+and a new **advisory** per-subagent context aim lands in the rules — advisory
+only, with no gate, no threshold, and no enforcement anywhere on that path.
 
 ## V12.69.0 — September 7, 2026 (heredoc lexing — approval-prompt fatigue fixed at the root)
 
@@ -2270,5 +2325,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.69.0
+**Current Version**: 12.70.0
 **Release Date**: August 21, 2026

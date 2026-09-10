@@ -101,6 +101,21 @@ Target **8K tokens per micro-task** (fits comfortably in any context window):
 - 1 section of documentation = 1 micro-task
 - Never combine unrelated work in a single micro-task
 
+Small micro-tasks keep each respawned subagent near the advisory per-subagent
+context aim.
+
+Aim for about 100k input tokens in a spawned subagent's own context.
+The figure is advisory and absolute: a per-subagent input-token count, not a
+fraction of a context window. Windows vary (200k, 1M), so the same fraction means
+very different absolute sizes.
+
+Past about 200k input tokens in a single subagent, treat the aim as missed and
+delegate harder. This outer bound is advisory, not enforced.
+
+Give each micro-task its checkpoint path and the file paths it needs, not the file
+contents. See @.claude/rules/playbooks/pat-context-budget-tiers.md for the aim and
+its levers.
+
 ### Continuation Limits
 
 - **Max continuations per task**: 5

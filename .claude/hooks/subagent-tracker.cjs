@@ -32,7 +32,7 @@ try { yaml = require('js-yaml'); } catch { yaml = null; }
 // GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
 // This ensures start and stop events use identical session discovery logic,
 // including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, findMostRecentSessionDir, resolveSdkUuidOwner, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap, appendSessionEvent } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
@@ -56,6 +56,197 @@ function appendToGlobalAuditLog(entry) {
   } catch (err) {
     console.error(`[SubagentTracker] Failed to write audit log: ${err.message}`);
   }
+}
+
+/**
+ * WI-B6 — CANONICAL agent_tree.yaml SCHEMA (one shape, writer and readers agree).
+ *
+ *   agents:                      <- MANDATORY top-level key, a LIST
+ *     - id: "<agent_id>"         <- entries keyed `- id:`
+ *       type: "cagents:planner"
+ *       parent: "pipeline"
+ *       depth: 1
+ *       spawned_at: "<iso>"
+ *       stopped_at: null
+ *       session: "<session_id>"
+ *
+ * An optional `root:` metadata block MAY precede the list (every reader in
+ * verify-completion.cjs explicitly scopes around `root:`), but `agents:` is
+ * MANDATORY. A `root:` + `children:` tree with no `agents:` key used to hit the
+ * "missing agents: key" guard below and make this tracker silently drop EVERY
+ * spawn for the remaining life of the session, while verify-completion.cjs read
+ * the same file as "no child agents spawned". One mismatch, blinding the writer
+ * and the readers at once, and fail-SILENT in both directions.
+ *
+ * migrateToCanonicalShape() repairs that shape IN PLACE instead of bailing: it
+ * ADDS the missing `agents:` key (it never rewrites or drops `root:`) and folds
+ * any `children:` entries into it. Non-destructive, and the minimum change that
+ * makes every existing reader work. Returns a human-readable reason string when
+ * it migrated, or null when the object was already canonical.
+ */
+function migrateToCanonicalShape(parsedObj) {
+  if (Array.isArray(parsedObj.agents)) return null;
+
+  const notes = [];
+  if (parsedObj.agents !== undefined) {
+    // `agents:` present but not a list (e.g. a mapping) — preserve, never discard.
+    parsedObj.agents_malformed_original = parsedObj.agents;
+    notes.push('non-list `agents:` preserved as `agents_malformed_original`');
+  }
+  parsedObj.agents = [];
+
+  if (Array.isArray(parsedObj.children)) {
+    const kept = parsedObj.children.filter((c) => c && typeof c === 'object');
+    for (const child of kept) parsedObj.agents.push(child);
+    notes.push(`folded ${kept.length} \`children:\` entr${kept.length === 1 ? 'y' : 'ies'} into \`agents:\``);
+    delete parsedObj.children;
+  }
+  if (parsedObj.root !== undefined) notes.push('`root:` block preserved as-is');
+  parsedObj.schema_migrated_by = 'subagent-tracker.cjs (WI-B6 canonical `agents:` shape)';
+
+  return notes.length > 0 ? notes.join('; ') : 'added missing `agents:` key';
+}
+
+/**
+ * WI-B6 Part 2 — record a spawn that was DENIED, FAILED, or happened but could
+ * not be tracked. Before this, ONLY a successful AND successfully-recorded spawn
+ * could ever appear in agent_tree.yaml, so a blocked spawn left no trace by
+ * construction — the exact symptom under diagnosis was invisible by design.
+ *
+ * Records land in a `spawn_failures:` list, deliberately NOT in `agents:`, with
+ * field names chosen to be INVISIBLE to every existing reader regex in
+ * verify-completion.cjs / team-stop.cjs:
+ *   - `- attempt_id:`    does not match /^\s*- id:/gm            (child counters)
+ *   - `attempted_depth:` does not match /\bdepth:\s*[1-9]\d*\b/  (no word boundary
+ *                        between `_` and `d`, so the depth counter cannot see it)
+ *   - `attempted_type:`  does not match the anchored
+ *                        `^\s*(?:-\s*)?(?:agent_type|cagents_type|type):` probe
+ *   - never emits `stopped_at: null`, so hasFreshRunningChild() can never read a
+ *     denial as a live child that masks a stall.
+ * A denied spawn must never be able to fake delegation, satisfy a pipeline-advance
+ * check, or suppress a stall warning. It is EVIDENCE, not credit.
+ *
+ * Fails OPEN and LOUD at every layer: the global audit log is attempted first and
+ * works even with no session and no js-yaml; an unparseable tree is left BYTE-
+ * INTACT (never overwritten) and the record degrades to audit-log-only.
+ * Returns true when the record reached agent_tree.yaml, false when it degraded.
+ */
+function recordSpawnFailure(sessionDir, rec) {
+  const recordedAt = rec.recorded_at || new Date().toISOString();
+  const status = rec.status || 'failed';
+  const attemptId = rec.attempt_id || `attempt_${Date.now()}`;
+  const attemptedType = rec.attempted_type || 'unknown';
+  const reason = rec.reason || 'unspecified';
+  const sessionLabel = sessionDir ? path.basename(sessionDir) : (rec.session_label || 'unknown');
+
+  // Layer 1: global audit log — ALWAYS attempted; survives a null session and a
+  // missing js-yaml, so a denial is never wholly untraceable.
+  appendToGlobalAuditLog(
+    `${recordedAt} | SPAWN_${String(status).toUpperCase()} | attempt_id=${attemptId} | ` +
+    `type=${attemptedType} | session=${sessionLabel} | reason=${reason}`
+  );
+
+  // Layer 2: per-session structured lifecycle event (internally fail-open).
+  if (sessionDir) {
+    try {
+      appendSessionEvent(sessionDir, {
+        type: `spawn_${status}`,
+        attempt_id: attemptId,
+        agent_type: attemptedType,
+        reason
+      });
+    } catch (e) {
+      console.error(`[SubagentTracker] spawn-failure session event non-fatal: ${e && e.message}`);
+    }
+  }
+
+  // Layer 3: agent_tree.yaml `spawn_failures:` — needs a session AND js-yaml.
+  if (!sessionDir || !yaml) {
+    console.error(`[SubagentTracker] SPAWN ${String(status).toUpperCase()} (audit-log-only, ${sessionDir ? 'js-yaml unavailable' : 'no session'}): ${attemptedType} — ${reason}`);
+    return false;
+  }
+
+  try {
+    const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+    const wrote = withFileLock(treeFile, () => {
+      let obj = { agents: [] };
+      const existing = safeRead(treeFile);
+      if (existing) {
+        let parsed;
+        try {
+          parsed = yaml.load(existing);
+        } catch (parseErr) {
+          // Unparseable tree: leave it BYTE-INTACT rather than clobbering a
+          // human's or another writer's data. Degrade to audit-log-only, loudly.
+          console.error(`[SubagentTracker] agent_tree.yaml unparseable — spawn_failures record degraded to audit-log-only: ${parseErr.message}`);
+          return false;
+        }
+        if (parsed && typeof parsed === 'object') obj = parsed;
+      }
+      const migrationNote = migrateToCanonicalShape(obj);
+      if (migrationNote) {
+        console.error(`[SubagentTracker] agent_tree.yaml migrated to canonical \`agents:\` shape while recording a spawn failure (${migrationNote})`);
+      }
+      if (!Array.isArray(obj.spawn_failures)) obj.spawn_failures = [];
+      const dup = obj.spawn_failures.some((f) => f && f.attempt_id === attemptId && f.reason === reason);
+      if (!dup) {
+        obj.spawn_failures.push({
+          attempt_id: attemptId,
+          attempted_type: attemptedType,
+          status,
+          reason,
+          recorded_at: recordedAt,
+          attempted_depth: typeof rec.attempted_depth === 'number' ? rec.attempted_depth : null,
+          source: rec.source || 'subagent-tracker.cjs'
+        });
+      }
+      fs.writeFileSync(treeFile, yaml.dump(obj));
+      return true;
+    });
+    if (wrote) {
+      console.error(`[SubagentTracker] SPAWN ${String(status).toUpperCase()} recorded in agent_tree.yaml spawn_failures: ${attemptedType} — ${reason}`);
+    }
+    return !!wrote;
+  } catch (e) {
+    console.error(`[SubagentTracker] Failed to record spawn failure (audit log still holds it): ${e.message}`);
+    return false;
+  }
+}
+
+/**
+ * WI-B6 Part 2 — standalone failure-record CLI.
+ *
+ * This hook is registered for SubagentStart ONLY, and SubagentStart never fires
+ * for a spawn that was DENIED at the PreToolUse|Agent gate. So the denial has to
+ * be handed to us. This entry point lets any PreToolUse gate record one in a
+ * single line, without importing this module (importing it would execute the
+ * hook):
+ *
+ *   spawnSync('node', [path.join(__dirname, 'subagent-tracker.cjs'),
+ *     '--record-failure', JSON.stringify({
+ *       attempt_id, attempted_type, status: 'denied', reason, session_dir })],
+ *     { timeout: 3000 });
+ *
+ * Guarded on argv, which never carries this flag under run-hook.cjs's require()
+ * path, so normal SubagentStart behavior is byte-for-byte untouched.
+ */
+const failureFlagIdx = process.argv.indexOf('--record-failure');
+if (failureFlagIdx !== -1) {
+  let payload = {};
+  try {
+    payload = JSON.parse(process.argv[failureFlagIdx + 1] || '{}');
+  } catch (e) {
+    console.error(`[SubagentTracker] --record-failure: malformed JSON payload: ${e.message}`);
+    process.exit(2);
+  }
+  let failDir = payload.session_dir || null;
+  if (!failDir) {
+    try { failDir = findActiveSession(payload.session_id) || findMostRecentSessionDir(); }
+    catch { failDir = null; }
+  }
+  const recorded = recordSpawnFailure(failDir, payload);
+  process.stdout.write(JSON.stringify({ continue: true, recorded }) + '\n');
+  process.exit(0);
 }
 
 /**
@@ -193,33 +384,60 @@ createHook('SubagentTracker', async (input) => {
     return null;
   }
 
-  // Try to find active session, with fallback to most-recent-modified.
-  // WI-3: track whether the resolution came from a TRUSTWORTHY path. Pass 1
-  // (findActiveSession) resolves via the SDK-UUID map / env-var / promptHint — all
-  // trustworthy — so it may seed the map. Pass 2 (findMostRecentSessionDir) is the
-  // newest-session heuristic, which can resolve to the WRONG session under two
-  // concurrent same-dir sessions; seeding from it would reintroduce the exact
-  // OBJ-1 concurrency bug, so it MUST NOT seed the map (confidentSeed stays false).
+  // ---- Session resolution: EVIDENCE FIRST, GUESS LAST (ENG-OBS-2, v12.70.0) ----
+  //
+  // WI-3: track whether the resolution came from a TRUSTWORTHY path. Trustworthy
+  // passes may seed the SDK-UUID map; the newest-session GUESS must never seed it
+  // (that would reintroduce the OBJ-1 concurrency bug by binding a UUID to a
+  // session it does not own).
+  //
+  // ORDER MATTERS, and it used to be WRONG. The newest-session heuristic ran
+  // BEFORE the explicit prompt hint, and it almost always returns *something*
+  // (any non-terminal session dir on disk qualifies) — so the hint pass below was
+  // effectively DEAD CODE: a guess shadowed the one piece of hard evidence in the
+  // payload. Observed consequence in act_subagent-token-budget_260909_001: every
+  // SubagentStart record for this session was written into
+  // designer_census-postcut_260805_001, a five-week-stale sibling, whose mtime
+  // each write then refreshed — so it kept winning the newest-session race. 116
+  // agents accumulated in the wrong tree while this session's agent_tree.yaml sat
+  // at `agents: []`, which read as "the tracker never wrote" when in truth it
+  // wrote constantly, next door.
+  //
+  // Passes, strongest evidence first:
+  //   1. findActiveSession    — SDK-UUID map / env-var      (deterministic)
+  //   2. resolveSdkUuidOwner  — pointer OWNERSHIP, terminal-agnostic (deterministic)
+  //   3. prompt hint          — explicit SESSION_DIR in the spawn prompt (explicit)
+  //   4. newest-session       — LAST-RESORT GUESS, and labelled as one downstream
+  let resolutionPass = null;
   let sessionDir = findActiveSession(input.session_id);
-  let confidentSeed = !!sessionDir; // Pass 1 = map/env/promptHint → trustworthy
+  if (sessionDir) resolutionPass = 'map/env';
+
+  // Pass 2: OWNERSHIP. The pointer map records which session a transcript UUID
+  // belongs to; `findActiveSession` discards that fact when the target's
+  // status.yaml happens to read terminal. For deciding WHERE TO FILE A RECORD,
+  // ownership is the right question and liveness is irrelevant — a pessimistic
+  // label (`incomplete` on a still-running session) must not divert this
+  // session's audit trail into a stranger's directory. See the
+  // `resolveSdkUuidOwner` JSDoc for why this is additive rather than a
+  // relaxation of the existing liveness gate.
   if (!sessionDir) {
-    sessionDir = findMostRecentSessionDir();
+    sessionDir = resolveSdkUuidOwner(input.session_id);
     if (sessionDir) {
-      // Pass 2 = newest-session heuristic → NOT trustworthy; leave confidentSeed false.
-      console.error(`[SubagentTracker] findActiveSession returned null, using fallback: ${path.basename(sessionDir)}`);
+      resolutionPass = 'uuid-owner';
+      console.error(`[SubagentTracker] resolved via pointer OWNERSHIP (target reads terminal but owns this transcript): ${path.basename(sessionDir)}`);
     }
   }
 
-  // Pass 3: Prompt-based session resolution (Fix C from bug report)
-  // When Task-spawned subagents carry SESSION_DIR or CAGENTS_SESSION_ID in their prompt,
-  // parse that hint to reliably resolve the correct session directory.
-  // This handles the case where CAGENTS_ACTIVE_SESSION env var is not inherited by
-  // Task-spawned subprocesses (teammates, execution agents, reviewers).
+  // Pass 3: Prompt-based resolution. Task-spawned subagents carry SESSION_DIR or
+  // CAGENTS_SESSION_ID in their prompt; that hint is explicit evidence and must
+  // outrank the newest-session guess below. (It exists because
+  // CAGENTS_ACTIVE_SESSION is not inherited by Task-spawned subprocesses.)
   if (!sessionDir) {
     const promptText = ((input.tool_input || {}).prompt || '');
     const sessionMatch =
-      promptText.match(/SESSION[_ ]DIR[:\s]+([^\s\n]+)/i) ||
-      promptText.match(/CAGENTS_SESSION_ID[:\s]+([^\s\n]+)/i);
+      promptText.match(/SESSION[_ ]DIR[:=\s]+([^\s\n]+)/i) ||
+      promptText.match(/CAGENTS_SESSION_ID[:=\s]+([^\s\n]+)/i) ||
+      promptText.match(/SESSION[:=\s]+([^\s\n]*cagents-memory\/sessions\/[^\s\n]+)/i);
     if (sessionMatch) {
       const hint = sessionMatch[1].replace(/["']/g, '').trim();
       // hint may be a full path (e.g. cagents-memory/sessions/team_foo_260317_001) or just a name
@@ -227,13 +445,28 @@ createHook('SubagentTracker', async (input) => {
       const candidateDir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionName);
       if (fs.existsSync(candidateDir)) {
         sessionDir = candidateDir;
-        confidentSeed = true; // Pass 3 = explicit prompt hint → trustworthy, may seed the map
+        resolutionPass = 'prompt-hint';
         console.error(`[SubagentTracker] Resolved session from prompt hint: ${sessionName}`);
       } else {
         console.error(`[SubagentTracker] Prompt hint session not found on disk: ${sessionName}`);
       }
     }
   }
+
+  // Pass 4: LAST-RESORT GUESS. Kept (removing it would lose tracking for
+  // non-cAgents spawns that carry no hint at all) but demoted below every
+  // evidence-based pass, and surfaced as a guess in additionalContext so a
+  // misattributed tree is visible TO THE MODEL instead of silently authoritative.
+  if (!sessionDir) {
+    sessionDir = findMostRecentSessionDir();
+    if (sessionDir) {
+      resolutionPass = 'newest-session-guess';
+      console.error(`[SubagentTracker] no deterministic resolution; GUESSING newest session: ${path.basename(sessionDir)} — this record may be filed against the wrong session.`);
+    }
+  }
+
+  // Only deterministic/explicit passes may seed the UUID map. The guess must not.
+  const confidentSeed = resolutionPass !== null && resolutionPass !== 'newest-session-guess';
 
   // C-03/C-04: Infer parent from session context instead of relying on input.parent_agent
   // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
@@ -254,6 +487,15 @@ createHook('SubagentTracker', async (input) => {
 
   if (!sessionDir) {
     console.error(`[SubagentTracker] No session found for agent ${agentId} (type: ${subagentType})`);
+    // WI-B6: an untrackable spawn used to vanish from the audit trail with only
+    // a stderr line. Leave a reasoned trace in the global log instead.
+    recordSpawnFailure(null, {
+      attempt_id: agentId,
+      attempted_type: subagentType,
+      status: 'untracked',
+      reason: 'no active session resolved (all 4 resolution passes returned null: map/env, uuid-owner, prompt-hint, newest-session-guess)',
+      source: 'subagent-tracker.cjs:no-session'
+    });
     // Still return context even without session tracking
     return {
       hookSpecificOutput: {
@@ -284,6 +526,17 @@ createHook('SubagentTracker', async (input) => {
   // it and emit a plain single {continue: true} JSON instead of crashing.
   if (!yaml) {
     console.error(`[SubagentTracker] js-yaml unavailable — skipping agent_tree.yaml mutation for agent ${agentId} (spawn recorded in global audit log only)`);
+    // WI-B6: reasoned trace. recordSpawnFailure early-returns before touching
+    // agent_tree.yaml when yaml is null, so the degraded contract pinned by
+    // tests/hooks/js-yaml-guarded-require.test.js (stdout exactly {continue:true},
+    // no agent_tree.yaml created) is preserved byte-for-byte.
+    recordSpawnFailure(sessionDir, {
+      attempt_id: agentId,
+      attempted_type: subagentType,
+      status: 'untracked',
+      reason: 'js-yaml unavailable — agent_tree.yaml mutation skipped',
+      source: 'subagent-tracker.cjs:no-js-yaml'
+    });
     return { continue: true };
   }
 
@@ -326,6 +579,9 @@ createHook('SubagentTracker', async (input) => {
 
   // PC-10: Compute depth — hoisted to outer scope so it's accessible in the return
   let depth = 0;
+  // WI-B6: set when the tree was not in the canonical `agents:` shape. Surfaced
+  // to the MODEL in additionalContext so a schema problem is never stderr-only.
+  let schemaMigrationNote = null;
 
   // Lock the tree file for the entire read-check-write cycle to prevent
   // race conditions when multiple agents spawn concurrently (see PC-01 bug report).
@@ -341,14 +597,28 @@ createHook('SubagentTracker', async (input) => {
         if (parsed === null || parsed === undefined) {
           // File exists but is empty — treat as fresh
           parsedObj = { agents: [] };
-        } else if (typeof parsed !== 'object' || !parsed.agents) {
-          console.error(`[SubagentTracker] agent_tree.yaml missing agents: key — skipping append`);
+        } else if (typeof parsed !== 'object') {
+          // Scalar/array root — not a tree we can extend without destroying it.
+          console.error(`[SubagentTracker] agent_tree.yaml root is not a mapping — skipping append`);
+          schemaMigrationNote = 'agent_tree.yaml root is not a YAML mapping';
           return -1;
         } else {
+          // WI-B6: a tree with no top-level `agents:` key (the `root:`/`children:`
+          // init shape) used to bail here and SILENTLY drop every spawn for the
+          // rest of the session. Self-heal instead: add the missing `agents:` key,
+          // fold any `children:` in, and keep going. Fails OPEN (the spawn IS
+          // recorded) and LOUD (stderr + surfaced in additionalContext below).
+          schemaMigrationNote = migrateToCanonicalShape(parsed);
+          if (schemaMigrationNote) {
+            console.error(`[SubagentTracker] agent_tree.yaml was NOT in the canonical \`agents:\` shape — migrated in place (${schemaMigrationNote}). Every reader in verify-completion.cjs scans a top-level \`agents:\` list; the pre-migration shape recorded ZERO spawns and read as "no child agents spawned".`);
+          }
           parsedObj = parsed;
         }
       } catch (parseErr) {
+        // Leave the malformed file BYTE-INTACT (never clobber another writer's
+        // data) but never let the dropped spawn go untraced — WI-B6.
         console.error(`[SubagentTracker] Malformed agent_tree.yaml — skipping append: ${parseErr.message}`);
+        schemaMigrationNote = `agent_tree.yaml is malformed YAML (${parseErr.message})`;
         return -1;
       }
     }
@@ -416,7 +686,28 @@ createHook('SubagentTracker', async (input) => {
     return parsedObj.agents.length;
   });
 
-  if (total === -1) return null; // dedup: already recorded
+  if (total === -1) {
+    // -1 covers dedup (benign — already recorded) AND the genuine skip paths
+    // (non-mapping root, malformed YAML). WI-B6: only a genuine skip earns a
+    // failure record; a dedup is not a lost spawn.
+    if (schemaMigrationNote) {
+      recordSpawnFailure(sessionDir, {
+        attempt_id: agentId,
+        attempted_type: cagentsType || subagentType,
+        status: 'untracked',
+        reason: schemaMigrationNote,
+        attempted_depth: depth,
+        source: 'subagent-tracker.cjs:tree-unusable'
+      });
+      return {
+        hookSpecificOutput: {
+          hookEventName: 'SubagentStart',
+          additionalContext: `WARNING (cAgents audit trail): this spawn (${subagentType}, id: ${agentId}) could NOT be recorded in workflow/agent_tree.yaml — ${schemaMigrationNote}. Every downstream reader counts spawns from a top-level \`agents:\` list, so this session will under-report delegation until the file is repaired. The attempt IS logged in cagents-memory/_system/logs/agent_spawns.log.`
+        }
+      };
+    }
+    return null; // dedup: already recorded
+  }
 
   // REC-16 (v12.51.0): structured per-session lifecycle event (fail-open,
   // lock-protected, session-scoped — sessionDir was resolved via the
@@ -437,13 +728,25 @@ createHook('SubagentTracker', async (input) => {
   // When the hook already wrote cagents_type (from subagent_type param or description parsing),
   // asking the agent to self-register causes duplicate cagents_type fields in agent_tree.yaml
   // because the hook writes structured YAML but self-registration appends raw YAML lines.
+  // ENG-OBS-2 (RF-5 doctrine: every degrade is visible TO THE MODEL). When no
+  // deterministic pass resolved the session, this record was filed against a
+  // GUESS. Say so, rather than presenting a possibly-misattributed tree as fact.
+  const guessNotice = resolutionPass === 'newest-session-guess'
+    ? ` NOTE: this session was GUESSED (newest non-terminal session on disk) because no SDK-UUID map entry, pointer owner, or SESSION_DIR prompt hint resolved \u2014 the record above may be filed against the WRONG session. Include SESSION_DIR in spawn prompts to make this deterministic.`
+    : '';
+
   const selfRegisterPrompt = cagentsType
     ? '' // Already captured — do NOT ask for self-registration
     : ` IMPORTANT: If you are a cAgents agent (spawned with subagent_type "cagents:{name}"), self-register by appending your cagents agent name to ${treeFile} using this format:\n    cagents_type: "cagents:{your-name}"\n    role_description: "{what you are doing}"\nAppend these two lines after the last spawned_at line for your agent_id "${agentId}". WARNING: First check if your entry already has a cagents_type field — if it does, do NOT add another one.`;
+  // WI-B6: a schema repair is reported to the MODEL, not just to stderr. A
+  // silently-repaired instrument is still a silent instrument.
+  const migrationNotice = schemaMigrationNote
+    ? ` NOTE: workflow/agent_tree.yaml was not in the canonical \`agents:\` list shape and was migrated in place (${schemaMigrationNote}). Spawns attempted before the migration were LOST, so this session earlier delegation counts are under-reported.`
+    : '';
   return {
     hookSpecificOutput: {
       hookEventName: 'SubagentStart',
-      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}).${selfRegisterPrompt}`
+      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}).${guessNotice}${migrationNotice}${selfRegisterPrompt}`
     }
   };
 });

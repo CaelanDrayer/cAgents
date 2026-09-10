@@ -226,6 +226,49 @@ function extractYamlValue(content, key) {
 }
 
 /**
+ * ENG-OBS-2 (second half, v12.70.0) — the SINGLE source of truth for "what phase
+ * is this session in?", read from a status.yaml / session.yaml body.
+ *
+ * WHY THIS EXISTS: two resolvers used to answer this same question DIFFERENTLY,
+ * and the disagreement silently routed a LIVE session's audit trail into a
+ * STALE sibling's directory.
+ *
+ *   - `_tryResolveCandidate` (the deterministic SDK-UUID-map path) used key
+ *     PRECEDENCE — pipeline_state > phase > current_phase — via
+ *     `extractYamlValue`, which is `^`-anchored and so reads TOP-LEVEL keys only.
+ *   - `findMostRecentSessionDir` (the newest-session heuristic) used
+ *     `/(?:phase|pipeline_state):\s*(\S+)/`: POSITIONAL (first match wins,
+ *     whichever key sits on the earlier LINE, regardless of which key it is) and
+ *     UNANCHORED (an indented `  - phase: INIT` inside `state_history:` matches
+ *     too, so a session could be judged by its own history instead of its state).
+ *
+ * OBSERVED CONSEQUENCE (session act_subagent-token-budget_260909_001): that
+ * session's status.yaml opens `pipeline_state: incomplete`, so PRECEDENCE read
+ * `incomplete` → terminal → the CORRECT session was refused. A five-week-stale
+ * sibling's status.yaml happened to carry `phase: EXECUTING` on an EARLIER LINE
+ * than its own `pipeline_state: incomplete`, so POSITION read `EXECUTING` →
+ * non-terminal → the STALE session was accepted. Every SubagentStart write then
+ * landed in the wrong session — and refreshed that session's mtime, so it won
+ * the newest-session race again on the very next spawn. Self-reinforcing: 116
+ * agents had accumulated in the wrong tree before it was caught, which is why
+ * the live session's agent_tree.yaml looked like the tracker "wrote nothing"
+ * when in fact it wrote plenty, just next door.
+ *
+ * Both resolvers now call THIS function, so they cannot drift again. Precedence
+ * beats position on purpose: `pipeline_state` is the v12 pipeline's own state
+ * field and is the more specific answer whenever both keys are present.
+ *
+ * @param {string|null} content - status.yaml (or session.yaml) body, or null.
+ * @returns {string|null} resolved phase string, or null when no phase key exists.
+ */
+function statusPhase(content) {
+  if (!content) return null;
+  return extractYamlValue(content, 'pipeline_state')
+    || extractYamlValue(content, 'phase')
+    || extractYamlValue(content, 'current_phase');
+}
+
+/**
  * Count regex pattern matches in content.
  */
 function countPattern(content, pattern) {
@@ -398,9 +441,7 @@ function _tryResolveCandidate(sessionsDir, candidate) {
     // Race window: dir exists but no status yet — trust the explicit hint.
     return dir;
   }
-  const phase = extractYamlValue(content, 'pipeline_state')
-    || extractYamlValue(content, 'phase')
-    || extractYamlValue(content, 'current_phase');
+  const phase = statusPhase(content); // shared precedence — see statusPhase() JSDoc
   if (phase && isTerminalState(phase)) {
     return null; // Terminal — refuse to resolve.
   }
@@ -590,6 +631,16 @@ function findActiveSession(hintOrOptions) {
 
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) {
+    // RF-5 (FS-1): this was the ONLY silent null-return in findActiveSession —
+    // every other one logs a reason. It is also the single most likely
+    // condition in production (`cagents-memory/` is git-ignored, so a fresh
+    // clone or a first-time plugin install has no sessions dir at all), which
+    // made the most common failure the least diagnosable one.
+    console.error(
+      `[findActiveSession] sessions dir does not exist: ${sessionsDir} — returning null. ` +
+      'This project has never run a cAgents skill (cagents-memory/ is git-ignored, ' +
+      'so it never arrives with a clone). Callers MUST NOT read this as "orphan spawn".'
+    );
     _cachedActiveSessions.set(cacheKey, null);
     return null;
   }
@@ -669,7 +720,27 @@ function findActiveSession(hintOrOptions) {
   }
 
   // -------- LEGACY HEURISTIC PASSES (opt-in only) --------
-  const sessions = fs.readdirSync(sessionsDir)
+  // RF-4: readdirSync AFTER an existsSync check is still a live I/O call — an
+  // unmounted network home, a container bind-mount, a chmod-000 dir, SELinux, or
+  // a half-populated worktree all throw here. An uncaught throw propagated into
+  // agent-dispatch's fail-CLOSED catch and DENIED every Agent spawn for as long
+  // as the condition lasted. Catch it, log it LOUDLY (the callers surface the
+  // errno to the model), and return null so the caller's own classification
+  // fails OPEN instead.
+  let sessionEntries;
+  try {
+    sessionEntries = fs.readdirSync(sessionsDir);
+  } catch (err) {
+    console.error(
+      `[findActiveSession] FAILING OPEN: could not read ${sessionsDir} ` +
+      `(${(err && err.code) || 'EUNKNOWN'}: ${err && err.message}). ` +
+      'This is "I could not look", NOT "there is nothing there" — returning null ' +
+      'rather than throwing, so no caller mistakes an I/O fault for an absent session.'
+    );
+    _cachedActiveSessions.set(cacheKey, null);
+    return null;
+  }
+  const sessions = sessionEntries
     .filter(d => SESSION_PREFIXES.some(p => d.startsWith(p)))
     .sort((a, b) => {
       // GAP-3 fix: team_* sessions sort BEFORE org_* flat sessions.
@@ -909,12 +980,11 @@ function findMostRecentSessionDir(options) {
           const statusFile = path.join(fullPath, 'status.yaml');
           const statusContent = safeRead(statusFile);
           if (statusContent && !includeTerminal) {
-            const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
-            if (phaseMatch) {
-              const phase = phaseMatch[1];
-              if (isTerminalState(phase)) {
-                continue; // Skip finished sessions
-              }
+            // ENG-OBS-2: was a POSITIONAL+UNANCHORED regex that disagreed with
+            // _tryResolveCandidate and let a stale session pass as non-terminal.
+            const phase = statusPhase(statusContent);
+            if (phase && isTerminalState(phase)) {
+              continue; // Skip finished sessions
             }
           }
           // No status.yaml or non-terminal phase (or includeTerminal): eligible
@@ -945,11 +1015,9 @@ function findMostRecentSessionDir(options) {
               if (!includeTerminal) {
                 const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
                 if (statusContent) {
-                  const phaseMatch = statusContent.match(/(?:phase|pipeline_state):\s*(\S+)/);
-                  if (phaseMatch) {
-                    const phase = phaseMatch[1];
-                    if (isTerminalState(phase)) continue;
-                  }
+                  // ENG-OBS-2: same shared precedence as the flat scan above.
+                  const phase = statusPhase(statusContent);
+                  if (phase && isTerminalState(phase)) continue;
                 }
               }
               bestMtime = stat.mtimeMs;
@@ -962,6 +1030,63 @@ function findMostRecentSessionDir(options) {
   }
 
   return bestDir;
+}
+
+/**
+ * ENG-OBS-2 (second half, v12.70.0) — OWNERSHIP resolution, deliberately
+ * separated from LIVENESS judgement.
+ *
+ * `resolveSdkUuidToSession` answers TWO questions with ONE gate:
+ *   (a) "which cAgents session does this SDK transcript UUID belong to?"
+ *       — an ownership FACT, recorded in the pointer map at session start;
+ *   (b) "is that session still worth resolving to?"
+ *       — a liveness JUDGEMENT, derived from a mutable status.yaml label.
+ *
+ * Answering (a) with (b) is what broke the audit trail. When a LIVE session's
+ * status.yaml carries a pessimistic terminal label — `pipeline_state: incomplete`,
+ * which the engine writes onto sessions that are still progressing (observed on
+ * act_subagent-token-budget_260909_001, and the same transient-terminal window
+ * the WI-2 "ponytail" note describes) — ownership resolution returns a MISS even
+ * though the pointer is present and CORRECT. The caller then falls through to the
+ * newest-session heuristic and records the spawn in a DIFFERENT session's
+ * agent_tree.yaml: a five-week-stale sibling, in the observed case.
+ *
+ * That trade is backwards for an audit WRITE. A pessimistic label on the right
+ * directory is harmless — the record still lands where it belongs. Writing into a
+ * session you do not own is actively destructive: it corrupts a stranger's
+ * delegation evidence, refreshes that stranger's mtime so the heuristic picks it
+ * again next time (self-reinforcing), and leaves the real session looking as if
+ * nothing was ever spawned.
+ *
+ * So this is an ADDITIVE sibling, not a change to the existing contract: callers
+ * that legitimately need the liveness gate (session-init-gate's presence check,
+ * where resolving to a finished session WOULD be wrong) keep calling
+ * `resolveSdkUuidToSession` and are untouched. Callers that only need to know
+ * WHERE TO FILE A RECORD call this.
+ *
+ * Requires the directory to EXIST — a pointer to a deleted session is still a
+ * miss, preserving the GC / bounded-registry invariant. Unlike
+ * `resolveSdkUuidToSession` this NEVER reaps: reaping is the other function's job
+ * and doing it here would race it. Never throws.
+ *
+ * @param {string} sdkUuid - SDK transcript UUID from `input.session_id`.
+ * @returns {string|null} absolute session dir that OWNS this UUID, or null.
+ */
+function resolveSdkUuidOwner(sdkUuid) {
+  try {
+    if (!_isSdkUuidShape(sdkUuid)) return null;
+    const content = safeRead(_sdkPointerPath(sdkUuid));
+    if (!content) return null;
+    const sessionId = content.trim();
+    if (!sessionId) return null;
+    // Basename-only guard: a pointer body is written by us, but refuse to let a
+    // corrupted one escape the sessions dir via `..` or an absolute path.
+    if (sessionId !== path.basename(sessionId)) return null;
+    const dir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionId);
+    return fs.existsSync(dir) ? dir : null;
+  } catch {
+    return null; // ownership lookup is evidence-gathering; it never throws at a caller
+  }
 }
 
 /**
@@ -1261,6 +1386,102 @@ function warnWithReason({ what, why, fix, hook }) {
 }
 
 // ============================================================
+// RF-4: I/O fault vs logic fault (fail-OPEN vs fail-CLOSED)
+// ============================================================
+// A deny gate that fails closed on an I/O error conflates "I could not look"
+// with "there is nothing there". A chmod-000 sessions dir, an unmounted network
+// home, a container bind-mount, SELinux, or a half-populated worktree would
+// deny EVERY Agent spawn for as long as the condition lasted. These errnos mean
+// the check could not be PERFORMED, so the correct policy is allow-and-shout.
+// A genuine logic fault (TypeError, ReferenceError, a thrown string) still fails
+// closed on the gates that are deny surfaces.
+const IO_ERRNOS = new Set(['EACCES', 'ENOENT', 'EIO', 'ENOTDIR', 'ELOOP']);
+
+// Hooks whose handler throw must FAIL CLOSED (deny) rather than continue.
+// Keeps the two invocation routes for the session gate — the in-process
+// agent-dispatch dispatcher and the standalone `node run-hook.cjs
+// session-init-gate` path — on IDENTICAL semantics. Before this they were
+// exact opposites: fail-closed under the dispatcher, silently fail-open
+// standalone (FS-4).
+const FAIL_CLOSED_HOOKS = new Set(['SessionInitGate', 'AgentDispatch']);
+
+/**
+ * True when `err` represents an I/O fault (see IO_ERRNOS). Checks `err.code`
+ * first and falls back to the `ERRNO: message` prefix that Node uses, so a
+ * rethrown Error that lost its `code` property is still classified correctly.
+ */
+function isIoError(err) {
+  if (!err) return false;
+  if (typeof err.code === 'string' && IO_ERRNOS.has(err.code)) return true;
+  const msg = typeof err.message === 'string' ? err.message : String(err);
+  const m = msg.match(/^([A-Z]+):/);
+  return !!(m && IO_ERRNOS.has(m[1]));
+}
+
+/**
+ * Extract {code, path} from an error for inclusion in a hook reason string.
+ * `path` falls back to the quoted path Node embeds in fs error messages
+ * (e.g. `EACCES: permission denied, scandir '/x/y'`).
+ */
+function describeIoError(err) {
+  const msg = (err && typeof err.message === 'string') ? err.message : String(err);
+  let code = (err && typeof err.code === 'string') ? err.code : null;
+  if (!code) {
+    const m = msg.match(/^([A-Z]+):/);
+    if (m) code = m[1];
+  }
+  let p = (err && typeof err.path === 'string') ? err.path : null;
+  if (!p) {
+    const m = msg.match(/'([^']+)'/);
+    if (m) p = m[1];
+  }
+  // Node's fs messages already start with `ERRNO: ` — strip it so callers that
+  // print the code separately don't emit `EACCES: EACCES: permission denied`.
+  const detail = code ? msg.replace(new RegExp(`^${code}:\\s*`), '') : msg;
+  return { code: code || 'EUNKNOWN', path: p || 'unknown-path', message: detail };
+}
+
+/**
+ * The verdict a hook emits when its handler THROWS. RF-4 + RF-5 (FS-4):
+ *  - I/O fault, any hook           -> continue, LOUD systemMessage naming errno + path.
+ *  - logic fault, deny-gate hook   -> deny (fail-closed), naming the gate.
+ *  - logic fault, any other hook   -> continue, LOUD systemMessage (never silent).
+ */
+function handlerFailureVerdict(name, err) {
+  const io = isIoError(err);
+  const d = describeIoError(err);
+  if (io) {
+    const reason =
+      `[FAIL-OPEN] ${name} could not complete its check because of an I/O error ` +
+      `(${d.code} at ${d.path}: ${d.message}). "Could not look" is not "nothing is there", ` +
+      'so the tool call is ALLOWED. Check permissions / mount state for that path.';
+    return {
+      continue: true,
+      systemMessage: reason,
+      hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecisionReason: reason },
+    };
+  }
+  if (FAIL_CLOSED_HOOKS.has(name)) {
+    return {
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason:
+          `[FAIL-CLOSED] ${name} threw during evaluation (${d.message}). Denying the tool call ` +
+          'rather than proceeding through a crashed gate. This is a LOGIC fault, not an I/O fault — ' +
+          'it is a bug in the hook, please report it with the stderr trace.',
+      },
+    };
+  }
+  return {
+    continue: true,
+    systemMessage:
+      `[${name}] hook handler threw and was caught (fail-open): ${d.message}. ` +
+      'The tool call proceeds; this hook contributed nothing to the decision.',
+  };
+}
+
+// ============================================================
 // createHook() Factory
 // ============================================================
 // Eliminates per-hook boilerplate: try-catch wrapping, stdin reading,
@@ -1423,8 +1644,13 @@ function createHook(name, handler) {
         console.log(JSON.stringify(result));
 
       } catch (error) {
-        console.error(`[${name}] Error: ${error.message}`);
-        console.log(JSON.stringify({ continue: true }));
+        // RF-4 / RF-5 (FS-4): a handler throw used to print to stderr — which the
+        // model never sees — and emit a bare {continue:true}. Both invocation
+        // routes now share ONE policy (see handlerFailureVerdict): I/O faults fail
+        // OPEN and loud, logic faults fail CLOSED on the deny gates and loud-open
+        // everywhere else. Nothing here is silent any more.
+        console.error(`[${name}] Error: ${error && error.message}`);
+        console.log(JSON.stringify(handlerFailureVerdict(name, error)));
       }
 
     } catch (e) {
@@ -1487,6 +1713,8 @@ module.exports = {
   readStdin,
   safeRead,
   extractYamlValue,
+  statusPhase, // ENG-OBS-2: shared phase-precedence reader (exported for the regression test)
+  resolveSdkUuidOwner, // ENG-OBS-2: ownership (terminal-agnostic) vs. resolveSdkUuidToSession's liveness gate
   countPattern,
   findActiveSession,
   _resetActiveSessionCache,
@@ -1512,5 +1740,11 @@ module.exports = {
   formatError,
   denyWithReason,
   warnWithReason,
+  // RF-4: I/O-vs-logic fault classification (shared by agent-dispatch + createHook)
+  IO_ERRNOS,
+  FAIL_CLOSED_HOOKS,
+  isIoError,
+  describeIoError,
+  handlerFailureVerdict,
   updateStatusHeartbeat
 };

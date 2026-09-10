@@ -93,6 +93,8 @@ Total: 43 .md = 37 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 `/act` is a config-driven state machine reading `pipeline_config.yaml`: enrichment agents (orchestrator, planner) run sequentially at level 1; controllers spawn executors + reviewers at level 2 with internal reviewer loops (max 2 rounds — see controllers.md); the validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner produces decomposition and assembles delegation prompts inline (controllers fall back to standard prompts otherwise). **Roles**: orchestrator/planner enrich (L1); controllers ONLY coordinate (L1); execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) DO the work (L2); reviewer validates against acceptance criteria (L2); validator gates (L1). This config-driven machine replaces hardcoded steps; revision loops at both levels ensure quality.
 
+**Per-subagent context aim**: Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them. It is advisory — no gate, no threshold, no abort — and it governs a different actor than `.claude/rules/core/delegation.md` § The Size Rule, which governs what the MAIN SESSION carries (a size class, never a token count). Neither is an exception to the other.
+
 ## CRITICAL: Automatic Workflow Progression
 
 Workflows proceed automatically through phases WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md`.
@@ -183,6 +185,8 @@ User Request -> /act (state machine loop, reads pipeline_config.yaml)
 **Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops** — stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create; before finishing a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, `/designer` MUST clean up all tasks at pipeline/session end.
 
 **Every background `Agent`/`Task` spawn MUST have a `TaskCreate` call BEFORE the spawn** (one per spawn when `run_in_background: true`), the subject matching the agent's description, marked `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry and no visibility into the parallel agents; `/act`/`/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
+
+**Per-subagent visibility comes from the task subject, never from the Agent tool's `name`.** `name` implies background and cannot be combined with a blocking call — it overrides an explicit `run_in_background: false` silently, so a caller that needed the result in-turn yields holding nothing — the two rules above are satisfiable together only if you name the TASK, not the SPAWN. Choose by how you will collect it: work you must collect this turn → spawn **unnamed** with `run_in_background: false`, and still `TaskCreate` a task whose subject matches the agent's description; a genuinely resumable conversation you will collect later via `SendMessage` → a **named** teammate, which is background by definition and therefore requires the `TaskCreate` above. Precedence and mechanism: `.claude/rules/core/delegation.md` § Synchronous Spawning.
 
 **Anti-patterns**: creating a task then stopping without completing it; leaving tasks `in_progress` after work is committed; creating tracking tasks that are never updated.
 
@@ -297,8 +301,8 @@ reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9) — 44 routable + 16 core; 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support` — both remain available via `model_routing.yaml` but are unused by the current 60-agent catalog (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 1827+ Vitest tests across 218+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
-**Version**: 12.69.0
+**Tests**: `npm test` runs 1940+ Vitest tests across 224+ files (hooks + config validation + regression tests; static lower-bound — actual runtime count is higher because `it.each` rows expand to multiple tests)
+**Version**: 12.70.0
 
 ## Troubleshooting
 

@@ -10,6 +10,278 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.70.0] - 2026-09-09
+
+Subagent spawning was being denied on clean machines and nobody could see it. The
+gate that enforced "a session must exist before you may delegate" was checking for
+`cagents-memory/`, which is **git-ignored** — so it does not exist in a fresh clone
+or a fresh plugin install. Dev machines had accumulated stale non-terminal session
+directories that kept the gate satisfied; clean machines had none. Same code, same
+config, opposite behaviour. That asymmetry is the whole of "works here, blocked
+there": on the clean machine every Agent spawn was denied, so the parent stopped
+delegating and absorbed all the work itself — which is the token blow-up that
+started this investigation. The denial was also invisible by construction (see
+`agent_tree.yaml` below), so the symptom presented as "the parent is just slow"
+rather than "delegation is being refused".
+
+The original report — that subagent spawning "is getting blocked" — was CORRECT. A
+mid-investigation reframing — spawning was "not blocked, merely silently defeated" —
+was WRONG and is retracted. It generalised from one well-littered dev box to
+machines that had no such litter; "I cannot reproduce your symptom here" is not
+"your symptom is misdescribed".
+
+There are TWO independent causes producing the same symptom. On a clean machine,
+`session-init-gate.cjs` hard-denies every Agent spawn, because the
+`cagents-memory/` directory it checks for is git-ignored and therefore absent from
+any fresh clone or plugin install. On a littered dev box the gate allows the spawns,
+and the `name` / `run_in_background` trap silently defeats them: passing `name`
+overrides an explicit `run_in_background: false`, so the parent yields holding
+nothing. Both roads end at a parent doing all the work inline — the token blow-up in
+the original report. Both are fixed below.
+
+### Fixed
+- **The presence gate self-heals instead of denying** (`session-init-gate.cjs`,
+  RF-1). A missing `cagents-memory/sessions/` scaffold is now CREATED and the spawn
+  ALLOWED, with the remediation surfaced to the model. The absent-directory case was
+  never evidence of a rule violation — it is the normal state of every machine that
+  has not yet run a workflow. Denying on it punished the clean install and rewarded
+  the machine with stale session litter.
+- **Non-cAgents agents are never gated** (`session-init-gate.cjs:504-511`, RF-2). A
+  Phase 0 scope guard runs BEFORE the presence check: `subagent_type` must match
+  `/^cagents:([a-zA-Z0-9_\-]+)$/` or the hook returns `null` immediately. `Explore`,
+  `Plan`, `general-purpose`, bare user agent names, and payloads with no
+  `subagent_type` at all belong to the harness, not to cAgents, and a cAgents session
+  gate had no business having an opinion about them. The old duplicate name-parse
+  that sat *after* the presence check is gone, so the two cannot drift apart again.
+- **The agent catalog resolves from PLUGIN_ROOT, not PROJECT_ROOT**
+  (`session-init-gate.cjs:284-342`, RF-3). The catalog lives with the *plugin*; it
+  was being looked for in the *user's project*, so on any cross-project install the
+  lookup found nothing and every single spawn carried a false "not a registered
+  agent" advisory. Resolution is now `PLUGIN_ROOT` (anchored on `__dirname` and
+  sentinel-verified via `CLAUDE.md`) first, `PROJECT_ROOT` second for the local-dev
+  shape where the plugin IS the project.
+- **I/O faults fail OPEN and loud; logic faults still fail CLOSED**
+  (`agent-dispatch.cjs:88-113`, `hook-utils.cjs`, RF-4). An `EACCES` / `ENOENT` /
+  `EIO` / `ENOTDIR` / `ELOOP` from the gate means it could not LOOK — which is not
+  evidence that there is nothing to find. Treating "I could not read the session
+  store" as "you have no session" denied every spawn for as long as a chmod-000
+  directory, unmounted home, container bind-mount, SELinux label, or half-populated
+  worktree lasted. Those now ALLOW, attaching the errno and the path so the
+  condition is fixable straight from the transcript. A genuine LOGIC throw still
+  DENIES — that is a bug in the hook, not an environmental fact. The in-process
+  dispatcher route and the standalone `node run-hook.cjs` route now apply the same
+  policy; previously they had opposite failure semantics.
+- **Every block, degrade, and heuristic resolution is visible to the model**
+  (RF-5). These paths previously emitted their only signal to `console.error`, and
+  stderr is not surfaced to the model — an agent could be blocked, degraded, or
+  bound to somebody else's session with no way to know it, let alone say so. Every
+  such path now carries a non-empty `permissionDecisionReason` or `systemMessage`,
+  with branch-specific remediation rather than one generic "run a skill first". A
+  non-degraded spawn stays quiet: the invariant is not satisfied by shouting always.
+- **The budget aim now reaches every spawn**
+  (`.claude/hooks/role-manifest-injector.cjs:124`). The aim was published in exactly
+  one place — a `paths:`-scoped playbook — and those patterns do not match arbitrary
+  application code. An execution agent editing `src/**` therefore never saw the
+  figures it was supposed to hold itself to. Guidance that loads only for the files
+  it does not govern is not guidance. `BUDGET_AIM_STANZA` (624 chars, defined once at
+  module scope, exported) is now concatenated unconditionally in `buildRoleBundle()`
+  at `:292` — the single assembly point — so all six `ROLE_POINTERS` keys, and any
+  unrecognized role through the `default` fallback, inherit it with no action by
+  their author. Purely additive: the hook emits `additionalContext` and nothing else,
+  no `permissionDecision` on any path, and a role added tomorrow cannot miss the
+  stanza without someone deleting the concatenation.
+- **The playbook's frontmatter no longer contradicts its body**
+  (`.claude/rules/playbooks/pat-context-budget-tiers.md:20-26`). `metadata.audience`
+  and `applies_to` named only controllers and `/team` leads, while the body carried an
+  aim for every spawned subagent. A reader who checked the frontmatter first would
+  correctly conclude the aim was not addressed to them, and be wrong about the rule
+  while reading the file that states it. `all-execution-agents` added; version
+  1.0.0 -> 1.1.0.
+- **The last silent-allow in the presence gate is gone**
+  (`.claude/hooks/session-init-gate.cjs:523,592`). Setting `CAGENTS_SESSION_ID` to a
+  directory that does not exist bypassed the absence classifier entirely and told the
+  model NOTHING — the one remaining path where the gate formed an opinion and kept it
+  to itself. It now emits a distinct `SESSION BOOTSTRAP WINDOW` notice through both
+  output channels. Still allows, still no deny: the gate's "always allow, always name
+  what is missing" contract is unchanged, and this closes the last hole in the second
+  half of it.
+
+### Added
+- **Denied spawns now leave a record** (`agent-dispatch.cjs:113-160`, wired at all
+  three deny returns). `subagent-tracker.cjs` is registered for `SubagentStart`
+  ONLY, and `SubagentStart` never fires for a spawn denied at `PreToolUse|Agent` —
+  so until now `agent_tree.yaml` could only ever contain SUCCESSES. The one event
+  you most need to count was the one event nothing counted, which is precisely why
+  "spawning is getting blocked a lot" was so hard to see. A denial now writes three
+  layers, each failing open: a global audit-log line (works with no session and no
+  js-yaml), a per-session lifecycle event, and a `spawn_failures:` record in
+  `agent_tree.yaml` (an unparseable tree is left byte-intact and the record degrades
+  to audit-log-only, loudly). A denial is EVIDENCE, NOT CREDIT: the record uses
+  `- attempt_id:` / `attempted_type:` keys deliberately unmatchable by the
+  child-counting and stall-detection probes, so it can never fake delegation or mask
+  a stall. Recording is observability, not policy — it is wrapped in try/catch with
+  a 3s timeout, runs only on the (now near-dead) deny path, and returns the deny
+  verdict byte-identically whether the record succeeded or not. A failure to record
+  a denial must never become a second failure.
+- **New advisory per-subagent context aim** (Strand A,
+  `.claude/rules/playbooks/pat-context-budget-tiers.md`, with pointers from
+  `delegation.md`, `controllers.md`, `teams.md`, `CLAUDE.md`, and the `/team` skill).
+  Aim for about 100k input tokens in a spawned subagent's own context. Past about
+  200k input tokens in a single subagent, treat the aim as missed and delegate
+  harder. ADVISORY ONLY — there is no gate, no threshold, no enforcement, and no
+  abort anywhere on this path. Nothing measures a subagent's context fill, nothing
+  warns, and no spawn is ever stopped or cut short over either figure. It is
+  guidance for sizing a delegation, not a limit that can refuse one. Registered as
+  `Advisory` in the controllers.md Enforced-vs-Advisory ledger so a future reader
+  cannot mistake it for a gate.
+
+  **Delegation is the lever that moves the number**, and two of its mechanics are
+  now requirements, not suggestions. Push work DOWN: spawn a child
+  for a unit of work instead of doing that work in your own context. And COLLECT
+  every spawned child before you yield your turn: spawn with
+  `run_in_background: false`, and do not pass `name` (see the `name` override above).
+  An uncollected spawn is indistinguishable from work never delegated — the child's
+  output collapses back into the parent's context later, so the parent pays those
+  tokens either way. A third mechanic, not new but load-bearing: write artifact bodies
+  and evidence to disk, then pass file paths rather than contents — to children, to
+  reviewers, and back up to the parent.
+
+  **Two actors, two rules.** `.claude/rules/core/delegation.md` § The Size Rule
+  governs WHAT THE MAIN SESSION CARRIES: a size class, never a token count, and its
+  rejection of token gates for that purpose stands unchanged — not relaxed, not
+  narrowed. This new aim governs HOW LARGE A SPAWNED SUBAGENT'S OWN CONTEXT GETS,
+  measured per spawn, advisory, with no gate. Different actor, different unit,
+  different file. Neither rule is an exception to the other.
+
+  **Why absolute counts and not a fraction of the context window.** Fractions were
+  proposed and REJECTED. Context windows are not uniformly 200k — this repo runs
+  sessions at 200k and at 1M — so "50% of the window" means 100k in one session and
+  500k in the next: five times the aim, from the identical sentence. A per-subagent
+  absolute input-token count means the same thing in every window, which is the only
+  reason one figure can be quoted across every surface that references it. Recorded
+  here so the fraction proposal is not re-litigated in six months with the same
+  reasoning re-derived from scratch.
+
+  The figures live in exactly ONE file under the trees the size-rule doctrine test
+  scans (`.claude/rules/**`, `.claude/skills/**`, `CLAUDE.md`); every other surface
+  in those trees carries a numeral-free pointer sentence instead, so there is one
+  place to edit if the aim ever moves. `NOT_THE_CONSTRAINT` in
+  `tests/regressions/size-rule-doctrine.test.js` gains a single allowlist entry, for
+  `pat-context-budget-tiers.md`, recording WHY that line is lawful: it is an
+  advisory per-subagent aim, not a statement of what the main session may carry. The
+  collect-before-yield mechanic is backstopped by the new
+  `tests/regressions/agent-spawn-name-background.test.js`, which fails any surface
+  that documents the impossible `name` + `run_in_background: false` pairing.
+- **`tests/regressions/agent-spawn-name-background.test.js`** — flags the impossible
+  `name` + `run_in_background: false` combination across `.claude/skills/**`,
+  `.claude/rules/**`, `agents/**`, `docs/**`, and `CLAUDE.md`.
+- **`tests/hooks/denied-spawn-recording.test.js`** — pins the denial-record wiring:
+  every deny path writes a record, a denial never becomes a spawned child, an
+  unwritable tree does not change the verdict, and the allow path never invokes the
+  recorder.
+- **`tests/regressions/subagent-budget-advisory.test.js`** — pins that the aim STAYS
+  advisory. The doctrine forbidding a gate was itself unpinned: the no-gate disclaimer
+  in `pat-context-budget-tiers.md` and `delegation.md`'s two no-threshold sentences
+  could all have been edited away without one test going red. The suite asserts no
+  threshold and no token-keyed deny in any hook registered in `.claude/settings.json`,
+  pins both doctrine sentences word-for-word, and pins the two-actors reconciliation
+  inside § The Size Rule so it cannot be relocated out of the section it reconciles.
+  Sentence matching is whitespace-normalized first, because both sentences are
+  hard-wrapped in source and a raw single-line match on a present, correct sentence is
+  a FALSE RED — which a later contributor deletes rather than debugs. Hook sources are
+  read with `fs.readFileSync`, never `grep`: a NUL byte at offset 65431 makes `grep`
+  treat `hook-utils.cjs` as binary and report nothing, which produced one false
+  all-clear while this work was being done. The likeliest future regression here is
+  not the aim disappearing — it is someone reading "aim for about 100k" as a
+  half-finished feature and helpfully completing it into a gate. That edit now fails
+  CI. Two further things the suite holds. It checks the role-manifest budget stanza
+  per role by iterating `ROLE_POINTERS` rather than a hardcoded list — over the whole
+  assembled bundle, so enforcement phrasing smuggled into a role POINTER is caught,
+  and a role added tomorrow is covered with no action by its author — and asserts the
+  injector emits no `permissionDecision` for any of them. And its hook scan is
+  STRUCTURAL, not name-based: it flags a comparison operator against a token-count
+  constant, which is the case `spawn-footprint.cjs`'s existing NIS-1 guard cannot
+  make (NIS-1 forbids the NAME `MAX_*TOKEN`, so `if (tokenCount > 150000)` would walk
+  straight past it). Proven to bite by two reverted scratch mutations: deleting the
+  disclaimer turns 3b red alone, and appending a token gate to a hook turns 5b/5c/5d
+  red with the offending file and line named. That detector earned its keep during
+  this very bump — it independently caught a live
+  `if (tokenCount > 100000) return { permissionDecision: 'deny' }` written into a
+  hook while the work was in flight, an edit it had no foreknowledge of.
+
+### Changed
+- **`agent_tree.yaml` schema pinned.** Writer and readers now agree on the canonical
+  flat `agents:` list keyed `- id:`. Divergent shapes are migrated in place on next
+  write; `tests/hooks/agent-tree-schema-contract.test.js` holds the contract.
+- **Passing `name` to the Agent tool implies background.** `name` silently overrides
+  `run_in_background: false`, so the two cannot be combined — a spawn that must be
+  synchronous must NOT pass `name`. Documented at every point that mandates
+  synchronous spawning (`delegation.md`, `controllers.md`, `teams.md`, `CLAUDE.md`
+  § Task Lifecycle, and the `/team` wave-spawn path), and enforced by the new
+  regression test above.
+- **`agents/orchestrator.md` and `agents/self-correct.md` name the aim their advice
+  serves.** Both carried pass-paths-not-contents context-efficiency guidance with no
+  statement of what it was in service of, which reads as generic frugality and is
+  easy to skip. Both now cite the per-subagent aim, so the instruction has a stated
+  end and a reader can tell when it is being met.
+
+### Fixed — the tracker was writing into the WRONG session (ENG-OBS-2, second half)
+
+The schema mismatch above explains why READERS of `agent_tree.yaml` saw nothing. It
+does NOT explain why the tracker appeared to write nothing in the investigating
+session while it had written 1291 lines into a session from five weeks earlier. It
+wrote plenty — next door. Captured live in `_system/logs/agent_spawns.log` before the
+fix:
+
+```
+2026-09-10T01:04:24Z | agent_id=a911f86b4a6e24875 | type=cagents:backend-developer
+  | session=designer_census-postcut_260805_001 | sdk_uuid=16b4e111
+```
+
+`sdk_uuid=16b4e111` is the tail of the LIVE transcript, yet the record was filed
+against a stale sibling — whose `agent_tree.yaml` mtime then tracked the live
+session's spawns minute for minute while the live session's own tree sat at
+`agents: []`. Two independent defects combined:
+
+- **Two readers of the same field disagreed** (`hook-utils.cjs`).
+  `_tryResolveCandidate` read the phase by key PRECEDENCE
+  (`pipeline_state` > `phase` > `current_phase`, `^`-anchored);
+  `findMostRecentSessionDir` read it POSITIONALLY (earlier LINE wins, whichever key)
+  and UNANCHORED (an indented `- phase:` under `state_history:` matched too). The live
+  session opens `pipeline_state: incomplete`, so precedence called it terminal and
+  REFUSED it; the stale session happened to carry `phase: EXECUTING` on an earlier
+  line than its own `pipeline_state: incomplete`, so position called it live and
+  ACCEPTED it. Exactly inverted, on the same field. Both now call one exported
+  `statusPhase()`, so they cannot drift again.
+- **Ownership was answered with liveness** (`hook-utils.cjs`). The SDK-UUID pointer
+  map held the correct owner the whole time, but `resolveSdkUuidToSession` gates it
+  behind the same terminal check — so a pessimistic label on a still-running session
+  turned a deterministic hit into a miss, collapsing resolution onto the
+  newest-session GUESS. New additive `resolveSdkUuidOwner()` answers only "which
+  session owns this transcript", terminal label irrelevant, because for deciding
+  WHERE TO FILE A RECORD a pessimistic label on the right directory is harmless while
+  writing into a session you do not own is destructive: it corrupts a stranger's
+  evidence, refreshes that stranger's mtime so the guess picks it again next time
+  (self-reinforcing — 116 agents deep before it was caught), and leaves the real
+  session looking as if nothing ever spawned. The existing liveness-gated resolver is
+  unchanged, so `session-init-gate`'s presence check keeps the semantics it needs.
+
+- **Resolution now runs evidence-first, guess-last** (`subagent-tracker.cjs`,
+  `subagent-stop-tracker.cjs`). The newest-session heuristic used to run BEFORE the
+  explicit `SESSION_DIR` prompt hint, and it almost always returns *something* — so
+  the hint pass was effectively dead code: a guess shadowed the only hard evidence in
+  the payload. Order is now map/env -> pointer OWNERSHIP -> prompt hint -> guess, and
+  only the first three may seed the UUID map. The stop-tracker gets the same ownership
+  pass, so a start filed in session A can no longer have its stop filed in session B
+  (which would orphan the entry as `stopped_at: null` and make a finished agent read
+  as running to every stall probe).
+- **A guessed resolution now says so** (`subagent-tracker.cjs`). When no deterministic
+  pass resolves, the emitted `additionalContext` declares that the session was GUESSED
+  and may be wrong, and names the fix (`SESSION_DIR` in the spawn prompt) — per the
+  RF-5 doctrine that every degrade is visible TO THE MODEL. Still advisory and
+  fail-open throughout: no deny, no block, no abort on any of these paths.
+  `tests/hooks/session-resolution-ownership.test.js` (13 tests) pins all of it.
+
 ## [12.69.0] - 2026-09-07
 
 Approval-prompt fatigue traced to its cause and fixed at the root. Replaying the

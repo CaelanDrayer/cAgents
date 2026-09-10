@@ -181,9 +181,21 @@ describe('subagent-tracker.cjs', () => {
       expect(hookContent).toContain('yaml.dump(parsedObj)');
     });
 
-    it('should log error when agents key is missing from parsed YAML', () => {
+    // WI-B6: this used to assert the hook logs "missing agents: key \u2014 skipping
+    // append" and BAILS. That bail was the writer half of the ENG-OBS-5 schema
+    // mismatch: a `root:`/`children:` tree made the tracker silently drop EVERY
+    // spawn for the rest of the session. The contract is now self-heal + be loud,
+    // so the assertion is inverted to pin the new behavior and forbid the old.
+    it('should SELF-HEAL a tree missing the agents key instead of silently skipping the append', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('agent_tree.yaml missing agents: key \u2014 skipping append');
+      expect(
+        hookContent,
+        'the silent-skip bail must not come back \u2014 it drops every spawn for the session'
+      ).not.toContain('agent_tree.yaml missing agents: key \u2014 skipping append');
+      expect(hookContent).toContain('migrateToCanonicalShape');
+      expect(hookContent, 'the repair must be announced, never silent').toContain(
+        'NOT in the canonical'
+      );
     });
   });
 

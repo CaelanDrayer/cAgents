@@ -75,6 +75,14 @@ const NOT_THE_CONSTRAINT = [
       'Model-selection heuristic for when to enable the 1M context window — ' +
       'describes input size to pick a model, not what the main session may carry.',
   },
+  {
+    file: '.claude/rules/playbooks/pat-context-budget-tiers.md',
+    match: 'Aim for about 100k input tokens in a spawned subagent',
+    reason:
+      'Advisory per-spawned-subagent input-token aim — an absolute count for how ' +
+      'large a subagent own context gets, not a statement of what the main ' +
+      'session may carry, which remains a size class.',
+  },
 ];
 
 describe('WO-02 regression: the main-session constraint is a size class, not a token count', () => {

@@ -153,7 +153,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 29. **playbooks/pat-cross-teammate-request.md** — LEGACY (experimental-named-teammate path only): cross-teammate `peer_request` routing in `/team`; obsolete under the default subagent model, where a subagent needing another specialty spawns it downward.
 30. **playbooks/pat-evidence-first-execution.md** — Pattern: specific, verifiable evidence
 31. **playbooks/pat-feedback-loop-first-debugging.md** — Pattern: build a tight reproduction loop and show it RED before hypothesizing; ranked repro ladder + tagged-debug cleanup
-32. **playbooks/pat-gate-taxonomy.md** — Pattern: four checkpoint types (Pre-flight / Revision / Escalation / Abort) + stall-detection rule
+32. **playbooks/pat-gate-taxonomy.md** — Pattern: four checkpoint types (Pre-flight / Revision / Escalation / Abort) + stall-detection rules (flat reviewer-round finding count; a parent gone silent after spawning children)
 33. **playbooks/pat-graceful-degradation-depth1.md** — Pattern: defensive-fallback degraded execution when `Agent` is genuinely absent (nesting ceiling at depth 5, or a regressed/older harness). Repositioned in v12.17.0 — subagents normally retain `Agent` up to 5 levels deep (CC ≥ 2.1.172); depth-1 stripping is historical.
 34. **playbooks/pat-minimal-solution-ladder.md** — Pattern: minimalism counterweight to aggressive decomposition (YAGNI → stdlib → native → existing dep → one-liner → minimum viable change)
 35. **playbooks/pat-subagent-status-protocol.md** — Pattern: DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED status reporting
