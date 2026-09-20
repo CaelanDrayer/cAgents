@@ -28,22 +28,24 @@ metadata:
 
 # Pattern: Minimal-Solution Ladder
 
-cAgents biases hard toward **aggressive decomposition** — the planner unpacks a
-one-line request into 30+ work items, and controllers spawn specialists for each.
-That bias is correct for *coordination*, but left unchecked it leaks into
-*implementation*: agents reach for a new abstraction, a new helper module, or a
-new dependency when something far smaller would do. This playbook is the missing
-minimalism counterweight. Its north star, borrowed from the external `ponytail`
-skill: **the best code is the code you never wrote.**
+cAgents biases hard toward **aggressive decomposition**. The planner unpacks a
+one-line request into 30+ work items, and controllers spawn a specialist for each
+one. That bias is correct for *coordination*. Left unchecked, it leaks into
+*implementation*. Agents reach for a new abstraction, a new helper module, or a
+new dependency when something far smaller would do.
+
+This playbook is the missing minimalism counterweight. Its north star comes from
+the external `ponytail` skill: **the best code is the code you never wrote.**
 
 Decomposition tells you *what concerns exist*. The ladder tells you *how little
 to write per concern*.
 
 ## The Ladder
 
-Before writing new code (or before adding a work item that implies new code),
-walk these rungs top-down. Stop at the first rung that satisfies the requirement.
-Only reach "write new code" when every cheaper rung genuinely fails.
+Walk these rungs from the top down before you write new code. Walk them also
+before you add a work item that implies new code. Stop at the first rung that
+meets the need. Reach rung 7 and write new code only when every cheaper rung
+genuinely fails.
 
 | Rung | Question | Example |
 |------|----------|---------|
@@ -55,37 +57,40 @@ Only reach "write new code" when every cheaper rung genuinely fails.
 | 6. **minimum viable change** | What is the smallest diff that meets the acceptance criteria? | Edit one function; don't refactor the module around it. |
 | 7. **write new code** | Only here, after 1-6 fail | Genuinely new behavior with no cheaper substitute. |
 
-The ladder is a default, not a dogma — a rung is "satisfied" only when it meets
-the acceptance criteria, not merely when it compiles.
+The ladder is a default, not a dogma. A rung is "satisfied" only when it meets
+the acceptance criteria. A rung that only compiles is not satisfied.
 
 ## When it applies
 
-- **Execution agents** implementing a work item: walk the ladder *before* the
-  first Write/Edit. If a cheaper rung wins, note the rung in your evidence.
-- **Reviewer Stage-2 (code quality)**: use the ladder as a subtractive lens —
-  "what can be deleted? could stdlib/native/an existing dep replace this new
-  code?" This pairs with the Simplicity Override Rule (equal results + less
-  code = KEEP). See @.claude/rules/playbooks/pat-two-stage-review.md.
+- **Execution agents** that implement a work item: walk the ladder *before* the
+  first Write or Edit. If a cheaper rung wins, name that rung in your evidence.
+- **Reviewer Stage-2, which is the code-quality stage**: use the ladder as a
+  subtractive lens. Ask what you can delete. Ask whether the stdlib, a native
+  feature, or an existing dependency can replace this new code. This pairs with
+  the Simplicity Override Rule: equal results plus less code means KEEP. See
+  @.claude/rules/playbooks/pat-two-stage-review.md.
 
 ## When it does NOT apply
 
-- The requirement *genuinely needs the abstraction* — e.g., three call sites
-  already duplicate the logic (rule-of-three earns the extraction), a public
-  contract must be stable, or a security/compliance boundary requires an
-  explicit, auditable layer. Minimalism is not an excuse to skip error handling,
-  validation, or tests that the acceptance criteria require.
-- Removing code would violate an acceptance criterion. The ladder reduces
-  *means*, never *ends*.
-- The "cheaper" rung is cheaper in lines but materially worse in correctness,
-  readability, or security. A 10-line clear function beats a clever one-liner
+- The need *genuinely calls for the abstraction*. Three cases qualify. Three
+  call sites already duplicate the logic, so the rule of three earns the
+  extraction. A public contract must stay stable. A security boundary or a
+  compliance boundary needs an explicit, auditable layer. Minimalism is not an
+  excuse to skip error handling, validation, or the tests that the acceptance
+  criteria ask for.
+- A code removal would breach an acceptance criterion. The ladder reduces the
+  *means*, never the *ends*.
+- The "cheaper" rung saves lines, but it is much worse in correctness, in
+  readability, or in security. A clear 10-line function beats a clever one-liner
   that needs a comment to decode.
 
 ## Deliberate-shortcut comment convention
 
-When you *intentionally* pick a minimal choice that a future reader might
-mistake for an oversight, mark it with a self-documenting `ponytail:` marker so
-the intent is auditable. This maps onto cAgents' existing deferral / dead-letter
-vocabulary — it is the *inline* counterpart of a deferral note:
+Sometimes you pick a minimal choice on purpose, and a future reader can mistake
+it for an oversight. Mark that choice with a self-documenting `ponytail:` marker,
+so that the intent is auditable. The marker maps onto the deferral vocabulary and
+the dead-letter vocabulary that cAgents already has. It is the *inline*
+counterpart of a deferral note:
 
 ```
 // ponytail: stdlib crypto.randomUUID() — no uuid dep needed (ladder rung 2)
@@ -94,19 +99,21 @@ vocabulary — it is the *inline* counterpart of a deferral note:
 
 Convention:
 
-- Prefix: `ponytail:` (lowercase), in the language's comment syntax.
-- Body: the rung that justified the choice + a one-clause why.
-- For a *deferred* abstraction (rung 1 / YAGNI), say what would re-open it
-  (e.g., "until a second caller appears") — this is the inline twin of a
-  `deferral_list.md` entry, and reviewers treat it the same way: a documented,
-  intentional minimal choice, not a dead_letter or a TODO debt.
+- Prefix: `ponytail:` in lowercase, in the comment syntax of the language.
+- Body: the rung that justified the choice, and a one-clause reason.
+- For a *deferred* abstraction at rung 1, which is YAGNI, say what would re-open
+  it. An example is "until a second caller appears". This note is the inline twin
+  of a `deferral_list.md` entry. Reviewers treat it the same way: it is a
+  documented, intentional minimal choice, not a dead_letter and not a TODO debt.
 
-A `ponytail:` marker is *not* a code smell and reviewers should not flag it as
-incomplete work — it is the opposite: evidence that minimalism was a considered
-decision.
+A `ponytail:` marker is *not* a code smell. Reviewers must not flag it as
+incomplete work. It is the opposite: it is evidence that minimalism was a
+considered decision.
 
 ## See also
 
-- `.claude/rules/playbooks/pat-two-stage-review.md` — Stage-2 code-quality lens
-- `.claude/rules/core/execution.md` — execution agent patterns
-- `agents/developer/quality/code-reviewer/SKILL.md` — Simplicity Override Rule
+- `.claude/rules/playbooks/pat-two-stage-review.md`: the Stage-2 code-quality
+  lens.
+- `.claude/rules/core/execution.md`: the execution agent patterns.
+- `agents/developer/quality/code-reviewer/SKILL.md`: the Simplicity Override
+  Rule.

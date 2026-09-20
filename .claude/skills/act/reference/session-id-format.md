@@ -1,6 +1,6 @@
 # Session ID Format and Generation
 
-How /act generates session IDs and creates the session directory.
+This file explains how /act generates a session ID, and how it then creates the session directory.
 
 ## Format
 
@@ -12,42 +12,47 @@ Example: `act_fix-auth-module-jwt_260317_001`
 
 ## Slug Rules
 
-- 2-6 key words from the user request
-- kebab-case, lowercase
-- Max 50 chars
-- Strip filler words: the, a, an, to, for, with, and, of
+- Use 2 to 6 key words from the user request
+- Write the slug in kebab-case, and in lowercase
+- Keep the slug to 50 characters or fewer
+- Strip the filler words: the, a, an, to, for, with, and, of
 
 Example: "Fix auth module JWT" -> "fix-auth-module-jwt"
 
 ## Date Component
 
-Compact date: `YYMMDD` (e.g., 260317 for 2026-03-17).
+Use the compact date form `YYMMDD`. For example, 260317 stands for 2026-03-17.
 
 ## Counter Component
 
-`NNN` is a 3-digit sequence number starting at 001. To compute:
+`NNN` is a sequence number of 3 digits, and it starts at 001. Compute it like
+this:
 
-1. Scan `cagents-memory/sessions/` for dirs matching `act_*_{YYMMDD}_*`
-2. Find the highest existing NNN for today's date
-3. Increment by 1 (start at 001 if none found)
+1. Scan `cagents-memory/sessions/` for the directories that match `act_*_{YYMMDD}_*`
+2. Find the highest NNN that already exists for today's date
+3. Increment that number by 1. If you find no directory, start at 001
 
 ## CAGENTS_SESSION_ID Override
 
-Before generating a new SESSION_ID, check `process.env.CAGENTS_SESSION_ID`:
+Before you generate a new SESSION_ID, check `process.env.CAGENTS_SESSION_ID`:
 
-- If set and non-empty: use it verbatim as SESSION_ID (skip generation)
-  - SESSION_DIR = `$MEM/sessions/${CAGENTS_SESSION_ID}` (absolute — see anchor below)
-  - If SESSION_DIR exists: this is a RESUME -- skip session file creation
-  - If SESSION_DIR does not exist: treat as new session, mkdir using the env var value
-- If not set or empty: proceed with auto-generation
+- If the variable is set and not empty: use it verbatim as the SESSION_ID, and
+  generate nothing
+  - SESSION_DIR = `$MEM/sessions/${CAGENTS_SESSION_ID}`. That path is absolute.
+    See the anchor below.
+  - If SESSION_DIR exists: this run is a RESUME, so create no session file
+  - If SESSION_DIR does not exist: treat the run as a new session, and mkdir
+    with the value of the env var
+- If the variable is not set, or if it is empty: go on with the auto-generation
 
 ## Session Directory Creation
 
-**Anchor session paths to an ABSOLUTE project root, not a relative `cagents-memory/…`
-literal.** A relative path resolves against the *current working directory*, and a
-nested `/act` (or a `/team` subagent) can run with its cwd inside a parent session
-dir — a relative write then nests a whole `cagents-memory/` tree under that session
-(the CWD-leak, REC-20). Anchor once and derive everything from `$MEM`:
+**Anchor session paths to an absolute project root, not to a relative `cagents-memory/…`
+literal.** A relative path resolves against the *current working directory*. A
+nested `/act` run can hold its cwd inside a parent session directory, and a
+`/team` subagent can do the same. A relative write then nests a whole
+`cagents-memory/` tree under that session. This fault is the CWD-leak, REC-20.
+Anchor once, and derive everything from `$MEM`:
 
 ```
 CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -58,7 +63,7 @@ mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"
 
 ## Required Initial Files
 
-On creation, /act writes:
+At creation time, /act writes these three files:
 
 | File | Purpose |
 |------|---------|
@@ -90,8 +95,8 @@ state_history:
     entered_at: "{ISO_TIMESTAMP}"
 ```
 
-`{ISO_TIMESTAMP}` MUST be the real current time. Never fabricate timestamps like `T00:00:00Z` or `T12:00:00Z` -- these are detectable fakes that break session timeline analysis. Use `date -u +%Y-%m-%dT%H:%M:%SZ` via Bash if needed.
+`{ISO_TIMESTAMP}` MUST be the real current time. Never fabricate a timestamp such as `T00:00:00Z` or `T12:00:00Z`. These are detectable fakes, and they break the analysis of the session timeline. If you need the value, get it with `date -u +%Y-%m-%dT%H:%M:%SZ` in Bash.
 
-v12.6.0: `revision_round`, `validation_cycles`, and `state_history[].duration_ms` were external-UI-only fields and are no longer written. Track revision count in `/act`'s working state (max 3 cycles before HITL).
+v12.6.0 note: `revision_round`, `validation_cycles` and `state_history[].duration_ms` served an external UI only. The pipeline no longer writes them. Track the revision count in the working state of `/act`, and allow a maximum of 3 cycles before HITL.
 
-Note: /act uses the `pipeline_state` field (not `phase`). Hooks check both fields as fallback. See @reference/session-schema.md for the canonical session YAML contract.
+/act uses the `pipeline_state` field, and it does not use `phase`. The hooks check both of those fields as a fallback. See @reference/session-schema.md for the canonical session YAML contract.

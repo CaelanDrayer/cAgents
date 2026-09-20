@@ -49,7 +49,8 @@ criteria_met:
 
 **Blind Review (Tier 3+)**:
 1. Spawn 2-3 independent reviewers for each work item
-2. Each reviewer receives the implementation WITHOUT knowing which executor produced it or what other reviewers said
+2. Each reviewer gets the implementation without the name of the executor and
+   without the verdict of any other reviewer
 3. Reviewers evaluate independently against acceptance criteria
 4. Controller collects all reviews and applies consensus rules
 
@@ -91,7 +92,9 @@ Agent({
 
 ## Dead-Letter Queue (V10.6.0)
 
-When a work item fails 2 reviewer rounds (LP-27, v12.7.x: lowered from 3 — rounds-cap is `controller_revision.max_internal_rounds` in `pipeline_config.yaml`), it enters the dead-letter queue:
+LP-27 (v12.7.x) lowered the rounds-cap from 3 to 2. The cap is
+`controller_revision.max_internal_rounds` in `pipeline_config.yaml`. A work item
+that fails 2 reviewer rounds enters the dead-letter queue:
 
 ```yaml
 # In coordination_log.yaml
@@ -153,11 +156,17 @@ Every completed work item MUST include a `confidence` score (0.0-1.0):
 | 0.5-0.69 | **Low** | Partially verified, gaps in evidence | Flag for validator |
 | 0.0-0.49 | **Very Low** | Unverified, inferred, or speculative | Trigger re-review |
 
-**Rules**: `confidence` is mandatory. Items < 0.7 trigger additional scrutiny. Validator uses scores to prioritize verification.
+**Rules**: `confidence` is mandatory. An item below 0.7 triggers more scrutiny. The
+validator uses the scores to set the order of its checks.
 
-## Completion Event Schema (HISTORICAL — EVT-* emission removed in v12.6.0)
+## Completion Event Schema (HISTORICAL: EVT-* emission removed in v12.6.0)
 
-> Pre-v12.6.0, controllers emitted a `workflow/events/EVT-{N}.yaml` completion event on each state transition. EVT-file emission was removed in v12.6.0 (consistent with `orchestration-reference.md`); the controller's terminal artifact is now `coordination_log.yaml` alone. The pre-v12.0.0 `delegation_prompts.yaml` input was also removed — controllers use standard delegation prompts. The schema below is retained for archived-session back-compat only.
+> Before v12.6.0, controllers emitted a `workflow/events/EVT-{N}.yaml` completion
+> event on each state transition. v12.6.0 removed EVT-file emission, which agrees
+> with `orchestration-reference.md`. The terminal artifact of a controller is now
+> `coordination_log.yaml` alone. v12.0.0 also removed the `delegation_prompts.yaml`
+> input, so controllers use standard delegation prompts. The schema below stays for
+> back-compat with archived sessions.
 
 ```yaml
 event_id: EVT-{N}
@@ -216,13 +225,16 @@ workflow/CORRECTIONS.md                                # Session-scoped copy
 
 ### _projects/{hash}/ Convention
 
-- `{hash}` is derived from the project root path (e.g., first 8 chars of SHA-256)
+- `{hash}` comes from the project root path, such as the first 8 chars of SHA-256
 - Contains DECISIONS.md, CORRECTIONS.md, and other cross-session state
 - Created on first use, never deleted automatically
 
 ## Task-Tracking Examples (interactive: TaskCreate; SDK: TodoWrite)
 
-Interactive Claude Code sessions — the primary cAgents runtime — MUST use `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet`. `TodoWrite` is the Agent SDK / non-interactive equivalent (SDK only); do not use it in interactive runtimes. The examples below use the interactive `TaskCreate` form.
+Interactive Claude Code sessions are the primary cAgents runtime. They MUST use
+`TaskCreate`, `TaskUpdate`, `TaskList`, and `TaskGet`. `TodoWrite` is the equivalent
+for the Agent SDK and for a non-interactive run. Do not use `TodoWrite` in an
+interactive runtime. The examples below use the interactive `TaskCreate` form.
 
 **Good** (descriptive, action-oriented):
 ```

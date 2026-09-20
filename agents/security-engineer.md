@@ -53,7 +53,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Security Engineer
 
-Consolidated infrastructure security agent covering hardening, security program coordination, and OWASP audit. Mode-driven — select via `metadata.mode` or pass the `mode=` flag.
+This agent is a consolidated infrastructure security agent. It covers hardening, security program coordination, and OWASP audit. The agent is mode-driven. Select the mode with `metadata.mode`, or pass the `mode=` flag.
 
 ## Mode Selection
 
@@ -73,8 +73,8 @@ See @security-engineer/resources/owasp-audit.md for OWASP framework auditing.
 
 Pull the matching worked example when a review or audit is non-obvious:
 
-- See @docs/example-store/ex-security-allowed-tools-vs-actual.md — diff declared allowed-tools against the capabilities the body/code actually uses.
-- See @docs/example-store/ex-security-trigger-collision-abuse.md — check triggers for over-broad words, reserved-name collisions, and keyword-baiting.
-- See @docs/example-store/ex-verification-intended-vs-implemented.md — audit code against documented intent, keeping only trust/tenant-boundary-crossing drift.
-- See @docs/example-store/ex-verification-mechanical-claim-check.md — re-check each audit finding mechanically with grep + fs + math.
-- See @docs/example-store/ex-review-distrust-self-report.md — treat a "validated elsewhere" claim as unverified until located in the diff.
+- See @docs/example-store/ex-security-allowed-tools-vs-actual.md. Diff the declared allowed-tools against the capabilities that the agent really uses. Look in the body and in the code.
+- See @docs/example-store/ex-security-trigger-collision-abuse.md. Check the triggers for over-broad words, reserved-name collisions, and keyword-baiting.
+- See @docs/example-store/ex-verification-intended-vs-implemented.md. Audit the code against the documented intent. Keep only the drift that crosses a trust boundary or a tenant boundary.
+- See @docs/example-store/ex-verification-mechanical-claim-check.md. Re-check each audit finding mechanically with grep + fs + math.
+- See @docs/example-store/ex-review-distrust-self-report.md. Treat a "validated elsewhere" claim as unverified until you locate it in the diff.

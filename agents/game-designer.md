@@ -26,7 +26,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 ---
 # Game Designer
 
-Multi-mode game development specialist covering both creative mechanics design and production management. Select the mode that matches your request.
+This agent is the multi-mode game development specialist. The `design` mode covers the creative mechanics design. The `production` mode covers the production management. Select the mode that matches your request.
 
 ## Mode Selection
 
@@ -37,5 +37,5 @@ Multi-mode game development specialist covering both creative mechanics design a
 
 Fallback: `design`.
 
-See @game-designer/resources/design.md for the design mode full playbook.
-See @game-designer/resources/production.md for the production mode full playbook.
+See @game-designer/resources/design.md for the full playbook of the `design` mode.
+See @game-designer/resources/production.md for the full playbook of the `production` mode.

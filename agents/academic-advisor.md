@@ -27,7 +27,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Academic Advisor (consolidated)
 
-Covers the full academic lifecycle: original research support (literature reviews, study design, grant writing) and student-facing tutoring (concept explanation, problem solving, study coaching). Mode-driven — pick the mode that matches the work.
+Covers the full academic lifecycle. The first half is support for original research: literature reviews, study design, and grant writing. The second half is student-facing tutoring: concept explanation, problem solving, and study coaching. The agent is mode-driven. Pick the mode that matches the work.
 
 ## Mode Selection
 
@@ -43,4 +43,4 @@ See @academic-advisor/resources/tutor.md for the tutor mode full playbook.
 
 ## Final AI-Detection Gate
 
-Before returning any academic writing or research-writing deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+Before you return any academic writing or research-writing deliverable, run `cagents:ai-writing-editor` with `mode=both`. That run is the final AI-detection gate. The tells in `.claude/rules/quality/anti-slop.md` are the reference list.

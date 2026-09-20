@@ -21,7 +21,8 @@ paths:
 
 # Agent Memory Structure
 
-File-based memory organization for cAgents. Aligned with Claude Code's memory hierarchy.
+This file describes the file-based memory organization of cAgents. That
+organization aligns with the memory hierarchy of Claude Code.
 
 ## Claude Code Memory Hierarchy
 
@@ -36,7 +37,12 @@ File-based memory organization for cAgents. Aligned with Claude Code's memory hi
 
 **Loading Order**: Managed -> User -> Project -> Project Rules -> Project Local (later = higher priority)
 
-**Auto Memory**: Persistent directory at `~/.claude/projects/<project>/memory/MEMORY.md`. Toggle with `/memory`. Separate from cagents-memory/. Configure with `autoMemoryDirectory` setting to point auto memory at a custom path — for example, `cagents-memory/_knowledge/` to share learnings across agents in the same project:
+**Auto Memory**: this is a persistent directory at
+`~/.claude/projects/<project>/memory/MEMORY.md`. Toggle it with `/memory`. It is
+separate from cagents-memory/. Use the `autoMemoryDirectory` setting to point
+auto memory at a custom path. For example, point it at
+`cagents-memory/_knowledge/` to share the learnings across the agents in the
+same project:
 
 ```json
 {
@@ -44,11 +50,14 @@ File-based memory organization for cAgents. Aligned with Claude Code's memory hi
 }
 ```
 
-This lets multiple agents write to a shared knowledge store, enabling cross-session pattern accumulation.
+Many agents can then write to one shared knowledge store. The store accumulates
+patterns across sessions.
 
-**Path-Specific Rules**: Add `paths:` YAML frontmatter with glob patterns. Rules without `paths` apply unconditionally.
+**Path-Specific Rules**: add a `paths:` field to the YAML frontmatter, with glob
+patterns. A rule with no `paths` field applies unconditionally.
 
-**Recursive Lookup**: CLAUDE.md files read recursively up directory tree. Child directory files load on demand.
+**Recursive Lookup**: Claude Code reads the CLAUDE.md files recursively up the
+directory tree. The files in a child directory load on demand.
 
 ## cAgents cagents-memory Overview
 
@@ -62,67 +71,83 @@ cagents-memory/
 
 **Session ID Format**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `run_fix-auth_260317_001`)
 
-See `agent-memory-reference.md` for full directory structure and session folder details.
+See `agent-memory-reference.md` for the full directory structure, and for the
+session folder details.
 
 ## Three-File Pattern (V8.0)
 
-Aspirational pattern (task_plan.md / findings.md / progress.md compact session
-tracking) — not runtime-enforced. See docs/DESIGN_NOTES.md.
+This is an aspirational pattern. It holds task_plan.md, findings.md, and
+progress.md, and it gives compact session tracking. Nothing enforces it at run
+time. See docs/DESIGN_NOTES.md.
 
 ## Waypoints
 
-Snapshots created at phase transitions and before context compaction. Types: `phase_transition`, `work_item_complete`, `periodic`, `pre_compact`.
+cAgents creates a snapshot at each phase transition, and before each context
+compaction. The types are `phase_transition`, `work_item_complete`, `periodic`,
+and `pre_compact`.
 
 ## Session Discovery Internals
 
-**v12.15.0+ — deterministic chain (concurrency contract):**
+**v12.15.0+ deterministic chain: the concurrency contract**
 
-`findActiveSession(sessionHintOrOptions)` resolves the active cAgents session via
-an explicit deterministic chain. The legacy 3-pass heuristic (status-newest-first,
-5-minute grace, nested-org subdir scan) is now gated behind an explicit
-`{fallbackHeuristic: true}` opt-in for single-session diagnostic tooling.
+`findActiveSession(sessionHintOrOptions)` resolves the active cAgents session
+through an explicit deterministic chain. The legacy heuristic made three passes:
+status-newest-first, then a 5-minute grace window, then a nested-org
+subdirectory scan. An explicit `{fallbackHeuristic: true}` opt-in now gates that
+heuristic, and only single-session diagnostic tooling uses it.
 
 **Default chain (no fallback)**:
 
-1. **`sessionHint`** (typically `input.session_id` from the hook payload) — if
-   the directory exists and the session is in a non-terminal `pipeline_state` /
-   `phase` (or has no status.yaml yet — race window), return it. If terminal,
-   return null.
-1a. **Persisted SDK-UUID map** (v12.32.0+) — when `sessionHint` is an SDK
-   transcript UUID (the 8-4-4-4-12 hex shape hooks actually receive, not a
-   cAgents directory name), `findActiveSession` consults the persisted map via
-   `resolveSdkUuidToSession(uuid)` BEFORE the env-var step. A live pointer
-   (`cagents-memory/_system/sdk_session_map/{uuid}` → owning session_id, plus the
-   per-session `sessions/{id}/session.sdk_id` marker) is a deterministic
-   resolution. A miss (no pointer, or a terminal/missing target — lazily reaped)
-   falls through to step 2 and never resolves to a sibling session.
-   `findTeamSession` mirrors this for `team_` pointers. The map is written by
-   `upsertSdkSessionMap` (from `subagent-tracker.cjs` / `session-init-gate.cjs`
-   on confident resolution) and unlinked at SessionEnd (`team-stop.cjs`). See
+1. **`sessionHint`**. The hook payload supplies this value as
+   `input.session_id`. If the directory exists, and if the session has a
+   non-terminal `pipeline_state` or a non-terminal `phase`, return the session.
+   A session with no status.yaml yet is in the race window, and it also
+   returns. If the session is terminal, return null.
+1a. **Persisted SDK-UUID map** (v12.32.0+). Sometimes `sessionHint` is an SDK
+   transcript UUID. That is the 8-4-4-4-12 hex shape the hooks receive, and it
+   is not a cAgents directory name. In that case `findActiveSession` consults
+   the persisted map through `resolveSdkUuidToSession(uuid)`, BEFORE the env-var
+   step.
+
+   A live pointer is a deterministic resolution. The pointer is
+   `cagents-memory/_system/sdk_session_map/{uuid}`, which names the owning
+   session_id, and the per-session `sessions/{id}/session.sdk_id` marker goes
+   with it. A miss falls through to step 2, and it never resolves to a sibling
+   session. A miss means no pointer at all, or a target that is terminal or
+   missing, because the map is reaped lazily.
+
+   `findTeamSession` mirrors this behavior for `team_` pointers.
+   `upsertSdkSessionMap` writes the map from `subagent-tracker.cjs` and from
+   `session-init-gate.cjs`, on a confident resolution. `team-stop.cjs` unlinks
+   the map at SessionEnd. See
    `.claude/rules/playbooks/pat-concurrent-session-hooks.md` and session
    `run_hook-session-id_260701_001`.
-2. **`process.env.CAGENTS_ACTIVE_SESSION`** — same rules.
-3. **`promptHint`** (e.g., extracted from prompt text by subagent-tracker
-   Pass-3) — same rules.
-4. **`null`** — refuse to silently resolve to "newest active" session.
+2. **`process.env.CAGENTS_ACTIVE_SESSION`**. The same rules apply.
+3. **`promptHint`**. Pass-3 of subagent-tracker extracts this value from the
+   prompt text. The same rules apply.
+4. **`null`**. Refuse to resolve to the "newest active" session in silence.
 
-**Cache**: `_cachedActiveSessions` is a `Map` keyed by the composite key
-`sessionHint|envSession|promptHint|fallback`. Distinct inputs never share cache
-entries (closes the H6 cache-leak where an unhinted call returned a previously
-cached hinted result). Tests call `_resetActiveSessionCache()` between runs.
+**Cache**: `_cachedActiveSessions` is a `Map`. Its key is the composite key
+`sessionHint|envSession|promptHint|fallback`. Two distinct inputs never share a
+cache entry. That closes the H6 cache leak, where an unhinted call returned a
+hinted result from an earlier cache write. Tests call
+`_resetActiveSessionCache()` between runs.
 
-**Legacy heuristic** (opt-in via `findActiveSession({fallbackHeuristic: true})`):
-restores the pre-v12.15.0 status-pass + grace-pass + nested-org-pass behavior.
-Used only by Stop / SessionEnd hooks that legitimately need to finalize a
-terminal session (`verify-completion.cjs`, `team-stop.cjs` fallback path).
+**Legacy heuristic**: opt in with
+`findActiveSession({fallbackHeuristic: true})`. The heuristic restores the
+pre-v12.15.0 behavior, which is the status pass, then the grace pass, then the
+nested-org pass. Only the Stop hooks and the SessionEnd hooks use it, because
+they legitimately need to finalize a terminal session. Those hooks are
+`verify-completion.cjs` and the fallback path of `team-stop.cjs`.
 
-**Why the deterministic chain**: under two concurrent same-directory cAgents
-sessions, the legacy heuristic actively resolved to the WRONG session (status
-pass picked newest-first; grace pass picked last-touched). The deterministic
-chain binds each hook to its own session via the payload's `input.session_id`.
+**Why the deterministic chain**: two concurrent cAgents sessions can run in the
+same directory. In that case the legacy heuristic resolved to the WRONG session.
+The status pass picked the newest session first, and the grace pass picked the
+last-touched session. The deterministic chain binds each hook to its own
+session, through the `input.session_id` field of the payload.
 
 See `.claude/rules/core/hooks.md` § Concurrency Contract for the full hook-level
-invariants and session `run_concurrent-session-hooks_260602_001` for the
+invariants. See session `run_concurrent-session-hooks_260602_001` for the
 empirical regression-test record.
 
 ## Memory Principles
@@ -132,4 +157,4 @@ empirical regression-test record.
 - **Parallel-safe**: Multiple sessions simultaneously
 - **Pause/resume**: Via waypoints
 - **Git-ignored**: cagents-memory/ excluded from version control
-- **Context-efficient**: Workflow artifacts and waypoints provide context recovery; three-file pattern is an optional supplement
+- **Context-efficient**: the workflow artifacts and the waypoints give context recovery. The three-file pattern is an optional supplement.

@@ -1,6 +1,6 @@
 # Follow-Up Research Dispatch and Graceful Fallback
 
-When the user reveals new information during a phase that the original research did not cover, the designer dispatches a follow-up research agent to investigate before continuing.
+When the user gives you new information that the original research did not cover, the designer dispatches a follow-up research agent to investigate.
 
 ## When to Dispatch Follow-Up Research
 
@@ -42,7 +42,7 @@ The research is an **enhancement**, not a hard requirement. The designer must co
 
 ## Specialist Validation (Refinement)
 
-Refinement phase optionally spawns specialist validation agents in addition to research agents:
+The Refinement phase can also spawn specialists who validate the answers. Those specialists are in addition to the research agents:
 
 ```
 designer -> Agent(cagents:architect, "Validate proposed architecture against {constraints}")

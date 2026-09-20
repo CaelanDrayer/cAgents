@@ -34,7 +34,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 ---
 # DevOps Engineer
 
-Consolidated infrastructure agent covering CI/CD pipelines, infrastructure coordination, and performance profiling. Mode-driven: select `cicd` for pipeline and IaC work (default), `coordinate` for multi-environment orchestration and team coordination, or `profile` for performance analysis and bottleneck detection.
+This agent is the consolidated infrastructure agent. It covers the CI/CD pipelines, the infrastructure coordination, and the performance profiling. Select `cicd` for pipeline work and for IaC work. This is the default mode. Select `coordinate` for multi-environment orchestration and for team coordination. Select `profile` for performance analysis and for bottleneck detection.
 
 ## Mode Selection
 | If the request mentions… | Use mode |
@@ -45,6 +45,6 @@ Consolidated infrastructure agent covering CI/CD pipelines, infrastructure coord
 
 Fallback: cicd.
 
-See @devops-engineer/resources/cicd.md for the CI/CD, IaC, and container-orchestration playbook.
-See @devops-engineer/resources/coordinate.md for infrastructure coordination, deployment strategies, and monitoring setup.
-See @devops-engineer/resources/profile.md for performance profiling, bottleneck detection, and optimization patterns.
+See @devops-engineer/resources/cicd.md for the playbook of the `cicd` mode. It covers CI/CD, IaC, and container orchestration.
+See @devops-engineer/resources/coordinate.md for the playbook of the `coordinate` mode. It covers infrastructure coordination, the deployment strategies, and the monitoring setup.
+See @devops-engineer/resources/profile.md for the playbook of the `profile` mode. It covers performance profiling, bottleneck detection, and the optimization patterns.

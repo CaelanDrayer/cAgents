@@ -41,22 +41,26 @@ allowed-tools: Read Grep Glob Bash
 
 # Pattern: Feedback-Loop-First Debugging
 
-Roughly 90% of debugging is building a **tight** reproduction loop before forming
-any theory. Tight = fast, deterministic, and sharp-signal. For a bug-fix work
-item this is a Check-0: no fix is proposed until a repro command exists and has
-been shown RED.
+About 90% of debugging is the work of building a **tight** reproduction loop.
+You do that work before you form any theory. A tight loop is fast, it is
+deterministic, and it gives a sharp signal.
+
+For a bug-fix work item this is a Check-0. Propose no fix until a repro command
+exists, and until you have shown that command RED.
 
 ## Anti-pattern: reading code to build a theory first
 
 > If you catch yourself reading source to construct a hypothesis before a
 > reproduction command exists, STOP.
 
-Reading code first anchors you on a guess and biases every later observation
-toward confirming it. Build the loop first; let the loop tell you where to look.
+When you read the code first, you anchor on a guess. That guess then biases every
+later observation toward a confirmation. Build the loop first, and let the loop
+tell you where to look.
 
-## Step 1 — build the loop (10-strategy ranked ladder)
+## Step 1: build the loop (10-strategy ranked ladder)
 
-Pick the first strategy that fits. Tighter (higher) is better:
+Pick the first strategy that fits. A strategy higher in the list is tighter, and
+a tighter strategy is better:
 
 ```
 1.  Failing unit / integration test      6.  Throwaway harness script
@@ -66,43 +70,49 @@ Pick the first strategy that fits. Tighter (higher) is better:
 5.  Captured-trace replay                 10. Human-in-the-loop bash script (last resort)
 ```
 
-## Step 2 — establish the loop RED
+## Step 2: establish the loop RED
 
-Run the loop and show it reproduces the bug **deterministically** before touching
-the fix. A loop that only sometimes fails is not tight — make it deterministic
-first (seed randomness, pin the clock, isolate shared state).
+Run the loop, and show that it reproduces the bug **deterministically**. Do this
+before you touch the fix. A loop that fails only some of the time is not tight.
+Make it deterministic first: seed the randomness, pin the clock, and isolate the
+shared state.
 
-## Step 3 — hypotheses before testing (anti-anchoring)
+## Step 3: hypotheses before testing (anti-anchoring)
 
-Write **3–5 falsifiable, ranked hypotheses** and state them BEFORE testing any of
-them. Test the cheapest-to-falsify first. Stating them up front (rather than
-narrating one theory as you go) prevents anchoring on the first idea.
+Write **3–5 falsifiable, ranked hypotheses**. State them all BEFORE you test any
+one of them. Test the cheapest one to falsify first. When you state them up
+front, you do not anchor on the first idea. When you narrate one theory as you
+go, you do anchor on it.
 
-## Step 4 — tagged instrumentation with mandatory cleanup
+## Step 4: tagged instrumentation with mandatory cleanup
 
-Any temporary instrumentation gets a unique tagged prefix so it is greppable:
+Give every piece of temporary instrumentation a unique tagged prefix. The prefix
+makes that instrumentation easy to find with grep:
 
 ```
 console.log("[DEBUG-a4f2] cache key =", key);   // temporary
 ```
 
-Before reporting DONE, grep for the tag and remove every hit:
+Before you report DONE, grep for the tag and remove every hit:
 
 ```
 grep -rn "\[DEBUG-a4f2\]" .    # must return zero hits before DONE
 ```
 
-## Step 5 — completion
+## Step 5: completion
 
-- The loop is now GREEN — the same command that was RED now passes.
-- The hypothesis that turned out correct is stated in the commit / PR message so
-  the next debugger learns from it.
+- The loop is now GREEN. The same command that was RED now passes.
+- State the hypothesis that turned out correct in the commit message or in the PR
+  message. The next debugger then learns from it.
 
-This strengthens `execution-self-validation.md` Check 3 (guard exit codes): the
-guard is established and shown RED *before* the fix, not merely green after.
+This strengthens Check 3 of `execution-self-validation.md`, which covers the
+guard exit codes. You establish the guard and show it RED *before* the fix. A
+guard that is only green after the fix is not enough.
 
 ## See also
 
-- `@docs/example-store/ex-verification-feedback-loop-first-debugging.md` — worked example this playbook distills.
-- `.claude/rules/core/resources/execution-self-validation.md` — Check 3 (guard exit codes).
-- `.claude/rules/core/execution.md` — commit-before-verify pattern.
+- `@docs/example-store/ex-verification-feedback-loop-first-debugging.md`: the
+  worked example that this playbook distills.
+- `.claude/rules/core/resources/execution-self-validation.md`: Check 3, which
+  covers the guard exit codes.
+- `.claude/rules/core/execution.md`: the commit-before-verify pattern.

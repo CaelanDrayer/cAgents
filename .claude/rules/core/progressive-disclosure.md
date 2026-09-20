@@ -6,18 +6,22 @@ paths:
 
 # Progressive Disclosure Pattern
 
-V8.0 three-tier loading strategy for token optimization.
+This file describes the V8.0 three-tier loading strategy. The strategy reduces
+the number of tokens that an agent costs.
 
 ## Overview
 
-Progressive disclosure reduces token usage by loading agent content on-demand instead of all at once.
+Progressive disclosure reduces the token usage of an agent. It loads the
+content of the agent on demand. It does not load all of the content at one
+time.
 
-**Token Savings**: 40-60% average across agent catalog.
+**Token savings**: 40-60% on average across the agent catalog.
 
 ## Three-Tier Loading
 
 ### Tier 1: Metadata (~50 tokens)
-**Always loaded** when agent is referenced.
+
+Claude Code always loads tier 1 when a caller references the agent.
 
 ```yaml
 # Frontmatter only
@@ -31,10 +35,15 @@ metadata:
 ---
 ```
 
-> Per the v11.1.0 schema (`skill-format.md`), agents declare `archetype:` (and `branch:` for 3-level archetypes) at the top level and put `tier:` inside `metadata:`. The top-level `domain:` field was removed in v11.1.0 — `validate-agents.sh` rejects it.
+> The v11.1.0 schema in `skill-format.md` sets the position of each field. An
+> agent declares `archetype:` at the top level. An agent with a 3-level
+> archetype also declares `branch:` at the top level. An agent puts `tier:`
+> inside `metadata:`. The v11.1.0 schema removed the top-level `domain:` field,
+> and `validate-agents.sh` rejects that field.
 
 ### Tier 2: Instructions (~200-500 tokens)
-**Loaded when agent is activated** (spawned via Agent tool).
+
+Claude Code loads tier 2 when the Agent tool spawns the agent.
 
 ```markdown
 # Agent Name
@@ -51,7 +60,8 @@ Core instructions and responsibilities.
 ```
 
 ### Tier 3: Resources (~500-2000 tokens)
-**Loaded on-demand** via @path references.
+
+Claude Code loads tier 3 on demand, through an @path reference.
 
 ```
 resources/
@@ -63,7 +73,7 @@ resources/
 
 ## @path Reference Syntax
 
-In SKILL.md body, reference tier 3 resources:
+In the body of a SKILL.md file, reference a tier 3 resource:
 
 ```markdown
 ## Validation Checklist
@@ -75,7 +85,7 @@ For detailed criteria, see @resources/controller-validation-checklist.md
 See @resources/execution-self-validation.md for the full checklist.
 ```
 
-The @path syntax triggers on-demand loading only when the resource is needed.
+The @path syntax loads the resource only when the agent needs it.
 
 ## Directory Structure
 
@@ -96,7 +106,8 @@ developer/fullstack/tech-lead/
 writer/copywriter/SKILL.md       # All tiers in one file
 ```
 
-**Conversion criteria**: Convert to directory if agent file > 500 tokens
+**Conversion criteria**: If the file of the agent is more than 500 tokens,
+convert it to a directory.
 
 ## Token Savings by Agent Type
 
@@ -136,28 +147,30 @@ mkdir -p developer/{branch}/{agent-name}/resources
 
 ### Step 3: Split Content
 
-1. Keep frontmatter + core instructions in SKILL.md
-2. Extract detailed examples to resources/examples.md
-3. Extract decision frameworks to resources/decision-framework.md
-4. Add @path references in SKILL.md
+1. Keep the frontmatter and the core instructions in SKILL.md.
+2. Move the detailed examples to resources/examples.md.
+3. Move the decision frameworks to resources/decision-framework.md.
+4. Add an @path reference in SKILL.md for each moved file.
 
 ### Step 4: Update References
 
-Update plugin.json if needed to reference new path.
+If the path of the agent changed, update plugin.json to point to the new path.
 
 ### Step 5: Validate
 
-1. Test agent loading
-2. Measure token savings
-3. Verify @path references resolve
+1. Do a test of the agent load.
+2. Measure the token savings.
+3. Make sure that each @path reference resolves.
 
 ## Best Practices
 
-1. **Keep SKILL.md focused**: Core instructions only
-2. **Name resources clearly**: descriptive filenames
-3. **Use @path sparingly**: Only for truly detailed content
-4. **Measure savings**: Track before/after token counts
-5. **Maintain fallback**: Keep single-file format supported
+1. **Keep the SKILL.md file focused**: Put only the core instructions in it.
+2. **Name each resource clearly**: Use a filename that describes the content.
+3. **Use @path for detailed content only**: Keep the short content in the body
+   of the SKILL.md file.
+4. **Measure the savings**: Record the token count before the change and the
+   token count after it.
+5. **Keep the fallback**: cAgents continues to support the single-file format.
 
 ## Converted Agents (V8.0)
 
@@ -176,7 +189,8 @@ Update plugin.json if needed to reference new path.
 - [x] qa-lead (converted V8.0)
 - [x] creative-director (converted V9.0)
 - [x] game-designer (converted V9.0)
-- [x] campaign-manager (converted V9.0; absorbed into marketing-strategist in v12)
+- [x] campaign-manager (converted V9.0; absorbed into marketing-strategist in
+  v12)
 - [x] marketing-strategist (converted V9.0)
 - [x] hr-manager (converted V9.0)
 - [x] customer-success-manager (converted V9.0)

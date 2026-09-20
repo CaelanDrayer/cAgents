@@ -4,9 +4,9 @@
 > (`cagents:ceo`, `cagents:cto`, `cagents:cfo`, `cagents:cmo`, `cagents:coo`,
 > `cagents:chro`, `cagents:cco`, `cagents:cro`, `cagents:cpo`). These live in
 > `agents/leadership/` and are the only agents strategic mode spawns as Wave 0/1
-> subagents. The `general-counsel` entry below is a domain *controller* the
-> service domain routes to — not a 10th C-suite seat. There is no `clo`/`cso`
-> C-suite agent on disk.
+> subagents. The `general-counsel` entry below is a domain *controller*. The
+> service domain routes to that controller. It is not a 10th C-suite seat.
+> There is no `clo`/`cso` C-suite agent on disk.
 
 ## Domain-to-C-Suite Routing
 
@@ -74,7 +74,7 @@ Primary: `plumbing`, `electrical`, `carpentry`, `HVAC`, `welding`, `construction
 
 ## Multi-Domain Detection
 
-Cross-domain keywords trigger multi-domain routing (2+ C-suite):
+A cross-domain keyword triggers multi-domain routing. That routing engages 2 or more C-suite agents:
 
 | Keyword Pattern | Domains Triggered |
 |----------------|-------------------|
@@ -88,19 +88,19 @@ Cross-domain keywords trigger multi-domain routing (2+ C-suite):
 
 ## C-Suite Interaction Rules
 
-1. **CEO decides all**: C-suite never messages each other directly, but CAN read peer analyses via file-based inline passes (domain_analyses/*.yaml). CEO remains the sole decision-maker; peer reads provide cross-domain context, not coordination authority.
-2. **File-based communication**: domain_analysis_*.yaml and objections_*.yaml. Peer cross-pollination is READ-ONLY via these files.
-3. **Dependency-ordered spawning**: Analysis phase uses multi-wave ordering (Wave 1: independent agents in parallel, Wave 2: dependent agents reading Wave 1 outputs). Objection phase spawns all in parallel (all read ALL peer analyses).
-4. **Single domain = single C-suite**: Only spawn the relevant C-suite agent (dependency ordering is N/A for single domain)
-5. **CEO decides conflicts**: When C-suite disagree, CEO resolves based on chairperson intent
+1. **CEO decides all**: The C-suite agents never message each other directly. They CAN read the peer analyses through the file-based inline passes in `domain_analyses/*.yaml`. The CEO remains the sole decision-maker. A peer read gives cross-domain context, and it gives no coordination authority.
+2. **File-based communication**: The two file sets are domain_analysis_*.yaml and objections_*.yaml. The peer cross-pollination is READ-ONLY, and it goes through these files.
+3. **Dependency-ordered spawning**: The analysis phase uses a multi-wave order. Wave 1 runs the independent agents in parallel. Wave 2 runs the dependent agents, and they read the Wave 1 outputs. The objection phase spawns every agent in parallel, and each agent reads ALL of the peer analyses.
+4. **Single domain = single C-suite**: Spawn the relevant C-suite agent only. The dependency ordering does not apply to a single domain
+5. **CEO decides conflicts**: When the C-suite agents disagree, the CEO resolves the conflict. The CEO follows the intent of the chairperson
 
 ## C-Suite Dependency Ordering
 
-C-suite analysis uses dependency-ordered multi-wave execution. Independent agents run first (Wave 1), then dependent agents run with access to Wave 1 outputs via file-based reads.
+C-suite analysis uses dependency-ordered multi-wave execution. The independent agents run first, in Wave 1. The dependent agents then run in Wave 2, and they reach the Wave 1 outputs through file-based reads.
 
 ### Default Dependency Map
 
-The following default dependencies reflect typical cross-domain information flows. CEO overrides based on instruction context.
+The default dependencies below show the usual cross-domain information flows. The CEO overrides them, and it uses the context of the instruction to do so.
 
 | C-Suite Agent | Default Wave | Typically Reads From | Rationale |
 |--------------|-------------|---------------------|-----------|
@@ -114,15 +114,15 @@ The following default dependencies reflect typical cross-domain information flow
 
 ### How Dependency Detection Works
 
-1. **Analyze the instruction**: CEO determines which domains are involved and how they relate
-2. **Apply default map**: Use the table above as starting point
-3. **Override based on context**: If the instruction makes a typically-dependent agent independent (e.g., "review our hiring process" makes CHRO independent), move it to Wave 1
-4. **Prune irrelevant dependencies**: Only include dependencies where the peer's analysis would actually inform the dependent agent's assessment
-5. **Write domain_dependencies.yaml**: Records wave assignments and read-from relationships
+1. **Analyze the instruction**: The CEO finds which domains are involved, and how those domains relate to each other
+2. **Apply default map**: Use the table above as the starting point
+3. **Override based on context**: An instruction can make a dependent agent independent. For example, "review our hiring process" makes the CHRO independent. Move that agent to Wave 1
+4. **Prune irrelevant dependencies**: Keep a dependency only when the analysis of the peer informs the assessment of the dependent agent
+5. **Write domain_dependencies.yaml**: This file records the wave assignments and the read-from relationships
 
 ### File-Based Pass Mechanism
 
-Cross-pollination uses the shared session directory -- no direct messaging:
+Cross-pollination uses the shared session directory. There is no direct messaging:
 
 ```
 Wave 1: Independent agents write domain_analysis_{domain_key}.yaml
@@ -138,7 +138,7 @@ Objection phase: ALL agents read ALL domain_analysis_*.yaml files
 
 ### Constraint
 
-C-suite peers in the same wave do not message each other directly — subagents coordinate downward (they spawn helper subagents), not sideways to peers. All cross-pollination is FILE-BASED only:
+C-suite peers in the same wave do not message each other directly. Subagents coordinate downward, and they do this by spawning helper subagents. They never coordinate sideways to a peer. All cross-pollination is FILE-BASED only:
 - Agent A writes `domain_analysis_A.yaml`
 - Agent B reads `domain_analysis_A.yaml` as input
-- No message-based coordination between C-suite peers (dependency ordering across waves, not in-wave messaging, carries peer context)
+- There is no message-based coordination between the C-suite peers. The dependency ordering across the waves carries the peer context, and in-wave messaging does not

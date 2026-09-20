@@ -1,10 +1,12 @@
 # Per-Wave Decomposition Emission
 
-How the planner / `/team` skill loop emits decomposition so the lead reads only the current wave's WIs (the standalone `team-trigger` agent was removed in v12.0.0).
+This file tells you how the planner and the `/team` skill loop emit the decomposition. The lead then reads only the WIs of the current wave. Release v12.0.0 removed the standalone `team-trigger` agent.
 
 ## The Problem (CI-2 from enriched_context)
 
-Pre-v12.1, `core/team` (or the planner) emitted a single `workflow/work_items.yaml` with ALL WIs across all waves. The lead read that file once at Wave 0 and held its full contents in context for the rest of the run. Wave 5's WI descriptions sat in lead context during Wave 1 — pure waste.
+Before v12.1, `core/team` emitted a single `workflow/work_items.yaml` file. The planner also did this. That one file held ALL of the WIs across all of the waves.
+
+The lead read that file once at Wave 0. It then held the full contents of the file in its context for the rest of the run. The WI descriptions of Wave 5 sat in the lead context during Wave 1. That is pure waste.
 
 ## The Schema
 
@@ -41,7 +43,7 @@ dependency_graph:
       type: blocks
 ```
 
-Lead reads `work_meta.yaml` exactly ONCE at session init. ~50 tokens per wave × N waves ≈ 250-500 tokens total — replaces the prior 2000-5000-token full work_items.yaml hold.
+The lead reads `work_meta.yaml` exactly ONCE at session init. Each wave costs about 50 tokens, so N waves cost about 250 to 500 tokens in total. That total replaces the earlier hold of the full `work_items.yaml` file, which cost 2000 to 5000 tokens.
 
 ### 2. `workflow/work_items_wave_{K}.yaml` — Per-Wave Detail (loaded on demand)
 
@@ -61,7 +63,9 @@ work_items:
     task_id: "{populated after TaskCreate}"
 ```
 
-Schema is **fully back-compat** with the legacy `work_items.yaml` — same field names, same acceptance_criteria schema, same verification_method enum. A migration helper can either keep emitting the monolithic file too (transitional), or downstream consumers (controllers, reviewers, coord-log-writer) can glob both `work_items.yaml` and `work_items_wave_*.yaml`.
+The schema is **fully back-compat** with the legacy `work_items.yaml` file. The field names are the same. The `acceptance_criteria` schema is the same. The `verification_method` enum is the same.
+
+A migration helper can continue to emit the monolithic file as well, and that step is transitional. As an alternative, each downstream consumer can glob both `work_items.yaml` and `work_items_wave_*.yaml`. Those consumers are the controllers, the reviewers, and `coord-log-writer`.
 
 ## Lead Loading Behavior
 
@@ -86,25 +90,25 @@ Final wave:
 
 ## Back-Compat Strategy
 
-For one minor-version cycle (v12.1.x), the planner emits BOTH:
-- The new `work_meta.yaml` + per-wave files (primary)
-- The legacy monolithic `work_items.yaml` (for downstream consumers not yet updated)
+For one minor-version cycle, which is v12.1.x, the planner emits BOTH of these:
+- The new `work_meta.yaml` file and the per-wave files. These are the primary artifacts.
+- The legacy monolithic `work_items.yaml` file. It supports a downstream consumer that is not updated yet.
 
-Starting v12.2.0, the legacy `work_items.yaml` becomes optional and consumers should prefer the per-wave files when present.
+From v12.2.0, the legacy `work_items.yaml` file is optional. If the per-wave files are present, each consumer must prefer them.
 
-The regression test in `tests/v12/team-context-discipline.test.js` (WI-7) asserts that team/SKILL.md references `work_items_wave_` to ensure the lead path uses the new schema.
+The regression test for WI-7 is in `tests/v12/team-context-discipline.test.js`. It asserts that team/SKILL.md references `work_items_wave_`. That assertion makes sure that the lead path uses the new schema.
 
 ## Planner Implementation Notes
 
-`core/team` and `cagents:planner` (when invoked under /team) MUST:
+`core/team` and `cagents:planner` MUST do these steps under /team:
 
-1. Decompose the request into wave-tagged WIs (as today).
-2. Group WIs by wave assignment.
-3. Write `workflow/work_meta.yaml` with the wave skeleton.
-4. For each wave K, write `workflow/work_items_wave_{K}.yaml` with that wave's WIs only.
-5. (Transitional, v12.1.x only) Also write the legacy `workflow/work_items.yaml` for back-compat.
+1. Decompose the request into wave-tagged WIs, as you do today.
+2. Group the WIs by their wave assignment.
+3. Write the wave skeleton to `workflow/work_meta.yaml`.
+4. For each wave K, write only the WIs of that wave to `workflow/work_items_wave_{K}.yaml`.
+5. Also write the legacy `workflow/work_items.yaml` file for back-compat. This step is transitional, and it applies to v12.1.x only.
 
-Step 5 will be deprecated in v12.2.0; per-wave files become canonical.
+Release v12.2.0 deprecates step 5. The per-wave files then become canonical.
 
 ## Token Savings
 
@@ -114,4 +118,4 @@ Step 5 will be deprecated in v12.2.0; per-wave files become canonical.
 | 5 waves, 7 WIs each | ~5000 tokens | ~400 + ~1100 = ~1500 | ~70% |
 | 8 waves, 10 WIs each | ~10000 tokens | ~600 + ~1500 = ~2100 | ~79% |
 
-Savings scale with wave count — the longer the workflow, the bigger the benefit.
+The savings scale with the wave count. A longer workflow gives a bigger benefit.

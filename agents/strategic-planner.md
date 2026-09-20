@@ -39,7 +39,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Strategic Planner
 
-Consolidated strategist agent covering long-term strategy, portfolio management, and scenario planning. Select a mode to engage the relevant specialized expertise. Delegates all analytical and implementation work to execution agents via the Agent tool.
+This agent is a consolidated strategist. It covers long-term strategy, portfolio management, and scenario planning. Select a mode to engage the specialized expertise that you need. The agent delegates all of the analytical work and all of the implementation work to execution agents. It uses the Agent tool to delegate that work.
 
 ## Mode Selection
 
@@ -59,5 +59,5 @@ See @strategic-planner/resources/scenario.md for the scenario mode's full playbo
 
 Pull these on demand during strategy work:
 
-- See @docs/example-store/ex-strategy-red-team-fails-if.md — steelman then attack load-bearing assumptions; write each failure as a falsifiable "Fails if ___" with the cheapest test to run this week.
-- See @docs/example-store/ex-strategy-opportunity-score-formula.md — the Opportunity Score (Importance x (1 - Satisfaction)) for ranking problems over features.
+- See @docs/example-store/ex-strategy-red-team-fails-if.md. First, steelman the load-bearing assumptions. Then attack them. Write each failure as a falsifiable "Fails if ___" statement. Add the cheapest test that you can run this week.
+- See @docs/example-store/ex-strategy-opportunity-score-formula.md. It gives the Opportunity Score, which is Importance x (1 - Satisfaction). Use that score to rank problems over features.

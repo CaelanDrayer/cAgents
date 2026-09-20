@@ -1,8 +1,8 @@
 # Session Schema Contract (Internal)
 
-Internal contract for cAgents session YAML — consumed by cAgents hooks and agents. **NOT a public API. NOT consumed by external visualizers.** External consumers MUST treat the schema as private and stable only within a single cAgents version.
+Internal contract for the cAgents session YAML. The cAgents hooks and the cAgents agents consume it. **NOT a public API. NOT consumed by external visualizers.** An external consumer MUST treat this schema as private, and as stable only inside a single cAgents version.
 
-v12.6.0 dropped the external visualizer-UI contract. Fields documented here are read by cAgents agents (planner, controller, validator) and hooks (verify-completion.cjs, post-compact-restore.cjs, subagent-tracker.cjs, post-write-validator.cjs). Any field NOT listed here is no longer written; see the v12.6.0 CHANGELOG entry for the full removal list. (attention-injection.cjs removed in v12.7.0 per P2-10.)
+v12.6.0 dropped the external visualizer-UI contract. The cAgents agents read the fields that this file documents, and those agents are the planner, the controller and the validator. The hooks read them too, and those hooks are verify-completion.cjs, post-compact-restore.cjs, subagent-tracker.cjs and post-write-validator.cjs. The pipeline no longer writes any field that this file does not list. See the v12.6.0 CHANGELOG entry for the full removal list. v12.7.0 removed attention-injection.cjs, as P2-10 asked.
 
 ## Session Directory Structure
 
@@ -24,7 +24,7 @@ cagents-memory/sessions/{session_id}/
 +-- outputs/                 # Work item outputs
 ```
 
-State advancement is driven by each agent's primary output file. The `/act` state machine loop reads these files at level 0 to detect completion and advance state.
+The primary output file of each agent drives the state advancement. The `/act` state machine loop reads these files at level 0. It then detects the completion and advances the state.
 
 ## Session ID Format
 
@@ -43,13 +43,15 @@ Format: `{command}_{slug}_{YYMMDD}_{NNN}`
 | /team | `team_` | `team_implement-oauth2-flow_260317_001` |
 | /designer | `designer_` | `designer_redo-session-names_260317_001` |
 
-Slug generation: extract 2-6 key words from user request, kebab-case, strip filler words (the, a, an, to, for, with, and, of). Index: scan `cagents-memory/sessions/` for dirs matching `{command}_*_{YYMMDD}_*`, find highest NNN, increment (start at 001).
+To generate the slug, extract 2 to 6 key words from the user request. Write them in kebab-case. Strip the filler words, which are the, a, an, to, for, with, and, of.
 
-Backward compatible: old sessions remain valid and are never renamed on disk — both the pre-slug shape (`run_20260316_143022`) and every `run_`-prefixed session predating the /run -> /act rename. Hook sorting extracts the last 2 underscore segments.
+To generate the index, scan `cagents-memory/sessions/` for the directories that match `{command}_*_{YYMMDD}_*`. Find the highest NNN. Increment it, and start at 001 when you find no directory.
+
+Backward compatible: an old session stays valid, and nothing renames it on disk. Two old shapes qualify. The first is the pre-slug shape `run_20260316_143022`. The second is every `run_`-prefixed session that predates the /run -> /act rename. The hook sorting extracts the last 2 underscore segments.
 
 ## CAGENTS_SESSION_ID Environment Variable
 
-All skills that create sessions check `process.env.CAGENTS_SESSION_ID` during initialization before auto-generating an ID.
+Every skill that creates a session checks `process.env.CAGENTS_SESSION_ID` at initialization. It does that check before it auto-generates an ID.
 
 | Condition | Action |
 |-----------|--------|
@@ -57,7 +59,7 @@ All skills that create sessions check `process.env.CAGENTS_SESSION_ID` during in
 | `CAGENTS_SESSION_ID` set, directory does not exist | Use env var value verbatim; create new session directory |
 | `CAGENTS_SESSION_ID` set, directory already exists | Use env var value; **resume** the existing session |
 
-Use cases (cAgents-internal): parent-skill chaining (e.g., `/team` strategic mode passing an ID to child `/act` invocations), test fixtures with deterministic IDs.
+The use cases are cAgents-internal. The first one is parent-skill chaining. In that case `/team` strategic mode passes an ID to a child `/act` invocation. The second one is a test fixture with a deterministic ID.
 
 ## instruction.yaml (Required)
 
@@ -77,11 +79,11 @@ metadata:
 
 Skill-specific extension:
 
-- **/act**: May include `strategic_brief_path` when invoked with `--brief` from `/team` strategic mode.
+- **/act**: It MAY hold `strategic_brief_path` when `/team` strategic mode invokes it with `--brief`.
 
 ## status.yaml (Required)
 
-Tracks the current pipeline/phase state and state history.
+This file tracks the current pipeline state or phase state, and it tracks the state history.
 
 ### Field Name Mapping
 
@@ -90,7 +92,7 @@ Tracks the current pipeline/phase state and state history.
 | /act | `pipeline_state` | Event-driven pipeline engine with formal state machine |
 | /team, /designer | `phase` | Phase-based workflow progression |
 
-Hooks (`session-catchup.cjs`, `verify-completion.cjs`, `post-compact-restore.cjs`) check BOTH `pipeline_state` AND `phase` as fallback.
+Three hooks check both `pipeline_state` and `phase` as a fallback. They are `session-catchup.cjs`, `verify-completion.cjs` and `post-compact-restore.cjs`.
 
 ### Schema (v12.6.0)
 
@@ -124,14 +126,18 @@ state_history:                          # REQUIRED: Ordered list of state transi
 - `workflow/enriched_context.yaml` - Orchestrator output (ORCHESTRATED state advancement signal)
 - `workflow/plan.yaml` - Planner output: objectives + controller assignment (PLANNED state signal)
 - `workflow/work_items.yaml` - Planner output: decomposition
-- `workflow/coordination_log.yaml` - Controller output (MUST include `schema_version: "1"`, `implementation_tasks[].agent_id` linking to agent_tree.yaml). COORDINATED state signal.
-- `workflow/validation_report.yaml` - Validator output (verdict: PASS/FAIL/REVISE). VALIDATED state signal.
-- `workflow/execution_summary.yaml` - **ALWAYS written** by /act at loop exit (success, failure, or interruption)
+- `workflow/coordination_log.yaml` - Controller output. It MUST hold `schema_version: "1"` and `implementation_tasks[].agent_id`, which links to agent_tree.yaml. This file is the COORDINATED state signal.
+- `workflow/validation_report.yaml` - Validator output, with a verdict of PASS, FAIL or REVISE. This file is the VALIDATED state signal.
+- `workflow/execution_summary.yaml` - /act **always writes** this file at loop exit, on success, on failure and on interruption
 
-**Runtime responsibilities of /act state machine** (not delegated to agents):
-- Append state_history entry on each transition (state + entered_at)
+**Runtime responsibilities of /act state machine**, which it never delegates to an agent:
+- Append a state_history entry on each transition, with the state and the entered_at value
 - Always write `execution_summary.yaml` at pipeline exit
-- Persist + increment `revision_cycles` in status.yaml on each FAIL/REVISE route-back to PLANNED (REC-11); at `revision_cycles >= max_cycles` (pipeline_config.yaml, 3) escalate to user (HITL) + finalize `incomplete` instead of re-planning again
+- Persist `revision_cycles` in status.yaml, and increment it on each FAIL or
+  REVISE route-back to PLANNED. This behavior is REC-11. When
+  `revision_cycles >= max_cycles`, which pipeline_config.yaml sets to 3,
+  escalate to the user through HITL. Then finalize the session as `incomplete`,
+  and do not re-plan again.
 
 ### /team
 - `team/metrics/timing.yaml` - Team timing metrics
@@ -170,37 +176,39 @@ failures:
 
 ## Hook Integration
 
-Hooks discover active sessions by scanning `cagents-memory/sessions/` for directories matching known prefixes (`act_`, `team_`, `designer_`, plus the legacy `run_`). The `SESSION_PREFIXES` array in `hook-utils.cjs` defines the active list.
+The hooks discover the active sessions when they scan `cagents-memory/sessions/`. They look for a directory that matches a known prefix. The known prefixes are `act_`, `team_`, `designer_`, plus the legacy `run_`. The `SESSION_PREFIXES` array in `hook-utils.cjs` defines the active list.
 
 ### Key Hook Behaviors
 
-- **session-catchup.cjs** (SessionStart): Detects incomplete sessions by checking status.yaml for non-terminal states.
-- **post-compact-restore.cjs** (PostCompact): Reads `pipeline_state` OR `phase` from status.yaml and re-injects mission + phase summary after compaction (replaced `attention-injection.cjs` in v12.7.0).
-- **subagent-tracker.cjs** (SubagentStart): Writes to `workflow/agent_tree.yaml`.
-- **post-write-validator.cjs** (PostToolUse): Logs to `workflow/file_changes.log`.
-- **pre-compact-save.cjs** (PreCompact): Creates waypoints in `waypoints/`.
-- **verify-completion.cjs** (Stop): Checks for incomplete pipelines; advances VALIDATED→complete safety net.
+- **session-catchup.cjs** (SessionStart): It detects an incomplete session when it checks status.yaml for a non-terminal state.
+- **post-compact-restore.cjs** (PostCompact): It reads `pipeline_state` or `phase` from status.yaml. It then re-injects the mission and the phase summary after a compaction. It replaced `attention-injection.cjs` in v12.7.0.
+- **subagent-tracker.cjs** (SubagentStart): It writes to `workflow/agent_tree.yaml`.
+- **post-write-validator.cjs** (PostToolUse): It logs to `workflow/file_changes.log`.
+- **pre-compact-save.cjs** (PreCompact): It creates the waypoints in `waypoints/`.
+- **verify-completion.cjs** (Stop): It checks for an incomplete pipeline. It also advances VALIDATED→complete as a safety net.
 
 ### Terminal States
 
-A session is considered complete when its status.yaml state matches one of:
+A session is complete when its status.yaml state matches one of these values:
 - Lowercase: `completed`, `complete`, `failed`, `aborted`
 - Uppercase: `COMPLETE`, `VALIDATED`
 - /act: `VALIDATED` (final successful state) or after max revision cycles (3)
 - /team: `COMPLETE` (final wave gate validated)
 
-Note: `VALIDATED` may be followed by `FOLLOWUP_{TYPE}_{N}` states if the user provides post-completion feedback. The session re-enters the pipeline and eventually returns to `VALIDATED`. No limit on follow-up rounds.
+A `FOLLOWUP_{TYPE}_{N}` state can follow `VALIDATED` when the user gives post-completion feedback. The session then re-enters the pipeline, and it returns to `VALIDATED` in the end. There is no limit on the number of follow-up rounds.
 
 ### Follow-Up Types (/act only, v12.6.0)
 
 | Type | Re-entry Point | Use Case |
 |------|----------------|----------|
-| `ADJUSTMENT` | PLANNED | Targeted change (rename, tweak, modify) — controller re-runs |
-| `REWORK` | ORCHESTRATED | Significant redo (wrong approach, rewrite) — planner re-runs |
-| `EXTENSION` | ORCHESTRATED | Add new scope (also add, extend, include) — planner re-decomposes inline |
-| `FIX` | PLANNED | Bug fix (broken, error, failing) — controller re-runs |
+| `ADJUSTMENT` | PLANNED | Targeted change (rename, tweak, modify). The controller re-runs. |
+| `REWORK` | ORCHESTRATED | Significant redo (wrong approach, rewrite). The planner re-runs. |
+| `EXTENSION` | ORCHESTRATED | Add new scope (also add, extend, include). The planner re-decomposes inline. |
+| `FIX` | PLANNED | Bug fix (broken, error, failing). The controller re-runs. |
 | `REVIEW` | COORDINATED | Re-validate (check, verify, test) |
 
 ---
 
-**This document is the authoritative internal reference for the session file contract. cAgents agents and hooks conform to these schemas; external consumers MUST treat session YAML as private.**
+**This document is the authoritative internal reference for the session file
+contract. The cAgents agents and the cAgents hooks conform to these schemas.
+An external consumer MUST treat the session YAML as private.**

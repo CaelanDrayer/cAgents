@@ -42,7 +42,7 @@ Build question pool from all research files. Merge with domain-specific refineme
 
 ## Step 3: Present Research-Enriched Questions
 
-Use the controller pattern to present questions from the pool. Always include "Research this for me". Batch adjacent questions that share a refinement concern — for example, API design and data model questions go together since both affect the backend contract:
+Use the controller pattern to present questions from the pool. Always include "Research this for me". Batch adjacent questions that share a refinement concern. For example, put the API design question with the question about the data model. Both of them affect the backend contract:
 
 ```javascript
 // Batch API design + data model together — both define backend contracts, same refinement concern
@@ -75,9 +75,9 @@ AskUserQuestion({
 ```
 
 **Controller adaptation during Refinement**:
-- After each answer, check if remaining questions need reordering
+- After each answer, check if the remaining questions need a new order
 - If user's answer reveals unexpected constraints, dispatch follow-up research
-- Skip questions where research + previous answers already provide the information
+- Skip a question when the research, or an earlier answer, already holds that information
 - Enrich upcoming questions with user's design decisions
 
 ## Step 4: Real-Time Design Building
@@ -86,7 +86,7 @@ AskUserQuestion({
 
 1. Output what was just added to the design (so user sees it forming)
 2. Show progress through the refinement areas
-3. Generate diagrams inline using mermaid syntax
+3. Generate the diagrams inline with the mermaid syntax
 
 **Progress Display Pattern**:
 
@@ -178,7 +178,7 @@ Write to: ${session_dir}/question_prep/followup_refinement_realtime.yaml`
 ## Refinement Phase Gate + Phase-Overlap
 
 Before advancing to Specification, verify:
-- [ ] All major design questions answered for the domain
+- [ ] All major design questions for the domain are answered
 - [ ] At least 1 diagram generated
 - [ ] Domain-specific requirements met:
   - Software: data model + API requirements + security controls defined

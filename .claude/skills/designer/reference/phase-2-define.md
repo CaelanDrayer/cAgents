@@ -57,7 +57,7 @@ Does this capture the core problem?`,
 
 ## Steps 3 & 4: Constraints + Success Criteria
 
-Identify constraints and success criteria in a single batched call — these two questions are the problem definition pair (what limits the solution + how to know it worked). Always include the defer option on each question.
+Identify constraints and success criteria in a single batched call. These two questions are the pair that defines the problem. The constraints say what limits the solution. The success criteria say how to know that it worked. Always include the defer option on each question.
 
 ```javascript
 // Batch constraints + success criteria together — both define the solution space, same phase concern

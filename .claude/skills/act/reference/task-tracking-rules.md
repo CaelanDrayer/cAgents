@@ -9,12 +9,12 @@ How /act uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transit
 3. **The controller also calls TaskCreate** when it identifies execution agents (progressive refinement).
 4. **No slash prefix on command names**: Use `[act]`, `[team]` -- not `[/act]`, `[/team]`. (Pre-v12.2.0 also `[org]`; v12.2.0 removed /org.)
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[act > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
-6. **2-space indent for children**: Sub-tasks under a parent entry are indented with 2 spaces.
-7. **Include contextual detail**: Add domain, tier, counts, controller names, wave numbers -- e.g., `[act > planner] Planning approach\n  [planner] Controller: tech-lead`.
+6. **2-space indent for children**: Indent each sub-task under its parent entry by 2 spaces.
+7. **Include contextual detail**: Add the domain, the tier, the counts, the controller names, and the wave numbers. One example is `[act > planner] Planning approach\n  [planner] Controller: tech-lead`.
 8. **Granular sub-tasks per agent**: Each agent gets 1-2 sub-tasks showing real progress, not just a single line.
 9. **Never have zero tasks `in_progress`** -- always transition one to `completed` and the next to `in_progress` in the same call.
 10. **On revision, add a revision entry** showing round number and what is being re-executed.
-11. **Never expose internal state machine names** (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) as primary task subject content. Users see these entries in the UI -- they should communicate meaningful work being done.
+11. **Never expose the internal names of the state machine** (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) as primary task subject content. Users see these entries in the UI, so each entry must describe real work.
 
 ## TaskCreate vs TodoWrite
 
@@ -22,9 +22,9 @@ Per [docs.claude.com/docs/en/tools.md](https://docs.claude.com/docs/en/tools.md)
 - **Interactive Claude Code**: use `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`. cAgents primarily runs interactively, so TaskCreate is the mandatory primary call.
 - **Agent SDK / non-interactive**: `TodoWrite` is the equivalent fallback.
 
-If you skip the task call, the workflow is broken -- the user has zero visibility into what is happening.
+If you skip the task call, you break the workflow. The user then has zero visibility into what is happening.
 
-## Initial TaskCreate at Pipeline Start (v12.0.0 — 5 states)
+## Initial TaskCreate at Pipeline Start (v12.0.0, 5 states)
 
 ```
 TodoWrite([
@@ -61,7 +61,7 @@ Every pipeline phase transition MUST include at least one validation TaskCreate 
 | PLANNED | `[act] Coordination: {N}/{N} WIs complete, evidence score {X}` | coordination_log complete, all evidence non-vague |
 | COORDINATED | `[act] Validation: verdict={PASS/FAIL/REVISE}, score={X}` | validation_report.yaml exists with verdict |
 
-**v12.0.0 change**: The pre-v12 DECOMPOSED and PROMPTS_READY validation entries are no longer separate — the ORCHESTRATED entry now validates both plan.yaml AND work_items.yaml because planner produces both inline.
+**v12.0.0 change**: The pre-v12 DECOMPOSED and PROMPTS_READY validation entries are no longer separate. The ORCHESTRATED entry now validates both plan.yaml AND work_items.yaml, because the planner produces both of them inline.
 
 ### Example: Full Pipeline with Validation Entries (v12.0.0)
 
@@ -89,9 +89,9 @@ Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route ba
 
 ## /act Owns All Pipeline Tasks
 
-**/act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way task cleanup works in Step 4, because TaskUpdate only works on tasks created by the same agent scope.
+**/act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way that task cleanup works in Step 4, because TaskUpdate only works on tasks that the same agent scope created.
 
-**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** Tasks created by subagents live in the subagent's scope and cannot be updated by /act, causing "Task not found" errors during Step 4 cleanup. Subagents may use TaskCreate for their OWN internal sub-spawns but those are scoped tasks invisible to /act cleanup.
+**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** A task that a subagent creates lives in the subagent's scope. /act cannot update that task, so Step 4 cleanup reports "Task not found" errors. Subagents may use TaskCreate for their OWN internal sub-spawns. Those tasks are scoped, and /act cleanup cannot see them.
 
 ```
 # /act creates the task BEFORE spawning the agent:
@@ -102,4 +102,4 @@ Agent({ subagent_type: "cagents:planner", description: "...", prompt: "..." })
 TaskUpdate({ taskId: "N", status: "completed" })
 ```
 
-Without per-agent tasks owned by /act, the user only sees generic entries like "[act] Pipeline running" with no visibility into the 3-5 agents actually working in parallel. Each pipeline agent MUST be a separate task created by /act.
+If /act does not own a task for each agent, the user sees only generic entries. One example is "[act] Pipeline running". The user then has no view of the 3-5 agents that work in parallel. Each pipeline agent MUST be a separate task that /act creates.

@@ -37,6 +37,13 @@ const MODEL_EXPECTATIONS = {
 
 const VALID_TIERS = new Set(['controller', 'execution', 'support', 'infrastructure', 'executive']);
 
+// Planning-layer agents (D2, session act_ste100-concise-writing_260910_001): the
+// pipeline's design/decomposition thinkers may additionally be spawned with
+// `fable`. This is keyed to these three agent NAMES, not to their tiers -- other
+// controller/infrastructure agents still get the normal tier advisory.
+const PLANNING_LAYER_AGENTS = new Set(['orchestrator', 'planner', 'architect']);
+const PLANNING_LAYER_EXTRA_MODEL = 'fable';
+
 // Per-process memoization
 let _knownAgentsCache = null;
 
@@ -228,6 +235,14 @@ const _hookHandler = async (input) => {
 
   // Check if model matches expectations
   const modelLower = model.toLowerCase();
+
+  // Narrow, name-keyed exemption: the planning layer may also run on `fable`.
+  // Deliberately NOT folded into expectation.alternatives -- a non-planning-layer
+  // controller spawned with 'fable' MUST still warn.
+  if (PLANNING_LAYER_AGENTS.has(agentName) && modelLower === PLANNING_LAYER_EXTRA_MODEL) {
+    return null;
+  }
+
   const isExpected = modelLower === expectation.expected;
   const isAlternative = expectation.alternatives.includes(modelLower);
 

@@ -36,7 +36,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Frontend Developer (consolidated)
 
-Frontend specialist covering both implementation (ui mode) and user experience design (ux mode). Read `metadata.mode` or the explicit mode in the controller's prompt to choose the right protocol.
+This agent is the frontend specialist. The `ui` mode does the implementation work. The `ux` mode does the user experience design. Read `metadata.mode` to choose the mode. If the controller's prompt names an explicit mode, use that mode instead. Then follow the protocol for that mode.
 
 ## Mode Selection
 
@@ -47,9 +47,9 @@ Frontend specialist covering both implementation (ui mode) and user experience d
 
 Fallback: ui.
 
-See @frontend-developer/resources/ui.md for the full ui-mode playbook (including component patterns, accessibility, performance).
-See @frontend-developer/resources/ux.md for the full ux-mode playbook (including design process, collaboration patterns, accessibility checklist).
+See @frontend-developer/resources/ui.md for the full playbook of the `ui` mode. It includes the component patterns, the accessibility rules, and the performance rules.
+See @frontend-developer/resources/ux.md for the full playbook of the `ux` mode. It includes the design process, the collaboration patterns, and the accessibility checklist.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the minimal-solution ladder before adding structure.
+- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md. It compares an over-abstraction against a 3-line function. Walk the minimal-solution ladder before you add structure.

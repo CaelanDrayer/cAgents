@@ -1,14 +1,20 @@
 # Integration Handoff Contract
 
-How the integration controller (final wave) hands off to the team lead so the lead never re-reads raw per-wave outputs.
+This file shows how the integration controller hands off to the team lead. The
+integration controller runs in the final wave. The handoff keeps the lead from
+a re-read of the raw outputs of each wave.
 
 ## The Problem (CI-5 from enriched_context)
 
-Today, Step 6a spawns an integration controller but the integration outputs flow back into lead context for final-validation handoff. The lead also holds N-1 waves' worth of coordination_log entries before writing the final coordination_log.yaml. That's a major late-run context spike.
+Step 6a spawns an integration controller. The integration outputs then flow
+back into the context of the lead for the final validation handoff. The lead
+also holds the coordination_log entries of N-1 waves before it writes the final
+coordination_log.yaml. That is a large context spike late in the run.
 
 ## The Contract
 
-The integration controller, spawned at depth-1 by the lead, MUST write TWO artifacts:
+The lead spawns the integration controller at depth-1. That controller MUST
+write two artifacts:
 
 ### 1. `integrated_outputs.yaml`
 
@@ -37,7 +43,9 @@ status: complete | partial | failed
 
 Location: `${SESSION_DIR}/outputs/integration/integration_summary.md`
 
-**Hard limit: ≤200 tokens.** The lead reads this and ONLY this. If the integration controller writes more, that's a contract violation.
+**Hard limit: ≤200 tokens.** The lead reads this file, and the lead reads no
+other file. If the integration controller writes more, that is a breach of the
+contract.
 
 Required structure:
 ```markdown
@@ -64,15 +72,22 @@ Final validation should target `outputs/integration/`.
 
 ## Lead Behavior
 
-After spawning the integration controller, the lead:
+After the lead spawns the integration controller, the lead does these steps:
 
-1. Receives the controller's stop message
-2. Reads `outputs/integration/integration_summary.md` (≤200 tokens)
+1. Receives the stop message of the controller
+2. Reads `outputs/integration/integration_summary.md`, which holds 200 tokens
+   or fewer
 3. Spawns `cagents:validator` with `validation_target: outputs/integration/`
-4. Reads validator's 1-line PASS/FAIL/REVISE result
-5. Does NOT re-read any wave's outputs directly
+4. Reads the 1-line PASS/FAIL/REVISE result of the validator
+5. Does NOT re-read the outputs of any wave directly
 
-On CC ≥ 2.1.172 the integration controller normally retains Agent at depth 1 and delegates as usual. In the rare case Agent is verifiably absent (nesting ceiling, or a regressed/older harness), it gracefully degrades to direct execution per `.claude/rules/core/controllers.md` § Nesting Model and Graceful Degradation and still writes both artifacts.
+On CC ≥ 2.1.172 the integration controller keeps the `Agent` tool at depth 1.
+It then delegates as usual. In rare cases the `Agent` tool is verifiably
+absent. The cause is the nesting ceiling, or a regressed or older harness.
+
+The controller then degrades gracefully to direct execution. The rule for that
+degradation is in `.claude/rules/core/controllers.md` § Nesting Model and
+Graceful Degradation. The controller still writes both artifacts.
 
 ## Token Budget Comparison
 
@@ -84,4 +99,6 @@ On CC ≥ 2.1.172 the integration controller normally retains Agent at depth 1 a
 
 ## Coordination Log Integration
 
-`coord-log-writer` consumes `outputs/integration/integrated_outputs.yaml` when assembling the final `coordination_log.yaml`. The summary.md is for the lead's eyes only; the YAML carries the structured data for the log-writer.
+`coord-log-writer` reads `outputs/integration/integrated_outputs.yaml` when it
+assembles the final `coordination_log.yaml`. The file summary.md is for the
+lead only. The YAML file carries the structured data for the log-writer.

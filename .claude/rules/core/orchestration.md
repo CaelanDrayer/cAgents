@@ -41,52 +41,93 @@ paths:
 
 # Orchestration Patterns
 
-Workflow orchestration guidelines for cAgents.
+This file holds the workflow orchestration guidelines for cAgents.
 
 ## v12.0.0 State-Machine Collapse
 
-**v12.0.0 collapsed the pipeline from 7 states to 5 states.** The `DECOMPOSED` and `PROMPTS_READY` states were removed and their work absorbed into `cagents:planner`, which now handles decomposition inline. Controllers fall back to standard delegation prompts. The post-v12 state machine is:
+**v12.0.0 collapsed the pipeline from 7 states to 5 states.** v12.0.0 removed
+the `DECOMPOSED` state and the `PROMPTS_READY` state. `cagents:planner`
+absorbed their work, and it now does the decomposition inline. A controller
+falls back to the standard delegation prompts. The post-v12 state machine is:
 
 ```
 INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
 ```
 
-See `cagents-memory/sessions/team_v12-revamp-phase-abc_260520_002/outputs/v12-migration/revamp-design-v2.md` Q1 for the rationale. Historical references to `DECOMPOSED` / `PROMPTS_READY` in archived sessions remain valid for pre-v12 artifacts; new sessions use the 5-state machine.
+For the rationale, see Q1 of
+`cagents-memory/sessions/team_v12-revamp-phase-abc_260520_002/outputs/v12-migration/revamp-design-v2.md`.
+An archived session can still reference `DECOMPOSED` and `PROMPTS_READY`. Those
+references stay valid for a pre-v12 artifact. Every new session uses the
+5-state machine.
 
-## CRITICAL: Automatic State Transitions
+## Automatic State Transitions
 
-**NEVER ASK USER FOR PERMISSION TO PROCEED BETWEEN STATES**
+**Never ask the user for permission to proceed between states.**
 
-All state transitions are AUTOMATIC: INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED. FAIL and REVISE both route back to PLANNED (the controller and/or planner re-runs with validator feedback).
+Every state transition is automatic: INIT -> ORCHESTRATED -> PLANNED ->
+COORDINATED -> VALIDATED. FAIL and REVISE both route back to PLANNED, where the
+controller and/or the planner re-runs with the validator feedback.
 
-**Only ask user when**: Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, max revision cycles (3) exhausted.
+**Ask the user only in these cases**:
 
-**Exception**: /designer is EXEMPT from auto-proceed. It MUST use AskUserQuestion at every step.
+- A tier 4 HITL gate opens.
+- An error is unrecoverable.
+- A requirement is ambiguous.
+- The run used all 3 revision cycles.
 
-### CRITICAL: Session Initialization First (V10.22.0)
+**Exception**: /designer is exempt from auto-proceed. It must use
+AskUserQuestion at every step.
 
-> **DEPRECATED in V11.0**: The /review, /optimize, /context, /debug skills were removed in V11.0.
-> The `/review`, `/optimize`, `/debug` entries in the skill enumeration below are PRESERVED for
-> archived-session back-compat — hooks consume session_type prefixes from historical session
-> directories on disk. Do NOT remove these values.
-> Use `/act review`, `/act optimize`, `/act improve` (v12.1.2+ keyword router) or `/act --mode debug` for V12+ workflows. (`/improve` was folded into `/act` — formerly `/run` — via the keyword router in v12.1.2; the historical `/improve --mode review|optimize|full` syntax no longer exists.)
-> See [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration guidance.
+### Session Initialization First (V10.22.0)
 
-**Every skill (/act, /team, /designer; legacy /org, /review, /optimize, /debug session prefixes preserved for archived-session back-compat) MUST create its session directory and write status.yaml BEFORE any other work.** No codebase exploration, no agent spawning, no analysis, no research — session directory first.
+> **DEPRECATED in V11.0**: V11.0 removed the /review, /optimize, /context, and
+> /debug skills. The /review, /optimize, and /debug entries in the skill list
+> below stay for archived-session back-compat. Hooks read session_type prefixes
+> from the historical session directories on disk. Do not remove these values.
+> For a V12+ workflow, use `/act review`, `/act optimize`, `/act improve`, or
+> `/act --mode debug`. The keyword router that v12.1.2 added accepts the first
+> three forms. That router also folded `/improve` into `/act`, which carried
+> the name `/run` before v12. The historical
+> `/improve --mode review|optimize|full` syntax no longer exists. See
+> [docs/MIGRATION-V11.md](../../../docs/MIGRATION-V11.md) for migration
+> guidance.
 
-**Rationale**: Without a session directory, hooks cannot track the session, agent_tree.yaml has no home, and artifacts have nowhere to be written. Session init is a prerequisite for all other operations.
+**Every skill must create its session directory and write status.yaml before
+any other work.** The skills are /act, /team, and /designer. The legacy session
+prefixes /org, /review, /optimize, and /debug stay for archived-session
+back-compat. Create the session directory first. Do not explore the codebase,
+do not spawn an agent, do not analyze, and do not research before that.
 
-**Order**: Parse flags -> Create session dir -> Write metadata files -> THEN begin work.
+**Rationale**: Without a session directory, a hook cannot track the session.
+agent_tree.yaml has no home, and an artifact has no place to go. The session
+init is a prerequisite for every other operation.
+
+**Order**: Parse the flags -> Create the session dir -> Write the metadata
+files -> Begin the work.
 
 ### Task Cleanup at Terminal States
 
-At VALIDATED/COMPLETE: call TaskList, mark completed work via TaskUpdate, delete obsolete tasks. Never leave stale tasks.
+At VALIDATED, and at COMPLETE, call TaskList. Mark the completed work with
+TaskUpdate. Delete each obsolete task. Never leave a stale task.
 
 ## Event-Driven Pipeline Architecture (V9.23.0)
 
-`/act` is a state machine engine reading `pipeline_config.yaml`. Each agent writes its **primary output file** (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which `/act` reads at level 0 to advance state.
+`/act` is a state machine engine, and it reads `pipeline_config.yaml`. Each
+agent writes its **primary output file**. Those files are
+`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, and
+`validation_report.yaml`. `/act` reads them at level 0 and then advances the
+state.
 
-> **v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed.** Pre-v12.6 sessions wrote per-state completion events to `workflow/events/EVT-{N}.yaml` plus an `index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumed them — so v12.6.0 dropped the emission entirely (both `/act` and `/team`; `/act` no longer creates `workflow/events/` at session init). State advancement is now driven solely by each agent's primary output file. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record. See `.claude/skills/act/reference/state-machine-detail.md` (Historical note) and `orchestration-reference.md` § Event Files (historical).
+> **v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed.** A pre-v12.6
+> session wrote a per-state completion event to `workflow/events/EVT-{N}.yaml`,
+> plus an `index.yaml`. Those files were signals for an external user interface
+> only. No cAgents hook and no cAgents agent ever read them, so v12.6.0 dropped
+> the emission from both `/act` and `/team`. `/act` no longer creates
+> `workflow/events/` at session init. The primary output file of each agent now
+> drives the state advancement on its own. An archived pre-v12.6 session keeps
+> `workflow/events/` on disk for the record. See
+> `.claude/skills/act/reference/state-machine-detail.md` (Historical note) and
+> `orchestration-reference.md` § Event Files (historical).
 
 ### State Machine (v12.0.0)
 
@@ -105,41 +146,63 @@ INIT -> ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED
 ```
 
 ### Pipeline Agents (Level 1)
+
 - **Orchestrator** (INIT): enriched_context.yaml
-- **Universal-planner** (ORCHESTRATED): plan.yaml AND work_items.yaml. (v12.0.0: task-decomposer and prompt-engineer were absorbed into planner. The planner now produces decomposition inline; controllers fall back to standard delegation prompts.)
-- **Controller** (PLANNED): coordination_log.yaml with `schema_version: "1"` (with executor+reviewer loops)
+- **Universal-planner** (ORCHESTRATED): plan.yaml and work_items.yaml. In
+  v12.0.0 the planner absorbed task-decomposer and prompt-engineer. The planner
+  now produces the decomposition inline, and a controller falls back to the
+  standard delegation prompts.
+- **Controller** (PLANNED): coordination_log.yaml with `schema_version: "1"`,
+  which holds the executor loops and the reviewer loops
 - **Universal-validator** (COORDINATED): validation_report.yaml
 
 ### Canonical File Roles
-- `workflow/work_items.yaml`: Canonical source for work item definitions (IDs, descriptions, acceptance criteria, dependencies)
-- `team/task_list.yaml`: Status-only overlay (IDs + status + assigned_to)
+
+- `workflow/work_items.yaml`: the canonical source for the work item
+  definitions. It holds the IDs, the descriptions, the acceptance criteria, and
+  the dependencies.
+- `team/task_list.yaml`: a status-only overlay of IDs, status, and assigned_to
 
 ### Handoff Documents (V10.6.0)
 
-Each stage writes a handoff document to `workflow/handoffs/{STATE}.md` — concise summary (<500 tokens) of outputs, decisions, and context for the next stage. Append-only; survives compaction.
+Each stage writes a handoff document to `workflow/handoffs/{STATE}.md`. The
+document is a short summary of under 500 tokens. It holds the outputs, the
+decisions, and the context for the next stage. The document is append-only, and
+it survives a compaction.
 
-See `orchestration-reference.md` for format and schemas.
+See `orchestration-reference.md` for the format and the schemas.
 
 ## Revision Routing
 
-- **FAIL**: Route to PLANNED. The controller re-runs with validation feedback. (v12.0.0: PROMPTS_READY removed — FAIL no longer has a dedicated re-prompt stage; the controller picks up validation feedback directly from the existing plan.)
-- **REVISE**: Route to PLANNED, planner re-decomposes and the controller re-runs.
-- **Escalation**: After 3 cycles (lowered from 5 in v12.0.0), escalate to user with `/act --resume` suggestion.
+- **FAIL**: Route to PLANNED. The controller re-runs with the validation
+  feedback. v12.0.0 removed PROMPTS_READY, so FAIL no longer has a dedicated
+  re-prompt stage. The controller takes the validation feedback directly from
+  the existing plan.
+- **REVISE**: Route to PLANNED. The planner re-decomposes the work, and then
+  the controller re-runs.
+- **Escalation**: After 3 cycles, escalate to the user and suggest
+  `/act --resume`. v12.0.0 lowered this limit from 5 cycles.
 
 ## /team Integration
 
-Wave 0 (Lead): all enrichment. Waves 1-N (subagents): each runs `/act --session` detecting pre-enrichment. Final wave (Lead): integration + final validation.
+Wave 0 (lead) does all of the enrichment. Waves 1 to N (subagents) each run
+`/act --session`, which detects the pre-enrichment. The final wave (lead) does
+the integration and the final validation.
 
 ## Signal File Intervention
 
-Pipeline checks for PAUSE/STOP/RESUME signal files at `sessions/{id}/signals/` before each state transition. See `orchestration-reference.md` for details.
+Before each state transition, the pipeline checks `sessions/{id}/signals/` for
+a PAUSE file, a STOP file, or a RESUME file. See `orchestration-reference.md`
+for the details.
 
 ## Plan Quality Requirements (V10.10.0)
 
-Every plan.yaml MUST include these mandatory sections:
+Every plan.yaml must include these mandatory sections:
 
 ### Temporal Interrogation
-Plans must include implementation friction analysis:
+
+Every plan must include an analysis of the implementation friction:
+
 ```yaml
 temporal_analysis:
   hour_1_foundations: "What does the implementer need to know immediately?"
@@ -148,82 +211,173 @@ temporal_analysis:
   hour_6_plus_polish: "What will they wish they had planned for?"
 ```
 
-### NOT In Scope (Mandatory)
-Every plan MUST explicitly document what is deferred:
+### Not In Scope (Mandatory)
+
+Every plan must record what it defers:
+
 ```yaml
 not_in_scope:
   - item: "{deferred work item}"
     rationale: "{why deferred}"
     future_consideration: "{when/if to revisit}"
 ```
-This prevents scope creep and documents decisions. An empty `not_in_scope` section is acceptable but must be explicitly present.
+
+This section prevents scope creep, and it records the decisions. An empty
+`not_in_scope` section is acceptable, but the section must be present.
 
 ### Diagrams
-For any non-trivial flow, plans MUST include ASCII diagrams:
-- Data flows
-- State machines
-- Decision trees
-- Dependency graphs
-Diagrams are **deliverables**, not optional. They force externalized thinking and catch edge cases.
+
+For any flow that is not trivial, a plan must include an ASCII diagram of:
+
+- The data flows
+- The state machines
+- The decision trees
+- The dependency graphs
+
+A diagram is a **deliverable**, and it is not optional. A diagram makes the
+thinking external, and it catches the edge cases.
 
 ### What Already Exists
-Plans MUST identify existing code that partially solves sub-problems:
+
+Every plan must identify the existing code that solves part of a sub-problem:
+
 ```yaml
 existing_code:
   - path: "{file_path}"
     relevance: "{what it already does}"
     action: "reuse|extend|replace"
 ```
-This prevents redundant implementation and builds on existing work.
+
+This section prevents a redundant implementation, and it builds on the existing
+work.
 
 ## Key Principles
 
-1. **Config-driven**: State machine reads pipeline_config.yaml
-2. **Output-file-driven**: Agents write their primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`); /act reads it at level 0 to advance state. (v12.6.0: the former `workflow/events/EVT-*.yaml` emission was removed — see Event-Driven Pipeline Architecture above.)
-3. **Revision-capable**: Controller-level (2 rounds, LP-27) and pipeline-level (3 cycles)
-4. **Controllers coordinate, don't execute**: Question-based delegation
-5. **Signal-interruptible**: PAUSE/STOP signals before each transition
+1. **Config-driven**: The state machine reads pipeline_config.yaml.
+2. **Output-file-driven**: Each agent writes its primary output file, which is
+   `enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, or
+   `validation_report.yaml`. `/act` reads that file at level 0 and then
+   advances the state. v12.6.0 removed the former `workflow/events/EVT-*.yaml`
+   emission. See Event-Driven Pipeline Architecture above.
+3. **Revision-capable**: The controller level allows 2 rounds (LP-27). The
+   pipeline level allows 3 cycles.
+4. **Controllers coordinate, and they do not execute**: They use question-based
+   delegation.
+5. **Signal-interruptible**: A PAUSE signal or a STOP signal stops the run
+   before a transition.
 
 ---
 
 ## Skill Surface Reference
 
-> Migrated verbatim from `CLAUDE.md` § Skills (Commands) so it loads when you are
-> working on a skill rather than in every session. The one-line skill descriptions
-> stay resident via each `SKILL.md` frontmatter; this is the detail behind them.
+> This section came verbatim from `CLAUDE.md` § Skills (Commands), so it loads
+> when you work on a skill and not in every session. The one-line description
+> of each skill stays resident in the frontmatter of its `SKILL.md` file. This
+> section gives the detail behind those descriptions.
 
 ### /act - Event-Driven Pipeline Engine
-State machine loop reading pipeline_config.yaml. Sequential enrichment (orchestrator, planner — the planner produces decomposition + delegation prompts inline), nested execution (controller + executor + reviewer), revision routing (FAIL/REVISE). Adaptive pipeline (tier 2 fast path skips orchestrator), domain/tier confirmation display, execution analytics (`--analytics`). Controllers fall back to standard delegation prompts when the planner skips prompt assembly.
+
+`/act` is a state machine loop, and it reads pipeline_config.yaml. The
+enrichment is sequential: the orchestrator runs first, and then the planner
+runs. The planner produces the decomposition and the delegation prompts inline.
+The execution nests a controller, an executor, and a reviewer. The revision
+routing handles FAIL and REVISE. The pipeline adapts, so the tier 2 fast path
+skips the orchestrator. `/act` displays the domain and the tier for
+confirmation, and `--analytics` reports the execution analytics. A controller
+falls back to the standard delegation prompts when the planner skips the prompt
+assembly.
+
 ```bash
 /act Fix auth bug              # -> Engineering (tier 2: tech-lead)
 /act Write fantasy story       # -> Creative (tier 2: narrative-director)
 /act Plan Q4 campaign          # -> Business (tier 3: marketing-strategist)
 /act Design game mechanics     # -> Business (tier 2: game-designer)
 ```
+
 Skill: `.claude/skills/act/SKILL.md` + `reference/`
 
 ### /team - N-Wave Parallel Team Execution
-N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1 (subagents: per-wave spawn, parallel within wave) -> Wave N (lead: integration)**. Maximizes waves for quality gating. **Default execution model (concurrent-Agent waves)**: for each wave the lead spawns ALL wave-K subagents as concurrent `Agent()` calls in ONE message, synchronously (`run_in_background: false`, explicit since subagents are background-by-default in CC v2.1.198), collects the results together, validates GATE, then proceeds. Parallelism comes from both concurrent per-wave subagent calls and each subagent recursively spawning its own subagents (depth 5) — a subagent needing another specialty spawns it downward rather than routing sideways through the lead. Teams are implicit — the `TeamCreate`/`TeamDelete` tools were removed in CC v2.1.178, so there is nothing to create or delete and cleanup is automatic at session end. Each wave subagent is a controller that spawns its own execution agents + reviewer (nesting to depth 5). An OPTIONAL EXPERIMENTAL path (named background teammates + tmux/iTerm2 panes, gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) falls back to the default when unavailable. 40-60% execution time reduction for tier 3+. GATE validation standards per wave type, partial results on failure. **Strategic Mode**: For cross-domain requests (`router.domain_count >= 2`), /team auto-enables strategic mode — Wave 0/1 = C-suite analysis (9 leadership agents), Wave 2 = brief synthesis, Wave 3..N = per-domain dispatch. Override with `--strategic` / `--no-strategic`. See `.claude/skills/team/reference/strategic-mode.md`.
+
+`/team` runs an N-wave pipeline: **Wave 0 (lead: enrichment) -> Wave 1..N-1
+(subagents: per-wave spawn, parallel within wave) -> Wave N (lead:
+integration)**. It maximizes the number of waves for quality gating.
+
+**Default execution model (concurrent-Agent waves)**: For each wave, the lead
+spawns all of the wave-K subagents as concurrent `Agent()` calls in one
+message. The calls are synchronous, with `run_in_background: false`. That flag
+is explicit, because a subagent is background-by-default in CC v2.1.198. The
+lead then collects the results together, validates GATE, and proceeds.
+
+Parallelism has two sources. The first source is the concurrent per-wave
+subagent calls. The second source is each subagent, because a subagent spawns
+its own subagents down to depth 5. A subagent that needs another specialty
+spawns that specialty downward. It does not route sideways through the lead.
+
+Teams are implicit. CC v2.1.178 removed the `TeamCreate` tool and the
+`TeamDelete` tool, so there is nothing to create and nothing to delete, and the
+cleanup is automatic at session end. Each wave subagent is a controller. It
+spawns its own execution agents and its own reviewer, and it nests to depth 5.
+
+An optional experimental path uses named background teammates with tmux panes
+or iTerm2 panes. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` gates that path. When
+the path is unavailable, `/team` falls back to the default. For tier 3 and
+above, the execution time falls by 40-60%. Each wave type has its own GATE
+validation standard, and `/team` returns the partial results on a failure.
+
+**Strategic Mode**: For a cross-domain request, where
+`router.domain_count >= 2`, `/team` enables strategic mode automatically. Wave
+0 and Wave 1 run the C-suite analysis with 9 leadership agents. Wave 2
+synthesizes the brief. Wave 3 to Wave N dispatch the work per domain. Override
+the mode with `--strategic` or with `--no-strategic`. See
+`.claude/skills/team/reference/strategic-mode.md`.
+
 ```bash
 /team Implement OAuth2 authentication           # Single-domain team execution (5-7 waves)
 /team Launch new product with campaign          # Cross-domain: auto-strategic mode
 /team Build feature --dry-run --waves 8 / --strategic   # preview / force waves / force strategic
 /act Build feature --team                       # Team mode via flag
 ```
-Config: `settings.json` (`teammateMode` default `in-process` since CC v2.1.179; `tmux`/`auto` panes are experimental-path only). See `docs/TEAM_MODE.md`.
+
+Config: `settings.json`. The `teammateMode` default is `in-process` since CC
+v2.1.179. The `tmux` panes and the `auto` panes belong to the experimental path
+only. See `docs/TEAM_MODE.md`.
 
 ### /designer, /helper
-Each skill has `SKILL.md` + `reference/` directory with detailed docs. Use `/helper` for guidance.
+
+Each skill has a `SKILL.md` file and a `reference/` directory with the detailed
+docs. Use `/helper` for guidance.
 
 Highlights:
-- **/designer**: Subagent-delegated question preparation (research agents pre-build context-rich question lists per phase), inline controller pattern (select, reorder, skip, adapt questions), phase-overlap (next-phase research begins during current phase), follow-up research dispatch, graceful fallback, 28 behavioral rules
-- **Improve modes inside /act**: `/improve` is folded into `/act` via a first-word keyword router. `/act improve X` -> `--mode full`. `/act review X` or `/act audit X` -> `--mode review`. `/act optimize X` -> `--mode optimize`. Review baselines (`--baseline`, `--suppress`), benchmark integration (`--benchmark`), pattern-effectiveness tracking, and atomic rollback helper remain available as flags on `/act`. See `.claude/skills/act/reference/improve-mode.md` for the keyword router contract
-- **/helper**: Troubleshooting mode (`--troubleshoot`), comparison matrices, migration catalog, strategic-mode migration guidance (`/org X` → `/team X`)
+
+- **/designer**:
+  - Subagent-delegated question preparation. A research agent builds a
+    context-rich question list for each phase in advance.
+  - An inline controller pattern. The controller selects, reorders, skips, and
+    adapts the questions.
+  - Phase overlap. The research for the next phase begins during the current
+    phase.
+  - A follow-up research dispatch.
+  - A graceful fallback.
+  - 28 behavioral rules.
+- **Improve modes inside /act**: The keyword router folds `/improve` into
+  `/act`, and it reads the first word. `/act improve X` -> `--mode full`.
+  `/act review X` or `/act audit X` -> `--mode review`. `/act optimize X` ->
+  `--mode optimize`. The review baselines (`--baseline`, `--suppress`), the
+  benchmark integration (`--benchmark`), the pattern-effectiveness tracking,
+  and the atomic rollback helper stay available as flags on `/act`. See
+  `.claude/skills/act/reference/improve-mode.md` for the contract of the
+  keyword router.
+- **/helper**:
+  - A troubleshooting mode (`--troubleshoot`).
+  - The comparison matrices.
+  - The migration catalog.
+  - The strategic-mode migration guidance (`/org X` → `/team X`).
 
 ---
 
 ## See Also
 
-- **orchestration-reference.md** - Schemas, event files, handoff format, signal protocol (path-conditional)
+- **orchestration-reference.md** - Schemas, event files, handoff format, signal
+  protocol (path-conditional)
 - **controllers.md** - Question-based delegation patterns
 - **completion.md** - Task completion protocol

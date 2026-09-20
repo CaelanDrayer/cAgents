@@ -1,18 +1,20 @@
 # Parent Session Extraction & Strategic-Mode Integration
 
-How /team integrates with strategic-mode's strategic brief (or a pre-v12.2.0 `/org` brief), extracts parent_session_id, and writes child_controllers.yaml for audit-trail lineage.
+This file tells you how /team works with the strategic brief of strategic mode. A pre-v12.2.0 `/org` brief has the same shape. /team extracts the `parent_session_id` from the path. /team then writes `child_controllers.yaml` for the lineage of the audit trail.
 
-> **v12.2.0 note**: Pre-v12.2.0, the `--session` flag was used by `/org` to invoke per-domain `/team` runs. v12.2.0 absorbed `/org` into `/team` strategic mode; strategic-mode now creates nested per-domain waves inside a single `/team` session rather than launching child `/team` sessions. The `--session` extraction logic below is preserved for back-compat with pre-v12.2.0 `org_*` sessions and for any external caller that still pre-creates a session path.
+> **v12.2.0 note**: Before v12.2.0, `/org` used the `--session` flag. That flag started one `/team` run for each domain. v12.2.0 absorbed `/org` into the strategic mode of `/team`. Strategic mode now creates nested per-domain waves inside one `/team` session. It does not launch a child `/team` session.
+>
+> The extraction logic below stays for back-compat. It supports a pre-v12.2.0 `org_*` session. It also supports an external caller that creates the session path first.
 
 ## Parent Session Extraction
 
-When /team is invoked with the `--session` flag (e.g., by a pre-v12.2.0 `/org` session, or by an external integration that pre-creates a session directory), extract the parent session ID from the path:
+Sometimes /team starts with the `--session` flag. A pre-v12.2.0 `/org` session does this. An external integration that creates the session directory first also does this. In that case, extract the parent session ID from the path:
 
-- The `--session` flag provides a path like: `cagents-memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
-- Pattern: split path by `/`, find the component immediately after `sessions/` — that is the `parent_session_id`
+- The `--session` flag gives a path in this form: `cagents-memory/sessions/{PARENT_SESSION_ID}/{domain_key}`
+- Pattern: split the path at each `/`. The component directly after `sessions/` is the `parent_session_id`.
 - Example: `--session cagents-memory/sessions/org_launch-product_260317_001/engineering`
   → `parent_session_id = "org_launch-product_260317_001"`
-- If no `--session` flag is provided, or the path has no `sessions/` segment, set `parent_session_id: null`
+- If the `--session` flag is absent, set `parent_session_id: null`. If the path holds no `sessions/` segment, also set `parent_session_id: null`.
 
 ### Extraction Logic
 
@@ -28,29 +30,29 @@ else:
 
 ## Strategic Brief Awareness (v12.2.0 strategic mode, or pre-v12.2.0 /org integration)
 
-When invoked with a `strategic_brief.yaml` in the session directory (written either by v12.2.0+ `/team` strategic mode's Wave 2 deliberation step, or by a pre-v12.2.0 `/org` CEO):
+Sometimes the session directory holds a `strategic_brief.yaml` file. The Wave 2 deliberation step of v12.2.0+ `/team` strategic mode writes that file. A pre-v12.2.0 `/org` CEO also writes that file. In that case, do these steps:
 
-1. **Read the brief** at session initialization (Step 2a, after creating session):
+1. **Read the brief** at session initialization. This is Step 2a, and it comes after you create the session.
    ```
    Check for ${SESSION_DIR}/strategic_brief.yaml
    If exists: read and extract mission, success_criteria, domain_assignments
    ```
 
-2. **Use brief's domain_assignments as pre-decomposed input** (skip re-derivation):
-   - If the brief contains `domain_assignments.{domain_key}.work_required`, use those items directly as work items instead of running the decomposer from scratch
-   - Map each `work_required` entry to a TASK-N with the brief's acceptance criteria
-   - The planner still runs to assign wave numbers and dependencies, but starts from brief work items rather than deriving from scratch
-   - If `domain_assignments.{domain_key}.csuite` is specified, use that C-suite agent's recommended controller as a controller override hint (e.g., if CTO recommended tech-lead, prefer that over auto-detection)
+2. **Use the `domain_assignments` of the brief as pre-decomposed input.** Skip the re-derivation.
+   - If the brief holds `domain_assignments.{domain_key}.work_required`, use those items as the work items. Do not run the decomposer from scratch.
+   - Map each `work_required` entry to a TASK-N. Use the acceptance criteria of the brief.
+   - The planner still runs. It assigns the wave numbers and the dependencies. It starts from the work items of the brief, and it does not derive them from scratch.
+   - If `domain_assignments.{domain_key}.csuite` is set, read the controller that the C-suite agent recommends. Use that controller as an override hint. For example, the CTO can recommend tech-lead. Prefer tech-lead over the auto-detection.
 
-3. **Pass brief context to enrichment agents** — include mission, success criteria, and the C-suite domain analysis summary in orchestrator and planner prompts for richer context.
+3. **Pass the context of the brief to the enrichment agents.** Include the mission, the success criteria, and the summary of the C-suite domain analysis. Put them into the prompts of the orchestrator and of the planner.
 
-4. **Validate outputs against brief success_criteria**:
-   - After final validation, cross-check the brief's `success_criteria` array
-   - Each success criterion must map to at least one completed TASK with evidence
-   - Include brief validation results in the final report
+4. **Validate the outputs against the `success_criteria` of the brief**:
+   - After the final validation, do a check of the `success_criteria` array of the brief.
+   - Each success criterion must map to one completed TASK or more. That TASK must carry evidence.
+   - Put the results of the brief validation into the final report.
 
-5. **Write domain_status updates** during execution:
-   - After each wave completes, update the brief's `domain_status` section:
+5. **Write the `domain_status` updates** during the execution:
+   - After each wave completes, update the `domain_status` section of the brief:
    ```yaml
    domain_status:
      {domain_key}:
@@ -59,21 +61,21 @@ When invoked with a `strategic_brief.yaml` in the session directory (written eit
        completed_wis: [TASK-xx, ...]
        blockers: []
    ```
-   - Write updates to `${SESSION_DIR}/strategic_brief.yaml` (the brief is the CEO's monitoring interface)
+   - Write the updates to `${SESSION_DIR}/strategic_brief.yaml`. The brief is the monitoring interface of the CEO.
 
-6. **Check for escalation directives** — if the CEO has added directives to the brief (from resolving escalations), read them and adjust execution accordingly.
+6. **Do a check for the escalation directives.** The CEO adds a directive to the brief when it resolves an escalation. Read each directive, and change the execution to match.
 
-7. **Report completion** by setting domain_status to completed with 100% progress.
+7. **Report the completion.** Set `domain_status` to completed, and set the progress to 100 percent.
 
-This allows the `/team` strategic-mode lead (or pre-v12.2.0 `/org` CEO) to monitor domain execution progress and handle cross-domain escalations in real-time.
+These steps let the strategic-mode lead of `/team` monitor the execution progress of each domain. A pre-v12.2.0 `/org` CEO does the same. The lead also handles each cross-domain escalation as it happens.
 
 ## Session Hierarchy
 
-Understanding the session hierarchy is essential for correct lineage tracking in audit trails.
+You must know the session hierarchy. It gives you correct lineage tracking in the audit trails.
 
 ### Session Types and Nesting
 
-/team creates `team_*` sessions (e.g., `team_implement-oauth2_260317_001`). It does NOT create `act_*` sessions. When /team is invoked via the `--session` flag (by a pre-v12.2.0 `/org` session, or by an external integration), the team session's `parent_session_id` is set to the parent session ID extracted from the path.
+/team creates a `team_*` session, for example `team_implement-oauth2_260317_001`. It does NOT create an `act_*` session. Sometimes /team starts with the `--session` flag. A pre-v12.2.0 `/org` session does this, and so does an external integration. In that case, the `parent_session_id` of the team session gets the parent session ID from the path.
 
 **Hierarchy depth (max 2 levels)**:
 ```
@@ -85,19 +87,21 @@ org_* session (level 0)     <- /org created this; no new sessions of this type a
   team_* session (level 1)  <- /team creates this, parent_session_id = org_*
 ```
 
-There is no `team_* -> team_* -> act_*` chain. /team subagents spawn execution agents directly via Agent tool rather than invoking /act as a Skill — by design for cost and clarity, not because of a harness limit (CC ≥ 2.1.172 supports subagent nesting up to 5 levels deep; a nested /act is technically possible but duplicates Wave 0 enrichment and wastes tokens). As a result, controller work is tracked at the `team_*` session level, not in separate child sessions. Strategic mode (v12.2.0+) extends this by running per-domain dispatch as additional waves *inside* the same team_* session, instead of launching separate child team_* sessions per domain (which is how pre-v12.2.0 `/org` -> `/team` chains worked).
+There is no `team_* -> team_* -> act_*` chain. A /team subagent spawns its execution agents directly through the Agent tool. It does not invoke /act as a Skill. This is a design choice for cost and for clarity, and it is not a harness limit. CC 2.1.172 and later support subagent nesting to 5 levels deep. A nested /act is possible, but it duplicates the Wave 0 enrichment and it wastes tokens.
+
+Therefore, the controller work is tracked at the level of the `team_*` session. It is not tracked in a separate child session. Strategic mode extends this model from v12.2.0. It runs the per-domain dispatch as more waves *inside* the same `team_*` session. It does not launch one child `team_*` session for each domain. A pre-v12.2.0 chain from `/org` to `/team` worked in that older way.
 
 ## Controller Tracking
 
-Controllers spawned as /team subagents do NOT create their own sessions. Instead, their work is tracked at the session level via:
+A controller that /team spawns as a subagent does NOT create its own session. The session level tracks the work of that controller instead. These three files do the tracking:
 
-1. **`workflow/agent_tree.yaml`** — Each spawned controller gets an entry with `spawned_at`, `stopped_at`, `completion_summary`, and `duration_seconds`. This is the authoritative agent audit trail.
-2. **`workflow/coordination_log.yaml`** — Written by each controller subagent after completing its wave work items. Contains objectives, questions_asked, synthesized_solution, and implementation_tasks.
-3. **`workflow/child_controllers.yaml`** — Written by /team lead after each wave (see Step 5d-pre). Maps work items to the controllers that handled them.
+1. **`workflow/agent_tree.yaml`**: each spawned controller gets an entry. That entry holds `spawned_at`, `stopped_at`, `completion_summary`, and `duration_seconds`. This file is the authoritative audit trail of the agents.
+2. **`workflow/coordination_log.yaml`**: each controller subagent writes this file. It writes the file after it completes the work items of its wave. The file holds `objectives`, `questions_asked`, `synthesized_solution`, and `implementation_tasks`.
+3. **`workflow/child_controllers.yaml`**: the /team lead writes this file after each wave. See Step 5d-pre. The file maps each work item to the controller that handled it.
 
 ## child_controllers.yaml Format
 
-After each wave completes, the lead appends completed controllers to `workflow/child_controllers.yaml`:
+After each wave completes, the lead adds the completed controllers to `workflow/child_controllers.yaml`:
 
 ```yaml
 controllers:
@@ -120,10 +124,10 @@ controllers:
 
 ## Parent Session ID in instruction.yaml
 
-When invoked with `--session cagents-memory/sessions/<parent_session_id>/<subdir>` (e.g., pre-v12.2.0 `/org` setting `--session cagents-memory/sessions/org_foo_260317_001/engineering`, or an external integration pre-creating a session directory), the `team_*` session stores:
+Sometimes /team starts with `--session cagents-memory/sessions/<parent_session_id>/<subdir>`. A pre-v12.2.0 `/org` run sets that flag, for example `--session cagents-memory/sessions/org_foo_260317_001/engineering`. An external integration that creates the session directory first also sets it. In that case, the `team_*` session stores this value:
 
 ```yaml
 parent_session_id: "org_foo_260317_001"
 ```
 
-This is extracted from the `--session` path. If /team is invoked directly by a user (no `--session` flag) — the default in v12.2.0+ strategic mode — `parent_session_id` is `null`.
+The value comes from the `--session` path. Sometimes a user invokes /team directly, with no `--session` flag. That is the default in v12.2.0+ strategic mode. In that case, `parent_session_id` is `null`.

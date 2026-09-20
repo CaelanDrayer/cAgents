@@ -1,10 +1,10 @@
 # Wave Execution Detail
 
-Per-wave spawn cycle, monitoring, gate flow, and inter-wave coordination details for /team.
+This file gives the details of the per-wave spawn cycle for /team. It also covers the monitoring, the gate flow, and the coordination between the waves.
 
 ## Step 5: Execute Waves 1..N-1 — Spawn Subagents Per Wave
 
-This is the core execution loop. For EACH wave, spawn a fresh round of subagents, collect their results, validate the gate, then proceed to the next wave. Each wave subagent can itself spawn its own subagents (depth 5) for any specialty it needs, so parallelism compounds beyond the per-wave fan-out.
+This is the core execution loop. For EACH wave, spawn a fresh round of subagents. Collect their results, and validate the gate. Then go on to the next wave. Each wave subagent can spawn its own subagents to depth 5, for any specialty that it needs. The parallelism therefore grows beyond the fan-out of one wave.
 
 ```
 for each wave K from 1 to N-1:
@@ -18,7 +18,7 @@ for each wave K from 1 to N-1:
 
 ### Worktree Isolation (Recommended)
 
-When subagents modify overlapping files, use `isolation: "worktree"` in the Task call to give each subagent an isolated git worktree. This prevents file conflicts during parallel execution.
+If two subagents change the same files, use `isolation: "worktree"` in the Task call. Each subagent then gets an isolated git worktree. This stops a file conflict during the parallel execution.
 
 ```
 Agent({
@@ -31,25 +31,25 @@ Agent({
 ```
 
 **When to use worktree isolation**:
-- Multiple subagents editing the same files (e.g., package.json, shared configs)
-- Subagents running tests that produce temp files
-- Any wave with 3+ subagents modifying code files
+- Many subagents edit the same files, for example package.json and the shared configs.
+- The subagents run tests that produce temporary files.
+- A wave has 3 subagents or more that change code files.
 
 **When worktree is unnecessary**:
-- Subagents writing to separate output directories (e.g., SESSION_DIR/outputs/task-N/)
-- Documentation-only waves where files don't overlap
-- Research/analysis waves that only read files
+- The subagents write to separate output directories, for example SESSION_DIR/outputs/task-N/.
+- The wave is documentation only, and no two files overlap.
+- The wave does research or analysis, and it only reads files.
 
 **Merge coordination after worktree waves**:
-After all subagents in a worktree-isolated wave complete, the lead must merge:
-1. Check for merge conflicts: `git diff` between worktrees
-2. If no conflicts: merge automatically (fast-forward)
-3. If conflicts: resolve by preferring the subagent whose work item has higher priority
-4. Run guard command (npm test, lint) after merge to catch integration issues
+A worktree-isolated wave completes when all of its subagents complete. The lead must then merge the work:
+1. Do a check for merge conflicts. Run `git diff` between the worktrees.
+2. If there is no conflict, merge automatically with a fast-forward.
+3. If there is a conflict, resolve it. Prefer the subagent whose work item has the higher priority.
+4. After the merge, run the guard command, such as npm test or lint. It catches an integration issue.
 
 ### --members Batching
 
-If wave K has more work items than the `--members` cap (default: 5), batch them into sub-waves. Each sub-wave spawns up to `--members` subagents in parallel, waits for all to complete, then spawns the next batch. Every work item gets its own dedicated subagent — never collapse multiple tasks into a single subagent.
+The `--members` cap has a default of 5. If wave K holds more work items than that cap, put them into sub-waves. Each sub-wave spawns up to `--members` subagents in parallel. It waits for all of them to complete, and it then spawns the next batch. Every work item gets its own dedicated subagent. Never collapse two tasks into one subagent.
 
 ```
 items_in_wave = work_items_for_wave_K
@@ -103,54 +103,54 @@ Agent({
 })
 ```
 
-See `reference/teammate-spawning-template.md` for the full subagent spawn prompt template including self-registration block.
+For the full spawn prompt template of a subagent, see `reference/teammate-spawning-template.md`. That template includes the self-registration block.
 
 ### 5b-i. Report Cap — Why 12 Lines and 15 Words
 
-The lead's per-wave loads are bounded by the four lead-context disciplines. Its **fan-in** is not: k subagent reports x N waves grows with the size of the work, so no reduction elsewhere bounds it. The cap in `SKILL.md` § Wave Report Cap and Lead Read Whitelist is what keeps each report's share of it small.
+The four lead-context disciplines bound the per-wave loads of the lead. They do not bound its **fan-in**. The fan-in is k subagent reports across N waves, and it grows with the size of the work. No reduction elsewhere bounds it. The cap in `SKILL.md` § Wave Report Cap and Lead Read Whitelist keeps the share of each report small.
 
-The arithmetic it is sized against:
+The cap is sized against this arithmetic:
 
 | Quantity | Value |
 |----------|-------|
 | Subagent waves | wave count minus 2 (the first and last waves are lead-sequential) |
-| Reports per wave | one per work item — `--members` (default 5) caps how many run concurrently per batch, not how many report |
+| Reports per wave | one report for each work item. The `--members` cap, which defaults to 5, limits how many run at the same time in a batch. It does not limit how many report. |
 | Illustrative tier-4 shape (10 waves, 5 WIs per wave) | 8 subagent waves x 5 = 40 reports |
 | Ceiling per report | 12 lines x 15 words = 180 words, roughly 250 tokens |
 | Fan-in at that shape | roughly 10K tokens |
 | Typical tier 3 (6 waves, 4 WIs per wave) | 16 reports, roughly 4K tokens at the ceiling |
 
-These are illustrative shapes, not ceilings. Reports per wave tracks the work-item count, which the planner's decomposition drives — a 60-to-100-work-item tier-4 program produces 60-to-100 reports. The cap's job is to make each report cheap, not to make the count small; nothing here bounds the count.
+These are illustrative shapes, and they are not ceilings. The report count for each wave follows the work-item count. The decomposition of the planner drives that count. A tier-4 program with 60 to 100 work items produces 60 to 100 reports. The job of the cap is to make each report cheap. It does not make the count small, and nothing here bounds the count.
 
-Twelve lines is the smallest count that still carries what the lead acts on — status, WI id, a one-sentence outcome, the artifact pointer, and any blocker. The 15-word bound exists because a line count alone is satisfiable by twelve paragraph-length lines; without it the cap is decorative.
+Twelve lines is the smallest count that still carries what the lead acts on. Those items are the status, the WI id, a one-sentence outcome, the artifact pointer, and each blocker. The 15-word bound exists because twelve paragraph-length lines satisfy a line count alone. Without that bound the cap is decorative.
 
-Nothing measures this. No hook counts lines, no CI stage checks a report, and no threshold blocks a wave. The cap holds because it is written into the spawn brief the subagent reads and into the lead contract, and for no other reason.
+Nothing measures this. No hook counts the lines, no CI stage checks a report, and no threshold blocks a wave. The cap holds for one reason only. It is written into the spawn brief that the subagent reads, and it is written into the lead contract.
 
 ### 5b-ii. Lead Read Whitelist — Default-Deny
 
-`SKILL.md` § Wave Report Cap and Lead Read Whitelist enumerates the twelve artifacts the lead may read. Everything else in the session is denied by default. The denied set that matters most in the wave loop:
+`SKILL.md` § Wave Report Cap and Lead Read Whitelist lists the twelve artifacts that the lead may read. The session denies everything else by default. This table holds the denied set that matters most in the wave loop:
 
 | Denied | Who reads it instead |
 |--------|----------------------|
-| `outputs/wave-{K}/task-{N}/**` — any subagent work product | `cagents:reviewer` inside the wave subagent; `cagents:wave-reviewer` at the gate |
+| `outputs/wave-{K}/task-{N}/**`, which is any work product of a subagent | `cagents:reviewer` inside the wave subagent, and `cagents:wave-reviewer` at the gate |
 | `workflow/gate_validations/**` | `cagents:wave-reviewer` writes it; the lead reads only the 1-line verdict |
-| `outputs/integration/integrated_outputs.yaml` | `cagents:coord-log-writer`; the lead reads `integration_summary.md` |
+| `outputs/integration/integrated_outputs.yaml` | `cagents:coord-log-writer`. The lead reads `integration_summary.md`. |
 | `workflow/coordination_log.yaml` | `cagents:coord-log-writer` writes it |
 | `work_items_wave_{J}.yaml` for J other than the current K | the wave-J subagents, in wave J |
 | any repository file under review | the execution agent that owns the work item |
 
-Every row has the same shape: the artifact has an owner, and the owner is not the lead. A lead that opens one of these to check the work has taken back delegated verification and reintroduced the fan-in term in the same move.
+Every row has the same shape. The artifact has an owner, and that owner is not the lead. Sometimes a lead opens one of these files to check the work. That lead takes back the delegated verification, and it brings the fan-in term back in the same move.
 
 ### 5c. Monitor Wave K Progress
 
-- Default path: the wave subagents return synchronously; the lead collects all results together. Experimental named-teammate path: wait for teammate messages (they arrive automatically).
-- Periodically check TaskList to see progress
-- If a subagent flags an issue: course-correct if needed
-- Track per-subagent timeout: if no progress after 5 minutes, consider recovery
+- Default path: the wave subagents return synchronously, and the lead collects all of the results together. Experimental named-teammate path: wait for the teammate messages, which arrive automatically.
+- Check TaskList at regular intervals to see the progress.
+- If a subagent flags an issue, correct the course when that is necessary.
+- Track the timeout of each subagent. If there is no progress after 5 minutes, consider a recovery.
 
 ### 5c-1. Early Individual Shutdown (Resource Optimization) — Experimental Path Only
 
-**On the DEFAULT path this is unnecessary — synchronous wave subagents just return their result, so there is nothing to shut down early.** On the EXPERIMENTAL named-teammate path only, when a teammate reports completion (via SendMessage), shut it down IMMEDIATELY rather than waiting for the entire wave to finish:
+**On the DEFAULT path this step is unnecessary.** A synchronous wave subagent returns its result, so there is nothing to shut down early. On the EXPERIMENTAL named-teammate path only, a teammate reports its completion with SendMessage. Shut that teammate down IMMEDIATELY. Do not wait for the whole wave to finish:
 
 ```
 On receiving "TASK-{N} complete" from w{K}-task-{N}-{type}:
@@ -163,28 +163,28 @@ On receiving "TASK-{N} complete" from w{K}-task-{N}-{type}:
   4. If wave_K_completed == wave_K_total: proceed to GATE validation (5d)
 ```
 
-This frees resources (tmux panes, context windows) as soon as each teammate finishes.
+This frees the resources as soon as each teammate finishes. Those resources are the tmux panes and the context windows.
 
 ### 5c-2. Automatic Subagent Failure Recovery
 
-See `reference/fallback-and-error-recovery.md` for the full recovery chain (RETRY → SIMPLIFY → ESCALATE).
+For the full recovery chain, see `reference/fallback-and-error-recovery.md`. That chain is RETRY → SIMPLIFY → ESCALATE.
 
 ### 5d-pre. Write child_controllers.yaml Manifest
 
-After all wave K subagents complete (or are marked blocked), append controller entries to `${SESSION_DIR}/workflow/child_controllers.yaml`. See `reference/parent-session-extraction.md` for format.
+Wait until all of the wave K subagents complete, or until they carry the blocked mark. Then add the controller entries to `${SESSION_DIR}/workflow/child_controllers.yaml`. For the format, see `reference/parent-session-extraction.md`.
 
 ### 5d. Validate GATE-K
 
-When all wave K items complete (or are blocked):
-- Verify outputs exist for each work item in wave K
-- Check quality gate criteria based on wave type (see `reference/gate-validation-protocol.md`)
-- If gate passes: Mark GATE-K task as completed (unblocks wave K+1)
-- If gate fails but blocked items exist: Apply partial pass — mark gate as conditionally passed with noted gaps; proceed with degraded scope
-- If gate fails without blocked items: Report issues, spawn fix-up subagents, re-validate
+Do these steps when all of the wave K items complete, or when they are blocked:
+- Make sure that an output exists for each work item in wave K.
+- Do a check of the quality gate criteria for the wave type. See `reference/gate-validation-protocol.md`.
+- If the gate passes, mark the GATE-K task as completed. That mark unblocks wave K+1.
+- If the gate fails and a blocked item exists, apply a partial pass. Mark the gate as conditionally passed, and write down the gaps. Continue with the reduced scope.
+- If the gate fails and no item is blocked, report the issues. Spawn fix-up subagents, and validate again.
 
 ### 5e. Shut Down Remaining Wave K Subagents — Experimental Path Only
 
-**On the DEFAULT path there is nothing to shut down — synchronous wave subagents have already returned.** On the EXPERIMENTAL named-teammate path only: most teammates should already be shut down via early individual shutdown (5c-1). Send shutdown to any that remain:
+**On the DEFAULT path there is nothing to shut down.** A synchronous wave subagent already returned its result. On the EXPERIMENTAL named-teammate path only, most teammates already stopped through the early individual shutdown in 5c-1. Send a shutdown to each teammate that stays:
 
 ```
 SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", content: "Wave {K} complete." })
@@ -192,9 +192,9 @@ SendMessage({ type: "shutdown_request", recipient: "w{K}-task-{N}-{type}", conte
 
 ### 5f. Proceed to Wave K+1 (AUTOMATIC — Do NOT Ask Permission)
 
-(v12.6.0: `workflow/events/EVT-{K}.yaml` wave-completion emission removed — the GATE-{K} task's `completed` status is the canonical wave-gate signal.)
+Release v12.6.0 removed the wave-completion emission to `workflow/events/EVT-{K}.yaml`. The `completed` status of the GATE-{K} task is now the canonical wave-gate signal.
 
-**Each wave is a distinct spawn-execute-validate cycle.** This ensures quality gates are enforced between phases, outputs from earlier waves are available to later waves, and issues are caught early.
+**Each wave is a distinct spawn-execute-validate cycle.** This cycle makes sure that the quality gates hold between the phases. It also makes the outputs of the earlier waves available to the later waves, and it catches each issue early.
 
 ## Step 6: Final Wave — Integration + Validation (Lead Does This)
 
@@ -218,15 +218,15 @@ Agent({
 })
 ```
 
-If PASS: Pipeline complete. Proceed to cleanup.
-If FAIL with partial results: Report partial completion summary (see `reference/partial-results.md`).
-If FAIL without partial results: Report issues with evidence. Suggest `/act --resume {SESSION_ID}`.
+If the verdict is PASS, the pipeline is complete. Go on to the cleanup.
+If the verdict is FAIL and partial results exist, report a partial completion summary. See `reference/partial-results.md`.
+If the verdict is FAIL and no partial result exists, report the issues with evidence. Suggest `/act --resume {SESSION_ID}`.
 
 ## Cross-Wave Coordination
 
 ### File-Based Handoffs Between Waves
 
-Each wave's outputs are available to subsequent waves via the shared session directory:
+The shared session directory makes the outputs of each wave available to the waves that follow:
 
 ```
 Wave 1 subagent (TASK-01):
@@ -244,17 +244,17 @@ Wave 2 subagent (TASK-03, depends on TASK-01):
 
 ### Intra-Wave Parallelism
 
-Within a single wave, all subagents run in parallel. Use TaskUpdate `addBlockedBy` for any intra-wave dependencies.
+Within one wave, all of the subagents run in parallel. For a dependency inside the wave, use `addBlockedBy` in TaskUpdate.
 
 ### Task Dependencies
 
-- **Inter-wave**: Enforced via GATE sentinel tasks (wave K+1 items blocked by GATE-K)
-- **Intra-wave**: Set via TaskUpdate `addBlockedBy` based on decomposition dependency graph
-- Dependencies auto-unblock via TaskList
+- **Inter-wave**: the GATE sentinel tasks enforce this. GATE-K blocks the items of wave K+1.
+- **Intra-wave**: set this with `addBlockedBy` in TaskUpdate. Use the dependency graph from the decomposition.
+- The dependencies auto-unblock through TaskList.
 
 ### Subagent Autonomy
 
-- Subagents surface issues to the lead (via their returned result on the default path, or SendMessage on the experimental named-teammate path) but continue working
-- Lead can course-correct if needed but doesn't block progress
-- All enrichment always runs (consistency over speed)
-- Subagents within a wave operate independently
+- A subagent surfaces each issue to the lead, and it continues to work. On the default path it does this in its returned result. On the experimental named-teammate path it uses SendMessage.
+- The lead can correct the course when that is necessary, and it does not block the progress.
+- All of the enrichment always runs. Consistency is more important than speed.
+- The subagents inside a wave operate independently.

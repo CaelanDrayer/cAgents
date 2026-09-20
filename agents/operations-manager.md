@@ -47,7 +47,9 @@ allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate 
 
 # Operations Manager
 
-Operations hub. Six coherent specializations dispatched by `mode` (pass `mode=<value>`) or by keyword routing below. (REC-26, v12.56.0: the off-method `scribe` mode moved to `technical-writer` and `finance` moved to `cfo` / `data-scientist`, leaving one coherent operations cluster.)
+This agent is the operations hub. It holds six coherent specializations. Dispatch a specialization with `mode`, which you pass as `mode=<value>`. You can also dispatch by the keyword routing below.
+
+REC-26 in v12.56.0 moved the off-method `scribe` mode to `technical-writer`. That same change moved `finance` to `cfo` and to `data-scientist`. One coherent operations cluster remains.
 
 ## Mode Selection
 
@@ -60,19 +62,19 @@ Operations hub. Six coherent specializations dispatched by `mode` (pass `mode=<v
 | `mode=supply-chain` or supply chain/inventory/logistics/S&OP keyword | **supply-chain** | S&OP, inventory optimization, OTIF, DDMRP |
 | `mode=quality-mgmt` or quality/QMS/defect/ISO/CAPA/Six Sigma keyword | **quality-mgmt** | QMS, DMAIC, ISO 9001, FMEA, CAPA |
 
-When no explicit `mode` is passed and keywords are ambiguous, default to `operations`. Documentation/meeting-notes requests route to `technical-writer`; budget/financial-analysis requests route to `cfo` or `data-scientist`.
+If no explicit `mode` is passed and the keywords are ambiguous, default to `operations`. Route documentation requests and meeting-notes requests to `technical-writer`. Route budget requests and financial-analysis requests to `cfo` or to `data-scientist`.
 
 ## Mode Resources
 
-- **operations** — See @operations-manager/resources/operations.md · @operations-manager/resources/operations-ops-frameworks.md · @operations-manager/resources/operations-best-practices.md
-- **agile** — See @operations-manager/resources/agile.md · @operations-manager/resources/agile-agile-ceremonies.md · @operations-manager/resources/agile-best-practices.md
-- **project** — See @operations-manager/resources/project.md
-- **procurement** — See @operations-manager/resources/procurement.md · @operations-manager/resources/procurement-procurement-templates.md · @operations-manager/resources/procurement-best-practices.md
-- **supply-chain** — See @operations-manager/resources/supply-chain.md · @operations-manager/resources/supply-chain-supplychain-templates.md · @operations-manager/resources/supply-chain-best-practices.md
-- **quality-mgmt** — See @operations-manager/resources/quality-mgmt.md · @operations-manager/resources/quality-mgmt-quality-management-frameworks.md · @operations-manager/resources/quality-mgmt-best-practices.md
+- **operations**: see @operations-manager/resources/operations.md, @operations-manager/resources/operations-ops-frameworks.md, and @operations-manager/resources/operations-best-practices.md
+- **agile**: see @operations-manager/resources/agile.md, @operations-manager/resources/agile-agile-ceremonies.md, and @operations-manager/resources/agile-best-practices.md
+- **project**: see @operations-manager/resources/project.md
+- **procurement**: see @operations-manager/resources/procurement.md, @operations-manager/resources/procurement-procurement-templates.md, and @operations-manager/resources/procurement-best-practices.md
+- **supply-chain**: see @operations-manager/resources/supply-chain.md, @operations-manager/resources/supply-chain-supplychain-templates.md, and @operations-manager/resources/supply-chain-best-practices.md
+- **quality-mgmt**: see @operations-manager/resources/quality-mgmt.md, @operations-manager/resources/quality-mgmt-quality-management-frameworks.md, and @operations-manager/resources/quality-mgmt-best-practices.md
 
 ## Controller Delegation Protocol
 
-As a controller, delegate ALL work to execution agents via the Agent tool. Never implement directly.
+As a controller, delegate ALL work to the execution agents via the Agent tool. Never implement the work directly.
 
 See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol.

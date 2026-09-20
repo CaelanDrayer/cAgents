@@ -7,7 +7,8 @@ paths:
 
 # Agent Memory Reference Details
 
-Detailed directory structures, schemas, and examples. See `agent-memory.md` for core concepts.
+This file gives the detailed directory structures, the schemas, and the
+examples. See `agent-memory.md` for the core concepts.
 
 ## Full Directory Structure
 
@@ -53,7 +54,9 @@ cagents-memory/sessions/{session_id}/
 └── validation/                   # validation_report.yaml
 ```
 
-> **Note**: The three-file pattern (task_plan.md, findings.md, progress.md) is aspirational. Most sessions rely on `workflow/` artifacts instead. These files are shown for completeness but are not required.
+> The three-file pattern holds task_plan.md, findings.md, and progress.md. That
+> pattern is aspirational. Most sessions use the `workflow/` artifacts instead.
+> This file shows the three files for completeness, and they are not required.
 
 ## Three-File Pattern Examples
 
@@ -124,7 +127,13 @@ resume_hints:
 
 ### Historical session extensions (V11.0-removed skills)
 
-The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/optimize` were folded into `/act` — formerly `/run` — via the v12.1.2 keyword router; use `/act review ...` and `/act optimize ...` today). The session-extension shapes below are preserved here for archived-session back-compat with hooks that scan historical `session_type` prefixes on disk:
+The `/review` and `/optimize` skills were removed in V11.0. The v12.1.2 keyword
+router folded both of them into `/act`, which carried the name `/run` at that
+time. Use `/act review ...` and `/act optimize ...` today.
+
+The session-extension shapes below stay here for back-compat with archived
+sessions. Hooks that scan the historical `session_type` prefixes on disk read
+those shapes:
 
 **/review** (legacy) also included: scope_analysis.yaml, execution_strategy.yaml, reports/ (aggregate, auto_fixes, quality_gates, final_report)
 
@@ -139,4 +148,5 @@ The `/review` and `/optimize` skills were removed in V11.0 (`/review` and `/opti
 | `/review` (legacy, V11.0-removed; folded into `/act review` v12.1.2) | `cagents-memory/_system/commands/review/` |
 | `/optimize` (legacy, V11.0-removed; folded into `/act optimize` v12.1.2) | `cagents-memory/_system/commands/optimize/` |
 
-Each domain has 5 configs in `_system/domains/{domain}/`: router, planner, executor, validator, self_correct.
+Each domain has 5 config files in `_system/domains/{domain}/`. They are router,
+planner, executor, validator, and self_correct.

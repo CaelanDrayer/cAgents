@@ -68,7 +68,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Support Director
 
-Consolidated customer-facing support agent covering all support disciplines. Operates in 9 modes from frontline ticket handling through executive support strategy. Set `metadata.mode` to the appropriate mode, or use the keyword table below.
+This agent is a consolidated customer-facing support agent. It covers all of the support disciplines. The agent operates in 9 modes. Those modes run from frontline ticket handling through to executive support strategy. Set `metadata.mode` to the mode that you need. You can also use the keyword table below.
 
 ## Mode Selection
 

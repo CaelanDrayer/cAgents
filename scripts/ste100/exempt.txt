@@ -1,0 +1,28 @@
+# ste100 exemption manifest
+#
+# The single machine-readable list of paths that the STE-100 concise-writing
+# rewrite does NOT touch. One glob per line, relative to the repo root. Lines
+# starting with '#' are comments. Every glob ends with '# <why it is exempt>'.
+#
+# Consumed by:
+#   scripts/ste100/metrics.sh       - excludes these paths from the corpus it measures
+#   scripts/ste100/mechanize.cjs    - refuses to rewrite files matching these globs
+#   scripts/ci/validate-ste100.sh   - skips these paths when enforcing the standard
+#
+# Derive scope from this file. Do not re-derive it per pass.
+#
+# EXEMPT FROM REWRITE IS NOT EXEMPT FROM APPEND.
+# CHANGELOG.md and docs/RELEASE_NOTES.md are append-only histories: no pass
+# rewrites their existing prose, and the P6 release pass still appends its
+# entry to both. "Exempt" here means "never edited in place", not "skipped".
+CHANGELOG.md # append-only release history; rewriting it falsifies the record
+docs/RELEASE_NOTES.md # append-only release history; same reason
+docs/MIGRATION-V*.md # historical migration records describing past states
+archive/** # historical documentation, local only, not in git
+cagents-memory/_archive/** # completed session archives
+tests/fixtures/** # vendored third-party fixtures consumed byte-exact by tests; rewriting breaks them
+cagents-memory/sessions/** # live session runtime state, not shipped prose
+node_modules/** # third-party dependencies
+.git/** # version control internals
+.omc/** # foreign tool tree, not cAgents plugin prose
+.claude/sessions/** # session runtime state, not shipped prose

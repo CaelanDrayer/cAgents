@@ -1,14 +1,17 @@
 # Cross-Version Compatibility
 
-Minimum Claude Code version table, env var propagation rules, and hook input schema stability for /team.
+This file gives the table of minimum Claude Code versions. It also gives the
+rules for env var propagation, and the stability of the hook input schema for
+/team.
 
 ## Minimum Claude Code Version
 
-**Minimum CC version**: >= 2.1.69 (declared in frontmatter `compatibility` field)
+**Minimum CC version**: >= 2.1.69. The frontmatter `compatibility` field
+declares it.
 
 | Feature | Version | Notes |
 |---------|---------|-------|
-| `TeamCreate` / `TeamDelete` | **REMOVED in 2.1.178** | Do NOT call. Agent teams are now implicit — nothing to create, cleanup is automatic at session end. |
+| `TeamCreate` / `TeamDelete` | **REMOVED in 2.1.178** | Do NOT call. Agent teams are now implicit. There is nothing to create, and cleanup is automatic at session end. |
 | Concurrent `Agent()` waves (DEFAULT model) | any | Spawn all wave-K subagents as concurrent `Agent()` calls in one message; works in every harness. |
 | Subagent nesting to depth 5 | 2.1.172 | Subagents retain `Agent` and spawn execution agents + reviewers up to 5 levels deep. |
 | `Agent({ run_in_background })` background-by-default | 2.1.198 | Subagents run in background unless `run_in_background: false`; the default wave path uses `false` for synchronous collection. |
@@ -24,20 +27,42 @@ Minimum Claude Code version table, env var propagation rules, and hook input sch
 
 ## Environment Variable Propagation
 
-The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env var is set in `.claude/settings.json` under `env`. Claude Code injects these vars into the environment of all hooks and subagents. This var gates the OPTIONAL experimental named-background-teammate path only. The DEFAULT concurrent-`Agent()` wave path does not depend on it — when the var is unset or the experimental feature is unavailable, `/team` runs the default concurrent-Agent path, which works in every harness.
+The file `.claude/settings.json` sets the
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env var under `env`. Claude Code puts
+these vars into the environment of all hooks and all subagents. This var gates
+one path only. That path is the optional experimental path with named
+background teammates. The default wave path uses concurrent `Agent()` calls,
+and it does not depend on the var.
+
+The var can be unset. The experimental feature can also be unavailable. In each
+of those two cases, `/team` runs the default concurrent-Agent path. That path
+works in every harness.
 
 ## Model-Agnostic Spawning
 
-All subagent Task calls use `subagent_type: "cagents:{name}"` which is routed by Claude Code's model routing layer. No hardcoded model assumptions exist in team hooks or spawning templates. Subagents run on whatever model Claude Code assigns based on `model_routing.yaml` and environment configuration.
+Every subagent Task call uses `subagent_type: "cagents:{name}"`. The model
+routing layer of Claude Code then routes that call. The team hooks and the
+spawning templates hold no hardcoded model. Claude Code assigns the model for
+each subagent. It uses `model_routing.yaml` and the configuration of the
+environment.
 
 ## Hook Input Schema Stability
 
-Team hooks (`team-start`, `team-task-complete`, `teammate-idle-handler`, `team-stop`) use defensive field access with fallback defaults for all input fields (`team_name || ''`, `teammate_name || 'teammate'`, `task_id` with multi-level extraction). This ensures hooks do not crash if Claude Code changes the hook input schema across versions.
+Four team hooks read their input fields defensively. The hooks are
+`team-start`, `team-task-complete`, `teammate-idle-handler`, and `team-stop`.
+Each input field has a fallback default. The defaults are `team_name || ''` and
+`teammate_name || 'teammate'`. The `task_id` field uses extraction at more than
+one level. If Claude Code changes the hook input schema between versions, the
+hooks do not crash.
 
 ## Configuration
 
 - Pipeline config: `cagents-memory/_system/config/pipeline_config.yaml`
 - Org pipeline config: `cagents-memory/_system/config/org_pipeline_config.yaml`
-- `teammateMode` in settings.json controls display on the experimental path only: `"in-process"` (default since 2.1.179), `"tmux"` / `"iterm2"` (experimental panes), `"auto"`
-- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` = `"1"` in settings.json env keeps the OPTIONAL experimental named-teammate path available; the DEFAULT concurrent-Agent path does not require it
-- Both are configured in this project's settings.json
+- `teammateMode` in settings.json controls the display on the experimental path
+  only. Its values are `"in-process"`, which is the default since 2.1.179,
+  `"tmux"` and `"iterm2"` for the experimental panes, and `"auto"`
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` = `"1"` in the settings.json env block
+  keeps the optional experimental named-teammate path available. The default
+  concurrent-Agent path does not need it
+- This project's settings.json sets both of them

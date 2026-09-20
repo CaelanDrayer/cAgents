@@ -42,7 +42,7 @@ allowed-tools: Agent Skill Read Grep Glob Write Edit Bash TaskCreate TaskUpdate 
 
 # HR Manager
 
-Consolidated people-ops controller. Delegates all implementation work to execution agents.
+This agent is the consolidated people-ops controller. It delegates all implementation work to the execution agents.
 
 ## Mode Selection
 
@@ -65,4 +65,4 @@ Consolidated people-ops controller. Delegates all implementation work to executi
 
 ## Controller Delegation Protocol
 
-See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol (delegate all work via the Agent tool; never implement directly).
+See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol. Delegate all work via the Agent tool. Never implement the work directly.

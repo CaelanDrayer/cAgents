@@ -2,7 +2,7 @@
 
 ## Delegation Chain (v12.0.0)
 
-The event-driven pipeline architecture uses a 5-state machine with sequential enrichment and nested controller execution:
+The event-driven pipeline uses a machine of 5 states. It runs the enrichment agents in sequence, and it nests the controller execution below them:
 
 ```
 /act (state machine loop, level 0)
@@ -14,7 +14,7 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
   +-> validator (level 1)            -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no `delegation_prompts.yaml` artifact).
+**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` no longer exist as separate stages. `cagents:planner` produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to the standard delegation prompts, and the pipeline writes no `delegation_prompts.yaml` artifact.
 
 ## What /act Does Inline (v12.0.0)
 
@@ -28,7 +28,7 @@ The event-driven pipeline architecture uses a 5-state machine with sequential en
 
 ## Progressive Pipeline (3 Paths, v12.0.0)
 
-Complexity scoring (9 weighted signals) determines which states to execute:
+A complexity score of 9 weighted signals determines which states to execute:
 
 | Path | Score | States | Description |
 |------|-------|--------|-------------|
@@ -36,23 +36,23 @@ Complexity scoring (9 weighted signals) determines which states to execute:
 | **Medium** | 0.25-0.65 | ORCHESTRATED -> PLANNED -> COORDINATED -> VALIDATED | Moderate tasks (~3 agents) |
 | **Full** | > 0.65 | All 5 states | Complex tasks, all agents |
 
-Pre-v12 paths referenced DECOMPOSED and PROMPTS_READY; those states no longer exist and the corresponding agents (decomposer, prompt-engineer) have been folded into planner.
+The pre-v12 paths referred to DECOMPOSED and to PROMPTS_READY. Neither state exists today. The planner absorbed the two agents that served them, which were the decomposer and the prompt-engineer.
 
 ## Debug-Mode Prefix Injection (V10.26.13+)
 
-When `/act` is invoked with `--mode debug`, the **PLANNED** state controller
-spawn gets a prepended prefix block from
-`.claude/skills/act/reference/debug-mode-prompt.md`. The injection point is
-the controller spawn prompt only — enrichment agents (orchestrator,
-planner) are unaffected. When
-`flags.mode === "standard"` (default), no prefix is added and behavior is
-identical to V10.26.12.
+When you run `/act` with `--mode debug`, the controller spawn in the
+**PLANNED** state gets a prefix block at its head. That block comes from
+`.claude/skills/act/reference/debug-mode-prompt.md`. The controller spawn
+prompt is the only injection point. The enrichment agents get no prefix, and
+those agents are the orchestrator and the planner. When
+`flags.mode === "standard"`, which is the default, the pipeline adds no prefix, and
+the behavior matches V10.26.12.
 
-See @debug-mode-prompt.md for the prefix text and sentinel requirements.
+See @debug-mode-prompt.md for the prefix text and for the sentinel rules.
 
 ## Controller Delegation
 
-The controller is selected from plan.yaml's `controller_assignment.primary`:
+The pipeline selects the controller from `controller_assignment.primary` in plan.yaml:
 
 ```javascript
 Agent({
@@ -101,11 +101,11 @@ Controller (level 1):
 | FAIL | PLANNED | Re-run controller with feedback |
 | REVISE | PLANNED | Re-plan (planner re-runs, may also re-run orchestrator) |
 
-Max 3 revision cycles (lowered from 5 in v12.0.0) before escalation to user.
+The pipeline allows a maximum of 3 revision cycles, and v12.0.0 lowered that limit from 5. After the third cycle, the pipeline escalates to the user.
 
 ## Team Mode Delegation
 
-For `--team`, /act delegates to the `cagents:team-bootstrap` agent which creates a real team (the standalone `team-trigger` agent was removed in v12.0.0; the `/team` skill loop now does this work inline. `team-bootstrap` was renamed from the former `team` name in v12.53.0):
+For `--team`, /act delegates to the `cagents:team-bootstrap` agent, and that agent creates a real team. The v12.0.0 bump removed the standalone `team-trigger` agent, so the `/team` skill loop now does that work inline. The v12.53.0 bump renamed `team-bootstrap` from its former `team` name. The delegation call is:
 
 ```javascript
 Agent({
@@ -139,7 +139,7 @@ cagents-memory/sessions/act_{slug}_{YYMMDD}_{NNN}/
 +-- outputs/
 ```
 
-Pre-v12 sessions also wrote `workflow/delegation_prompts.yaml` (produced by prompt-engineer). v12 sessions omit this file; controllers fall back to standard delegation prompts.
+A session from before v12 also wrote `workflow/delegation_prompts.yaml`, and the prompt-engineer produced that file. A v12 session omits the file. Controllers fall back to the standard delegation prompts.
 
 ## Configuration Files
 

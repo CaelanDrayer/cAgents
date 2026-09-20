@@ -29,102 +29,115 @@ metadata:
 
 # Pattern: Context-Budget Tiers (proactive, self-monitored)
 
-> **ADVISORY — self-reported, NOT hook-enforced.** No hook measures an agent's
-> context fill or changes its behavior based on it. This pattern is a discipline a
-> long-running controller or `/team` lead applies to *itself*. It complements the
-> *reactive* PreCompact / PostCompact hooks (which fire only when the harness
-> forces compaction) by acting *before* that point is reached.
+> **ADVISORY: self-reported, NOT hook-enforced.** No hook measures the context
+> fill of an agent, and no hook changes its behavior because of that fill. This
+> pattern is a discipline that a long-running controller or a `/team` lead applies
+> to *itself*. The PreCompact and PostCompact hooks are *reactive*, and they fire
+> only when the harness forces compaction. This pattern complements them, because
+> it acts *before* that point is reached.
 
 ## The per-subagent context aim (advisory)
 
 Aim for about 100k input tokens in a spawned subagent's own context.
-The figure is advisory and absolute: a per-subagent input-token count, not a
-fraction of a context window. Windows vary (200k, 1M), so the same fraction means
-very different absolute sizes.
+The figure is advisory and absolute. It is a per-subagent input-token count, and
+it is not a fraction of a context window. A context window can be 200k or 1M, so
+the same fraction gives a different absolute size.
 
-Past about 200k input tokens in a single subagent, treat the aim as missed and
+Past about 200k input tokens in a single subagent, treat the aim as missed, and
 delegate harder. This outer bound is advisory, not enforced.
 
 Both figures are aims. Nothing measures or enforces them — no hook, no CI check,
-no abort — by design. They work the way the four bands below work: a spawning
-agent holds itself to them.
+no abort — by design. They work the way that the four bands below work. A
+spawning agent holds itself to them.
 
 ### Two actors, two rules
 
 Two different actors, two different rules. `.claude/rules/core/delegation.md`
-§ The Size Rule governs WHAT THE MAIN SESSION CARRIES: a size class, never a
-token count, and its rejection of token gates for that purpose stands unchanged.
-The per-subagent aim governs a different thing — HOW LARGE A SPAWNED SUBAGENT'S
-OWN CONTEXT GETS — measured per spawn, advisory, with no gate. Neither rule is an
-exception to the other; they describe different actors.
+§ The Size Rule governs WHAT THE MAIN SESSION CARRIES. That rule is a size class,
+never a token count, and its rejection of token gates for that purpose stands
+unchanged.
+
+The per-subagent aim governs a different thing. It governs HOW LARGE A SPAWNED
+SUBAGENT'S OWN CONTEXT GETS. It is measured per spawn, and it is advisory, with
+no gate. Neither rule is an exception to the other, because they describe
+different actors.
 
 ## The lever that moves the number
 
-Delegation is the lever that moves the number. Concretely:
-1. Push work down — spawn a child agent for a unit of work instead of doing it in
-   your own context.
-2. Write artifact bodies and evidence to disk; pass file paths, not contents.
-3. Read targeted ranges (`sed -n 'A,Bp'`, `grep -n ... -A N`), not whole files.
-4. Hand off via a disk brief the next agent reads itself, rather than inlining its
-   context into your prompt.
-5. Collect every spawned child before you yield your turn
-   (`run_in_background: false`). A parent that backgrounds children and returns
-   leaves their output to collapse back into its own context later; a spawn that is
-   never collected is indistinguishable from work never delegated.
+Delegation is the lever that moves the number. These are the five levers:
+
+1. Push work down. Spawn a child agent for a unit of work, instead of doing that
+   work in your own context.
+2. Write artifact bodies and evidence to disk. Pass file paths, not contents.
+3. Read targeted ranges with `sed -n 'A,Bp'` or `grep -n ... -A N`. Do not read
+   whole files.
+4. Hand off through a disk brief that the next agent reads for itself. Do not
+   inline its context into your prompt.
+5. Collect every spawned child before you yield your turn, with
+   `run_in_background: false`. A parent that backgrounds its children and then
+   returns leaves their output to collapse back into its own context later. A
+   spawn that is never collected is the same as work you never delegated.
 
 ### Lever 2 is crash tolerance, not thrift
 
-Writing bodies to disk saves context. It also makes your output survive a parent
-that dies:
+When you write bodies to disk, you save context. You also make your output
+survive a parent that dies:
 
-> Before returning, write your output to disk and return the path. Your summary
-> may be lost — a parent can yield, compact, or die before collecting it. Your
-> file will not be.
+> Before you return, write your output to disk and return the path. Your summary
+> can be lost, because a parent can yield, compact, or die before it collects
+> that summary. Your file will not be lost.
 
-In session `act_subagent-token-budget_260909_001` a controller concluded "nothing
-landed — both wave-1 agents were backgrounded and never collected." It was wrong
-about the artifact: 32KB of completed output was already on disk, intact, and
-needed zero re-execution. What a yielding parent loses is the *collection* — the
-summary hand-back — not the child's work, provided the child wrote it down.
+In session `act_subagent-token-budget_260909_001` a controller concluded that
+"nothing landed", because "both wave-1 agents were backgrounded and never
+collected." The controller was wrong about the artifact. 32KB of completed output
+was already on disk, it was intact, and it needed zero re-execution.
 
-**Corollary for parents.** A parent that finds a child's hand-back missing MUST
-check the session `outputs/` directory BEFORE re-spawning. Re-running a child
-whose artifact is already on disk burns the full cost twice — the exact blowup
-this aim exists to prevent.
+A parent that yields loses the *collection*, which is the summary hand-back. It
+does not lose the work of the child, as long as the child wrote that work down.
+
+**Corollary for parents.** Sometimes a parent finds that the hand-back of a
+child is missing. That parent MUST read the session `outputs/` directory BEFORE
+it re-spawns the child. A re-run of a child whose artifact is already on disk
+burns the full cost twice. That is the exact blowup this aim exists to prevent.
 
 ### Lever 5: collect before you yield
 
-Lever 5 fails silently. A spawn that is never collected costs the child's tokens
-and the parent's: the parent re-does the work inline, and its context grows by
-exactly the amount the delegation was meant to remove. "Delegate" alone is not
-enough — the delegation failures in `act_subagent-token-budget_260909_001` were
-spawns that ran and were never collected, not spawns that never happened.
+Lever 5 fails in silence. A spawn that is never collected costs the tokens of the
+child and the tokens of the parent. The parent re-does the work inline, and its
+context grows by exactly the amount that the delegation was meant to remove.
+
+The word "delegate" alone is not enough. In
+`act_subagent-token-budget_260909_001` the delegation failures were spawns that
+ran and were never collected. They were not spawns that never happened.
 
 ### `name` silently overrides `run_in_background: false`
 
-CONFIRMED on Claude Code 2.1.221, from a session transcript. Passing `name` to the
-Agent tool promotes the spawn to a named background teammate and **silently
-overrides an explicit `run_in_background: false`** — no error, no warning, no
-acknowledgement. The call returns immediately, the caller believes it holds a
-completed result, and yields. The child's result is never collected, the parent
-re-does the work inline, and a subagent context that was tracking the aim ends up
-several times past the outer bound.
+CONFIRMED on Claude Code 2.1.221, from a session transcript. When you pass `name`
+to the Agent tool, the tool promotes the spawn to a named background teammate. It
+also **silently overrides an explicit `run_in_background: false`**. There is no
+error, no warning, and no acknowledgement. The call returns at once, the caller
+believes that it holds a completed result, and it yields.
+
+The result of the child is never collected. The parent then re-does the work
+inline. A subagent context that was tracking the aim ends up several times past
+the outer bound.
 
 **Rule:** spawn UNNAMED with `run_in_background: false` for anything you must
-collect in-turn. Reserve named teammates for genuinely resumable conversations
-collected explicitly via `SendMessage`. You cannot have both a named teammate and
-a blocking call — `name` wins. Per-subagent visibility comes from a `TaskCreate`
-whose subject matches the agent's `description`, never from `name`.
+collect in-turn. Reserve a named teammate for a genuinely resumable conversation
+that you collect explicitly with `SendMessage`. You cannot have both a named
+teammate and a blocking call, because `name` wins. Per-subagent visibility comes
+from a `TaskCreate` whose subject matches the `description` of the agent. It never
+comes from `name`.
 
 ## The four bands
 
-Key behavior to the fraction of the context window used. Scale read *depth* to the
-actual window size (200k vs 1M) — the fractions, not fixed token counts, are what
-matter.
+Key your behavior to the fraction of the context window that you have used. Scale
+your read *depth* to the real window size, which can be 200k or 1M. The fractions
+matter, and a fixed token count does not.
 
-The bands and the per-subagent aim above measure different things and do not
-conflict: the bands track *your own* fill as a fraction of *your* window, while
-the aim is an absolute input-token count for a subagent *you spawn*.
+The bands and the per-subagent aim above measure different things, and they do
+not conflict. The bands track *your own* fill as a fraction of *your* window. The
+aim is an absolute input-token count for a subagent that *you spawn*.
 
 | Band | Context used | Behavior |
 |------|--------------|----------|
@@ -135,32 +148,38 @@ the aim is an absolute input-token count for a subagent *you spawn*.
 
 ## Checkpoint at DEGRADING (don't wait for PreCompact)
 
-At the DEGRADING band, proactively write a waypoint — mission + completed work
-items + the single next action — so that if a POOR-band forced compaction lands,
-there is already a clean resume artifact on disk. Waiting for
-`pre-compact-save.cjs` to fire risks checkpointing from a context that is already
-degraded.
+At the DEGRADING band, write a waypoint before you need it. The waypoint holds
+the mission, the completed work items, and the single next action. A POOR-band
+forced compaction can then land on a clean resume artifact that is already on
+disk. If you wait for `pre-compact-save.cjs` to fire, you risk a checkpoint taken
+from a context that is already degraded.
 
 ## Early-warning heuristic: watch your own phrasing
 
-Context degradation shows up in your **own output before you hit the hard
-threshold**. Treat these as a signal to drop a band proactively and checkpoint:
+Context degradation shows up in your **own output before you reach the hard
+threshold**. Treat each signal below as a reason to drop a band early and to
+checkpoint:
 
-- Vague filler — "appropriate handling", "as needed", "handle accordingly" —
-  in place of specific `file:line` citations.
-- Skipped protocol steps (e.g. not re-reading plan objectives before synthesis).
-- Hand-waving ("this should work") instead of evidence.
+- Vague filler in place of a specific `file:line` citation. Examples are
+  "appropriate handling", "as needed", and "handle accordingly".
+- A skipped protocol step, such as no re-read of the plan objectives before
+  synthesis.
+- Hand-waving such as "this should work", in place of evidence.
 
-When you notice this in your own drafting, you are already further into DEGRADING
-than the raw fraction suggests — checkpoint and delegate more aggressively rather
-than pushing on.
+When you notice one of these in your own drafting, you are already further into
+DEGRADING than the raw fraction suggests. Checkpoint, and delegate more
+aggressively. Do not push on.
 
 ## See also
 
-- `@docs/example-store/ex-gates-context-budget-tiers.md` — worked example this playbook distills.
-- `.claude/rules/core/hooks.md` — the reactive PreCompact / PostCompact hooks this complements.
-- `.claude/rules/memory/agent-memory.md` — waypoint types and the checkpoint contract.
-- `.claude/rules/core/controllers.md` — Read-Before-Decide (re-read plan objectives to combat drift).
-- `.claude/rules/core/delegation.md` § The Size Rule — the *other* actor: what the
-  MAIN SESSION may carry. A size class, never a token count. Not the same rule as
-  the per-subagent aim above.
+- `@docs/example-store/ex-gates-context-budget-tiers.md`: the worked example that
+  this playbook distills.
+- `.claude/rules/core/hooks.md`: the reactive PreCompact and PostCompact hooks
+  that this pattern complements.
+- `.claude/rules/memory/agent-memory.md`: the waypoint types and the checkpoint
+  contract.
+- `.claude/rules/core/controllers.md`: Read-Before-Decide. Re-read the plan
+  objectives to combat drift.
+- `.claude/rules/core/delegation.md` § The Size Rule: the *other* actor, which is
+  what the MAIN SESSION may carry. It is a size class, never a token count. It is
+  not the same rule as the per-subagent aim above.

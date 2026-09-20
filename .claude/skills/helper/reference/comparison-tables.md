@@ -2,11 +2,11 @@
 
 Side-by-side comparison matrices for `/helper --compare`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/act context`, and `/act --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/act context`, and `/act --mode debug`._
 >
-> _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0; treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
+> _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0. Treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
 >
-> _v12.1.2 folded `/improve` into `/act` via the keyword router (`/act improve|review|audit|optimize`). The `/improve` columns in the matrices below are PRESERVED as historical reference for users migrating from V11; treat any `/improve` cell as "equivalent `/act` keyword-router behavior" in v12.1.2+. The Integration Pipeline Matrix uses `/act review` / `/act optimize` / `/act improve` for the canonical v12.1.2 surface._
+> _v12.1.2 folded `/improve` into `/act` via the keyword router (`/act improve|review|audit|optimize`). The `/improve` columns in the matrices below are PRESERVED as historical reference for users migrating from V11. Treat any `/improve` cell as "equivalent `/act` keyword-router behavior" in v12.1.2+. The Integration Pipeline Matrix uses `/act review` / `/act optimize` / `/act improve` for the canonical v12.1.2 surface._
 
 ## Core Comparison Matrix
 
@@ -19,7 +19,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | **Output** | Implementation + report | Design document + artifacts | Findings, optimizations, before/after metrics | Aggregated results | Cross-domain integrated deliverable | Recommendation |
 | **Domains** | All 9 archetypes | All (software/business/creative) | All (code, docs, content, infra, content) | All (delegates to /act) | All (sequential /team per domain) | n/a |
 | **Context** | None (inline) | None (main context, for Q&A) | Fork | Fork | None (inline) | None (inline) |
-| **Agent count** | 57 available | 1+ (designer + specialists) | Specialists per mode | Multiple subagents | C-suite + /team per domain | n/a |
+| **Agent count** | 60 available | 1+ (designer + specialists) | Specialists per mode | Multiple subagents | C-suite + /team per domain | n/a |
 
 ## When-to-Use Decision Matrix
 
@@ -124,5 +124,5 @@ Side-by-side comparison matrices for `/helper --compare`.
 
 The keyword router is case-insensitive on the first request token.
 `audit` is an alias for `review`. All V11.0 `/improve` mode-specific
-flags carry through unchanged — they bind to the mode inferred from the
-keyword.
+flags carry through unchanged. They bind to the mode that the
+router infers from the keyword.

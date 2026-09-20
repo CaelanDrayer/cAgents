@@ -10,41 +10,51 @@ paths:
 
 # cAgents Hook System
 
-34 .cjs files = 26 unique registered hooks across 18 event types, plus 5 dispatched sub-validators and 3 non-hook utilities. See the Architecture section below and @resources/hook-catalog.md for per-hook detail.
+34 .cjs files = 26 unique registered hooks across 18 event types.
+cAgents also has 5 dispatched sub-validators and 3 non-hook utilities. See the Architecture section below. See @resources/hook-catalog.md for the detail of each hook.
 
-> **Count generator (A2-11, v12.x)**: the counts (34 / 26 / 18) are derivable
-> from disk by `scripts/lint-hooks.cjs`, which counts `.cjs` files, parses
-> `.claude/settings.json` for unique registered hook names + event keys, and
-> asserts the inventory is internally consistent
-> (`hook_files === registered + dispatched + utilities`). Run
-> `node scripts/lint-hooks.cjs` after any hook add/remove and update the
-> hardcoded counts in this doc, `CLAUDE.md`, and the `settings.json` `$comment`
-> to match. `tests/hooks/lint-hooks.test.js` guards the script.
+> **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 34, 26, and 18 from disk. It counts the `.cjs` files, and it parses
+> `.claude/settings.json` for the unique registered hook names and the event keys. It then asserts that the inventory is internally consistent, with
+> `hook_files === registered + dispatched + utilities`. Run `node scripts/lint-hooks.cjs` after you add a hook or remove one. Then update the hardcoded
+> counts in this doc, in `CLAUDE.md`, and in the `$comment` of `settings.json`. `tests/hooks/lint-hooks.test.js` guards the script.
 
 ## Architecture
 
-cAgents uses a unified CJS hook system configured in `.claude/settings.json`:
+cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
 
-- **CJS hooks** (`.claude/hooks/`): 34 `.cjs` files = 26 unique registered hooks + 5 dispatched sub-validators (run in-process by `write-edit-dispatch.cjs` + `agent-dispatch.cjs`) + 3 non-hook utilities: `hook-utils.cjs`, `run-hook.cjs` launcher, and `bash-guard-evaluator.cjs` (pure GuardFall evaluator library `require`'d by `bash-validator.cjs`; neither registered nor dispatched — v12.34.0). All hooks use the `createHook()` factory from `hook-utils.cjs` which eliminates boilerplate (stdin reading, try-catch, JSON output). (`eval-runner.cjs` is a standalone CLI, relocated to `scripts/` in A2-10 — no longer counted under `.claude/hooks/`.)
-- **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0 / D1b): a single deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in-process — `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED. This replaced three separate `Write|Edit` registrations, cutting cold-start node spawns per Write|Edit from 3 → 1.
-- **Agent dispatcher** (`agent-dispatch.cjs`, A2-12): a single deny-first PreToolUse[Agent] entry that runs two sub-validators in-process — `session-init-gate.cjs` (session-presence DENY gate, fail-CLOSED) and `model-routing-advisor.cjs` (advisory, fail-OPEN). This replaced three separate `Agent` registrations (the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op was dropped in A2-04), cutting cold-start node spawns per Agent spawn from 3 → 1. `approval-gate.cjs` was deleted in A2-02 (structurally dead — its `_data/policies/` dir + `AGENT_MEMORY_DIR` env never existed in production).
-- **Prompt hooks**: None currently active. The Stop prompt hook was removed in V9.6.2 due to unreliable LLM JSON responses causing recurring validation failures. The `verify-completion.cjs` command hook provides equivalent file-based verification.
-- **Self-contained invocation via run-hook.cjs**: All hooks are called via `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'` — a bash wrapper with a 3-tier fallback chain that resolves the plugin root (`CLAUDE_PLUGIN_ROOT` → `CLAUDE_PROJECT_DIR` → `pwd`), then launches `run-hook.cjs` which resolves the target hook path using `__dirname`.
+- **CJS hooks** (`.claude/hooks/`): 26 unique registered hooks, plus 5 dispatched sub-validators, plus 3 non-hook utilities. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the sub-validators in process. The
+  3 utilities are `hook-utils.cjs`, the `run-hook.cjs` launcher, and `bash-guard-evaluator.cjs`, a pure GuardFall evaluator library that `bash-validator.cjs` requires and that is neither registered nor dispatched
+  (v12.34.0). Every hook uses the `createHook()` factory from `hook-utils.cjs`, which removes the boilerplate: the stdin reading, the try-catch, and the JSON output. `eval-runner.cjs` is
+  a standalone CLI that A2-10 moved to `scripts/`, so it no longer counts under `.claude/hooks/`.
+- **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0, D1b): one deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in process: `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED.
+  This entry replaced three separate `Write|Edit` registrations, and it cut the cold-start node spawns per Write|Edit from 3 to 1.
+- **Agent dispatcher** (`agent-dispatch.cjs`, A2-12): one deny-first PreToolUse[Agent] entry that runs two sub-validators in process: `session-init-gate.cjs`, a session-presence DENY gate that fails CLOSED, and `model-routing-advisor.cjs`,
+  an advisory check that fails OPEN. This entry replaced three separate `Agent` registrations, and it cut the cold-start node spawns per Agent spawn from
+  3 to 1. A2-04 dropped the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op. A2-02 deleted `approval-gate.cjs`, because that hook was structurally dead: its `_data/policies/` dir
+  and its `AGENT_MEMORY_DIR` env var never existed in production.
+- **Prompt hooks**: None is active now. V9.6.2 removed the Stop prompt hook, because unreliable LLM JSON responses caused recurring validation failures. The `verify-completion.cjs` command
+  hook gives the equivalent file-based verification.
+- **Self-contained invocation with run-hook.cjs**: Claude Code calls every hook with `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'`. That bash wrapper holds a 3-tier fallback chain
+  which resolves the plugin root: `CLAUDE_PLUGIN_ROOT`, then `CLAUDE_PROJECT_DIR`, then `pwd`. The wrapper then launches `run-hook.cjs`, which resolves the target hook path with `__dirname`.
 
 ### V9.5 Changes
 
-The V9.5 refactoring eliminated the dual shell+JS architecture that caused recurring bugs (ERR EXIT trap duplicate output, `set -euo pipefail` propagation, fd-redirection fragility, double-JSON output from dispatch). Replaced with the `createHook()` factory, the `bash-validator.cjs` CJS hook, and the `findTeamSession()` helper. Logic from `on-session-start.sh`, `on-session-end.sh`, `stop-workflow.sh`, `pre-write.sh`, and `pre-bash.sh` was merged into the corresponding CJS hooks.
+The V9.5 refactoring removed the dual shell and JS architecture. That architecture caused recurring bugs: a duplicate output from the ERR EXIT trap,
+`set -euo pipefail` propagation, fd-redirection fragility, and a double JSON output from the dispatch. The `createHook()` factory, the `bash-validator.cjs` CJS hook, and the `findTeamSession()`
+helper replaced it. The matching CJS hooks absorbed the logic of `on-session-start.sh`, `on-session-end.sh`, `stop-workflow.sh`, `pre-write.sh`, and `pre-bash.sh`.
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 26 unique registered hooks across 18 of these events (plus 5 sub-validators dispatched in-process: 3 by `write-edit-dispatch.cjs`, 2 by `agent-dispatch.cjs`). Six events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, `ElicitationResult`) have no cAgents hooks but are available for custom use. (`ConfigChange` was wired in v12.7.0 LP-17.)
+Claude Code supports 24 hook event types. cAgents implements 26 unique registered hooks across 18 of those events. cAgents also dispatches 5 sub-validators in
+process: `write-edit-dispatch.cjs` dispatches 3, and `agent-dispatch.cjs` dispatches 2. Six events have no cAgents hook, and they stay available for custom use: `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`,
+`FileChanged`, `Elicitation`, and `ElicitationResult`. LP-17 wired `ConfigChange` in v12.7.0.
 
 | Hook Type | Trigger | cAgents Hook | Purpose |
 |-----------|---------|--------------|---------|
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `UserPromptSubmit` | User submits prompt | `prompt-router.cjs` | Enforce delegation rules + suggest routing (P1-7: consolidated the former `delegation-enforcer.cjs` + `magic-keywords.cjs`) |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs` (Bash), `write-edit-dispatch.cjs` (Write\|Edit — dispatches secret-detection + controller-delegation-validator + skill-size-monitor in-process), `agent-dispatch.cjs` (Agent — dispatches session-init-gate + model-routing-advisor in-process) — see catalog | Validate, block dangerous ops, enforce session-presence gate |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs` (Bash), `write-edit-dispatch.cjs` (Write\|Edit: dispatches secret-detection, controller-delegation-validator, and skill-size-monitor in process), `agent-dispatch.cjs` (Agent: dispatches session-init-gate and model-routing-advisor in process). See the catalog. | Validate, block dangerous ops, enforce session-presence gate |
 | `ConfigChange` | Config file changed | `config-change-logger.cjs` | Log config changes (LP-17, v12.7.0) |
 | `PermissionRequest` | Permission dialog | `permission-handler.cjs` | Auto-approve safe patterns, HITL gates |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs`, `validator-evidence-recheck.cjs`, `spawn-footprint.cjs` (Agent) | Validate JSON/YAML syntax, audit file changes, re-verify cited evidence, record spawn token footprints (diagnostic only) |
@@ -54,17 +64,23 @@ Claude Code supports 24 hook event types. cAgents implements 26 unique registere
 | `SubagentStop` | Subagent finishes | `subagent-stop-tracker.cjs` | Log completion, capture summaries + duration |
 | `Stop` | Claude stops responding | `verify-completion.cjs`, `goal-evaluator-logger.cjs`, `secret-restore.cjs` | Verify completion; capture `/goal` reasons; restore sanitized secrets |
 | `StopFailure` | Claude fails to stop cleanly | `stop-failure-handler.cjs` | Save recovery state |
-| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (**experimental named-teammate path only** — no-op on the default concurrent-Agent wave model) |
-| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate when done (**experimental named-teammate path only** — no-op on the default concurrent-Agent wave model) |
+| `TeammateIdle` | Teammate goes idle | `teammate-idle-handler.cjs` | Find available work or stop teammate (**experimental named-teammate path only**: a no-op on the default concurrent-Agent wave model) |
+| `TaskCompleted` | Task finishes | `team-task-complete.cjs` | Update task list, unblock dependencies, stop teammate when done (**experimental named-teammate path only**: a no-op on the default concurrent-Agent wave model) |
 | `InstructionsLoaded` | Instructions/CLAUDE.md loaded | `instructions-loaded.cjs` | Validate rules dir, inject active session context |
 | `PreCompact` | Before context compaction | `pre-compact-save.cjs` | Save critical state + coordination state |
 | `PostCompact` | After context compaction | `post-compact-restore.cjs` | Log workflow context to disk after compaction (no systemMessage per thinking-block-immutability contract; model reads plan.yaml + coordination_log.yaml directly) |
 
-Four events (`WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`) are available for custom use; cAgents does not register handlers. (`ConfigChange` was wired to `config-change-logger.cjs` in LP-17 / v12.7.0 — see table above.)
+Four events are available for custom use, and cAgents registers no handler for them: `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, and `FileChanged`. LP-17 wired `ConfigChange` to `config-change-logger.cjs`
+in v12.7.0. See the table above.
 
-**Team-hook scope note (Claude Code v2.1.178+)**: since `/team`'s DEFAULT execution model is **concurrent-Agent waves** (implicit teams — `TeamCreate`/`TeamDelete` were removed in 2.1.178), the interactive team hooks apply only to the OPTIONAL experimental named-background-teammate path (gated on `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). Specifically, `TeammateIdle` (`teammate-idle-handler.cjs`) and `TaskCompleted` (`team-task-complete.cjs`), plus `team-start.cjs` (SubagentStart), serve the experimental path and are no-ops on the default concurrent-Agent subagent-wave model (they are not part of the default subagent model). All three remain registered; their **event names and the file/registered/event counts are unchanged**. `team-stop.cjs` (SessionEnd) is the exception — its session-teardown work (agent-tree cleanup, `execution_summary.yaml`, SDK-UUID pointer unlink) runs for **all** session types, not just experimental-team sessions.
+**Team-hook scope note (Claude Code v2.1.178+)**: The default execution model of `/team` is **concurrent-Agent waves**, so its teams are implicit. Claude Code 2.1.178 removed
+the `TeamCreate` tool and the `TeamDelete` tool. The interactive team hooks therefore apply to the optional experimental named-background-teammate path only, which `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` gates. Three
+hooks serve that path: `TeammateIdle` (`teammate-idle-handler.cjs`), `TaskCompleted` (`team-task-complete.cjs`), and `team-start.cjs` (SubagentStart). All three are no-ops on the default concurrent-Agent wave model, and all three
+stay registered. Their **event names do not change, and the file count, the registered count, and the event count do not change**. `team-stop.cjs` (SessionEnd)
+is the exception. Its session-teardown work covers the agent-tree cleanup, `execution_summary.yaml`, and the SDK-UUID pointer unlink, and it runs for **every** session type.
 
-See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, outputs, side effects) and the Secret Detection pattern catalog.
+See @resources/hook-catalog.md for the full detail of each hook. It covers the matchers, the inputs, the outputs, and the side effects. It also holds
+the Secret Detection pattern catalog.
 
 ### Matcher Patterns by Event
 
@@ -81,27 +97,19 @@ See @resources/hook-catalog.md for the full per-hook detail (matchers, inputs, o
 
 ## Concurrency Contract (v12.15.0+)
 
-Under two concurrent same-directory cAgents sessions, every hook MUST satisfy
-four invariants: deterministic session resolution via `findActiveSession(input.session_id)`,
-lock-protected shared-file writes, liveness-aware session-catchup, and
-session-id-bound secret restore. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md
-for the full contract, default resolution chain, regression tests, and the
-narrow `fallbackHeuristic: true` opt-in cases for Stop/SessionEnd hooks.
+When two cAgents sessions run at the same time in one directory, every hook must satisfy four invariants: deterministic session resolution through `findActiveSession(input.session_id)`, lock-protected
+writes to a shared file, liveness-aware session-catchup, and a secret restore that is bound to the session id. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md for the full contract,
+the default resolution chain, the regression tests, and the narrow `fallbackHeuristic: true` opt-in cases for the Stop hooks and the SessionEnd hooks.
 
-**v12.32.0 additions**: (1) a persisted SDK-transcript-UUID → cAgents-session map
-lets `findActiveSession` / `findTeamSession` resolve a UUID-only hook payload
-deterministically before the env-var step; the map-writer hooks
-`subagent-tracker.cjs` + `session-init-gate.cjs` `upsertSdkSessionMap` on a
-confident resolution (never the newest-session heuristic), and `team-stop.cjs`
-unlinks the pointer at SessionEnd. (2) `verify-completion.cjs` gains a
-`sessionActivelyWorking` discriminator (running child agent OR fresh heartbeat) so
-the Stop hook WARNs instead of blocking a legitimately mid-flight session, while
-still blocking an abandoned one. Detail lives in @resources/hook-catalog.md;
-session `run_hook-session-id_260701_001`.
+**v12.32.0 additions**: v12.32.0 made two changes. First, a persisted map from an SDK transcript UUID to a cAgents session lets `findActiveSession` and `findTeamSession` resolve
+a UUID-only hook payload deterministically, before the env-var step. The map-writer hooks are `subagent-tracker.cjs` and `session-init-gate.cjs`. Each one calls `upsertSdkSessionMap` on a confident resolution,
+and never on the newest-session heuristic. `team-stop.cjs` unlinks the pointer at SessionEnd. Second, `verify-completion.cjs` gained a `sessionActivelyWorking` discriminator, which is true when a child
+agent runs or when the heartbeat is fresh. The Stop hook then WARNs on a session that is legitimately mid-flight, and it still blocks
+an abandoned one. Detail lives in @resources/hook-catalog.md, in session `run_hook-session-id_260701_001`.
 
 ## createHook() Factory
 
-All hooks use the `createHook(name, handler)` factory from `hook-utils.cjs`:
+Every hook uses the `createHook(name, handler)` factory from `hook-utils.cjs`:
 
 ```javascript
 const { createHook } = require('./hook-utils.cjs');
@@ -129,9 +137,11 @@ createHook('MyHook', async (input) => {
 });
 ```
 
-**Factory handles**:
+**The factory handles**:
 
-- stdin reading with a fallback deadline (`STDIN_FALLBACK_MS`, 2000 ms). It MUST stay strictly below the smallest registered hook `timeout` in `.claude/settings.json` — at 3000 ms it tied `PreToolUse[Agent]`/`UserPromptSubmit` (`timeout: 3`) and the harness cancelled those hooks before they could emit a verdict. Pinned by `tests/hooks/stdin-fallback-below-hook-timeout.test.js`.
+- stdin reading with a fallback deadline (`STDIN_FALLBACK_MS`, 2000 ms). That deadline must stay strictly below the smallest registered hook `timeout` in `.claude/settings.json`. At 3000
+  ms it tied the `timeout: 3` of `PreToolUse[Agent]` and of `UserPromptSubmit`, and the harness then cancelled those hooks before they could emit a verdict.
+  `tests/hooks/stdin-fallback-below-hook-timeout.test.js` pins the deadline.
 - JSON parsing with graceful fallback to `{}`
 - Try-catch wrapping (errors produce `{"continue": true}`)
 - Result transformation (`deny` shorthand -> full hookSpecificOutput)
@@ -141,7 +151,7 @@ createHook('MyHook', async (input) => {
 
 ### Input (stdin)
 
-Hooks receive JSON on stdin:
+A hook receives JSON on stdin:
 
 ```json
 {
@@ -157,7 +167,7 @@ Hooks receive JSON on stdin:
 
 ### Output (stdout)
 
-Hooks output JSON to stdout:
+A hook writes JSON to stdout:
 
 ```json
 {
@@ -173,71 +183,59 @@ Hooks output JSON to stdout:
 
 ### Exit Codes
 
-Exit codes apply to command hooks only. HTTP hooks communicate success/failure via HTTP response status codes (2xx = success, non-2xx may block depending on event). Prompt and agent hooks communicate via their LLM response.
+An exit code applies to a command hook only. An HTTP hook signals success or failure with the HTTP response status code. A 2xx
+code is a success, and a code that is not 2xx can block, depending on the event. A prompt hook and an agent hook
+signal through their LLM response.
 
-- `0`: Success — JSON parsed from stdout. Use `permissionDecision: "deny"` in `hookSpecificOutput` to block PreToolUse operations. For most events, stdout is only shown in verbose mode (Ctrl+O). Exceptions: `UserPromptSubmit` and `SessionStart` add stdout as context Claude can see.
-- `2`: Blocking error — Claude Code ignores stdout JSON and feeds stderr to the model. The effect depends on the event:
-  - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `StopFailure` (prevents stop-failure handling), `SubagentStop` (prevents stop), `TeammateIdle` (keeps working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation)
-  - **Cannot block**: `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SessionStart`, `SessionEnd`, `PreCompact`, `PostCompact`, `InstructionsLoaded`, `WorktreeRemove` — stderr shown to user only
+- `0`: Success. Claude Code parses the JSON from stdout. To block a PreToolUse operation, use `permissionDecision: "deny"` in `hookSpecificOutput`. For most events, Claude Code
+  shows stdout in verbose mode only (Ctrl+O). `UserPromptSubmit` and `SessionStart` are the exceptions, because they add stdout as context that Claude can see.
+- `2`: Blocking error. Claude Code ignores the stdout JSON, and it feeds stderr to the model. The effect depends on the event:
+  - **Can block**: `PreToolUse` (blocks tool call), `PermissionRequest` (denies permission), `UserPromptSubmit` (blocks prompt), `Stop` (prevents stopping), `StopFailure` (prevents stop-failure handling), `SubagentStop` (prevents stop), `TeammateIdle` (keeps
+    working), `TaskCompleted` (prevents completion), `ConfigChange` (blocks change), `WorktreeCreate` (fails creation)
+  - **Cannot block**: `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SessionStart`, `SessionEnd`, `PreCompact`, `PostCompact`, `InstructionsLoaded`, and `WorktreeRemove`. Claude Code shows stderr to the user only.
 - Any other exit code: Non-blocking error, stderr shown in verbose mode, execution continues.
 
 ## Hook Handler Types
 
 Claude Code supports four hook handler types:
 
-### Command Hooks (`type: "command"`)
+- **Command hook** (`type: "command"`): It runs a shell command, receives JSON on stdin, and signals through the exit code and the stdout JSON.
+- **HTTP hook** (`type: "http"`): It sends an HTTP POST request to a URL endpoint. Use it for an external integration, for a webhook, or
+  for logging to an external service.
+- **Prompt hook** (`type: "prompt"`): It uses an LLM to evaluate a condition. The LLM returns a yes decision or a no decision.
+- **Agent hook** (`type: "agent"`): It spawns a subagent with tool access to Read, Grep, and Glob. The subagent then checks a condition.
 
-Run a shell command. Receives JSON on stdin, communicates via exit codes and stdout JSON.
+### Handler Fields
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `type` | yes | `"command"` |
-| `command` | yes | Shell command to execute |
-| `timeout` | no | Seconds before canceling (default: 600) |
-| `async` | no | If `true`, runs in background without blocking |
-| `statusMessage` | no | Custom spinner message while hook runs |
-| `once` | no | If `true`, runs once per session then removed (skills only) |
-
-### HTTP Hooks (`type: "http"`)
-
-Send an HTTP POST request to a URL endpoint. Useful for external integrations, webhooks, and logging to external services.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `type` | yes | `"http"` |
-| `url` | yes | URL endpoint to POST to (receives JSON payload) |
-| `headers` | no | Custom HTTP headers as key-value pairs |
-| `timeout` | no | Seconds before canceling (default: 30) |
-
-### Prompt Hooks (`type: "prompt"`)
-
-Use an LLM to evaluate conditions and return yes/no decisions.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `type` | yes | `"prompt"` |
-| `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
-| `model` | no | Model for evaluation (defaults to fast model) |
-| `timeout` | no | Seconds before canceling (default: 30) |
-
-### Agent Hooks (`type: "agent"`)
-
-Spawn a subagent with tool access (Read, Grep, Glob) to verify conditions.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `type` | yes | `"agent"` |
-| `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
-| `model` | no | Model for evaluation |
-| `timeout` | no | Seconds before canceling (default: 60) |
+| Handler | Field | Required | Description |
+|---------|-------|----------|-------------|
+| command | `type` | yes | `"command"` |
+| command | `command` | yes | Shell command to execute |
+| command | `timeout` | no | Seconds before canceling (default: 600) |
+| command | `async` | no | If `true`, runs in background without blocking |
+| command | `statusMessage` | no | Custom spinner message while hook runs |
+| command | `once` | no | If `true`, runs once per session then removed (skills only) |
+| http | `type` | yes | `"http"` |
+| http | `url` | yes | URL endpoint to POST to (receives JSON payload) |
+| http | `headers` | no | Custom HTTP headers as key-value pairs |
+| http | `timeout` | no | Seconds before canceling (default: 30) |
+| prompt | `type` | yes | `"prompt"` |
+| prompt | `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
+| prompt | `model` | no | Model for evaluation (defaults to fast model) |
+| prompt | `timeout` | no | Seconds before canceling (default: 30) |
+| agent | `type` | yes | `"agent"` |
+| agent | `prompt` | yes | Prompt text. Use `$ARGUMENTS` for hook input JSON |
+| agent | `model` | no | Model for evaluation |
+| agent | `timeout` | no | Seconds before canceling (default: 60) |
 
 **Supported events (all four types)**: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `TaskCompleted`.
 
-**Command hooks only** (http/prompt/agent NOT supported): `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `PostCompact`, `Notification`, `TeammateIdle`, `InstructionsLoaded`, `StopFailure`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`.
+**Command hooks only** (http, prompt, and agent are not supported): `SessionStart`, `SessionEnd`, `SubagentStart`, `PreCompact`, `PostCompact`, `Notification`, `TeammateIdle`, `InstructionsLoaded`, `StopFailure`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`.
 
 ### Async Hooks
 
-Command hooks support `"async": true` to run in the background without blocking. Useful for logging, analytics, or notifications that should not delay tool execution.
+A command hook supports `"async": true`, which runs the hook in the background without blocking. Use it for logging, for analytics, or for a
+notification that must not delay the tool execution.
 
 ```json
 {
@@ -249,7 +247,7 @@ Command hooks support `"async": true` to run in the background without blocking.
 
 ### Hooks in Skills and Agents
 
-Hooks can be defined in skill and subagent YAML frontmatter, scoped to the component's lifecycle:
+You can define a hook in the YAML frontmatter of a skill or a subagent. The hook is then scoped to that component's lifecycle:
 
 ```yaml
 ---
@@ -263,9 +261,9 @@ hooks:
 ---
 ```
 
-For subagents, `Stop` hooks are automatically converted to `SubagentStop` events.
+For a subagent, Claude Code converts a `Stop` hook to a `SubagentStop` event automatically.
 
-**Note**: For SessionStart context injection, use a command hook that returns `hookSpecificOutput.additionalContext` instead of a prompt hook. See `session-catchup.cjs` for the cAgents implementation.
+For SessionStart context injection, use a command hook that returns `hookSpecificOutput.additionalContext`. Do not use a prompt hook. See `session-catchup.cjs` for the cAgents implementation.
 
 ## Creating Custom Hooks
 
@@ -321,7 +319,7 @@ main();
 
 ## Hook Configuration
 
-Hooks are registered in `.claude/settings.json`:
+Register each hook in `.claude/settings.json`:
 
 ```json
 {
@@ -342,58 +340,60 @@ Hooks are registered in `.claude/settings.json`:
 }
 ```
 
-The `bash -c` wrapper provides a 3-tier fallback chain for resolving the plugin root: `CLAUDE_PLUGIN_ROOT` (official plugin env var) → `CLAUDE_PROJECT_DIR` (user's project dir) → `$(pwd)` (last resort).
+The `bash -c` wrapper gives a 3-tier fallback chain that resolves the plugin root: `CLAUDE_PLUGIN_ROOT`, the official plugin env var, then `CLAUDE_PROJECT_DIR`, the project
+dir of the user, then `$(pwd)` as the last resort.
 
 ## Best Practices
 
-1. **Use createHook()**: Eliminates boilerplate and guarantees correct output format.
-2. **Fast execution**: Keep hooks under 5 seconds.
-3. **Graceful failure**: `createHook()` handles errors automatically (returns `{"continue": true}`).
-4. **Clear logging**: Use `console.error()` for logs (stderr), `createHook()` handles stdout.
-5. **Idempotent**: Hooks may run multiple times.
-6. **Self-contained**: `js-yaml` is the sole declared external dependency and every hook that uses it wraps the require in try/catch with a graceful degraded path (so hooks never crash at load when node_modules is absent); everything else is built-in Node.js.
-7. **State in files**: Store state in cagents-memory, not memory.
+1. **Use createHook()**: It removes the boilerplate, and it guarantees the correct output format.
+2. **Fast execution**: Keep each hook under 5 seconds.
+3. **Graceful failure**: `createHook()` handles an error automatically, and it returns `{"continue": true}`.
+4. **Clear logging**: Use `console.error()` for a log line, which goes to stderr. `createHook()` handles stdout.
+5. **Idempotent**: A hook can run more than one time.
+6. **Self-contained**: `js-yaml` is the one declared external dependency. Every hook that uses it wraps the require in a try-catch with a graceful degraded path,
+   so no hook crashes at load when node_modules is absent. Everything else is built in to Node.js.
+7. **State in files**: Store the state in cagents-memory, and not in memory.
 8. **Single JSON output**: `createHook()` guarantees exactly one JSON output to stdout.
 
 ## Troubleshooting
 
 ### Hook not running
 
-- Check `.claude/settings.json` for registration
-- Verify file permissions (`chmod +x`)
-- Verify `node` is in PATH
+- Check `.claude/settings.json` for the registration.
+- Make sure that the file permissions are correct (`chmod +x`).
+- Make sure that `node` is in PATH.
 
 ### Hook blocks unexpectedly
 
-- Check `permissionDecisionReason` in output
-- Check matcher pattern for PreToolUse
-- Test hook manually: `echo '{}' | node .claude/hooks/<name>.cjs`
+- Check `permissionDecisionReason` in the output.
+- Check the matcher pattern for PreToolUse.
+- Do a manual test of the hook: `echo '{}' | node .claude/hooks/<name>.cjs`
 
 ### "SessionEnd hook...team-stop...failed: Hook cancelled"
 
-- Expected when cancelling a session (Ctrl+C, escape, or closing Claude Code)
-- Claude Code terminates SessionEnd hooks during teardown before they can finish
-- No data is lost or corrupted — all file writes are individually try-catch guarded
-- The team session's final metrics/status may not be updated, but this is harmless
+- This message is expected when you cancel a session with Ctrl+C, with escape, or by closing Claude Code.
+- Claude Code terminates a SessionEnd hook during the teardown, before the hook can finish.
+- No data is lost, and no data is corrupted. Each file write has its own try-catch guard.
+- The final metrics and the final status of the team session can stay un-updated, but that is harmless.
 
 ### SessionEnd hooks timing out
 
-- Use `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` to extend the timeout (CC 2.1.74)
-- Set in shell profile or `.env`: `export CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=10000` (10 seconds)
+- Use `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` to extend the timeout (CC 2.1.74).
+- Set it in your shell profile or in `.env`: `export CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=10000` (10 seconds)
 - For `team-stop.cjs` which writes final metrics, `5000`–`10000` ms is recommended
-- If hooks still time out after increasing the limit, check for blocking I/O or large file operations
+- If a hook still times out after you extend the limit, check for blocking I/O or for a large file operation.
 
 ### Hook output not shown
 
-- Ensure using `createHook()` factory (handles output correctly)
-- Check JSON is valid: `echo '{}' | node .claude/hooks/<name>.cjs 2>/dev/null | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)))"`
+- Make sure that the hook uses the `createHook()` factory, which handles the output correctly.
+- Check that the JSON is valid: `echo '{}' | node .claude/hooks/<name>.cjs 2>/dev/null | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)))"`
 
 ## Related Files
 
-- `.claude/settings.json` — Hook registration (active configuration)
-- `.claude/hooks/hook-utils.cjs` — Shared utilities and `createHook()` factory
-- `cagents-memory/_system/config/hooks.yaml` — Hook behavior config
-- `scripts/ci/cagents-ci.sh` — CI runner (hook lint + tests); `node scripts/lint-hooks.cjs` for the hook inventory
-- `cagents-memory/_system/evals/` — Evaluation framework
+- `.claude/settings.json`: the hook registration, which is the active configuration
+- `.claude/hooks/hook-utils.cjs`: the shared utilities and the `createHook()` factory
+- `cagents-memory/_system/config/hooks.yaml`: the config for the hook behavior
+- `scripts/ci/cagents-ci.sh`: the CI runner for the hook lint and for the tests. Run `node scripts/lint-hooks.cjs` for the hook inventory.
+- `cagents-memory/_system/evals/`: the evaluation framework
 
-**Removed in V9.5** (no longer present in codebase): legacy `hooks/` directory, `scripts/hook-dispatch.sh`, `scripts/hook-dispatch-node.sh`.
+**Removed in V9.5**: the codebase no longer holds the legacy `hooks/` directory, `scripts/hook-dispatch.sh`, or `scripts/hook-dispatch-node.sh`.

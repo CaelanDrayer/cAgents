@@ -25,7 +25,8 @@ metadata:
 
 # Pattern: Two-Stage Review Protocol (V10.22.0)
 
-Every reviewer loop MUST use two distinct review stages, in strict order. No code quality review before spec compliance passes.
+Every reviewer loop MUST use two distinct review stages, in strict order. No code
+quality review starts before the spec compliance review passes.
 
 ## Stage 1: Spec Compliance Review
 
@@ -48,12 +49,14 @@ Reviewer prompt (Stage 1):
 
 ### Stage 1 checks
 
-- Every acceptance criterion has a MET/NOT MET/PARTIAL status
-- Evidence is specific (file paths, line numbers, test output)
-- No subjective quality judgments in this stage
-- Verdict is binary: all criteria MET = PASS, otherwise REVISE
+- Every acceptance criterion has a MET, NOT MET, or PARTIAL status.
+- The evidence is specific: file paths, line numbers, and test output.
+- This stage holds no subjective quality judgment.
+- The verdict is binary. All criteria MET gives PASS. Anything else gives REVISE.
 
-**If Stage 1 returns REVISE**: Send feedback to execution agent with the specific unmet criteria. Do NOT proceed to Stage 2. The execution agent must address all unmet criteria before code quality review begins.
+**If Stage 1 returns REVISE**: send the feedback to the execution agent with the
+specific unmet criteria. Do NOT go on to Stage 2. The execution agent must
+address every unmet criterion before the code quality review starts.
 
 ## Stage 2: Code Quality Review
 
@@ -79,55 +82,107 @@ Reviewer prompt (Stage 2):
 
 ### Stage 2 checks
 
-- Only runs after Stage 1 PASS
-- Findings are severity-tagged (CRITICAL/HIGH/LOW)
-- REVISE threshold: any CRITICAL or 2+ HIGH findings
-- LOW findings are recorded but do not trigger REVISE
-- Apply the subtractive lens — what can be deleted, and could stdlib/native/an existing dependency replace new code? See @.claude/rules/playbooks/pat-minimal-solution-ladder.md.
+- Stage 2 runs only after Stage 1 gives PASS.
+- Each finding carries a severity tag of CRITICAL, HIGH, or LOW.
+- The REVISE threshold is any CRITICAL finding, or 2 or more HIGH findings.
+- A LOW finding is recorded, but it does not trigger REVISE.
+- Apply the subtractive lens. Ask what you can delete. Ask whether the stdlib, a
+  native feature, or an existing dependency can replace the new code. See
+  @.claude/rules/playbooks/pat-minimal-solution-ladder.md.
 
 ### Distrust the self-report
 
-Treat the executor's own account of its work as an unverified claim, not as evidence. A `self_validation` YAML block, a `ponytail:` deliberate-shortcut marker, or a stated rationale like "kept it simple per YAGNI" or "validated elsewhere" is something to check against the actual diff — never something that lowers a finding's severity. If a claim cannot be located in the diff, that is a REVISE, not a pass. See @docs/example-store/ex-review-distrust-self-report.md.
+Treat the account that an executor gives of its own work as an unverified claim,
+not as evidence. Check each of these against the actual diff:
+
+- a `self_validation` YAML block;
+- a `ponytail:` deliberate-shortcut marker;
+- a stated rationale such as "kept it simple per YAGNI" or "validated elsewhere".
+
+None of them lowers the severity of a finding. If you cannot find a claim in the
+diff, that is a REVISE, not a pass. See
+@docs/example-store/ex-review-distrust-self-report.md.
 
 ## Why two stages
 
-- Prevents "code is beautiful but doesn't meet requirements" false passes
-- Ensures functional correctness before spending review budget on quality
-- Separates objective (spec compliance) from subjective (code quality) assessment
-- Reduces revision round waste (fixing quality issues in code that doesn't meet spec)
+- It prevents the false pass where the code is beautiful but does not meet the
+  acceptance criteria.
+- It confirms functional correctness before you spend review budget on quality.
+- It separates the objective assessment of spec compliance from the subjective
+  assessment of code quality.
+- It reduces the waste in the revision rounds. You no longer fix quality issues
+  in code that does not meet the spec.
 
 ## Fresh reviewer per round
 
-On each REVISE round, re-spawn a fresh reviewer with no carried context — it receives the diff and the rubric only. A reviewer that carries its own prior REVISE reasoning tends to anchor on that earlier judgment, so starting each round clean keeps the assessment independent. This is the canonical statement of the rule; `controllers.md` references it.
+On each REVISE round, re-spawn a fresh reviewer that carries no context. That
+reviewer gets the diff and the rubric only. A reviewer that carries its own
+earlier REVISE reasoning anchors on that earlier judgment. A clean start on each
+round therefore keeps the assessment independent. This is the canonical statement
+of the rule, and `controllers.md` references it.
 
 ## Auto-apply eligibility tiers (SAFE / CAREFUL / RISKY)
 
-Stage-2 severity (CRITICAL/HIGH/LOW) says how much a finding matters. A separate, orthogonal question is how safe the fix is to apply without a human in the loop. Tag each Stage-2 finding with one apply-eligibility tier so mechanical cleanups land immediately while real risks are surfaced rather than silently changed.
+The Stage-2 severity of CRITICAL, HIGH, or LOW says how much a finding matters.
+A separate, orthogonal question is how safe the fix is to apply with no human in
+the loop. Tag each Stage-2 finding with one apply-eligibility tier. A mechanical
+cleanup then lands at once, and a real risk is surfaced instead of silently
+changed.
 
 | Tier | Rule | Examples |
 |------|------|----------|
 | **SAFE** | Auto-apply, no confirmation | unused imports, dead variables, obvious string typos |
 | **CAREFUL** | Apply, then re-run the guard for that one file to confirm nothing broke | rename a local variable, extract a private helper |
-| **RISKY** | Flag only — never auto-apply | public API rename, signature change, behavior-affecting edit |
+| **RISKY** | Flag only. Never auto-apply. | public API rename, signature change, behavior-affecting edit |
 
-The tier is independent of severity: a HIGH finding can be SAFE (an unused import that trips a lint gate), and a LOW finding can be RISKY (a cosmetic rename of a public export). Decide the tier by blast radius, not by how much the finding matters.
+The tier is independent of the severity. A HIGH finding can be SAFE, such as an
+unused import that trips a lint gate. A LOW finding can be RISKY, such as a
+cosmetic rename of a public export. Decide the tier by the blast radius, not by
+how much the finding matters.
 
-**Chesterton's-Fence rule**: before flagging any code for removal, run `git blame` on it. If you cannot determine why it exists, treat the fix as flag-only regardless of its apparent tier, and record `confidence: low` — do not delete code whose purpose is unclear.
+**Chesterton's-Fence rule**: before you flag any code for removal, run
+`git blame` on it. If you cannot find why the code exists, treat the fix as
+flag-only, whatever its apparent tier. Record `confidence: low`. Do not delete
+code whose purpose is unclear.
 
 See @docs/example-store/ex-review-safe-careful-risky.md for a worked example with a findings-log shape.
 
 ## Optional variant: two-axis parallel review
 
-The default remains the sequential two-stage flow above (Stage 1 then Stage 2). This variant is an optional alternative for a controller that wants the two concerns assessed at once by independent reviewers.
+The default stays the sequential two-stage flow above: Stage 1, then Stage 2.
+This variant is an optional alternative. Use it when a controller wants two
+independent reviewers to assess the two concerns at the same time.
 
-Spawn two sub-reviewers in one message and give each the entire diff:
+Spawn two sub-reviewers in one message, and give each one the entire diff:
 
-- **Standards axis** — checks the diff against repo conventions and a fixed code-smell baseline.
-- **Spec axis** — checks the diff against the originating work item and acceptance criteria, plus a sub-check for **undocumented scope creep**: changed lines that trace to no criterion.
+- **Standards axis**: it checks the diff against the repo conventions, and
+  against a fixed code-smell baseline.
+- **Spec axis**: it checks the diff against the originating work item and against
+  the acceptance criteria. It also runs a sub-check for **undocumented scope
+  creep**, which is a changed line that traces to no criterion.
 
-Keep the two reports separate. Do not merge them into a single PASS/score, because a change can pass one axis and fail the other — clean code implementing the wrong feature (`Standards: PASS / Spec: FAIL`), or the right feature written as a mess (`Standards: FAIL / Spec: PASS`). Merging masks that split.
+Keep the two reports separate. Do not merge them into one PASS verdict, and do
+not merge them into one score. A change can pass one axis and fail the other.
+Clean code can
+implement the wrong feature, which gives `Standards: PASS / Spec: FAIL`. The
+right feature can be written as a mess, which gives `Standards: FAIL / Spec: PASS`.
+A merge masks that split.
 
-Fowler 12-smell baseline the standards reviewer can cite: Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, Primitive Obsession, Repeated Switches, Shotgun Surgery, Divergent Change, Speculative Generality, Message Chains, Middle Man, Refused Bequest.
+The standards reviewer can cite the Fowler 12-smell baseline. These are the 12
+smells:
+
+- Mysterious Name
+- Duplicated Code
+- Feature Envy
+- Data Clumps
+- Primitive Obsession
+- Repeated Switches
+- Shotgun Surgery
+- Divergent Change
+- Speculative Generality
+- Message Chains
+- Middle Man
+- Refused Bequest
 
 See @docs/example-store/ex-review-standards-vs-spec-two-axis.md for the full variant with reviewer prompts.
 
@@ -145,5 +200,7 @@ implementation_tasks:
 
 ## See also
 
-- `.claude/rules/playbooks/pat-evidence-first-execution.md` — Stage 1 evidence specificity requirements
-- `.claude/rules/core/controllers.md` — Guard Command Pattern + Regression Validation Chain (run after Stage 2 PASS)
+- `.claude/rules/playbooks/pat-evidence-first-execution.md`: how specific the
+  evidence in Stage 1 must be.
+- `.claude/rules/core/controllers.md`: the Guard Command Pattern and the
+  Regression Validation Chain. Run both after a Stage 2 PASS.

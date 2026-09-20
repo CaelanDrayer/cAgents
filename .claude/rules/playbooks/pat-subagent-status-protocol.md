@@ -25,7 +25,9 @@ metadata:
 
 # Pattern: Subagent Status Protocol (V10.22.0)
 
-Execution agents MUST report their completion status using one of four standardized statuses. Controllers MUST handle each status appropriately. Free-form completion messages are no longer acceptable.
+Execution agents MUST report their completion status with one of four standard
+statuses. Controllers MUST handle each status in the correct way. A free-form
+completion message is no longer acceptable.
 
 ## The four statuses
 
@@ -33,12 +35,12 @@ Execution agents MUST report their completion status using one of four standardi
 |--------|---------|-------------|
 | **DONE** | Work item fully complete, all acceptance criteria met with evidence | Clean completion, ready for review |
 | **DONE_WITH_CONCERNS** | Work item complete, but agent identified potential issues | Implementation works but has caveats the controller should assess |
-| **NEEDS_CONTEXT** | Cannot complete without additional information | Missing requirements, ambiguous criteria, need access to undiscovered resources |
-| **BLOCKED** | Cannot proceed due to external dependency or infrastructure issue | Dependency unavailable, permission denied, environment broken |
+| **NEEDS_CONTEXT** | Cannot complete without more information | Missing needs, ambiguous criteria, or a need for access to an undiscovered resource |
+| **BLOCKED** | Cannot proceed because of an external dependency or an infrastructure fault | Dependency unavailable, permission denied, or environment broken |
 
 ## Reporting format
 
-Execution agents MUST include status in their completion response:
+Execution agents MUST include the status in their completion response:
 
 ```yaml
 status: DONE                    # One of: DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED
@@ -55,9 +57,25 @@ blocker: null                   # For BLOCKED: describe the blocking factor
 
 ### NEEDS_CONTEXT extension: requested_peer (v12.14.0+)
 
-> **LEGACY — experimental named-teammate path only.** The `requested_peer` / `peer_request` extension belongs to the demoted experimental named-background-teammate path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). Under the DEFAULT subagent model it is obsolete: a wave subagent that needs another specialty spawns that specialist as its OWN downward sub-subagent (nesting to depth 5) rather than routing a `requested_peer` sideways through the lead. Retained for the experimental path; see `pat-cross-teammate-request.md`.
+> **LEGACY, for the experimental named-teammate path only.** The `requested_peer`
+> extension and the `peer_request` extension belong to the demoted experimental
+> named-background-teammate path, which is
+> `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Under the DEFAULT subagent model the
+> extension is obsolete. A wave subagent that needs another specialty spawns that
+> specialist as its OWN downward sub-subagent, and it nests to depth 5. It does
+> not route a `requested_peer` sideways through the lead. The extension stays for
+> the experimental path. See `pat-cross-teammate-request.md`.
 
-In `/team` mode (experimental named-teammate path), NEEDS_CONTEXT can carry an optional `requested_peer` field pointing the lead to the named teammate best positioned to provide the missing information. When set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) rather than escalating to the user. When `requested_peer` is absent, NEEDS_CONTEXT retains its prior meaning — need user/external input — fully back-compatible. On the default subagent path this extension does not apply — the subagent spawns its own helper subagent downward.
+In `/team` mode, on the experimental named-teammate path, NEEDS_CONTEXT can carry
+an optional `requested_peer` field. That field points the lead to the named
+teammate best placed to give the missing information. When the field is set, the
+lead applies the peer_request decision tree of RELAY, SPAWN, PROMOTE, and REJECT.
+The lead does not escalate to the user.
+
+When `requested_peer` is absent, NEEDS_CONTEXT keeps its earlier meaning, which is
+a need for user input or for external input. That behavior is fully
+back-compatible. On the default subagent path this extension does not apply. The
+subagent spawns its own helper subagent downward.
 
 ```yaml
 status: NEEDS_CONTEXT
@@ -68,16 +86,18 @@ requested_peer: teammate-dba                                   # OPTIONAL — nu
 peer_request_ref: outputs/wave-3/peer_requests/REQ-1.yaml      # OPTIONAL — points to on-disk artifact
 ```
 
-The on-disk `peer_request` artifact at `peer_request_ref` is the canonical contract (see pat-cross-teammate-request.md for the schema). The status field is a hint to the lead; the YAML on disk is the audit trail.
+The on-disk `peer_request` artifact at `peer_request_ref` is the canonical
+contract. See pat-cross-teammate-request.md for its schema. The status field is a
+hint to the lead, and the YAML on disk is the audit trail.
 
 ## Controller response by status
 
 | Status | Controller Action |
 |--------|-------------------|
-| **DONE** | Proceed to reviewer loop (Stage 1: spec compliance) |
-| **DONE_WITH_CONCERNS** | Read concerns. If concerns affect acceptance criteria: request clarification. If concerns are informational: note in coordination_log and proceed to review. Never silently ignore concerns. |
-| **NEEDS_CONTEXT** | Provide the requested context and re-dispatch the agent. If context is unavailable: escalate to user or mark as BLOCKED. Never force retry without providing the missing context. **In `/team` mode (experimental named-teammate path only)**: if `requested_peer` is set, the lead applies the peer_request decision tree (RELAY / SPAWN / PROMOTE / REJECT) per @.claude/rules/playbooks/pat-cross-teammate-request.md. On the default subagent path there is no `requested_peer` — the subagent spawns its own helper subagent downward. |
-| **BLOCKED** | Assess the blocker. If resolvable: resolve and re-dispatch. If not resolvable: mark work item as blocked in coordination_log, document the blocker, and continue with other work items. |
+| **DONE** | Go on to the reviewer loop, which starts at Stage 1 for spec compliance. |
+| **DONE_WITH_CONCERNS** | Read the concerns. If a concern affects the acceptance criteria, ask for clarification. If a concern is informational, note it in coordination_log and go on to review. Never ignore a concern in silence. |
+| **NEEDS_CONTEXT** | Give the agent the context it asked for, then re-dispatch it. If that context is unavailable, escalate to the user or mark the item BLOCKED. Never force a retry without the missing context. **In `/team` mode, on the experimental named-teammate path only**: if `requested_peer` is set, the lead applies the peer_request decision tree of RELAY, SPAWN, PROMOTE, and REJECT, as in @.claude/rules/playbooks/pat-cross-teammate-request.md. On the default subagent path there is no `requested_peer`. The subagent spawns its own helper subagent downward. |
+| **BLOCKED** | Assess the blocker. If you can resolve it, resolve it and re-dispatch the agent. If you cannot resolve it, mark the work item as blocked in coordination_log, write down the blocker, and continue with the other work items. |
 
 ## Escalation ladder for BLOCKED
 
@@ -95,7 +115,10 @@ The on-disk `peer_request` artifact at `peer_request_ref` is the canonical contr
 
 ## CRITICAL: never ignore an escalation
 
-Never ignore an escalation or force retry without changes. If an execution agent reports NEEDS_CONTEXT or BLOCKED, the controller MUST address the specific issue before re-dispatching. Sending the same prompt again without new information is a violation of the status protocol.
+Never ignore an escalation. Never force a retry with no change. If an execution
+agent reports NEEDS_CONTEXT or BLOCKED, the controller MUST address the specific
+issue before it re-dispatches the agent. If you send the same prompt again with
+no new information, you break the status protocol.
 
 | Anti-Pattern | Correct Approach |
 |-------------|------------------|
@@ -106,6 +129,14 @@ Never ignore an escalation or force retry without changes. If an execution agent
 
 ## See also
 
-- `.claude/rules/core/resources/execution-self-validation.md` — self-validation contract that gates DONE vs DONE_WITH_CONCERNS auto-downgrades
-- `.claude/rules/playbooks/pat-graceful-degradation-depth1.md` — Nesting-Ceiling Degradation fallback: in the rare case where the `Agent` tool is genuinely absent (at the depth-5 nesting ceiling, or on a regressed/older harness), prefer DONE-via-self-validation over BLOCKED. On Claude Code 2.1.172+ subagents normally retain `Agent` up to 5 levels deep, so verify the tool is actually absent before degrading.
-- `.claude/rules/playbooks/pat-cross-teammate-request.md` — `/team` peer_request routing when NEEDS_CONTEXT.requested_peer is set
+- `.claude/rules/core/resources/execution-self-validation.md`: the
+  self-validation contract. It gates the auto-downgrade from DONE to
+  DONE_WITH_CONCERNS.
+- `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`: the
+  Nesting-Ceiling Degradation fallback. When the `Agent` tool is genuinely
+  absent, prefer DONE through self-validation over BLOCKED. That case is rare.
+  It arises at the depth-5 nesting ceiling, or on a regressed or older harness.
+  On Claude Code 2.1.172+ a subagent normally keeps `Agent` up to 5 levels
+  deep. Make sure the tool is absent before you degrade.
+- `.claude/rules/playbooks/pat-cross-teammate-request.md`: `/team` peer_request
+  routing, used when `NEEDS_CONTEXT.requested_peer` is set.

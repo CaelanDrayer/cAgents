@@ -6,14 +6,15 @@ paths:
 
 # Claude Search Optimization (CSO) Guidelines
 
-Best practices for writing agent and skill descriptions that maximize AI discoverability in cAgents. Inspired by the superpowers framework's approach to skill description design.
+Best practices for writing agent and skill descriptions that maximize AI discoverability in cAgents. These practices take their approach to skill description design from the superpowers framework.
 
 ## Why CSO Matters
 
-When Claude Code routes requests to agents, it matches the user's natural language against agent descriptions. Poorly written descriptions cause:
-- Wrong agent selected (user says "my tests keep failing" but gets `qa-tester` instead of the debugging methodology)
-- Agent not found (user describes a symptom but the description only mentions the solution)
-- Ambiguous routing (multiple agents match because descriptions are too generic)
+When Claude Code routes requests to agents, it matches the user's natural language against agent descriptions. A poorly written description causes one of these three faults:
+
+- The router selects the wrong agent. The user says "my tests keep failing", and gets `qa-tester` in place of the debugging methodology.
+- The router finds no agent. The user describes a symptom, but the description names only the solution.
+- The routing is ambiguous. Many agents match, because the descriptions are too generic.
 
 ## The Five CSO Rules
 
@@ -29,7 +30,7 @@ Descriptions MUST begin by describing the trigger situation, not the agent's cap
 
 ### 2. Describe the Problem/Trigger, Not the Workflow
 
-Users describe problems. Agents should match on problem descriptions.
+Users describe problems. An agent description must therefore match on a problem description.
 
 | Bad (workflow-focused) | Good (problem-focused) |
 |------------------------|------------------------|
@@ -39,7 +40,7 @@ Users describe problems. Agents should match on problem descriptions.
 
 ### 3. Include Concrete Symptoms, Error Messages, and Situations
 
-The more specific the triggers, the better the match quality.
+The more specific the triggers are, the better the match quality is.
 
 **Include**:
 - Common error messages users might paste: "ECONNREFUSED", "404 not found", "type X is not assignable"
@@ -56,7 +57,7 @@ with unknown source."
 
 ### 4. Keep Under 500 Characters
 
-Long descriptions dilute signal. Every word must earn its place.
+A long description dilutes the routing signal. Every word must earn its place.
 
 - Lead with the highest-value trigger phrases
 - Cut workflow descriptions ("orchestrates", "coordinates", "manages")
@@ -65,7 +66,7 @@ Long descriptions dilute signal. Every word must earn its place.
 
 ### 5. Never Summarize Process in Description
 
-The description is for ROUTING, not documentation. Process details belong in the SKILL.md body.
+The description is for ROUTING, not for documentation. Put the process details in the SKILL.md body.
 
 | Bad (process summary) | Good (routing signal) |
 |----------------------|----------------------|
@@ -74,14 +75,14 @@ The description is for ROUTING, not documentation. Process details belong in the
 
 ## Applying CSO to Existing Agents
 
-When updating agent descriptions:
+Follow these six steps when you update an agent description:
 
-1. Read the agent's SKILL.md to understand its actual trigger scenarios
-2. Identify the top 3-5 situations where a user would need this agent
-3. Write the description starting with "Use when..."
+1. Read the agent's SKILL.md, and find its real trigger scenarios
+2. Name the top 3-5 situations where a user would need this agent
+3. Write the description, and start it with "Use when..."
 4. Include at least 2 concrete symptom/trigger phrases
-5. Verify the description is under 500 characters
-6. Test mentally: "If a user said [common request], would this description match?"
+5. Make sure that the description is under 500 characters
+6. Test it in your head: "If a user said [common request], would this description match?"
 
 ## CSO Checklist for New Agents
 

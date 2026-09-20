@@ -68,7 +68,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # QA Lead
 
-Consolidated quality agent covering test coordination, code review, standards auditing, accessibility, and Playwright automation. All modes share the quality archetype; select the mode that matches the request.
+This agent is a consolidated quality agent. It covers test coordination, code review, standards auditing, accessibility, and Playwright automation. All of the modes share the quality archetype. Select the mode that matches the request.
 
 ## Mode Selection
 
@@ -92,8 +92,8 @@ See @qa-lead/resources/playwright.md for Playwright test engineering full playbo
 
 Pull the matching worked example when a review or audit is non-obvious:
 
-- See @docs/example-store/ex-review-standards-vs-spec-two-axis.md — review standards and spec as two orthogonal axes, kept separate.
-- See @docs/example-store/ex-review-safe-careful-risky.md — risk-tier findings safe / careful / risky with a Chesterton's-Fence check before removals.
-- See @docs/example-store/ex-verification-intended-vs-implemented.md — audit code against documented intent boundary-by-boundary.
-- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md — build a red-capable reproduction loop before forming any debug hypothesis.
-- See @docs/example-store/ex-skill-authoring-rule-per-file-lint.md — structure a standards-audit ruleset one rule per file with a build + validate step.
+- See @docs/example-store/ex-review-standards-vs-spec-two-axis.md. Review standards and spec as two orthogonal axes, and keep the two axes separate.
+- See @docs/example-store/ex-review-safe-careful-risky.md. Risk-tier each finding as safe, careful, or risky. Run a Chesterton's-Fence check before any removal.
+- See @docs/example-store/ex-verification-intended-vs-implemented.md. Audit the code against the documented intent, one boundary at a time.
+- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md. Build a red-capable reproduction loop before you form any debug hypothesis.
+- See @docs/example-store/ex-skill-authoring-rule-per-file-lint.md. Structure a standards-audit ruleset with one rule per file. Then add a build step and a validate step.

@@ -57,7 +57,7 @@ Which approach interests you most?`,
 
 ## Steps 3 & 4: Pattern Recommendations + Trade-off Exploration (Controller-Adapted)
 
-When the user selects an approach, present pattern recommendation and key trade-off in a single batched call — these two questions share the same "how should we proceed with the selected approach" concern and are always asked together.
+When the user selects an approach, present the pattern recommendation and the key trade-off in a single batched call. Both questions share the same concern: how to proceed with the approach that the user selected. Always ask these two questions together.
 
 ```javascript
 // Batch pattern recommendation + trade-off together — both refine the selected approach, same ideation concern

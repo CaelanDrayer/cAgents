@@ -4,41 +4,45 @@ How /act records agent spawns into agent_tree.yaml and the global audit log.
 
 ## The Canonical Schema (one shape, writer and readers agree)
 
-`agent_tree.yaml` has exactly ONE valid shape: a **mandatory top-level `agents:`
-key holding a LIST**, whose entries are keyed `- id:`.
+`agent_tree.yaml` has exactly one valid shape. That shape is a **mandatory
+top-level `agents:` key that holds a LIST**. Each entry in the list is keyed
+`- id:`.
 
 ```yaml
 agents:            # MANDATORY top-level key, a LIST
   - id: "..."      # entries keyed `- id:`
 ```
 
-**Forbidden shapes.** A tree with no top-level `agents:` key — in particular the
-`root:` + `children:` tree that a loose reading of ACTION 1 invites — breaks the
-audit trail in BOTH directions at once:
+**Forbidden shapes.** A tree with no top-level `agents:` key breaks the audit
+trail in both directions at once. The clearest example is the `root:` plus
+`children:` tree, which a loose reading of ACTION 1 invites. These are the two
+directions that break:
 
-- `subagent-tracker.cjs` bails at its "missing agents: key" guard and appends
-  **nothing** for the remaining life of the session. Every later spawn is lost.
-- Every reader in `verify-completion.cjs` counts spawns from `agents:` / `- id:`,
-  so the same file reads as "no child agents spawned".
+- `subagent-tracker.cjs` stops at its "missing agents: key" guard. It then
+  appends **nothing** for the remaining life of the session. Every later spawn
+  is lost.
+- Every reader in `verify-completion.cjs` counts the spawns from `agents:` and
+  from `- id:`. The same file therefore reads as "no child agents spawned".
 
 That mismatch once produced a `DELEGATION VIOLATION ... no child agents spawned`
-that blocked Stop **twice** on a session which had really spawned five agents.
-Do not reintroduce it.
+message. The message blocked Stop **twice** on a session that had spawned five
+agents. Do not bring that shape back.
 
-An optional `root:` **metadata** block MAY precede the list — the readers
-explicitly scope around it — but it never substitutes for `agents:`.
+An optional `root:` **metadata** block MAY come before the list, because the
+readers scope around it. That block never substitutes for `agents:`.
 
-`subagent-tracker.cjs` now self-heals a non-canonical tree instead of bailing: it
-ADDS the missing `agents:` key, folds any `children:` entries in, preserves
-`root:` untouched, and announces the repair on stderr **and** in the spawned
-agent's `additionalContext`. Repair is not a licence to write the wrong shape —
-spawns attempted before the repair are already gone.
+`subagent-tracker.cjs` now self-heals a non-canonical tree, and it no longer
+stops. It adds the missing `agents:` key, and it folds any `children:` entries
+into the list. It keeps `root:` untouched. It announces the repair on stderr
+**and** in the `additionalContext` of the spawned agent. A repair is not a
+licence to write the wrong shape, because every spawn attempted before the
+repair is already gone.
 
 ## Self-Registration on Session Init
 
-When /act creates a session, it writes itself as the first entry of the `agents:`
-list in `${SESSION_DIR}/workflow/agent_tree.yaml` (never as a `root:`/`children:`
-tree):
+When /act creates a session, it writes itself as the first entry of the
+`agents:` list. That list is in `${SESSION_DIR}/workflow/agent_tree.yaml`.
+Never write the entry as a `root:` tree with `children:`:
 
 ```yaml
 # Agent Tree - cAgents Audit Trail
@@ -57,7 +61,8 @@ agents:
     session: "{SESSION_ID}"
 ```
 
-When /act is itself spawned as a subagent (e.g., by /team), it self-registers with:
+Sometimes another skill spawns /act as a subagent, and /team is one example. In
+that case /act self-registers with these two fields:
 
 ```yaml
 cagents_type: "cagents:act"
@@ -66,7 +71,9 @@ role_description: "Event-driven pipeline engine - state machine loop"
 
 ## Child Agent Registration
 
-Each pipeline agent (orchestrator, planner, controller, validator) is appended to agent_tree.yaml when spawned. The SubagentStart hook (`subagent-tracker.cjs`) handles this automatically when the Agent tool spawns the agent. The hook also injects an `additionalContext` instruction asking cAgents agents to self-register their `cagents:{name}` type. (v12.0.0: task-decomposer and prompt-engineer were absorbed into planner, so they no longer appear as separate entries in agent_tree.yaml. Pre-v12 archived sessions will still show these entries.)
+/act appends each pipeline agent to agent_tree.yaml at the moment of the spawn. Those agents are the orchestrator, the planner, the controller and the validator. The SubagentStart hook does this work for you, and that hook is `subagent-tracker.cjs`. It runs whenever the Agent tool spawns an agent. The hook also injects an `additionalContext` instruction, which asks each cAgents agent to self-register its own `cagents:{name}` type.
+
+**v12.0.0 note**: the planner absorbed task-decomposer and prompt-engineer. Neither one appears as a separate entry in agent_tree.yaml today. An archived session from before v12 still shows both of those entries.
 
 ## Lineage Fields
 
@@ -87,17 +94,21 @@ Each entry in `agents:` includes:
 | `duration_seconds` | Wall-clock duration computed at stop |
 | `session` | Session ID this agent belongs to |
 
-Entries under `spawn_failures:` use a deliberately DISJOINT key set
-(`attempt_id`, `attempted_type`, `attempted_depth`, `status`, `reason`,
-`recorded_at`, `source`) so no reader can confuse an attempt with a spawn.
+Each entry under `spawn_failures:` uses a key set that is disjoint on purpose.
+The keys are `attempt_id`, `attempted_type`, `attempted_depth`, `status`,
+`reason`, `recorded_at` and `source`. No reader can therefore confuse an
+attempt with a spawn.
 
 ## Denied and Failed Spawn Records
 
-Only a successful **and** successfully-recorded spawn ever reaches `agents:`. A
-spawn that was DENIED at the `PreToolUse|Agent` gate, or that happened but could
-not be tracked, would otherwise leave no trace at all — which makes "my subagent
-spawns keep getting blocked" impossible to diagnose from artifacts, by
-construction. Those attempts are recorded in a separate top-level list:
+Only a spawn that succeeds, **and** that the tracker records, ever reaches
+`agents:`. Two other cases exist. A gate can leave a spawn DENIED at
+`PreToolUse|Agent`. A spawn can also happen, and the tracker can then miss it.
+
+Without a record, neither case leaves any trace at all. The report "my subagent
+spawns keep getting blocked" would then be impossible to diagnose from the
+artifacts. The tracker records both kinds of attempt in a separate top-level
+list:
 
 ```yaml
 spawn_failures:
@@ -114,21 +125,23 @@ spawn_failures:
 |--------|---------|
 | `denied` | A gate refused the spawn. It never started. |
 | `failed` | The spawn was attempted and errored. |
-| `untracked` | The spawn really happened but could not be recorded (no session resolved, `js-yaml` absent, unusable tree). |
+| `untracked` | The spawn did happen, but the tracker could not record it (no session resolved, `js-yaml` absent, unusable tree). |
 
-**These records are deliberately invisible to every reader regex** — the keys are
-`- attempt_id:` / `attempted_type:` / `attempted_depth:`, and no entry ever
-carries `stopped_at: null`. So a denial can never be miscounted as a spawned
-child, satisfy a pipeline-advance check, or mask a stall. A denied spawn is
-evidence, not credit. Keep it that way when adding fields.
+**These records are invisible to every reader regex on purpose.** The keys are
+`- attempt_id:`, `attempted_type:` and `attempted_depth:`. No entry ever
+carries `stopped_at: null`. A denial can therefore never be miscounted as a
+spawned child. It can never satisfy a pipeline-advance check, and it can never
+mask a stall. A denied spawn is evidence, and it is not credit. Keep it that
+way when you add a field.
 
-Every record is ALSO written to the global audit log (below) as a
-`SPAWN_DENIED` / `SPAWN_FAILED` / `SPAWN_UNTRACKED` line, which survives even
-when no session resolves and when `js-yaml` is unavailable.
+The tracker also writes every record to the global audit log below. It writes
+that record as a `SPAWN_DENIED`, `SPAWN_FAILED` or `SPAWN_UNTRACKED` line. The
+line survives even when no session resolves, and even when `js-yaml` is not
+available.
 
-**Recording a denial from another hook.** `subagent-tracker.cjs` is registered
-for `SubagentStart` only, and that event never fires for a spawn denied at
-`PreToolUse|Agent`. A gate hook records one in a single line:
+**To record a denial from another hook.** `subagent-tracker.cjs` is registered
+for `SubagentStart` only. That event never fires for a spawn that a gate denies
+at `PreToolUse|Agent`. A gate hook records such a denial in a single line:
 
 ```js
 spawnSync('node', [path.join(__dirname, 'subagent-tracker.cjs'), '--record-failure',
@@ -138,23 +151,23 @@ spawnSync('node', [path.join(__dirname, 'subagent-tracker.cjs'), '--record-failu
 
 ## Global Audit Log
 
-In addition to per-session agent_tree.yaml, all spawn and stop events append to a global audit log at:
+Every spawn event, and every stop event, also appends to a global audit log. That log is separate from the per-session agent_tree.yaml, and it is at this path:
 
 ```
 cagents-memory/_system/logs/agent_spawns.log
 ```
 
-This survives session deletion and provides a long-term audit trail. The SubagentStop tracker captures `last_assistant_message` (truncated to 300 chars) for stop events.
+That log survives the deletion of a session, and it gives you a long-term audit trail. For a stop event, the SubagentStop tracker captures `last_assistant_message`. It truncates that value to 300 characters.
 
 ## CAGENTS_ACTIVE_SESSION Hook Routing
 
-After writing `status.yaml`, /act sets the env var so hooks resolve to the correct session without heuristic discovery:
+After /act writes `status.yaml`, it sets the env var below. The hooks then resolve to the correct session with no heuristic discovery:
 
 ```
 process.env.CAGENTS_ACTIVE_SESSION = SESSION_ID;
 ```
 
-This is critical when /act runs concurrently with other sessions (e.g., /team strategic mode spawning multiple per-domain waves, or pre-v12.2.0 /org spawning multiple /team instances). The `findActiveSession()` helper in hook-utils.cjs checks this env var first (Pass 0) and returns the exact session directory immediately, bypassing directory-scan heuristics that can misroute SubagentStart/SubagentStop events to the wrong session's agent_tree.yaml.
+This env var matters when /act runs at the same time as other sessions. Two examples are /team strategic mode, which spawns many per-domain waves, and the pre-v12.2.0 /org skill, which spawned many /team instances. The `findActiveSession()` helper in hook-utils.cjs checks this env var first, in Pass 0. It then returns the exact session directory at once. It therefore bypasses the directory-scan heuristics, which can misroute a SubagentStart event or a SubagentStop event to the agent_tree.yaml of the wrong session.
 
 ## Configuration Paths
 

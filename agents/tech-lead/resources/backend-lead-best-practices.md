@@ -5,25 +5,31 @@
 ## Design Principles
 
 - **Standards Enable Speed**: Consistent coding conventions, API patterns, and error-handling strategies let the team move faster by reducing cognitive load on every PR review.
-- **Coordinate, Don't Implement**: The backend lead's value is in raising the quality of many engineers' output — direct implementation by the lead is an anti-pattern that blocks scale.
+- **Coordinate, Don't Implement**: The backend lead raises the quality of many engineers' output.
+  That is where the value is — direct implementation by the lead is an anti-pattern that blocks scale.
 - **Technical Debt is a Liability**: Track it explicitly, schedule repayment, and never let it accumulate silently — undocumented debt is the most dangerous kind.
-- **API Contracts are Shared Agreements**: Backend leads own the contract between the server and all consumers; breaking changes require a migration path, not a unilateral refactor.
+- **API Contracts are Shared Agreements**: Backend leads own the contract between the server and all consumers.
+  A breaking change needs a migration path, not a unilateral refactor.
 - **Align Architecture with Team Structure**: Conway's Law is real — the software architecture will mirror team boundaries; design teams and architecture together.
 - **Visibility Over Heroics**: Prefer solutions that are easy to understand and debug by the whole team over clever solutions understood only by the author.
 - **Security is Not Optional**: Every backend API surface is a potential attack vector; security review is part of every technical decision, not an afterthought.
 
 ## Key Patterns & Frameworks
 
-- **RFC (Request for Comments) Process**: For significant API or architecture changes, write a short RFC and circulate for team review before implementation begins — surfaces concerns early.
+- **RFC (Request for Comments) Process**: For a large API or architecture change, write a short RFC.
+  Circulate it for team review before implementation starts — this surfaces concerns early.
 - **Technical Debt Register**: Maintain a living document of known technical debt with estimated cost, business risk, and priority; review quarterly.
 - **API Versioning Strategy**: Define a team-wide convention (URL versioning, header versioning) and enforce it consistently; deprecation timelines must be communicated to consumers.
 - **Backend Architecture Decision Records (ADRs)**: Document significant technical decisions with context, rationale, and consequences; store in the repository.
 - **Code Review Standards**: Define what constitutes a blocking vs. non-blocking review comment; establish SLAs for review turnaround (e.g., ≤24 hours).
-- **Service Boundary Definition**: Work with architects to define clear service boundaries — what data each service owns, what it must not access directly, and how it communicates.
+- **Service Boundary Definition**: Work with the architects to define clear service boundaries.
+  Define three things — what data each service owns, what it must not access directly, and how it communicates.
 - **Incident Retrospective Process**: After every P1/P2 incident, run a blameless retrospective and produce action items with owners and deadlines.
 - **Dependency Upgrade Cadence**: Establish a regular schedule (weekly/monthly) for reviewing and applying dependency patches; security patches are always expedited.
-- **Backend Test Standards**: Define minimum coverage thresholds, which tests run in CI vs. pre-deploy, and what categories of tests (unit, integration, contract) are required for each layer.
-- **Onboarding Runbook**: Maintain a living document that lets a new backend engineer be productive within their first week — environment setup, architecture overview, first PR guide.
+- **Backend Test Standards**: Define the minimum coverage thresholds, and which tests run in CI vs. pre-deploy.
+  Define also what categories of tests (unit, integration, contract) each layer needs.
+- **Onboarding Runbook**: Keep a living document that lets a new backend engineer be productive in the first week.
+  It holds three things — the environment setup, the architecture overview, and the first PR guide.
 
 ## Domain Concepts & Terminology
 
@@ -56,7 +62,8 @@
 
 - **Hero Culture**: Allowing one engineer to be the sole expert on a critical system — creates single points of failure and burnout risk.
 - **Inconsistent API Design**: Different endpoints following different naming, error, and pagination conventions — makes the API unpredictable for consumers.
-- **Missing Contract Tests**: Assuming that because the backend and frontend teams both changed their code, the integration still works — contract tests catch misalignments before production.
+- **Missing Contract Tests**: You assume that the integration still works because the backend team and the frontend team both changed their code.
+  That assumption fails — contract tests catch the misalignments before production.
 - **Unreviewed Architecture Changes**: Allowing significant backend structural changes to merge without architectural review — small changes accumulate into big problems.
 - **Infinite Technical Debt Accumulation**: Adding new features on top of unstable foundations without scheduled debt repayment — eventually velocity collapses.
 - **Siloed Domain Knowledge**: Code that only one person understands — enforce pair programming, ADRs, and documentation for critical systems.

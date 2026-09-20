@@ -1,6 +1,7 @@
 # Designer Session Resilience
 
-Design sessions can run 30-60+ questions spanning hours. Context windows are finite. The designer MUST handle long sessions gracefully.
+A design session can run 30-60+ questions over some hours. The context window
+has a limit. The designer MUST therefore handle a long session with care.
 
 ## Session Directory Structure
 
@@ -114,38 +115,51 @@ controller_state:
 **MANDATORY**: Do NOT hold the entire design in memory. Write to files incrementally.
 
 **Rules**:
-- Research agents write `question_prep/*.yaml` files immediately (they are subagents with file access)
-- Write `phases/01_empathize.md` the moment Empathize phase gate passes
-- Write `phases/02_define.md` the moment Define phase gate passes
-- Write `phases/03_conceptualize.md` the moment Conceptualize phase gate passes
-- Write `phases/04_ideation.md` the moment Ideation phase gate passes
-- Write individual artifact files as they are generated (not all at once)
-- Write diagram `.mermaid` files as each diagram is created
-- The final `design_document.md` is ASSEMBLED from phase files at the end - not built from memory
-- Update `session.yaml` (including `controller_state`) after every question
+- A research agent writes its `question_prep/*.yaml` file at once. Each agent
+  is a subagent, and it has file access.
+- Write `phases/01_empathize.md` the moment that the Empathize phase gate
+  passes.
+- Write `phases/02_define.md` the moment that the Define phase gate passes.
+- Write `phases/03_conceptualize.md` the moment that the Conceptualize phase
+  gate passes.
+- Write `phases/04_ideation.md` the moment that the Ideation phase gate passes.
+- Write each artifact file as you generate it. Do not write them all at once.
+- Write a diagram `.mermaid` file as you create each diagram.
+- The final `design_document.md` is ASSEMBLED from the phase files at the end.
+  It is not built from memory.
+- After every question, update `session.yaml` and its `controller_state` block.
 
 ## Context Window Monitoring
 
 **Monitor these signals**:
-1. **Question count**: After 20 questions, enter "context-conscious mode"
-2. **Phase duration**: If a single phase exceeds 15 questions, consider splitting
-3. **Synthesis frequency**: Increase from every 5-7 to every 3-4 questions after question 20
+1. **Question count**: After 20 questions, enter the "context-conscious mode".
+2. **Phase duration**: If a single phase goes past 15 questions, split that
+   phase.
+3. **Synthesis frequency**: After question 20, raise the synthesis frequency
+   from every 5-7 questions to every 3-4 questions.
 
-**Context-Conscious Mode** (activated after 20 questions):
-- Shorter synthesis summaries (100-200 words, not 300-500)
-- Write phase files immediately (don't wait for phase gate)
-- Reference files instead of repeating content ("See phases/01_empathize.md")
-- Stop including full Q&A history in synthesis - summarize instead
-- Reduce inline diagram complexity
-- Write artifacts to files immediately, show only summary inline
-- Read only question summaries from question_prep files (not full context per question)
+**Context-Conscious Mode**, which the designer activates after 20 questions:
+- Write a shorter synthesis summary of 100-200 words, and not of 300-500 words.
+- Write the phase files at once. Do not wait for the phase gate.
+- Point to a file instead of a repeat of its content. An example is "See
+  phases/01_empathize.md".
+- Do not put the full Q&A history into a synthesis. Give a summary instead.
+- Make the inline diagrams less complex.
+- Write the artifacts to files at once, and show only a summary inline.
+- Read only the question summaries from the question_prep files. Do not read
+  the full context of each question.
 
-**When approaching context limits** (>30 questions):
+**When the session gets near the context limit** (>30 questions):
 1. Write ALL current state to files immediately
 2. Create a waypoint checkpoint (including research agent status)
 3. Summarize remaining work as a compact resume plan
 
-**Research agents mitigate context pressure**: Because research agents write to files instead of returning results in the conversation context, the designer only loads ~200-500 tokens per phase from question_prep files (summaries + active question context). This is much less than the ~2000+ tokens that inline codebase analysis would consume.
+**Research agents lower the context pressure**: A research agent writes its
+results to a file. It does not return those results in the conversation
+context. The designer therefore loads only about 200-500 tokens per phase from
+the question_prep files. That load holds the summaries and the context of the
+active question. An inline analysis of the codebase would consume about 2000
+tokens or more.
 
 ## Phase-Level Checkpointing (Waypoints)
 
@@ -188,7 +202,9 @@ resume_instructions: |
 
 ## Q&A Log Management
 
-The `qa_log.yaml` keeps only active phase Q&A. After phase completion, move Q&A into the phase file and keep only a summary:
+The `qa_log.yaml` file keeps only the Q&A of the active phase. After a phase
+completes, move its Q&A into the phase file. Keep only a summary in
+`qa_log.yaml`:
 
 ```yaml
 # qa_log.yaml (after Discovery completes)
@@ -215,18 +231,27 @@ exchanges:
 
 ## Session Resume Protocol
 
-When resuming (via `/designer --resume {id}` or after context compaction):
+Follow these steps when you resume a session with `/designer --resume {id}`.
+Follow the same steps after a context compaction.
 
-1. Read `session.yaml` (100-200 tokens) - get phase, progress, domain, controller_state
-2. Read latest `waypoints/wp-*.yaml` (200-300 tokens) - get resume instructions and research_status
-3. Read ONLY the current phase file (500-1500 tokens) - NOT all phase files
-4. Read active `qa_log.yaml` (only current phase's exchanges)
-5. Read `question_prep/{current_phase}_*.yaml` summaries (100-200 tokens) - restore question pool
-6. If research agents were in_progress: check if question_prep files now exist; if so, read them
-7. Continue from where you left off with restored question pool
+1. Read `session.yaml`, which is 100-200 tokens. It gives you the phase, the
+   progress, the domain, and the `controller_state` block.
+2. Read the latest `waypoints/wp-*.yaml`, which is 200-300 tokens. It gives you
+   the resume instructions and the `research_status` block.
+3. Read ONLY the file of the current phase, which is 500-1500 tokens. Do NOT
+   read all of the phase files.
+4. Read the active `qa_log.yaml`. It holds only the exchanges of the current
+   phase.
+5. Read the summaries in `question_prep/{current_phase}_*.yaml`, which are
+   100-200 tokens. They restore the question pool.
+6. If the research agents were `in_progress`, do a check for the question_prep
+   files. If those files exist now, read them.
+7. Continue from the point where you stopped, with the restored question pool.
 
-**DO NOT** reload all previous phase files. They are on disk for final assembly.
-**DO NOT** re-spawn research agents for phases that already have question_prep files.
+**DO NOT** load all of the earlier phase files again. They stay on disk for the
+final assembly.
+**DO NOT** spawn a research agent again for a phase that already has its
+question_prep files.
 
 **Resume announcement**:
 ```javascript

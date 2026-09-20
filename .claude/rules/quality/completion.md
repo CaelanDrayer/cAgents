@@ -19,7 +19,7 @@ paths:
 
 # Task Completion Protocol
 
-**MANDATORY**: All tasks must be fully completed with verified evidence before marking as done.
+**MANDATORY**: Complete every task fully, and show verified evidence, before you mark that task as done.
 
 ## Core Rule
 
@@ -57,7 +57,7 @@ Validation Phase:
 - Track `work_item_status` in coordination_log.yaml
 - Capture `evidence` for each completed criterion (file paths, test results, metrics)
 - Mark `completed_at` and `completed_by` for every item
-- No partial completion - 100% with evidence or in_progress
+- No partial completion - report 100% with evidence, or leave the item as in_progress
 
 ### Universal-Executor
 - Verifies coordination_log completeness before phase transition
@@ -114,7 +114,7 @@ Validation Phase:
 
 ## Context Overhead
 
-Add 3K tokens per coordination cycle for evidence tracking (included in planning budget).
+Add 3K tokens per coordination cycle for evidence tracking. The planning budget already includes that amount.
 
 ## Quick Reference
 
@@ -140,7 +140,7 @@ Add 3K tokens per coordination cycle for evidence tracking (included in planning
 
 ## Red Flags: Language Patterns That Indicate Premature Claims
 
-When reviewing completion claims, watch for these language patterns that indicate an agent is claiming completion without sufficient evidence:
+When you review a completion claim, watch for the language patterns below. Each one shows that an agent claims completion without enough evidence:
 
 | Red Flag Phrase | What It Really Means | Required Instead |
 |----------------|----------------------|------------------|
@@ -155,11 +155,11 @@ When reviewing completion claims, watch for these language patterns that indicat
 | "no issues found" | Passive non-discovery | Describe what was actively checked and how |
 | "should be fine" | Wishful thinking | Provide concrete verification evidence |
 
-**Rule**: If a completion claim contains ANY red flag phrase without accompanying concrete evidence, it MUST be rejected. The agent must re-verify and provide specific evidence.
+**Rule**: If a completion claim holds ANY red flag phrase, and no concrete evidence goes with it, the validator MUST reject that claim. The agent must then re-verify the work and give specific evidence.
 
 ## Rationalization Counters
 
-Common rationalizations agents use to skip verification rigor, mapped to reality checks:
+Agents use the rationalizations below to skip verification rigor. The table maps each one to a reality check:
 
 | Rationalization | Reality Check |
 |----------------|---------------|
@@ -179,10 +179,10 @@ Common rationalizations agents use to skip verification rigor, mapped to reality
 **IRON LAW: Verification commands MUST be run in the current session, not cited from memory.**
 
 Verification evidence is only valid if:
-1. **Executed fresh**: The verification command was run AFTER the implementation was complete, in this session
-2. **Output captured**: The actual command output is included in the evidence (not paraphrased)
-3. **Timestamp-adjacent**: The verification happened within the same work sequence as the implementation
-4. **Full output read**: The ENTIRE output was read, not just the first/last line
+1. **Executed fresh**: you ran the verification command AFTER the implementation was complete, in this session
+2. **Output captured**: the evidence includes the actual command output, and not a paraphrase of it
+3. **Timestamp-adjacent**: the verification happened within the same work sequence as the implementation
+4. **Full output read**: you read the ENTIRE output, not just the first line or the last line
 
 **Invalid evidence patterns**:
 - "Tests were passing earlier" (stale -- run them again NOW)
@@ -191,30 +191,30 @@ Verification evidence is only valid if:
 - Citing test results from a previous session or context window
 - Paraphrasing output instead of including the actual output
 
-**Enforcement**: The validator MUST reject completion claims that lack fresh evidence. When reviewing validation_report.yaml, check that evidence includes actual command output from the current session, not references to prior runs.
+**Enforcement**: The validator MUST reject a completion claim that lacks fresh evidence. When you review validation_report.yaml, check that the evidence includes actual command output from the current session. A reference to a prior run is not enough.
 
 ## Comprehensive Validation Checklists (V12.0.0)
 
 ### Validation Layers (the single legible answer to "what validation actually runs")
 
-cAgents' validation surface is honestly **layered**, not one monolithic checklist. Exactly one layer is hook-enforced; the rest are real-but-advisory or deferred:
+cAgents' validation surface is honestly **layered**, not one monolithic checklist. Exactly one layer is hook-enforced. The other two layers are real but advisory, or else deferred:
 
 | Layer | Checks | Lives in | Hook-enforced? |
 |-------|--------|----------|----------------|
-| **Enforced** | 5 cross-cutting | `@resources/validation-checklist-active.md` | **YES** — `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `verify-completion.cjs` |
-| **Advisory (by convention)** | controller pre-execution (7) + mid-execution (5); executor self-validation (5, verifier hook deferred); two-stage review | `@.claude/rules/core/resources/controller-validation-checklist.md`, `@.claude/rules/core/resources/execution-self-validation.md`, `@.claude/rules/playbooks/pat-two-stage-review.md` | **NO** — agent-followed guidance, not mechanically enforced |
-| **Aspirational (deferred)** | 24 historical checks | `docs/FUTURE_VALIDATION_FRAMEWORK.md` (does NOT auto-load) | **NO** — deferred to future graduation work |
+| **Enforced** | 5 cross-cutting | `@resources/validation-checklist-active.md` | **YES**: `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `verify-completion.cjs` |
+| **Advisory (by convention)** | controller pre-execution (7) + mid-execution (5); executor self-validation (5, verifier hook deferred); two-stage review | `@.claude/rules/core/resources/controller-validation-checklist.md`, `@.claude/rules/core/resources/execution-self-validation.md`, `@.claude/rules/playbooks/pat-two-stage-review.md` | **NO**: agent-followed guidance, and no hook enforces it |
+| **Aspirational (deferred)** | 24 historical checks | `docs/FUTURE_VALIDATION_FRAMEWORK.md` (does NOT auto-load) | **NO**: deferred to future graduation work |
 
-**Canonical count narrative**: **5 enforced + advisory-by-convention + 24 aspirational-deferred**. *(HISTORICAL: the original design was framed as a 29-check framework = those same 5 active + 24 aspirational; the self-validation protocol separately churned 15→5. Both are history — neither is the live enforced count.)*
+**Canonical count narrative**: **5 enforced + advisory-by-convention + 24 aspirational-deferred**. *(HISTORICAL: the original design was framed as a 29-check framework = those same 5 active + 24 aspirational. The self-validation protocol separately churned 15→5. Both numbers are history. Neither one is the live enforced count.)*
 
 ### Advisory layer breakdown (supporting detail)
 
 - **Pre-Execution** (7 checks by controller, by convention): Planner output schema (Check 0), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced files, log schema. See @.claude/rules/core/resources/controller-validation-checklist.md.
 - **Mid-Execution** (5 checks by controller after every 3 completions, by convention): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
-- **Post-Execution / Executor Self-Validation** (5 mechanically-checkable checks by execution agent before DONE — currently agent-self-reported; verifier hook deferred, so advisory in practice): Evidence freshness, file existence, guard exit codes, git state, file:line accuracy. See @.claude/rules/core/resources/execution-self-validation.md.
-- **Cross-Cutting** (5 checks across agents, hook-enforced — the only enforced group): Task cleanup, agent tree completeness, file change audit, context drift prevention, YAML/JSON syntax. See @resources/validation-checklist-active.md.
+- **Post-Execution / Executor Self-Validation** (5 mechanically-checkable checks by execution agent before DONE): Evidence freshness, file existence, guard exit codes, git state, file:line accuracy. The execution agent reports these checks itself, because the verifier hook is deferred. They are therefore advisory in practice. See @.claude/rules/core/resources/execution-self-validation.md.
+- **Cross-Cutting** (5 checks across agents, hook-enforced): Task cleanup, agent tree completeness, file change audit, context drift prevention, YAML/JSON syntax. This group is the only enforced group. See @resources/validation-checklist-active.md.
 
-The executor self-validation contract and the controller pre/mid-execution checklists are the canonical sources for each phase — this section is a summary, not a duplicate.
+The executor self-validation contract and the controller pre/mid-execution checklists are the canonical sources for each phase. This section is a summary of them, not a duplicate.
 
 ## Protocol Location
 
@@ -224,10 +224,10 @@ The executor self-validation contract and the controller pre/mid-execution check
 
 ## See Also
 
-- **validation-framework.md** - Full traceability chain from planning to validation
-- **controllers.md** - Controller coordination and evidence capture
-- **orchestration.md** - Phase transitions and workflow management
-- **implicit-discovery.md** - Handling abstract requests
+- **validation-framework.md** - the full traceability chain, from planning to validation
+- **controllers.md** - controller coordination and evidence capture
+- **orchestration.md** - phase transitions and workflow management
+- **implicit-discovery.md** - how to handle an abstract request
 
 ---
 
