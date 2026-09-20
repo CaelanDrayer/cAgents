@@ -36,11 +36,14 @@ paths:
 
 # Built-in Subagent Alignment
 
-Alignment between cAgents subagent types and official Claude Code Agent tool patterns.
+This file aligns the cAgents subagent types with the official Agent tool
+patterns of Claude Code.
 
 ## Overview
 
-Claude Code's Agent tool supports various subagent patterns. This document maps cAgents agent types to these patterns for optimal integration.
+The Agent tool of Claude Code supports many subagent patterns. This document
+maps the cAgents agent types onto those patterns. The map gives you the best
+integration.
 
 ## Official Task Tool Parameters
 
@@ -56,7 +59,7 @@ Agent({
 
 ## Claude Code Built-in Subagents
 
-Claude Code includes built-in subagents automatically available:
+Claude Code includes these built-in subagents. They are available automatically:
 
 | Subagent | Model | Tools | Purpose |
 |----------|-------|-------|---------|
@@ -87,12 +90,15 @@ Claude Code subagents support these frontmatter fields:
 
 ### Background vs Foreground Subagents
 
-- **Foreground**: Blocks main conversation. Permission prompts pass through to user.
-- **Background**: Runs concurrently. Auto-denies unapproved permissions. User can press Ctrl+B to background a running task.
+- **Foreground**: a foreground subagent blocks the main conversation. Its
+  permission prompts pass through to the user.
+- **Background**: a background subagent runs concurrently. It auto-denies each
+  unapproved permission. The user can push Ctrl+B to send a running task to the
+  background.
 
 ### Persistent Memory
 
-The `memory` field gives subagents a persistent directory across conversations:
+The `memory` field gives each subagent a persistent directory across conversations:
 
 | Scope | Location | Use when |
 |-------|----------|----------|
@@ -102,17 +108,21 @@ The `memory` field gives subagents a persistent directory across conversations:
 
 ### Isolation via Worktrees
 
-Set `isolation: "worktree"` to run a subagent in a temporary git worktree, giving it an isolated copy of the repository. The worktree is auto-cleaned if the subagent makes no changes.
+Set `isolation: "worktree"` to run a subagent in a temporary git worktree. The
+worktree gives that subagent an isolated copy of the repository. If the subagent
+makes no changes, Claude Code cleans the worktree automatically.
 
 ### Subagent Spawning Restrictions
 
-Use `Agent(agent_type)` syntax in the `tools` field to restrict which subagents can be spawned:
+Use the `Agent(agent_type)` syntax in the `tools` field. It restricts which
+subagents an agent can spawn:
 
 ```yaml
 tools: Agent(worker, researcher), Read, Bash  # Only worker and researcher allowed
 ```
 
-To disable specific subagents, add `Agent(AgentName)` to the `deny` permission array:
+To disable a specific subagent, add `Agent(AgentName)` to the `deny` permission
+array:
 
 ```json
 { "permissions": { "deny": ["Agent(Explore)", "Agent(my-agent)"] } }
@@ -120,11 +130,14 @@ To disable specific subagents, add `Agent(AgentName)` to the `deny` permission a
 
 ### Resuming Subagents
 
-Subagents can be resumed to continue previous work with full conversation history retained. Transcripts persist at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`.
+You can resume a subagent to continue its earlier work. The resumed subagent
+keeps its full conversation history. Its transcript persists at
+`~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`.
 
 ### Auto-Compaction
 
-Subagents support automatic context compaction at ~95% capacity. Override trigger percentage with `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`.
+Subagents support automatic context compaction at about 95% of capacity. Use
+`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` to change that trigger percentage.
 
 ## cAgents Subagent Type Format
 
@@ -140,7 +153,11 @@ Examples:
 - "cagents:market-research-analyst"
 ```
 
-**IMPORTANT**: Do NOT use `{domain}:{agent-name}` format (e.g., `make:backend-developer`). The plugin registers all agents under the `cagents:` namespace, not domain-specific namespaces. Using the wrong prefix causes fallback to generic general-purpose agents instead of loading the specialized SKILL.md.
+**IMPORTANT**: Do NOT use the `{domain}:{agent-name}` format. One example of
+that wrong format is `make:backend-developer`. The plugin registers all agents
+under the `cagents:` namespace, and it uses no domain-specific namespace. If you
+use the wrong prefix, the Agent tool falls back to a generic general-purpose
+agent. It then does not load the specialized SKILL.md.
 
 ## Alignment with Claude Code Patterns
 
@@ -304,31 +321,31 @@ Agent({ subagent_type: "backend-developer", ... })
 
 ### 3. Provide Clear Context
 
-Always include in prompts:
-- The source (controller/workflow)
-- The objective being worked on
-- The specific question or task
-- Acceptance criteria (for implementation)
-- Dependencies (what's already done)
+Always include these items in a prompt:
+- The source, which is the controller or the workflow
+- The objective that the work item serves
+- The specific question, or the specific task
+- The acceptance criteria, for an implementation task
+- The dependencies, which are the items that are already done
 
 ### 4. Respect Agent Boundaries
 
-- Controllers ask questions, don't implement
-- Execution agents answer and implement, don't coordinate
-- Support agents provide utilities, don't make decisions
+- Controllers ask questions. They do not implement.
+- Execution agents answer and implement. They do not coordinate.
+- Support agents give utilities. They do not make decisions.
 
 ## Error Handling
 
 ### Unknown Agent Type
 
-If subagent_type doesn't match a known cAgents agent:
+If `subagent_type` does not match a known cAgents agent, do these steps:
 1. Log warning to session
 2. Fall back to generic Task execution
 3. Continue workflow
 
 ### Agent Unavailable
 
-If specified agent can't handle the request:
+If the specified agent cannot handle the request, do these steps:
 1. Escalate to controller
 2. Suggest alternative agent
 3. Log for learning

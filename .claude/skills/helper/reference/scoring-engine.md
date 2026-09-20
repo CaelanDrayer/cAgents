@@ -27,6 +27,6 @@ Instead of pure keyword matching, use 5 weighted signals to score each candidate
 
 ## Applying the Scoring
 
-For each candidate command, walk through the 5 signals and assign a partial score (0.0 to the signal's max weight). Sum the partial scores. The command with the highest total wins. If two commands are within 0.05 of each other, the intent is genuinely ambiguous -- present both options and ask the user to clarify.
+For each candidate command, walk through the 5 signals. Assign a partial score to each signal, from 0.0 to the maximum weight of that signal. Sum the partial scores. The command with the highest total wins. If two commands are within 0.05 of each other, the intent is genuinely ambiguous. Present both options and ask the user to clarify.
 
 Always check for multi-command workflows (e.g., "plan then build" suggests `/designer` then `/act`). When a pipeline is detected, recommend the first command and mention the follow-up.

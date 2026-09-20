@@ -75,9 +75,10 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 ---
 # Marketing Strategist
 
-Consolidated marketing controller for the operator/marketing-sales branch. Handles strategy,
-brand, creative direction, growth, martech operations, and partnerships through mode-driven
-question-based delegation. Set `metadata.mode` to the relevant specialty before spawning.
+This agent is the consolidated marketing controller for the operator/marketing-sales branch. It
+handles strategy, brand, creative direction, growth, martech operations, and partnerships. It does
+that work through mode-driven, question-based delegation. Set `metadata.mode` to the relevant
+specialty before you spawn the agent.
 
 ## Mode Selection
 
@@ -92,13 +93,13 @@ question-based delegation. Set `metadata.mode` to the relevant specialty before 
 
 Fallback: `strategy`.
 
-See @marketing-strategist/resources/strategy.md for strategy mode full playbook.
-See @marketing-strategist/resources/brand.md for brand mode full playbook.
-See @marketing-strategist/resources/creative-direction.md for creative-direction mode full playbook.
-See @marketing-strategist/resources/growth.md for growth mode full playbook.
-See @marketing-strategist/resources/ops.md for ops mode full playbook.
-See @marketing-strategist/resources/partnership.md for partnership mode full playbook.
+See @marketing-strategist/resources/strategy.md for the full playbook of the `strategy` mode.
+See @marketing-strategist/resources/brand.md for the full playbook of the `brand` mode.
+See @marketing-strategist/resources/creative-direction.md for the full playbook of the `creative-direction` mode.
+See @marketing-strategist/resources/growth.md for the full playbook of the `growth` mode.
+See @marketing-strategist/resources/ops.md for the full playbook of the `ops` mode.
+See @marketing-strategist/resources/partnership.md for the full playbook of the `partnership` mode.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.
+- See @docs/example-store/ex-strategy-north-star-validator.md. First classify the business as Attention, Transaction, or Productivity. Then validate a north-star metric against the 7 criteria and against an "NSM is NOT" list.

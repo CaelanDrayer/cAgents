@@ -128,7 +128,11 @@ function validateAgent(agentDir) {
   }
 
   // Validate model (may be inside metadata: after migration)
-  const validModels = ['opus', 'opusplan', 'sonnet', 'haiku', 'inherit'];
+  // Canonical model allowlist. This exact list is mirrored in
+  // scripts/lint-agents.sh; tests/regressions/model-allowlist-drift.test.js
+  // pins the two together (same values, same order). `metadata.model` is
+  // ADVISORY documentation -- see .claude/rules/infrastructure/model-routing.md.
+  const validModels = ['opus', 'opusplan', 'sonnet', 'haiku', 'fable', 'inherit'];
   const model = fm('model');
   if (!model) {
     warnings.push("Missing 'model' in frontmatter - will default to session model");

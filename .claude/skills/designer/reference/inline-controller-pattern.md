@@ -1,14 +1,14 @@
 # Inline Controller Pattern
 
-The designer acts as a **controller** over pre-prepared question lists. Instead of generating questions from scratch, it selects from a pool of research-enriched questions (when research is enabled for that phase).
+The designer acts as a **controller** over pre-prepared question lists. It does not generate the questions from scratch. It selects them from a pool of research-enriched questions. This applies when the phase has research turned on.
 
 ## Controller Behaviors
 
 1. **Select**: Pick the highest-priority, dependency-satisfied question from the pool
-2. **Reorder**: When user reveals domain expertise or topic emphasis, promote related questions
+2. **Reorder**: When the user shows you domain expertise or topic emphasis, promote the related questions
 3. **Skip**: When user's answer makes a question redundant (information already provided), skip it with brief notification
 4. **Adapt**: Enrich upcoming questions with context from user's latest answer (merge user context with research context)
-5. **Dispatch**: When user reveals unexpected information not in research, spawn a follow-up research agent
+5. **Dispatch**: When the user gives you unexpected information that the research missed, spawn a follow-up research agent
 6. **Defer**: When user selects "Research this for me", dispatch a subagent to investigate and re-ask later
 
 ## Selection Priority
@@ -22,7 +22,7 @@ The designer acts as a **controller** over pre-prepared question lists. Instead 
 
 - User already answered the question in a previous response
 - Research context already provides the answer (inform user of finding)
-- Phase gate criterion already satisfied
+- The phase gate criterion is already satisfied
 
 ## Defer-to-Subagent Option ("Research this for me")
 
@@ -35,11 +35,11 @@ The designer acts as a **controller** over pre-prepared question lists. Instead 
 3. Designer moves the question to a "deferred" queue
 4. Designer continues with the next non-deferred question
 5. When the research agent returns, designer re-presents the question with enriched context from research findings
-6. If all remaining questions are deferred, wait for research agents to return
+6. If the user deferred all the remaining questions, wait for the research agents to return
 
 ### Implementation Pattern
 
-Every AskUserQuestion call should include the defer option on each question. Batch related questions together — here two auth-related questions are asked in a single call since they belong to the same design concern:
+Every AskUserQuestion call should include the defer option on each question. Batch related questions together. The example below is one call that asks two questions about auth. Both questions belong to the same design concern:
 
 ```javascript
 // Batch related questions together in one call — both are auth concerns
@@ -70,12 +70,12 @@ AskUserQuestion({
 })
 ```
 
-### Non-software example blocks (v12.7.x — "design ANYTHING")
+### Non-software example blocks (v12.7.x: "design ANYTHING")
 
 The auth/JWT example above remains a valid Software-domain illustration.
 The patterns generalize to non-software domains. Two illustrations:
 
-#### Education / Curriculum domain — Refinement phase
+#### Education / Curriculum domain: Refinement phase
 
 ```javascript
 // Batch related questions together in one call — both are curriculum
@@ -108,7 +108,7 @@ AskUserQuestion({
 })
 ```
 
-#### Personal / Life domain — Refinement phase (solo design, no stakeholders)
+#### Personal / Life domain: Refinement phase (solo design, no stakeholders)
 
 ```javascript
 // Batch related questions together in one call — both target the same
@@ -141,12 +141,12 @@ AskUserQuestion({
 })
 ```
 
-Both blocks above use the same controller behaviors (select / reorder /
-skip / adapt / dispatch / defer) and the same mandatory "Research this
-for me" defer option as the Software example. The mechanics generalize;
-the topic does not have to be software. Future domain reference files
-in `@reference/domains/` add similar domain-flavored examples without
-changing the pattern.
+Both blocks above use the same controller behaviors as the Software
+example. Those behaviors are select, reorder, skip, adapt, dispatch and
+defer. Both blocks also use the same mandatory "Research this for me"
+defer option. The mechanics generalize, and the topic does not have to
+be software. Future domain reference files in `@reference/domains/` add
+similar domain-flavored examples without a change to the pattern.
 
 ### Defer Dispatch Pattern
 
@@ -181,7 +181,7 @@ deferred_questions:
 
 ## AskUserQuestion Tool Constraints
 
-**CRITICAL**: Violating these constraints causes silent failures — questions never reach the user.
+**CRITICAL**: If you violate these constraints, the call fails in silence. The questions then never reach the user.
 
 | Parameter | Constraint | Consequence of Violation |
 |-----------|-----------|--------------------------|
@@ -193,9 +193,9 @@ deferred_questions:
 | `multiSelect` | Required boolean | Defaults to false if omitted |
 
 **Best Practices:**
-- **Default is 2-4 questions per call** — batch related questions for conversational efficiency
-- **Use 1 question ONLY for standalone gate decisions** — true binary forks (opening topic detection, go/no-go synthesis confirmations)
-- **Batch by topic area** — questions about users + pain points go together; questions about constraints + success criteria go together
-- **Keep labels to 2-3 words** — e.g., "Use JWT", "Extend existing", "Research this"
-- **Put detail in `description`, not `label`** — labels are for scanning, descriptions for context
-- **If you need 5+ options, split into 2 sequential AskUserQuestion calls** — present primary options first, then "more options" as a follow-up
+- **Default is 2-4 questions per call.** Batch the related questions together for conversational efficiency.
+- **Use 1 question ONLY for standalone gate decisions.** These are true binary forks, such as opening topic detection and go/no-go synthesis confirmations.
+- **Batch by topic area.** Put the questions about users with the questions about pain points. Put the questions about constraints with the questions about the success criteria.
+- **Keep labels to 2-3 words.** Examples are "Use JWT", "Extend existing", and "Research this".
+- **Put detail in `description`, not `label`.** A label is for scanning, and a description is for context.
+- **If you need 5+ options, split into 2 sequential AskUserQuestion calls.** Present the primary options first. Then present "more options" as a follow-up.

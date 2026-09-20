@@ -21,7 +21,7 @@ paths:
 
 # Anti-Slop Writing Rules
 
-Rules for eliminating predictable AI writing patterns from all agent output. Adapted from [stop-slop](https://github.com/hardikpandya/stop-slop) (MIT, Hardik Pandya) for the cAgents framework.
+Rules for eliminating predictable AI writing patterns from all agent output. These rules are adapted from [stop-slop](https://github.com/hardikpandya/stop-slop) (MIT, Hardik Pandya) for the cAgents framework.
 
 These rules apply to all agent-generated text: coordination logs, validation reports, plans, creative content, documentation, and user-facing output.
 
@@ -72,7 +72,7 @@ Name the human or agent who acts. Do not give inanimate objects human verbs.
 
 ## Rule 3: Use Active Voice
 
-Every sentence needs a subject doing something. Passive voice hides who acts and weakens claims.
+Every sentence needs a subject that does something. The passive voice hides who acts, and it weakens the claim.
 
 ### Banned Passive Patterns
 - "X was created" -- say who created it
@@ -101,7 +101,7 @@ No vague declaratives. Replace abstractions with concrete facts, numbers, and ev
 ### Specificity Requirements
 - Replace "improved performance" with measured metrics: "reduced response time from 450ms to 120ms"
 - Replace "enhanced security" with specific changes: "added input validation on 3 API endpoints, parameterized 12 SQL queries"
-- Replace "better error handling" with what changed: "added try-catch around database calls in user-service.ts, returning 503 with retry-after header on connection failure"
+- Replace "better error handling" with what changed. Example: "added try-catch around database calls in user-service.ts, returning 503 with retry-after header on connection failure"
 
 ## Rule 5: Ban Business Jargon
 
@@ -148,7 +148,7 @@ State facts directly. Do not soften, hedge, or announce what you are about to sa
 
 ## Quick Checks for All Agent Output
 
-Before finalizing any written output, verify:
+Before you finalize any written output, check all seven of the points below:
 
 1. **No filler adverbs** -- search for -ly words, "really", "just", "simply", "actually"
 2. **No passive voice** -- every sentence has a named subject performing the action
@@ -160,7 +160,7 @@ Before finalizing any written output, verify:
 
 ## Scoring (for Reviewers)
 
-When reviewing prose quality, score on five dimensions (1-10 each):
+When you review prose quality, score the text on five dimensions. Give each dimension a score from 1 to 10:
 
 | Dimension | 1 (Weak) | 10 (Strong) |
 |-----------|----------|-------------|
@@ -170,7 +170,7 @@ When reviewing prose quality, score on five dimensions (1-10 each):
 | **Plain language** | Jargon-heavy, buzzword-laden | Clear, direct, no jargon |
 | **Density** | Padding, filler, repetition | Every word earns its place |
 
-Total below 30/50 triggers a revision request.
+A total below 30/50 triggers a revision request.
 
 ## Applicability by Agent Type
 
@@ -185,14 +185,22 @@ Total below 30/50 triggers a revision request.
 
 ## AI-Tell Severity Registry (P0-P3)
 
-The single canonical list of AI-writing tells for every cAgents writer agent. It extends Rules 1-6 above with a severity-tiered catalog distilled from a full-manuscript detection audit. Severity: **P0** = immediate flag, catch every instance; **P1** = fix when found; **P2** = watch frequency, cap rather than eliminate; **P3** = acceptable in moderation, a tell only when it becomes universal.
+The single canonical list of AI-writing tells for every cAgents writer agent. It extends Rules 1-6 above with a severity-tiered catalog. That catalog comes from a full-manuscript detection audit. The four severity levels are:
 
-For narrative and worldbuilding prose the governing override is **reshape, don't cut**: when a tell sits inside load-bearing exposition, vary the cadence, re-embed the idea in scene/action/dialogue, or state a thesis once instead of thrice — never delete the idea itself.
+- **P0** = flag it at once, and catch every instance.
+- **P1** = fix it when you find it.
+- **P2** = watch the frequency, and cap it rather than eliminate it.
+- **P3** = acceptable in moderation, and a tell only when it becomes universal.
+
+Section P3 below has a scope limiter for the em dash signal. Read it before you
+apply that signal to a repository file.
+
+For narrative and worldbuilding prose, the governing override is **reshape, don't cut**. If a tell sits inside load-bearing exposition, do one of these three things. Vary the cadence. Re-embed the idea in scene/action/dialogue. State a thesis once instead of thrice. Never delete the idea itself.
 
 ### P0 — Structural and signature tells (zero tolerance)
 
-- **Section-ending resolution**: every `---` or scene break preceded by a neat emotional or intellectual resolution. Human prose leaves threads dangling; let 30-40% of sections end mid-tension, mid-action, or on an unanswered question.
-- **Voice bleed**: every POV character thinks in the same "smart narrator" rhythm, vocabulary, and metaphors. Each voice must be distinct — a washerwoman thinks in water and fabric, a bureaucrat in procedure and precedent.
+- **Section-ending resolution**: every `---` or scene break preceded by a neat emotional or intellectual resolution. Human prose leaves threads dangling. Let 30-40% of sections end mid-tension, mid-action, or on an unanswered question.
+- **Voice bleed**: every POV character thinks in the same "smart narrator" rhythm, vocabulary, and metaphors. Each voice must be distinct. A washerwoman thinks in water and fabric. A bureaucrat thinks in procedure and precedent.
 - **Identical repeated tic**: the same multi-word phrase reused as a structural beat (e.g. "I sat with this" as a thinking-pause 7+ times). No human repeats an exact phrase this way.
 
 ### P1 — High-frequency patterns (fix on sight)
@@ -227,12 +235,23 @@ For narrative and worldbuilding prose the governing override is **reshape, don't
 
 ### P3 — Acceptable in moderation (a tell only when universal)
 
-- **Interlude/section mirroring**: echoing the preceding section's theme from another angle is fine occasionally; it becomes a tell when *every* section does it. Let some be tangential or set up future material.
-- **Positive signals to protect** (their *absence* flags AI): em dashes at 0, semicolons at 3+ per chapter (ZERO is a known tell), contractions present throughout, 2-3 rhetorical questions per chapter, at least one register shift per chapter. Maintain these while editing; do not strip them out chasing concision.
+- **Interlude/section mirroring**: an echo of the preceding section's theme, from another angle, is fine on occasion. It becomes a tell when *every* section does it. Let some sections be tangential, or let them set up future material.
+- **Positive signals to protect**: their *absence* flags AI. Maintain these signals while you edit. Do not strip them out to chase concision. The signals are em dashes at 0, and semicolons at 3+ per chapter. A semicolon count of ZERO is a known tell. The other signals are contractions present throughout, 2-3 rhetorical questions per chapter, and at least one register shift per chapter.
+
+  **Scope limiter: this signal governs runtime-generated user-facing output.**
+  It applies to narrative, creative, and marketing prose, and to chat replies
+  that an agent writes for a user at run time. It does not apply to repository
+  files that hold instructional or reference prose. Those files obey
+  `.claude/rules/quality/ste100-technical-writing.md`, which bans the em dash
+  and sets its count to 0. The two rules do not conflict, because each one
+  governs a different surface. Do not delete either rule to remove a conflict
+  that is not there. A file under `agents/`, `.claude/rules/`,
+  `.claude/skills/`, `docs/`, `CLAUDE.md`, or `README.md` takes 0 em dashes. A
+  reply that an agent writes for a user keeps its em dashes.
 
 ## Hard-Banned Constructions (B1-B10)
 
-Zero tolerance, grep-checkable. Target for every one is **0**. A surviving registry tic (B1-B3) is a hard FAIL of the voice dimension regardless of how good the surrounding prose is.
+Zero tolerance, grep-checkable. The target for every one of them is **0**. A surviving registry tic (B1-B3) is a hard FAIL of the voice dimension. The quality of the prose around that tic does not matter.
 
 | # | Banned construction | Detection | Target |
 |---|---------------------|-----------|--------|
@@ -249,7 +268,13 @@ Zero tolerance, grep-checkable. Target for every one is **0**. A surviving regis
 
 ## Deep Final Gate: ai-writing-editor
 
-Before returning any prose deliverable, run `cagents:ai-writing-editor` (mode=both) as the deep final gate. It scans for every P0-P3 tell and every B1-B10 hard-ban above, plus the burstiness and perplexity signals a static grep pass misses. This file (`anti-slop.md`) remains the single source of truth for the tell list — `ai-writing-editor` enforces the list defined here and does not maintain a competing one. If the editor and this file ever disagree, this file wins and the editor is updated to match.
+Before you return any prose deliverable, run `cagents:ai-writing-editor` (mode=both) as the deep final gate. It scans for every P0-P3 tell and every B1-B10 hard-ban above. It also scans for the burstiness signals and the perplexity signals that a static grep pass misses. This file (`anti-slop.md`) remains the single source of truth for the tell list. `ai-writing-editor` enforces the list that this file defines, and it does not keep a competing list. If the editor and this file ever disagree, this file wins, and we then update the editor to match.
+
+The authority of `anti-slop.md` covers runtime-generated user-facing output. It
+does not cover the instructional and reference prose in repository files. For
+repository files, `.claude/rules/quality/ste100-technical-writing.md` is the
+source of truth, and its jurisdiction table lists each path in scope. Neither
+file overrides the other, because each one governs a different surface.
 
 ---
 

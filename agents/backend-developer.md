@@ -54,7 +54,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Backend Developer (consolidated)
 
-Multi-mode backend agent covering web APIs, database administration, game engine systems, and gameplay programming. The mode determines which specialty is active; the default mode handles the most common backend request type (REST/GraphQL APIs and server-side logic).
+This is a multi-mode backend agent. It covers web APIs, database administration, game engine systems, and gameplay programming. The mode determines which specialty is active. The default mode handles the most common type of backend request, which is REST and GraphQL APIs with server-side logic.
 
 ## Mode Selection
 
@@ -76,8 +76,8 @@ See @backend-developer/resources/game.md for the game mode full playbook (gamepl
 
 Pull the matching worked example when building or debugging a work item:
 
-- See @docs/example-store/ex-verification-evidence-first.md — cite specific file:line / test output on completion; "handled upstream" is not evidence.
-- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md — build a tight red-capable reproduction loop before hypothesizing a fix.
-- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md — over-abstraction vs a 3-line function; walk the ladder before adding structure.
-- See @docs/example-store/ex-minimalism-surgical-diff-vs-refactor.md — keep the diff surgical; every changed line should trace to an acceptance criterion.
-- See @docs/example-store/ex-gates-fact-forcing-pre-hoc.md — gather caller/schema/instruction facts before the first write to a file.
+- See @docs/example-store/ex-verification-evidence-first.md. On completion, cite the specific file and line, or the test output. "Handled upstream" is not evidence.
+- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md. Build a tight reproduction loop that can go red, and do it before you propose a fix.
+- See @docs/example-store/ex-minimalism-solution-ladder-before-after.md. It compares an over-abstraction with a 3-line function. Walk the ladder before you add structure.
+- See @docs/example-store/ex-minimalism-surgical-diff-vs-refactor.md. Keep the diff surgical. Every changed line must trace to an acceptance criterion.
+- See @docs/example-store/ex-gates-fact-forcing-pre-hoc.md. Gather the facts about the callers, the schema, and the instruction before your first write to a file.

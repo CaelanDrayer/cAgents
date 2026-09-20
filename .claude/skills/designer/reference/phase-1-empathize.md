@@ -4,27 +4,30 @@
 
 ## Step 0: Topic Bootstrap (Novice Path)
 
-When `/designer` is invoked with empty or extremely vague input, the designer
-runs an additional bootstrap question BEFORE Step 1. The bootstrap routes the
-user to a domain branch via a single high-level framing question, so the
-rest of Empathize can ask domain-appropriate follow-ups.
+When a user invokes `/designer` with input that is empty or much too vague,
+the designer runs an additional bootstrap question BEFORE Step 1.
+The bootstrap routes the user to a domain branch with a single high-level
+framing question. The rest of Empathize can then ask domain-appropriate
+follow-ups.
 
 ### Empty-invocation detection heuristic
 
-Treat the invocation as "empty / vague" — and run the bootstrap below —
-when ANY of these conditions hold against `$ARGUMENTS` (after flag parsing):
+Treat the invocation as "empty / vague" when ANY of these conditions hold
+against `$ARGUMENTS`. Check them after you parse the flags. Then run the
+bootstrap question below:
 
-- The topic phrase has **fewer than 3 content words** (filler words like
-  *the / a / an / to / for / with / and / of / something / anything / stuff*
-  do not count as content).
+- The topic phrase has **fewer than 3 content words**. A filler word does
+  not count as content.
+  - Filler words: *the / a / an / to / for / with / and / of / something /
+    anything / stuff*.
 - The topic phrase matches the literal regex
   `/^design\s*(something|anything|stuff)?\s*$/i`.
 - The topic phrase is exactly one of: `"help"`, `"idk"`, `"i don't know"`,
   `"not sure"`, `"unsure"`.
 
-If the heuristic does NOT trip, skip Step 0 entirely and proceed to Step 1
-(the existing single fallback question is enough — the user already gave a
-shaped topic).
+If the heuristic does NOT trip, skip Step 0 entirely. Proceed to Step 1.
+The single fallback question that already exists is enough, because the
+user already gave you a shaped topic.
 
 ### The bootstrap question
 
@@ -54,8 +57,8 @@ AskUserQuestion({
 Use the bootstrap answer to pre-set the `domain_hint` in
 `session.yaml.controller_state`. The Phase 3 (Conceptualize) domain
 identification then defaults to the bootstrap hint unless the user
-contradicts it. The full routing table lives in
-`@reference/domains/README.md` and is summarized here:
+contradicts it. The full routing table is in
+`@reference/domains/README.md`. This is a summary of it:
 
 | Bootstrap framing | Primary domain | Fallbacks (in order) |
 |-------------------|----------------|----------------------|
@@ -65,16 +68,19 @@ contradicts it. The full routing table lives in
 | `artifact`        | Creative       | Physical/Product, Game |
 | `event` (special) | Creative       | Business, Personal |
 
-The bootstrap is a HINT, not a lock — the user can still pick a different
-domain in Phase 3. The bootstrap preserves the full
-`AskUserQuestion` contract: one tool call, max-4 options enforced by
-collapsing rarely-used framings, and the mandatory **"Research this for
-me"** defer option is included.
+The bootstrap is a HINT, not a lock. The user can still pick a different
+domain in Phase 3.
+
+The bootstrap preserves the full `AskUserQuestion` contract. It makes one
+tool call. It enforces the maximum of 4 options, and it collapses the
+framings that are rare. It includes the mandatory **"Research this for
+me"** defer option.
 
 ### Then proceed to Step 1
 
-After the bootstrap answer is received, run Step 1 below (now with the
-benefit of a framing hint) and continue Empathize normally.
+After you receive the bootstrap answer, run Step 1 below. You now have
+the benefit of a framing hint from the bootstrap. Continue Empathize
+normally.
 
 ---
 
@@ -148,7 +154,7 @@ Without `--deep`, use inline analysis (Glob/Grep/Read) to gather basic context.
 
 ## Steps 3 & 4: User Understanding + Pain Points
 
-Ask who the users/stakeholders are and what problems they face in a single batched call — these two questions are closely related (same empathy concern: who is affected and how). Always include the defer option on each question.
+Ask who the users/stakeholders are and what problems they face. Put both questions in a single batched call. The two questions are closely related, because they share the same empathy concern: who is affected and how. Always include the defer option on each question.
 
 ```javascript
 // Batch users + pain points together — same empathy phase concern, reduces round-trips

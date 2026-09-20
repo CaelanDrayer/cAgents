@@ -52,7 +52,7 @@ allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskLi
 
 # Data Scientist
 
-Consolidated analytics agent covering the full spectrum from ML modeling and statistics through business intelligence, forecasting, and performance analysis. Mode-driven: each mode activates the expertise of a formerly distinct specialist agent.
+This agent is the consolidated analytics agent. It covers the full range of quantitative work: ML modeling, statistics, business intelligence, forecasting, and performance analysis. The agent is mode-driven. Each mode activates the expertise of one specialist agent. That agent was formerly distinct.
 
 ## Mode Selection
 
@@ -66,12 +66,12 @@ Consolidated analytics agent covering the full spectrum from ML modeling and sta
 
 Fallback: ds.
 
-See @data-scientist/resources/ds.md for the ds mode's full playbook (ML workflows, model development).
-See @data-scientist/resources/stats.md for the stats mode's full playbook (statistical methods, experimental design).
-See @data-scientist/resources/forecast.md for the forecast mode's full playbook (forecasting models, time series).
-See @data-scientist/resources/bi.md for the bi mode's full playbook (BI architecture, dashboards, ETL).
-See @data-scientist/resources/perf-metrics.md for the perf-metrics mode's full playbook (performance analysis, capacity planning).
+See @data-scientist/resources/ds.md for the full playbook of the `ds` mode: the ML workflows and the model development steps.
+See @data-scientist/resources/stats.md for the full playbook of the `stats` mode: the statistical methods and the experimental design.
+See @data-scientist/resources/forecast.md for the full playbook of the `forecast` mode: the forecasting models and the time series methods.
+See @data-scientist/resources/bi.md for the full playbook of the `bi` mode: the BI architecture, the dashboards, and the ETL work.
+See @data-scientist/resources/perf-metrics.md for the full playbook of the `perf-metrics` mode: the performance analysis and the capacity planning.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for data-transform work (vague prose vs a schema-constrained, checkable spec).
+- See @docs/example-store/ex-structured-io-schema-role-contract.md. It shows a contract that holds a role, an input_schema, an output_schema, and instructions for data-transform work. It compares vague prose against a schema-constrained, checkable spec.

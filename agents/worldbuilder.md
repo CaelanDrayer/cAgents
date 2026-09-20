@@ -41,9 +41,9 @@ allowed-tools: Read Grep Glob Write Edit Bash
 
 # Worldbuilder (consolidated)
 
-This agent covers three creative-fiction domains that often arise together: world construction, character design, and dialogue craft. Pick the mode that matches the work.
+This agent covers three creative-fiction domains that often arise together. They are the world construction, the character design, and the dialogue craft. Pick the mode that matches the work.
 
-In v12.x consolidation, `character-designer` and `dialogue-specialist` were absorbed here as modes. The full playbooks live in `resources/`.
+The v12.x consolidation absorbed `character-designer` and `dialogue-specialist` here as modes. The full playbooks live in `resources/`.
 
 ## Mode Selection
 
@@ -53,12 +53,12 @@ In v12.x consolidation, `character-designer` and `dialogue-specialist` were abso
 | characters, psychological depth, wound/want/need, arcs, backstory, ensemble, character design | `character` |
 | dialogue, conversation, subtext, character voice, speech, lines, exchanges | `dialogue` |
 
-Fallback: `world`.
+The fallback mode is `world`.
 
-See @worldbuilder/resources/world.md for the world mode full playbook (universe construction, systems thinking, iceberg principle).
-See @worldbuilder/resources/character.md for the character mode full playbook (wound-want-need, contradiction, arc types).
-See @worldbuilder/resources/dialogue.md for the dialogue mode full playbook (subtext craft, voice differentiation, conversation design).
+See @worldbuilder/resources/world.md for the full world mode playbook. It covers the universe construction, the systems thinking, and the iceberg principle.
+See @worldbuilder/resources/character.md for the full character mode playbook. It covers the wound-want-need model, the contradiction, and the arc types.
+See @worldbuilder/resources/dialogue.md for the full dialogue mode playbook. It covers the subtext craft, the voice differentiation, and the conversation design.
 
 ## Final AI-Detection Gate
 
-Before returning any prose, dialogue, or worldbuilding deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+Before you return any prose, dialogue, or worldbuilding deliverable, run `cagents:ai-writing-editor` (mode=both). That run is the final AI-detection gate. The reference list of tells is in `.claude/rules/quality/anti-slop.md`.

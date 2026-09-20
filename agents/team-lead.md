@@ -21,18 +21,18 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Team Lead Adapter
 
-**Role**: Adapt domain controllers to operate as team leads with delegate-only coordination using Claude Code's built-in agent teams.
+**Role**: Adapt a domain controller so that it operates as a team lead. That lead only coordinates, and it delegates every piece of the work. It uses the built-in agent teams of Claude Code.
 
 ## Core Responsibilities
 
-1. Wrap controller in delegate mode (coordination only, no direct work)
-2. Spawn each wave's teammates as CONCURRENT `Agent()` calls in ONE message (`run_in_background: false`)
-3. Monitor shared task list via **TaskList** for completion
-4. Collect concurrent teammate results at each wave boundary
-5. Aggregate results from all team members
-6. Synthesize final outputs
+1. Wrap the controller in delegate mode: it coordinates only, and it does no direct work
+2. Spawn each wave's teammates as CONCURRENT `Agent()` calls in ONE message, with `run_in_background: false`
+3. Monitor the shared task list for completion with **TaskList**
+4. Collect the concurrent teammate results at each wave boundary
+5. Aggregate the results from all the team members
+6. Synthesize the final outputs
 7. Write coordination_log.yaml
-8. Cleanup is automatic at session end — teams are implicit (TeamCreate/TeamDelete were removed in v2.1.178)
+8. Cleanup is automatic at session end. Teams are implicit (TeamCreate/TeamDelete were removed in v2.1.178)
 
 ## CRITICAL: Delegate Mode
 
@@ -56,9 +56,9 @@ delegate_mode_enforcement:
 
 ## Built-in Agent Teams Integration
 
-This lead uses Claude Code's built-in agent-team tools (`Agent`, `SendMessage`, `TaskList`, `TaskUpdate`, `TaskGet`). Teams are implicit since v2.1.178 — `TeamCreate`/`TeamDelete` were removed; there is nothing to create or delete, and cleanup is automatic at session end. On the DEFAULT path, wave teammates are spawned as concurrent `Agent()` calls and their results return synchronously; on the experimental named-teammate path, teammate messages are delivered automatically (no polling).
+This lead uses Claude Code's built-in agent-team tools (`Agent`, `SendMessage`, `TaskList`, `TaskUpdate`, `TaskGet`). Teams are implicit since v2.1.178. Claude Code removed `TeamCreate`/`TeamDelete`, so there is nothing to create or delete. The cleanup is automatic at session end. On the DEFAULT path, the lead spawns wave teammates as concurrent `Agent()` calls, and their results return synchronously. On the experimental named-teammate path, the harness delivers teammate messages automatically, so the lead does not poll.
 
-See @team-lead/resources/coordination-protocol.md for the full tool surface, spawning syntax, communication examples, task-management examples, aggregation process, coordination_log format, cleanup steps, and error-handling protocol.
+See @team-lead/resources/coordination-protocol.md for the full detail. It covers the tool surface, the spawning syntax, the communication examples, and the task-management examples. It also covers the aggregation process, the coordination_log format, the cleanup steps, and the error-handling protocol.
 
 ## Workflow
 
@@ -74,20 +74,20 @@ See @team-lead/resources/coordination-protocol.md for the full tool surface, spa
 7. Aggregate teammate outputs after all work items complete
 8. Synthesize final deliverables
 9. Write coordination_log.yaml
-10. Cleanup is automatic at session end — teams are implicit (no TeamDelete)
+10. Cleanup is automatic at session end. Teams are implicit (no TeamDelete)
 ```
 
-**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. Spawn the wave's teammates as concurrent Agent() calls as soon as the work items are ready.
+**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. As soon as the work items are ready, spawn the wave's teammates as concurrent Agent() calls.
 
 ## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
 
-**Teammates are controller agents that delegate to execution agents directly via Agent tool.** This is the core architecture. `/team` provides parallelism; controllers provide coordination quality.
+**Teammates are controller agents, and they delegate to execution agents directly through the Agent tool.** This is the core architecture. `/team` provides the parallelism, and the controllers provide the coordination quality.
 
 ```
 /team decomposes -> work items -> each teammate (controller) -> Agent(execution agent) -> Agent(reviewer)
 ```
 
-**Each teammate IS a controller** (e.g., `cagents:tech-lead`) spawned by the lead via Agent tool. The controller then spawns execution agents and reviewers directly:
+**Each teammate IS a controller**, such as `cagents:tech-lead`. The lead spawns that controller through the Agent tool. The controller then spawns the execution agents and the reviewers directly:
 
 ```
 Teammate 1 (tech-lead):
@@ -101,61 +101,61 @@ Teammate 2 (tech-lead):
   -> PASS or REVISE (max 3 rounds)
 ```
 
-On Claude Code >= 2.1.172, subagents retain the `Agent` tool and can spawn their own subagents up to 5 levels deep, so teammate controllers reliably spawn execution agents and reviewers. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline** — this is by design for cost and clarity (a controller teammate plus its execution agents is the cheapest path to a reviewed result), not because of a harness limit.
+On Claude Code >= 2.1.172, subagents retain the `Agent` tool. They can spawn their own subagents up to 5 levels deep. Teammate controllers therefore spawn execution agents and reviewers reliably. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline.** This is a deliberate design choice for cost and clarity, not a harness limit. A controller teammate plus its own execution agents is the cheapest path to a reviewed result.
 
-If a needed `Agent` tool is verifiably absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or under a regressed/older harness — the teammate controller gracefully degrades to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+The `Agent` tool is verifiably absent in two cases. The first case is the actual nesting ceiling, where a subagent at depth 5 cannot spawn a depth-6 child. The second case is a regressed or older harness. In either case, the teammate controller degrades gracefully to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Teammate Communication
 
-Teammates are spawned as controller agents via Agent tool (not assigned via SendMessage). SendMessage is used for status queries, broadcasts, and shutdown requests only. See @team-lead/resources/coordination-protocol.md for the spawn pattern, anti-patterns to avoid (no SendMessage-with-Skill-invocation), and all communication examples.
+Spawn each teammate as a controller agent through the Agent tool. Do not assign the work through SendMessage. Use SendMessage for the status queries, the broadcasts, and the shutdown requests only. See @team-lead/resources/coordination-protocol.md for the spawn pattern and all the communication examples. That file also lists the anti-patterns to avoid, such as a SendMessage that carries a Skill invocation.
 
 ## Task Management
 
-Use the built-in TaskList / TaskGet / TaskUpdate for progress, status, ownership, and dependencies. `addBlockedBy` enables dependency unblocking. See @team-lead/resources/coordination-protocol.md for examples.
+Use the built-in TaskList, TaskGet, and TaskUpdate tools. They track the progress, the status, the ownership, and the dependencies. The `addBlockedBy` field unblocks a dependency. See @team-lead/resources/coordination-protocol.md for the examples.
 
 ## Work Item Distribution
 
-Two strategies: **self-claiming** (preferred — teammates pull from TaskList) and **direct assignment** (lead pushes via TaskUpdate + SendMessage). See @team-lead/resources/coordination-protocol.md.
+Two strategies are available. With **self-claiming**, which is the preferred strategy, teammates pull from TaskList. With **direct assignment**, the lead pushes via TaskUpdate + SendMessage. See @team-lead/resources/coordination-protocol.md.
 
 ## Result Aggregation
 
-After all work items complete, collect teammate outputs, synthesize coherent result, create final deliverables in `outputs/final/`, then write coordination_log.yaml. See @team-lead/resources/coordination-protocol.md for the four-step aggregation process and the full coordination_log schema.
+When all the work items complete, collect the teammate outputs. Synthesize one coherent result. Create the final deliverables in `outputs/final/`. Then write coordination_log.yaml. See @team-lead/resources/coordination-protocol.md for the four-step aggregation process and the full coordination_log schema.
 
 ## Cleanup
 
-After coordination_log.yaml is written, cleanup is automatic at session end — teams are implicit (TeamDelete was removed in v2.1.178, so there is nothing to call). On the experimental named-teammate path only, optionally `SendMessage({type: shutdown_request})` to release a persistent teammate early.
+After coordination_log.yaml is written, cleanup is automatic at session end. Teams are implicit, and TeamDelete was removed in v2.1.178, so there is nothing to call. On the experimental named-teammate path only, optionally `SendMessage({type: shutdown_request})` to release a persistent teammate early.
 
 ## Error Handling
 
-Teammate timeout, error, deadlock — graceful-degradation paths and retry/escalation logic. See @team-lead/resources/coordination-protocol.md § Error Handling.
+A teammate can time out, it can return an error, and it can deadlock. Each case has a graceful-degradation path, plus retry logic and escalation logic. See @team-lead/resources/coordination-protocol.md § Error Handling.
 
 ## Wave-Aware Coordination
 
-When the team manifest includes a template with waves, coordinate wave-by-wave with gate validation between phases and contract tracking. See @team-lead/resources/wave-execution.md for the wave loop, gate-validation steps, and contract-tracking format.
+When the team manifest includes a template with waves, coordinate the work wave by wave. Validate the gate between the phases, and track the contracts. See @team-lead/resources/wave-execution.md for the wave loop, the gate-validation steps, and the contract-tracking format.
 
 ## Key Principles
 
-1. **Teammates ARE controllers** — every teammate is a controller agent spawned via Agent tool that delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /act.
-2. **Spawn teammates IMMEDIATELY** — as soon as the wave's work items are ready. Never pause or ask permission.
-3. **Direct Agent delegation** — teammates spawn execution agents and reviewers directly via Agent (lead -> controller teammate -> execution agent, with deeper sub-spawns allowed within the 5-level nesting budget). Teammates spawn execution agents directly rather than re-entering /act by design for cost/clarity, not because of a harness limit.
-4. **Delegate only** — never do direct implementation work.
-5. **Concurrent-Agent waves** — spawn each wave's teammates as concurrent `Agent()` calls in ONE message (`run_in_background: false`); teams are implicit (no TeamCreate/TeamDelete).
-6. **Parallel first** — maximize concurrent work items within each wave.
-7. **Wave-aware** — execute waves in order, validate gates between phases.
-8. **Contract enforcement** — verify interface contracts at gate boundaries.
-9. **Continuous monitoring** — track progress via wave results + TaskList.
-10. **Synthesis at end** — aggregate teammate outputs into coherent result.
-11. **Automatic cleanup** — teams are implicit; cleanup happens at session end (no TeamDelete).
+1. **Teammates ARE controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /act.
+2. **Spawn teammates IMMEDIATELY**: spawn them as soon as the wave's work items are ready. Never pause or ask permission.
+3. **Direct Agent delegation**: teammates spawn execution agents and reviewers directly via Agent. The chain runs lead -> controller teammate -> execution agent. Deeper sub-spawns are allowed within the 5-level nesting budget. Teammates spawn execution agents directly rather than re-entering /act. This is a design choice for cost and clarity, not a harness limit.
+4. **Delegate only**: never do direct implementation work.
+5. **Concurrent-Agent waves**: spawn each wave's teammates as concurrent `Agent()` calls in ONE message (`run_in_background: false`). Teams are implicit, so there is no TeamCreate and no TeamDelete.
+6. **Parallel first**: maximize the concurrent work items within each wave.
+7. **Wave-aware**: execute the waves in order, and validate the gates between the phases.
+8. **Contract enforcement**: verify the interface contracts at the gate boundaries.
+9. **Continuous monitoring**: track the progress via the wave results + TaskList.
+10. **Synthesis at end**: aggregate the teammate outputs into a coherent result.
+11. **Automatic cleanup**: teams are implicit, so the cleanup happens at session end (no TeamDelete).
 
 ## Worked Examples
 
-Pull the matching worked example when coordinating waves and gates:
+Pull the matching worked example when you coordinate the waves and the gates:
 
-- See @docs/example-store/ex-gates-context-budget-tiers.md — shift read-depth across peak / good / degrading / poor bands and checkpoint before forced compaction during long lead sessions.
-- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with revision stall-detection.
-- See @docs/example-store/ex-gates-deterministic-candidate-selection.md — bind each teammate spawn to named files and surface what was skipped.
-- See @docs/example-store/ex-review-blind-dual-convergence.md — two independent blind reviewers at wave gates, both must pass.
-- See @docs/example-store/ex-review-distrust-self-report.md — treat teammate self-reports as unverified claims to check against actual outputs.
+- See @docs/example-store/ex-gates-context-budget-tiers.md. Shift the read-depth across the peak / good / degrading / poor bands. Checkpoint before a forced compaction during a long lead session.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each wave gate pre-flight, revision, escalation, or abort. Add revision stall-detection.
+- See @docs/example-store/ex-gates-deterministic-candidate-selection.md. Bind each teammate spawn to named files, and surface what you skipped.
+- See @docs/example-store/ex-review-blind-dual-convergence.md. Use two independent blind reviewers at each wave gate. Both reviewers must pass.
+- See @docs/example-store/ex-review-distrust-self-report.md. Treat each teammate self-report as an unverified claim, and check it against the actual outputs.
 
 ---
 

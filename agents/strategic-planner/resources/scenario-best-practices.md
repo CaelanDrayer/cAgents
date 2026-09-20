@@ -4,24 +4,40 @@
 
 ## Design Principles
 
-- **Scenarios Explore Futures, Not Predict Them**: The purpose of scenario planning is to expand the decision-maker's mental model of what's possible — not to identify the "right" future among several.
-- **Uncertainty Is the Input, Not the Problem**: Scenario planning takes uncertainty as its raw material — scenarios are valuable precisely because they are built on uncertainties, not despite them.
+- **Scenarios Explore Futures, Not Predict Them**: Scenario planning expands the mental model of the decision-maker.
+  It shows what is possible — it does not identify the "right" future among several.
+- **Uncertainty Is the Input, Not the Problem**: Scenario planning takes uncertainty as its raw material.
+  Scenarios are valuable because they are built on uncertainties — they are not valuable despite them.
 - **Stories Activate Strategic Thinking**: Scenarios framed as compelling narratives drive better strategic conversation than probability tables — human cognition responds to stories.
 - **Challenge Comfortable Assumptions**: The most valuable scenarios are those that violate the organization's current strategic assumptions — comfortable scenarios produce no learning.
-- **Strategy Must Work in Multiple Scenarios**: A strategy that only succeeds in one scenario is a bet, not a strategy. Test strategies across all scenarios; identify robust and scenario-specific elements.
-- **Early Warning Indicators Make Scenarios Actionable**: For each scenario, identify observable signals that would indicate the scenario is materializing — converting futures thinking into current monitoring.
-- **Revisit and Refresh**: Scenarios go stale as the world changes. Build review cycles into the planning calendar; scenarios more than 2 years old may no longer bracket the relevant uncertainty space.
+- **Strategy Must Work in Multiple Scenarios**: A strategy that succeeds in only one scenario is a bet, not a strategy.
+  Test the strategies across all scenarios. Find the robust elements and the scenario-specific elements.
+- **Early Warning Indicators Make Scenarios Actionable**: For each scenario, find the observable signals.
+  A signal shows that the scenario is materializing — this converts futures thinking into current monitoring
+- **Revisit and Refresh**: Scenarios go stale as the world changes.
+  Build review cycles into the planning calendar. Scenarios more than 2 years old may no longer bracket the relevant uncertainty space.
 
 ## Key Patterns & Frameworks
 
-- **GBN (Global Business Network) Scenario Method**: Identify driving forces → Select two critical uncertainties → Build 2×2 matrix → Develop four distinct scenarios → Stress-test strategies against each. Apply as the canonical scenario development methodology for strategic planning.
-- **Three-Scenario Set (Best/Base/Worst)**: Simplified three-scenario structure for financial and operational planning where a 2×2 is too complex. Apply for quantitative scenario modeling feeding budget and capacity planning.
-- **Driving Forces Analysis**: Environmental scanning across PESTEL dimensions to identify forces that will shape the future. Apply before scenario construction to ensure scenarios are grounded in real external dynamics.
-- **Critical Uncertainties Identification**: From the driving forces list, identify the two most important AND most uncertain factors. Apply to define the axes of the scenario matrix — these become the organizing dimensions.
-- **Wind Tunneling**: Taking an existing strategy and testing it against each scenario by asking "How does this strategy perform if this future materializes?" Apply to identify robust elements (work in most scenarios) vs. conditional elements (only work in specific scenarios).
-- **Signpost Monitoring**: For each scenario, identify 3-5 observable early warning indicators. Apply to convert scenario planning into an ongoing monitoring system — track signposts monthly.
-- **Contingency Planning**: For high-impact scenarios, develop pre-thought-through responses — what specifically would we do if this scenario materialized? Apply to reduce response time when a scenario begins to unfold.
-- **Pre-Mortem Applied to Scenarios**: "It's 3 years from now and our strategy failed. Which scenario were we in, and what did we miss?" Apply to identify blind spots and strategy vulnerabilities.
+- **GBN (Global Business Network) Scenario Method**: Identify driving forces → Select two critical uncertainties → Build 2×2 matrix.
+  Then continue: Develop four distinct scenarios → Stress-test strategies against each.
+  Apply it as the canonical methodology of scenario development for strategic planning.
+- **Three-Scenario Set (Best/Base/Worst)**: A simplified three-scenario structure for financial and operational planning, where a 2×2 is too complex.
+  Apply it for quantitative scenario modeling that feeds budget and capacity planning.
+- **Driving Forces Analysis**: Environmental scanning across PESTEL dimensions, to find the forces that will shape the future.
+  Apply it before scenario construction, to make sure that the scenarios are grounded in real external dynamics.
+- **Critical Uncertainties Identification**: From the driving forces list, find the two most important AND most uncertain factors.
+  Apply it to define the axes of the scenario matrix — these become the organizing dimensions.
+- **Wind Tunneling**: Take an existing strategy and test it against each scenario.
+  Ask "How does this strategy perform if this future materializes?"
+  Apply it to separate the robust elements from the conditional elements.
+  The robust elements work in most scenarios. The conditional elements work only in specific scenarios.
+- **Signpost Monitoring**: For each scenario, find 3-5 observable early warning indicators.
+  Apply it to convert scenario planning into an ongoing monitoring system — track the signposts monthly.
+- **Contingency Planning**: For high-impact scenarios, develop pre-thought-through responses — what would we do if this scenario materialized?
+  Apply it to reduce the response time when a scenario starts to unfold.
+- **Pre-Mortem Applied to Scenarios**: "It's 3 years from now and our strategy failed.
+  Which scenario were we in, and what did we miss?" Apply it to find the blind spots and the strategy vulnerabilities.
 - **STEEP Analysis**: Social, Technological, Economic, Environmental, Political — structured environmental scanning framework for identifying driving forces. Apply as the input to driving forces analysis.
 
 ## Domain Concepts & Terminology
@@ -55,27 +71,45 @@
 
 ## Anti-Patterns to Avoid
 
-- **Single-Point Forecasting**: Producing one forecast of the future instead of scenarios, creating false certainty and brittle strategy. Fix: always develop multiple distinct scenarios for significant planning decisions; single forecasts are scenario planning's nemesis.
-- **Comfort Scenarios**: Constructing scenarios that all center on comfortable variations of the current trajectory, avoiding genuinely disruptive possibilities. Fix: explicitly require at least one "what if we're completely wrong" scenario in every set.
-- **Scenarios Without Strategy Testing**: Developing rich, compelling scenarios and then filing them away without stress-testing current strategies against them. Fix: wind tunneling is mandatory — every scenario development exercise must conclude with strategy evaluation.
-- **One-Time Exercise**: Conducting scenario planning as a one-off workshop without building monitoring, review cycles, or integration into regular planning. Fix: scenarios are inputs to ongoing planning, not outputs of a project; integrate signpost monitoring into regular review cadences.
-- **Missing Signposts**: Scenarios developed without observable early warning indicators, leaving the organization unable to detect which scenario is materializing. Fix: for every scenario, define 3-5 specific, observable signposts; assign monitoring responsibilities.
-- **Over-Detailed Near-Term Scenarios**: Spending most scenario construction energy on short-term (1-2 year) scenarios where uncertainty is lower. Fix: scenario planning is most valuable for 3-10 year horizons where uncertainty is highest and commitments are most consequential.
-- **Expert-Only Process**: Scenario construction delegated entirely to strategy specialists without broad organizational participation. Fix: diverse participant groups (different functions, levels, geographies) produce richer scenarios and stronger organizational ownership.
+- **Single-Point Forecasting**: You produce one forecast of the future instead of scenarios. This creates false certainty and brittle strategy.
+  Fix: always develop many distinct scenarios for significant planning decisions. A single forecast is the nemesis of scenario planning.
+- **Comfort Scenarios**: You construct scenarios that all center on comfortable variations of the current trajectory.
+  You avoid genuinely disruptive possibilities.
+  Fix: explicitly ask for at least one "what if we're completely wrong" scenario in every set.
+- **Scenarios Without Strategy Testing**: You develop rich, compelling scenarios and then file them away.
+  You do not stress-test the current strategies against them.
+  Fix: wind tunneling is mandatory — every scenario development exercise must conclude with strategy evaluation.
+- **One-Time Exercise**: You do scenario planning as a one-off workshop.
+  You build no monitoring, no review cycles, and no integration into regular planning.
+  Fix: scenarios are inputs to ongoing planning, not outputs of a project. Integrate signpost monitoring into regular review cadences.
+- **Missing Signposts**: You develop scenarios with no observable early warning indicators.
+  The organization cannot then detect which scenario is materializing.
+  Fix: for every scenario, define 3-5 specific, observable signposts. Assign the monitoring responsibilities.
+- **Over-Detailed Near-Term Scenarios**: You spend most scenario construction energy on short-term scenarios of 1-2 years, where uncertainty is lower.
+  Fix: scenario planning is most valuable for 3-10 year horizons, where uncertainty is highest and commitments are most consequential.
+- **Expert-Only Process**: You delegate scenario construction entirely to strategy specialists, with no broad organizational participation.
+  Fix: diverse participant groups produce richer scenarios and stronger organizational ownership. Vary the functions, the levels and the geographies.
 
 ## Quality Indicators
 
 - **Scenario Diversity**: Degree to which scenarios represent genuinely different futures (not variations on one theme) — measured by the distinctness of implications across scenarios.
-- **Assumption Challenge Rate**: % of current strategic assumptions explicitly tested in scenario construction — high challenge rate indicates the process is surfacing genuinely new perspectives.
+- **Assumption Challenge Rate**: This is the % of current strategic assumptions explicitly tested in scenario construction.
+  A high challenge rate matters — it shows that the process is surfacing genuinely new perspectives.
 - **Strategy Robustness Score**: % of current strategic initiatives performing acceptably across all developed scenarios — measures strategic resilience.
 - **Signpost Monitoring Rate**: % of defined scenario signposts actively tracked in organizational monitoring systems — determines whether scenarios remain actionable.
 - **Contingency Plan Coverage**: % of high-impact scenarios with documented contingency plans and trigger conditions (target: 100% for scenarios rated as high-impact).
 - **Scenario Refresh Frequency**: Months since scenario set was last reviewed against current environmental realities — scenarios older than 18-24 months require refresh.
-- **Leadership Engagement**: % of senior leaders who can describe the scenario set and its implications for strategy — measures whether scenarios are actually used, not just produced.
+- **Leadership Engagement**: The % of senior leaders who can describe the scenario set and what it implies for strategy.
+  This is the measure — it shows whether scenarios are used, not only produced
 
 ## Collaboration Touchpoints
 
-- **With Strategic Planner**: Quality looks like scenarios explicitly informing strategic option evaluation, strategy stress-testing conducted before major strategic commitments, and scenario set refreshed with each major strategic planning cycle.
-- **With Risk Manager**: Quality looks like high-impact adverse scenarios informing enterprise risk register, risk response plans aligned to scenario contingency plans, and scenario signposts providing early warning inputs to KRI monitoring.
-- **With Finance Manager**: Quality looks like financial models built on scenario parameters (best/base/worst), capital allocation decisions evaluated against scenario robustness, and stress-testing scenarios reflected in financial sensitivity analysis.
-- **With Planning Facilitator**: Quality looks like scenario development workshops expertly facilitated to ensure diverse input and avoid anchoring, consensus on critical uncertainties built through structured group process, and narrative scenarios developed collaboratively rather than by specialists alone.
+- **With Strategic Planner**: Quality looks like scenarios that explicitly inform strategic option evaluation.
+  Strategy stress-testing is done before major strategic commitments. The scenario set is refreshed with each major strategic planning cycle.
+- **With Risk Manager**: Quality looks like high-impact adverse scenarios that inform the enterprise risk register.
+  Risk response plans align to the scenario contingency plans. Scenario signposts give early warning inputs to KRI monitoring.
+- **With Finance Manager**: Quality looks like financial models built on scenario parameters, which are best, base and worst.
+  Capital allocation decisions are evaluated against scenario robustness. Stress-testing scenarios are reflected in financial sensitivity analysis.
+- **With Planning Facilitator**: Quality looks like scenario development workshops that are expertly facilitated.
+  They make sure of diverse input and they avoid anchoring.
+  Consensus on critical uncertainties is built through a structured group process. Narrative scenarios are developed collaboratively, not by specialists alone.

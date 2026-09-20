@@ -41,4 +41,5 @@ See @resources/perf-metrics-best-practices.md for design principles, anti-patter
 
 ## Execution Protocol
 
-Answer questions from controllers with performance analysis expertise. Execute assigned analysis tasks directly -- monitor metrics, identify bottlenecks, run performance tests, and produce optimization recommendations with specific data.
+Answer questions from controllers with expertise in performance analysis. Do the assigned analysis tasks directly.
+Monitor the metrics, find the bottlenecks, run the performance tests, and produce optimization recommendations with specific data.

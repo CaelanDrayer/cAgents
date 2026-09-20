@@ -1,14 +1,26 @@
 # C-Suite Deliberation Protocol
 
-Detailed Wave 1/Wave 2 dependency-ordered C-suite analysis and the two-phase deliberation pattern (objection -> resolve).
+This file gives the C-suite analysis for Wave 1 and Wave 2, which runs in
+dependency order. It also gives the deliberation pattern of two phases. The
+first phase is objection, and the second phase is resolve.
 
 ## Overview
 
-C-suite analysis uses **multi-wave dependency-ordered execution** with inline peer passes. Independent C-suite agents run first (Wave 1), then dependent agents run with access to Wave 1 outputs (Wave 2). Cross-pollination is FILE-BASED — C-suite peers in the same wave do not message each other directly (subagents coordinate downward by spawning helper subagents, not sideways to peers), so agent A writes a domain_analysis file and agent B reads it.
+C-suite analysis runs in **more than one wave, and the waves run in dependency
+order**. Each wave makes an inline peer pass. The independent C-suite agents run
+first, in Wave 1. The dependent agents then run in Wave 2, and they read the
+outputs of Wave 1.
+
+Cross-pollination is FILE-BASED. C-suite peers in the same wave do not message
+each other directly. A subagent coordinates downward, and it spawns a helper
+subagent to do that. A subagent never coordinates sideways to a peer. Agent A
+writes a domain_analysis file, and agent B reads that file.
 
 ## Step 4a: Detect C-Suite Dependencies
 
-Before spawning, analyze the instruction to determine which C-suite agents depend on peer analyses. Use the dependency map from `csuite-mapping.md`.
+Before you spawn the agents, read the instruction. Find which C-suite agents
+depend on the analysis of a peer. Use the dependency map in
+`csuite-mapping.md`.
 
 ```
 Default dependency patterns (override based on instruction context):
@@ -38,7 +50,7 @@ wave_2_dependent:
       reads_from: [{peer_domain_key_1}, {peer_domain_key_2}]
 ```
 
-## Step 4b: Wave 1 — Spawn INDEPENDENT C-Suite Agents in Parallel
+## Step 4b: Wave 1, Spawn INDEPENDENT C-Suite Agents in Parallel
 
 ```
 # Spawn all Wave 1 (independent) C-suite agents simultaneously
@@ -77,9 +89,9 @@ Format:
 })
 ```
 
-Wait for all Wave 1 agents to complete before proceeding to Wave 2.
+Wait for all the Wave 1 agents to complete. Then go on to Wave 2.
 
-## Step 4c: Wave 2 — Spawn DEPENDENT C-Suite Agents with Peer Access
+## Step 4c: Wave 2, Spawn DEPENDENT C-Suite Agents with Peer Access
 
 ```
 # Spawn all Wave 2 (dependent) C-suite agents simultaneously
@@ -129,26 +141,38 @@ Format:
 
 ## Step 4d: After All C-Suite Agents Return
 
-Read all `domain_analyses/domain_analysis_*.yaml` files. Verify Wave 2 agents referenced peer context. Update tasks (TaskUpdate) and status.yaml to ANALYZED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `domain_analyses/*.yaml` outputs are the canonical state-transition signal.)
+Read all the `domain_analyses/domain_analysis_*.yaml` files. Make sure that
+each Wave 2 agent referenced the peer context. Update the tasks with TaskUpdate.
+Then set status.yaml to ANALYZED.
 
-**Note**: If all C-suite agents are independent (no dependencies detected), all run in Wave 1 and Wave 2 is skipped. If only one domain is involved, dependency ordering is unnecessary.
+In v12.6.0 the `workflow/events/EVT-{N}.yaml` emission was removed. The
+`status.yaml` `pipeline_state` update and the `domain_analyses/*.yaml` outputs
+are now the canonical signal for the state transition.
+
+**Note**: If you detect no dependency, all the C-suite agents are independent.
+They all run in Wave 1, and Wave 2 does not run. If the request has only one
+domain, you do not need the dependency order.
 
 ## Step 5: Two-Phase Deliberation (ANALYZED -> DELIBERATED)
 
 ### 5a. CEO Produces Draft Brief
 
-Read all domain analyses. Synthesize into `strategic_brief_draft.yaml`:
-- Combine work items across domains
-- Identify cross-domain dependencies
-- Set priorities and sequencing
-- Draft risk register
-- Define success criteria
+Read all the domain analyses. Then write the synthesis into
+`strategic_brief_draft.yaml`:
+- Combine the work items from all the domains
+- Find the dependencies between the domains
+- Set the priorities and the order of the work
+- Draft the risk register
+- Define the success criteria
 
-Write `strategic_brief_draft.yaml` to session directory.
+Write `strategic_brief_draft.yaml` to the session directory.
 
 ### 5b. Spawn Same C-Suite Again for Objections (Parallel, with ALL Peer Analyses)
 
-Each C-suite agent reads the strategic brief draft AND ALL peer domain analyses (not just their own). This ensures objections are informed by the full cross-domain context, not just a single domain's view.
+Each C-suite agent reads the strategic brief draft. Each agent also reads the
+domain analysis of every peer, and not its own analysis alone. The objections
+then come from the full context of all the domains. They do not come from the
+view of one domain alone.
 
 ```
 Agent({
@@ -197,7 +221,11 @@ Format:
 
 ### 5c. Validate Peer Reads (M-03 Post-Validation)
 
-Before resolving, verify that each objection file contains a `peer_analyses_reviewed` list with at least 1 entry. If an objection file has an empty or missing `peer_analyses_reviewed`, the C-suite agent did not read peer analyses — re-spawn that agent with an explicit reminder to read ALL `domain_analyses/*.yaml` files first.
+Before you resolve the objections, do a check of each objection file. Make sure
+that its `peer_analyses_reviewed` list has 1 entry or more. An objection file
+can have an empty `peer_analyses_reviewed` list, or it can have no such list at
+all. That means the C-suite agent did not read the peer analyses. Re-spawn that
+agent. Tell it to read all the `domain_analyses/*.yaml` files first.
 
 ```
 for each objections_{agent}.yaml:
@@ -208,10 +236,16 @@ for each objections_{agent}.yaml:
 
 ### 5d. CEO Resolves Conflicts
 
-Read all objections. Resolve:
-- **Blocking objections**: Adjust brief to address
-- **Suggestions**: Incorporate if low-cost
-- **Conflicting demands**: CEO decides based on chairperson intent
-- **New dependencies**: Add to cross_domain_dependencies
+Read all the objections. Then resolve them:
+- **Blocking objections**: Change the brief to address the objection
+- **Suggestions**: If the cost is low, add the suggestion to the brief
+- **Conflicting demands**: The CEO decides, and uses the intent of the
+  chairperson
+- **New dependencies**: Add each new dependency to cross_domain_dependencies
 
-Update status to DELIBERATED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `objections/*.yaml` and `strategic_brief_draft.yaml` outputs are the canonical state-transition signal.)
+Update the status to DELIBERATED.
+
+In v12.6.0 the `workflow/events/EVT-{N}.yaml` emission was removed. The
+`status.yaml` `pipeline_state` update is now the canonical signal for the state
+transition. The `objections/*.yaml` outputs and the
+`strategic_brief_draft.yaml` output are part of that same signal.

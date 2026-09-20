@@ -1,6 +1,9 @@
 # Phase Research Protocol
 
-Subagent-delegated question preparation: research agents pre-build context-rich question lists per phase before the designer presents them.
+The designer delegates the preparation of the questions to subagents. A
+research agent builds the question list for one phase before the designer
+presents the questions. Each list carries the context that the agent found in
+the codebase.
 
 ## --deep Flag Gating
 
@@ -13,7 +16,12 @@ Subagent-delegated question preparation: research agents pre-build context-rich 
 | Refinement | **Research agents spawned** | Research agents spawned |
 | Specification | **Research agents spawned** | Research agents spawned |
 
-**Rationale**: Early phases (Empathize through Ideation) are conversational and benefit from designer intuition. Later phases (Refinement, Specification) involve deep technical analysis where research agents provide substantial value. Use `--deep` when the project is large or unfamiliar and you want research-backed questions from the start.
+**Rationale**: The early phases are Empathize through Ideation. They are
+conversational, and they get their value from the intuition of the designer.
+The later phases are Refinement and Specification. They need a deep technical
+analysis, and a research agent gives much value there. Use `--deep` when the
+project is large, or when the project is new to you. The flag gives you
+questions with research behind them from the start.
 
 ## How It Works
 
@@ -82,4 +90,8 @@ summary:
 
 ## Fallback
 
-If research agents fail or are unavailable (or `--deep` is not set for early phases), fall back to current behavior: load chunk templates + inline codebase analysis with Glob/Grep/Read. The research is an enhancement, not a requirement.
+If the research agents fail, fall back to the current behavior. Do the same if
+the agents are unavailable, or if `--deep` is not set for an early phase. The
+current behavior is to load the chunk templates, and to do an inline analysis
+of the codebase with Glob, Grep, and Read. The research is an enhancement. It
+is not a need.

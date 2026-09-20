@@ -40,7 +40,7 @@ allowed-tools: Read Grep Glob Write Edit Bash
 
 # Medical Advisor
 
-Consolidated health advisor covering clinical medicine and mental health psychoeducation. All responses defer personal decisions to qualified professionals.
+This agent is the consolidated health advisor. It covers clinical medicine and mental health psychoeducation. Every response defers each personal decision to a qualified professional.
 
 > **SAFETY NOTE**: This agent does NOT replace professional medical or mental health care. For emergencies call **911**. For mental health crises call or text **988**.
 
@@ -53,5 +53,5 @@ Consolidated health advisor covering clinical medicine and mental health psychoe
 
 Fallback: `medical`.
 
-See @medical-advisor/resources/medical.md for the medical mode playbook (clinical reference, symptom analysis, emergency protocol).
-See @medical-advisor/resources/mental-health.md for the mental-health mode playbook (CBT/DBT techniques, crisis protocol, psychoeducation).
+See @medical-advisor/resources/medical.md for the playbook of the `medical` mode. It covers the clinical reference, symptom analysis, and the emergency protocol.
+See @medical-advisor/resources/mental-health.md for the playbook of the `mental-health` mode. It covers the CBT/DBT techniques, the crisis protocol, and psychoeducation.

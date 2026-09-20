@@ -1,6 +1,6 @@
 # /act State Machine: Full Detail
 
-Detailed state-by-state semantics for the /act event-driven pipeline. The SKILL.md body holds the high-level diagram; this file holds the per-state contracts, transitions, and revision routing.
+This file gives the state-by-state semantics of the /act event-driven pipeline. The SKILL.md body holds the high-level diagram. This file holds the per-state contracts, the transitions, and the revision routing.
 
 ## State Machine Overview (v12.0.0 — 5 states)
 
@@ -25,7 +25,7 @@ Detailed state-by-state semantics for the /act event-driven pipeline. The SKILL.
     REVISE -> back to Phase 1 (PLANNED, re-plan)
 ```
 
-**v12.0.0 collapse**: `task-decomposer` and `prompt-engineer` were absorbed into `cagents:planner`. The planner produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to standard delegation prompts (no separate `delegation_prompts.yaml` artifact). The DECOMPOSED and PROMPTS_READY states no longer exist.
+**v12.0.0 collapse**: `cagents:planner` absorbed `task-decomposer` and `prompt-engineer`. The planner produces both `plan.yaml` and `work_items.yaml` inline. Controllers fall back to the standard delegation prompts, and the pipeline writes no separate `delegation_prompts.yaml` artifact. The DECOMPOSED state and the PROMPTS_READY state no longer exist.
 
 ## Per-State Contracts (v12.0.0)
 
@@ -61,15 +61,15 @@ while current_state is not terminal (VALIDATED):
   9. Advance to next_state per pipeline_config.yaml
 ```
 
-The verify-completion.cjs hook, post-compact-restore.cjs hook, and session discovery all read pipeline_state from status.yaml. If you skip the status.yaml update, hooks see stale state and cannot detect mid-pipeline stops.
+Three consumers read pipeline_state from status.yaml. They are the verify-completion.cjs hook, the post-compact-restore.cjs hook, and the session discovery. If you skip the status.yaml update, the hooks see a stale state. They then cannot detect a stop in the middle of the pipeline.
 
 ## Pre-Enrichment Detection (for /team subagent flows)
 
-If `--session` was provided, check which enrichment files already exist:
+If the caller gave `--session`, check which enrichment files already exist:
 - `enriched_context.yaml` exists -> skip INIT, start from ORCHESTRATED
 - `plan.yaml` AND `work_items.yaml` exist -> skip INIT+ORCHESTRATED, start from PLANNED
 
-Set `current_state` to the first state that needs execution. Use the `pre_enrichment.skip_if_exists` mapping from pipeline_config.yaml if loaded; otherwise apply the default skip logic above.
+Set `current_state` to the first state that needs execution. If pipeline_config.yaml is loaded, use its `pre_enrichment.skip_if_exists` mapping. If it is not loaded, apply the default skip logic above.
 
 ## Revision Routing (v12.0.0)
 
@@ -82,20 +82,20 @@ After the COORDINATED state, read `workflow/validation_report.yaml`:
 | **REVISE** | Re-run planner with feedback | PLANNED (orchestrator may also re-run) | Increment in-memory revision counter (v12.6.0: not persisted to status.yaml) |
 | **BLOCKED** (V10.26.17+, debug-mode only) | Re-run controller with falsification annotation | PLANNED | Annotates controller prompt with hypotheses_tested[] count |
 
-Max 3 total revision cycles (lowered from 5 in v12.0.0). If the in-memory revision counter reaches 3: escalate to user (HITL). Report what completed and what failed. (v12.6.0: the counter is held in `/act`'s working state, not persisted to status.yaml.)
+The pipeline allows a maximum of 3 revision cycles in total, and v12.0.0 lowered that limit from 5. If the in-memory revision counter reaches 3, escalate to the user through HITL. Report what completed, and report what failed. In v12.6.0, `/act` holds the counter in its working state, and it does not persist the counter to status.yaml.
 
-**v12.0.0 routing change**: FAIL and REVISE both route back to PLANNED. Previously FAIL routed to PROMPTS_READY (re-run controller with same plan) and REVISE routed to PLANNED (re-plan from scratch). With PROMPTS_READY removed, FAIL re-runs the controller from PLANNED using the existing plan plus validator feedback; REVISE re-runs the planner (and may also re-run the orchestrator) to produce a new plan.
+**v12.0.0 routing change**: FAIL and REVISE both route back to PLANNED. Earlier, FAIL routed to PROMPTS_READY, where the controller re-ran with the same plan. REVISE routed to PLANNED, where the planner re-planned from the start. PROMPTS_READY is now gone. FAIL therefore re-runs the controller from PLANNED, with the existing plan plus the validator feedback. REVISE re-runs the planner, and it can also re-run the orchestrator, to produce a new plan.
 
 ### BLOCKED Verdict (Debug-Mode Only)
 
-When validator emits BLOCKED, route identically to FAIL but annotate the controller revision prompt with the falsification count:
+When the validator emits BLOCKED, route it as you route FAIL. Also annotate the controller revision prompt with the falsification count:
 
 ```
 "Validator BLOCKED: 3 falsified hypotheses without confirmed root cause.
 Do not retry the same hypotheses; expand scope or escalate."
 ```
 
-This prevents infinite revision loops on fundamentally stuck debug sessions. Non-debug runs never see verdict BLOCKED (validator gate enforces this).
+This rule stops an infinite revision loop on a debug session that is stuck at its root. A non-debug run never sees the BLOCKED verdict, because the validator gate enforces that limit.
 
 ## Status.yaml Updates on Revision (v12.6.0)
 
@@ -107,18 +107,20 @@ pipeline_state: PLANNED     # both FAIL and REVISE route here in v12.0.0+
 
 ## Loop Exit Contract
 
-When the loop exits at any terminal state (VALIDATED, COORDINATED in minimal path, or any other terminal), execute Step 4 (MANDATORY) in SKILL.md before stopping. The verify-completion.cjs Stop hook will block stop if execution_summary.yaml is missing or auto-generated. Stopping after the loop exits without completing Step 4 is the #1 cause of incomplete pipeline runs.
+The loop can exit at any terminal state. Those states are VALIDATED, COORDINATED on the minimal path, and any other terminal state. When the loop exits, execute Step 4 in SKILL.md before you stop. Step 4 is MANDATORY. The verify-completion.cjs Stop hook blocks the stop when execution_summary.yaml is missing, and when that file is auto-generated. A stop after the loop exits, with Step 4 incomplete, is the #1 cause of an incomplete pipeline run.
 
 ## Event File Format (REMOVED in v12.6.0)
 
-Historical note: pre-v12.6 sessions wrote completion events to `workflow/events/EVT-{N}.yaml` and an index at `workflow/events/index.yaml`. These were external-UI-only signals — no cAgents hook or agent consumes them. v12.6.0 removed the emission entirely. State advancement is now driven by each agent's primary output file (`enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml`, `validation_report.yaml`), which the `/act` loop reads at level 0. Archived pre-v12.6 sessions retain `workflow/events/` on disk for record.
+Historical note: a pre-v12.6 session wrote its completion events to `workflow/events/EVT-{N}.yaml`, plus an index at `workflow/events/index.yaml`. Those were external-UI-only signals. No cAgents hook and no cAgents agent consumes them. v12.6.0 removed the emission in full. The primary output file of each agent now drives the state advancement. Those files are `enriched_context.yaml`, `plan.yaml`, `coordination_log.yaml` and `validation_report.yaml`, and the `/act` loop reads them at level 0.
+
+An archived pre-v12.6 session keeps `workflow/events/` on disk for the record.
 
 ## state_history Skip Fields (v12.7.0)
 
-When a pipeline state is skipped via the orchestrator-skip enumerated
-allowlist (see `.claude/skills/act/SKILL.md` Step 3c and
-`reference/adaptive-pipeline.md`), the state_history entry MUST record
-the skip with two fields:
+Sometimes the orchestrator-skip enumerated allowlist skips a pipeline state.
+That allowlist is in `.claude/skills/act/SKILL.md` Step 3c and in
+`reference/adaptive-pipeline.md`. In that case the state_history entry MUST
+record the skip with these two fields:
 
 ```yaml
 state_history:
@@ -136,12 +138,12 @@ state_history:
 | `tier-2-fast-path` | Skip driven by the `fast` path selector (tier 2, unambiguous, non-debug). |
 | `disabled-by-flag` | Skip driven by an explicit CLI flag or env override. |
 
-The pre-v12.7 freeform `note` field on state_history entries is
-**deprecated**. New code MUST emit `skipped_reason`; readers SHOULD accept
-either for back-compat but prefer `skipped_reason` when both are present.
-Any value of `skipped_reason` outside the three listed above is a schema
-violation.
+The pre-v12.7 freeform `note` field on a state_history entry is
+**deprecated**. New code MUST emit `skipped_reason`. A reader SHOULD accept
+either field for back-compat, and it SHOULD prefer `skipped_reason` when both
+fields are present. Any value of `skipped_reason` outside the three values
+above is a schema violation.
 
 ## Historical Note: 7-State Machine (pre-v12.0.0)
 
-Pre-v12 sessions used a 7-state machine with `DECOMPOSED` and `PROMPTS_READY` between PLANNED and COORDINATED. Archived sessions before May 2026 retain these state names in their workflow artifacts. New sessions use the 5-state machine documented above. See `cagents-memory/sessions/team_v12-revamp-phase-abc_260520_002/outputs/v12-migration/revamp-design-v2.md` Q1 for the rationale.
+A pre-v12 session used a 7-state machine. It placed `DECOMPOSED` and `PROMPTS_READY` between PLANNED and COORDINATED. An archived session from before May 2026 keeps these state names in its workflow artifacts. A new session uses the 5-state machine above. See `cagents-memory/sessions/team_v12-revamp-phase-abc_260520_002/outputs/v12-migration/revamp-design-v2.md` Q1 for the rationale.

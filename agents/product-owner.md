@@ -52,7 +52,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Product Owner
 
-Consolidated strategist agent covering product ownership, roadmap planning, and OKR goal management. Mode-driven: select the mode matching your request, or let the keyword table below guide selection.
+This agent is a consolidated strategist. It covers product ownership, roadmap planning, and OKR goal management. The agent is mode-driven. Select the mode that matches your request. You can also let the keyword table below guide your selection.
 
 ## Mode Selection
 
@@ -72,6 +72,6 @@ See @product-owner/resources/okr.md for the OKR mode playbook.
 
 Pull these on demand during product prioritization and OKR work:
 
-- See @docs/example-store/ex-strategy-opportunity-score-formula.md — the Opportunity Score (Importance x (1 - Satisfaction)) for prioritizing problems, not features.
-- See @docs/example-store/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star candidate against 7 criteria plus an "NSM is NOT" list.
-- See @docs/example-store/ex-strategy-red-team-fails-if.md — steelman then attack load-bearing assumptions as falsifiable "Fails if ___" statements, each with a cheapest test.
+- See @docs/example-store/ex-strategy-opportunity-score-formula.md. It gives the Opportunity Score (Importance x (1 - Satisfaction)) for prioritizing problems, not features.
+- See @docs/example-store/ex-strategy-north-star-validator.md. Classify the business (Attention/Transaction/Productivity). Then validate a north-star candidate against 7 criteria plus an "NSM is NOT" list.
+- See @docs/example-store/ex-strategy-red-team-fails-if.md. First, steelman the load-bearing assumptions. Then attack each one as a falsifiable "Fails if ___" statement. Give each statement a cheapest test.

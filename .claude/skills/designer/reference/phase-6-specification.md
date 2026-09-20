@@ -1,16 +1,19 @@
 # Phase 6: Specification (20% of session)
 
-**Goal**: Generate production-ready artifacts from all gathered design information.
+**Goal**: Generate production-ready artifacts from all of the design
+information that you gathered.
 
-**Research agents**: ALWAYS spawned (no `--deep` required).
+**Research agents**: The designer ALWAYS spawns them. The `--deep` flag is not
+needed.
 
 ## Continuation Gate Cascade (refinement-first)
 
-Refinement is the default state of the designer. Generating artifacts is NOT
-the end of the session — it is the start of the next refinement pass. The
-designer NEVER self-terminates; build/export/stop options appear ONLY after
-the user explicitly says they are done. `AskUserQuestion` allows at most 4
-options per call, so the gate is a cascade:
+Refinement is the default state of the designer. The artifacts that you
+generate are NOT the end of the session. They are the start of the next
+refinement pass. The designer NEVER self-terminates. A build option, an export
+option, or a stop option appears ONLY after the user explicitly says that they
+are done. `AskUserQuestion` allows at most 4 options in one call, so the gate
+is a cascade:
 
 ```
 Call 1 (continuation gate — refinement-first):
@@ -35,38 +38,41 @@ Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
 ### Rules for the cascade
 
 1. **Call 1 defaults to refinement.** The recommended option is "Refine a
-   specific area"; build/export NEVER appear in Call 1. Selecting either
-   refinement option re-enters Refinement for the chosen scope and returns
-   to this same gate — the loop does not exit on its own. The build-handoff
-   strings (`Build now (/act`, `Build with team (/team)`, `/team --strategic`)
-   must remain present and reachable in Call 2; that contract is guarded by
-   `tests/v12/designer-design-anything.test.js`.
+   specific area". A build option or an export option NEVER appears in Call 1.
+   If the user selects either refinement option, re-enter Refinement for the
+   chosen scope and return to this same gate. The loop does not exit on its
+   own. The build-handoff strings are `Build now (/act`, `Build with team
+   (/team)`, and `/team --strategic`. They must stay present and reachable in
+   Call 2, and `tests/v12/designer-design-anything.test.js` guards that
+   contract.
 2. **Call 2 is only reached when the user picks "I'm done refining".** Never
-   issue Call 2 unsolicited — that is the self-termination bug this contract
-   exists to prevent.
+   issue Call 2 on your own initiative. That is the self-termination bug that
+   this contract exists to prevent.
 3. **Call 3 is only reached when the user picks "Export / Share / Manual"
-   in Call 2.** Never collapse the cascade into a single 5+ option call —
-   `AskUserQuestion` will fail. Every Call 3 branch keeps a "Keep refining"
-   path back to Call 1.
-4. The non-implementation exits (Export, Share, Manual) are for designs
-   that do not get "built" by `/act` or `/team` — weddings, curricula,
-   research-study protocols, personal routines. The user gets a
-   terminal action without forcing an `/act` invocation.
-5. Write `phase: completed` to `status.yaml` and clean up tasks ONLY after
-   the user explicitly chooses a build, export, or save-and-stop option.
-   Never write it on your own initiative just because artifacts exist.
+   in Call 2.** Never collapse the cascade into a single call with 5 or more
+   options, because `AskUserQuestion` fails on such a call. Every Call 3 branch
+   keeps a "Keep refining" path back to Call 1.
+4. The non-implementation exits are Export, Share, and Manual. They are for a
+   design that `/act` and `/team` do not "build". Examples are a wedding, a
+   curriculum, a research-study protocol, and a personal routine. The user gets
+   a terminal action, and no `/act` invocation is forced.
+5. The user explicitly chooses a build option, an export option, or a
+   save-and-stop option. ONLY after that choice, write `phase: completed` to
+   `status.yaml` and clean up the tasks. Never write it on your own initiative
+   because some artifacts exist.
 
 ## Step 1: Read Specification Research
 
-Read pre-prepared research files (spawned during Refinement phase-overlap):
-- `question_prep/specification_compatibility.yaml` -- Codebase compatibility analysis (API patterns, naming conventions, model patterns, test patterns)
+The Refinement phase-overlap already spawned the research agents. Read the
+files that they prepared:
+- `question_prep/specification_compatibility.yaml` -- It holds the analysis of the compatibility with the codebase. That analysis covers the API patterns, the naming conventions, the model patterns, and the test patterns.
 
-Use research findings to:
-1. Pre-fill codebase compatibility validation data (avoid re-scanning the codebase)
-2. Flag any design-codebase incompatibilities proactively
-3. Ensure artifact generation uses correct naming conventions, API patterns, etc.
+Use the findings of the research to do these three things:
+1. Pre-fill the validation data for the compatibility with the codebase. You then avoid a second scan of the codebase.
+2. Flag each incompatibility between the design and the codebase early.
+3. Make sure that the artifacts you generate use the correct naming conventions and the correct API patterns.
 
-**Fallback**: If research files unavailable, perform inline compatibility checks with Glob/Grep/Read.
+**Fallback**: If the research files are unavailable, do the compatibility checks inline with Glob, Grep, and Read.
 
 ## Artifact Generation
 
@@ -74,7 +80,7 @@ Reference: `cagents-memory/_system/templates/designer/artifact_generator.yaml`
 
 ### Software Design Artifacts
 
-1. **User Stories** (from user flows + stakeholders):
+1. **User Stories**, built from the user flows and the stakeholders:
 ```markdown
 ### US-001: [Title]
 **As a** [user role]
@@ -88,7 +94,7 @@ Reference: `cagents-memory/_system/templates/designer/artifact_generator.yaml`
 **Priority**: High | **Estimate**: [points]
 ```
 
-2. **Technical Specification** (from architecture + data model):
+2. **Technical Specification**, built from the architecture and the data model:
 ```markdown
 ## Architecture Overview
 [Mermaid component diagram]
@@ -104,7 +110,7 @@ Reference: `cagents-memory/_system/templates/designer/artifact_generator.yaml`
 [Endpoint definitions with request/response]
 ```
 
-3. **Implementation Checklist** (from all design decisions):
+3. **Implementation Checklist**, built from all of the design decisions:
 ```markdown
 ## Phase 1: Foundation
 - [ ] Set up project structure
@@ -141,34 +147,34 @@ Reference: `cagents-memory/_system/templates/designer/artifact_generator.yaml`
 
 Reference: `cagents-memory/_system/templates/designer/validation_framework.yaml`
 
-Run 5-level validation on the completed design:
+Run the 5-level validation on the design when it is complete:
 
-**1. Completeness** - Are all critical areas covered?
-- Check: All required fields from the chunk template are answered
+**1. Completeness** - Does the design cover all of the critical areas?
+- Check: Every required field from the chunk template has an answer.
 - Score: 0.0 to 1.0
 
-**2. Consistency** - Any contradictions?
-- Check: Tech choices align with constraints, scale matches architecture, timeline fits scope
+**2. Consistency** - Does the design hold a contradiction?
+- Check: The technology choices align with the constraints. The scale matches the architecture. The timeline fits the scope.
 - Score: 0.0 to 1.0
 
-**3. Feasibility** - Is this realistic?
-- Check: Architecture fits scale, timeline matches scope, team can deliver
+**3. Feasibility** - Is the design realistic?
+- Check: The architecture fits the scale. The timeline matches the scope. The team can deliver the work.
 - Score: 0.0 to 1.0
 
-**4. Quality** - Best practices followed?
-- Check: Security addressed, testing planned, edge cases considered, monitoring defined
+**4. Quality** - Does the design follow the best practices?
+- Check: The design addresses the security, plans the tests, considers the edge cases, and defines the monitoring.
 - Score: 0.0 to 1.0
 
 **5. Codebase Compatibility** (software designs only) - Does the design align with the existing codebase?
-- **Primary source**: `question_prep/specification_compatibility.yaml` from research agent (pre-analyzed)
-- Check: Proposed APIs vs existing API patterns
-- Check: Data model compatibility with existing schema
-- Check: Import/dependency feasibility
-- Check: Naming convention alignment
+- **Primary source**: `question_prep/specification_compatibility.yaml`, which the research agent already analyzed.
+- Check: The proposed APIs against the existing API patterns.
+- Check: The compatibility of the data model with the existing schema.
+- Check: The feasibility of each import and of each dependency.
+- Check: The alignment of the naming conventions.
 - Score: 0.0 to 1.0
-- Flag incompatibilities as validation warnings with suggested adjustments
+- Flag each incompatibility as a validation warning, and suggest an adjustment.
 
-Present validation results via AskUserQuestion:
+Present the results of the validation with AskUserQuestion:
 
 ```javascript
 AskUserQuestion({
@@ -199,9 +205,10 @@ ${recommendation}`,
 
 ## Continuation Gate Offer
 
-**CRITICAL**: Artifacts being generated is NOT "complete." Present the
-continuation gate refinement-first. Do NOT lead with build options, and do
-NOT auto-advance to build/export — the designer never self-terminates.
+**CRITICAL**: The artifacts that you generate are NOT "complete." Present the
+continuation gate with refinement first. Do NOT lead with the build options. Do
+NOT advance to build or to export on your own, because the designer never
+self-terminates.
 
 ```javascript
 AskUserQuestion({
@@ -236,23 +243,23 @@ AskUserQuestion({
 
 ### Auto-Trigger Build (only after "I'm done refining")
 
-When user selects "Build now (/act)":
+When the user selects "Build now (/act)", make this call:
 ```javascript
 Skill({ skill: "act", args: `implement design from ${session_id}` })
 ```
 
-When user selects "Build with team (/team)":
+When the user selects "Build with team (/team)", make this call:
 ```javascript
 Skill({ skill: "team", args: `implement design from ${session_id}` })
 ```
 
-When user selects "Build with team strategic mode (/team --strategic, cross-domain)":
+When the user selects "Build with team strategic mode (/team --strategic, cross-domain)", make this call:
 ```javascript
 Skill({ skill: "team", args: `implement design from ${session_id} --strategic` })
 ```
-(v12.2.0+; pre-v12.2.0 this option invoked `/org`, which was absorbed into `/team` strategic mode.)
+This behavior starts at v12.2.0. Before v12.2.0 this option invoked `/org`, and `/team` strategic mode then absorbed `/org`.
 
-When user selects "Refine a specific area":
+When the user selects "Refine a specific area", follow these steps:
 ```
 Ask which phase/topic to refine via AskUserQuestion.
 Jump back to that phase with existing context preserved.
@@ -260,7 +267,7 @@ Only re-ask questions relevant to the specified area.
 Then RETURN to the continuation gate — do not terminate.
 ```
 
-When user selects "Run an endless refinement pass" (the default loop):
+When the user selects "Run an endless refinement pass", which is the default loop, follow these steps:
 ```
 Enter continuous refinement mode:
 1. Present design areas
@@ -274,7 +281,7 @@ Enter continuous refinement mode:
 
 ### Save for Later
 
-If user saves for later, tell them:
+If the user saves the design for later, tell them this:
 ```
 Your design is saved at: cagents-memory/sessions/{session_id}/
 
@@ -286,4 +293,4 @@ To implement later:
 
 ### Terminal Phase Value
 
-Write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml` ONLY after the user explicitly chooses a build, export, or save-and-stop option. The verify-completion.cjs Stop hook recognizes `complete`, `completed`, or `validating` as terminal phase values; any other value triggers a non-blocking warning. Do NOT write a terminal phase value while the user is still refining (or might refine again) — refinement is the default state, and marking the session complete on your own initiative is the self-termination bug this contract exists to prevent.
+Write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml` ONLY after the user explicitly chooses a build option, an export option, or a save-and-stop option. The verify-completion.cjs Stop hook recognizes three terminal phase values, which are `complete`, `completed`, and `validating`. Any other value triggers a non-blocking warning. Do NOT write a terminal phase value while the user is still refining. Do NOT write one while the user can refine again, because refinement is the default state. If you mark the session complete on your own initiative, that is the self-termination bug that this contract exists to prevent.

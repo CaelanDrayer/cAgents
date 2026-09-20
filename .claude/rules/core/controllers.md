@@ -55,12 +55,15 @@ Question-based delegation patterns for controllers with v10 agent chaining suppo
 
 ## Enforced vs Advisory Ledger
 
-The table below tells you at a glance which coordination protocols in this file are mechanically enforced (a hook, CI check, or test blocks or rewrites on violation) versus advisory. Advisory = the model is asked to follow it; no hook verifies it yet.
+The table below shows which coordination protocols in this file are enforced
+mechanically. A protocol is enforced when a hook, a CI check, or a test blocks or
+rewrites the work on a violation. A protocol is advisory when the model is asked to
+follow it and no hook checks it yet.
 
 | Protocol | Enforced by | Status |
 |----------|-------------|--------|
-| Controllers never Write/Edit implementation files (`src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`) | `controller-delegation-validator.cjs` — PreToolUse[Write\|Edit] deny while a controller is active | Enforced |
-| `coordination_log.yaml` / `plan.yaml` JSON+YAML syntax validity | `post-write-validator.cjs` — PostToolUse[Write\|Edit] | Enforced |
+| Controllers never Write/Edit implementation files (`src/`, `lib/`, `components/`, `app/`, `services/`, `middleware/`) | `controller-delegation-validator.cjs`: PreToolUse[Write\|Edit] deny while a controller is active | Enforced |
+| `coordination_log.yaml` and `plan.yaml` JSON+YAML syntax validity | `post-write-validator.cjs`: PostToolUse[Write\|Edit] | Enforced |
 | Evidence-first execution (cited file:line / grep / test evidence) | `validator-evidence-recheck.cjs` re-runs cited methods after a write and downgrades PASS→FAIL | Partial (post-write recheck) |
 | Pre-execution validation checklist (Checks 0–6) | agent-self-reported; `verify-completion.cjs` only warns if the `pre_execution` field is absent from the log | Advisory |
 | Mid-execution validation checkpoints (5 checks) | agent-self-reported; warn-only presence check on the `mid_execution` field | Advisory |
@@ -70,7 +73,8 @@ The table below tells you at a glance which coordination protocols in this file 
 | Confidence tiers | agent-self-reported | Advisory |
 | Per-subagent context-budget aim (how large a spawned subagent's own context gets) | agent-self-reported; no hook measures subagent context fill | Advisory |
 
-For the cross-cutting checks that ARE hook-enforced (exactly 5), see @.claude/rules/quality/resources/validation-checklist-active.md.
+For the 5 cross-cutting checks that hooks do enforce, see
+@.claude/rules/quality/resources/validation-checklist-active.md.
 
 ## v10 Agent Chaining: Topological Execution
 
@@ -90,38 +94,72 @@ Controller receives work_items.yaml with agent assignments + dependency graph
 
 ## CRITICAL: Controllers NEVER Do Direct Work
 
-**Controllers are COORDINATORS, not IMPLEMENTERS.** They MUST use Agent tool for all work.
+**Controllers coordinate. They do not implement.** They MUST use the Agent tool for
+all work.
 
 - **Allowed**: Ask questions, synthesize answers, create task lists, write coordination_log.yaml
 - **Prohibited**: Write code, create content, answer own questions, use Edit on implementation files
 
-For EVERY question: formulate -> spawn execution agent via Agent -> record answer -> synthesize after all answered.
+For every question: formulate the question, spawn an execution agent with the Agent
+tool, then record the answer. Synthesize after every question has an answer.
 
 ### Context-Efficient Question Delegation
 
-Question prompts should be **under 300 tokens**. Include only: the question, where to look, what to report. Do NOT include plan/decomposition/instruction contents.
+Keep a question prompt **under 300 tokens**. Include only three things: the
+question, where to look, and what to report. Do NOT include the contents of the
+plan, of the decomposition, or of the instruction.
 
 Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them.
 
 ## CRITICAL: Synchronous Spawning (never background-and-yield)
 
-Controllers (and `/team` leads) MUST spawn execution agents **synchronously** and collect each result before yielding the turn. Concretely: every `Agent(...)` call is issued with `run_in_background: false` (explicit — subagents are background-by-default since Claude Code 2.1.198), and the controller waits for the spawned agent's result in the same turn it spawned it.
+Controllers and `/team` leads MUST spawn execution agents **synchronously**. Collect
+each result before you yield the turn. Issue every `Agent(...)` call with an
+explicit `run_in_background: false`, because subagents are background-by-default
+since Claude Code 2.1.198. The controller then waits for the result in the same turn
+that it spawned the agent.
 
-**Never background a sub-agent and then yield.** A backgrounded child plus a parent that returns/yields before collecting the child's result produces an **hours-long stall**: the child sits with `stopped_at: null` in `agent_tree.yaml`, so the session *looks* alive (a null-stop child reads as "actively working"), yet nothing progresses because no agent is awaiting the child. This is the controller-background-yield stall (REC-05, session `run_bash-guard-evaluator_260708_001`). The Stop-hook stale-child freshness gate (`verify-completion.cjs` `sessionActivelyWorking`) now discounts a null-stop child whose `spawned_at` is older than `CAGENTS_STALE_CHILD_MS` (default 30 min) specifically to surface this stall — but the primary fix is behavioral: **spawn synchronously, collect, then proceed.**
+**Never background a sub-agent and then yield.** A backgrounded child plus a parent
+that returns before it collects the child produces an **hours-long stall**. The
+child sits with `stopped_at: null` in `agent_tree.yaml`, so the session *looks*
+alive, because a null-stop child reads as "actively working". Nothing progresses,
+because no agent waits for the child. This is the controller-background-yield stall
+(REC-05, session `run_bash-guard-evaluator_260708_001`).
 
-The one exception is the OPTIONAL experimental named-background-teammate path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), where a named background teammate is coordinated via `SendMessage` and its result is still explicitly collected — never spawned-and-forgotten. On the default concurrent-Agent path, always `run_in_background: false`.
+The Stop-hook stale-child freshness gate is `sessionActivelyWorking` in
+`verify-completion.cjs`. It now discounts a null-stop child whose `spawned_at` is
+older than `CAGENTS_STALE_CHILD_MS` (default 30 min), so the stall surfaces. The
+primary fix stays behavioral: **spawn synchronously, collect, then proceed.**
 
-**`name` wins over `run_in_background: false`** — passing `name` promotes the spawn to a named background teammate and discards your blocking request without an error (CONFIRMED on Claude Code 2.1.221), so you yield holding nothing and re-do the work yourself. Spawn UNNAMED with `run_in_background: false` for anything you must collect in-turn; reserve named teammates for the experimental resumable path where you collect explicitly via `SendMessage`. Per-subagent visibility comes from the `TaskCreate` subject (§ MANDATORY: TaskCreate below), not from `name` — name the task, never the spawn. Mechanism and the choose-which table: @.claude/rules/core/delegation.md § Synchronous Spawning.
+The one exception is the optional experimental named-background-teammate path
+(`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). There you coordinate a named background
+teammate via `SendMessage`, and you still collect its result explicitly. It is never
+spawned-and-forgotten. On the default concurrent-Agent path, always pass
+`run_in_background: false`.
 
-**If a child's hand-back is missing, look on disk before re-spawning.** A child that wrote its artifact to `outputs/` has already done the work even if you never collected its summary; re-running it pays for that work a second time.
+**`name` wins over `run_in_background: false`.** Passing `name` promotes the spawn
+to a named background teammate, and it discards your blocking request without an
+error. This was CONFIRMED on Claude Code 2.1.221. You then yield holding nothing,
+and you re-do the work yourself.
+
+Spawn UNNAMED with `run_in_background: false` for anything you must collect in-turn.
+Reserve a named teammate for the experimental resumable path, where you collect the
+result explicitly via `SendMessage`. Per-subagent visibility comes from the
+`TaskCreate` subject (§ MANDATORY: TaskCreate below), not from `name`. Name the
+task, never the spawn. For the mechanism and the choose-which table, see
+@.claude/rules/core/delegation.md § Synchronous Spawning.
+
+**If the hand-back of a child is missing, look on disk before you re-spawn.** A
+child that wrote its artifact to `outputs/` has already done the work, even if you
+never collected its summary. A re-run pays for that work a second time.
 
 ## Invoking Workspace Skills (reuse-before-rebuild)
 
-The planner may assign a work item to a **workspace skill** instead of a
-cAgents agent (field `assigned_skill`, with `skill_args`) when a skill already
-present in the workspace owns that work — e.g. a user's `pr` skill that owns
-their SOW/quote templates, or a `deep-research` skill. This is the
-minimal-solution ladder at planning time: reuse before rebuild.
+The planner may assign a work item to a **workspace skill** in place of a cAgents
+agent. The fields are `assigned_skill` and `skill_args`. Use them when a skill
+already present in the workspace owns that work. Two examples are a user's `pr`
+skill that owns their SOW and quote templates, and a `deep-research` skill. This is
+the minimal-solution ladder at planning time: reuse before rebuild.
 
 When a controller processes an `assigned_skill` work item, it invokes the
 skill via the **Skill tool** rather than spawning an execution agent:
@@ -130,17 +168,17 @@ skill via the **Skill tool** rather than spawning an execution agent:
 Skill({ skill: "{assigned_skill}", args: "{skill_args}" })
 ```
 
-Invoking a workspace skill IS a valid form of delegation — it is NOT the
-controller "doing the work directly." Treat the skill's output as the work
-item's deliverable and run the normal reviewer loop against the acceptance
-criteria.
+When a controller invokes a workspace skill, that IS a valid form of delegation. It
+is NOT the controller "doing the work directly". Treat the output of the skill as
+the deliverable of the work item. Then run the normal reviewer loop against the
+acceptance criteria.
 
-**Graceful fallback**: if the `Skill` tool is verifiably absent from the
-controller's surface (nesting ceiling, or a regressed harness), do NOT fail
-the work item — spawn the closest-matching cAgents execution agent instead and
-record `skill_fallback: "{reason}"` in `coordination_log.yaml`. Verify the tool
-is actually absent before falling back. Never route an `assigned_skill` work
-item back into cAgents' own `act`/`team`/`designer`/`helper` skills.
+**Graceful fallback**: the `Skill` tool can be absent from the surface of the
+controller, at the nesting ceiling or on a regressed harness. If it is verifiably
+absent, do NOT fail the work item. Spawn the closest-matching cAgents execution
+agent instead, and record `skill_fallback: "{reason}"` in `coordination_log.yaml`.
+Make sure the tool is absent before you fall back. Never route an `assigned_skill`
+work item back into the cAgents `act`, `team`, `designer`, or `helper` skills.
 
 See @.claude/skills/act/reference/skill-awareness.md for the discovery
 procedure, `available_skills.yaml` schema, and the planner contract.
@@ -161,15 +199,33 @@ procedure, `available_skills.yaml` schema, and the planner contract.
 
 ## MANDATORY: TaskCreate for Execution Agent Visibility
 
-Every controller MUST call TaskCreate after identifying execution agents. TaskCreate (with TaskUpdate for status changes, TaskList for inventory, TaskGet for detail reads) is the controller's primary tool for showing progress to the user in interactive Claude Code sessions.
+Every controller MUST call TaskCreate once it has chosen its execution agents.
+TaskCreate is the main tool a controller uses to show progress to the user in an
+interactive Claude Code session. Its companions are TaskUpdate for a status change,
+TaskList for an inventory, and TaskGet for a detail read.
 
-**Note on TodoWrite (SDK only)**: TodoWrite is the equivalent tool in non-interactive mode and the Agent SDK (per docs.claude.com/docs/en/tools.md). Interactive Claude Code sessions — which is the primary cAgents runtime — MUST use TaskCreate/TaskUpdate/TaskList/TaskGet instead. Historical references to TodoWrite in legacy SKILL.md prompt bodies are being swept; treat any remaining reference as equivalent to TaskCreate unless explicitly marked "(SDK only)".
+**Note on TodoWrite (SDK only)**: TodoWrite is the equivalent tool for
+non-interactive mode and for the Agent SDK. See docs.claude.com/docs/en/tools.md. An
+interactive Claude Code session is the primary cAgents runtime, and it MUST use
+TaskCreate, TaskUpdate, TaskList, and TaskGet instead. A sweep is removing the
+historical TodoWrite references from legacy SKILL.md prompt bodies. Read any
+reference that stays as an equivalent of TaskCreate, unless it carries the mark
+"(SDK only)".
 
-**TaskCreate scope boundary**: Pipeline-level tasks (tracking which pipeline agent is running) are owned by /act at level 0. Controllers do NOT create TaskCreate tasks that /act expects to clean up -- those tasks live in the controller's scope and /act cannot update them, causing "Task not found" errors during pipeline cleanup.
+**TaskCreate scope boundary**: /act owns the pipeline-level tasks at level 0, which
+track the pipeline agent that is running. Controllers do NOT create TaskCreate tasks
+that /act expects to clean up. Such a task lives in the scope of the controller, and
+/act cannot update it. The cleanup step then reports a "Task not found" error.
 
-Controllers MAY use TaskCreate for their OWN internal sub-spawns (e.g., tracking individual execution agents they spawn at level 2), but these are controller-scoped tasks that the controller itself must clean up before returning. They are invisible to /act's Step 4 task cleanup.
+Controllers MAY use TaskCreate for their OWN internal sub-spawns, such as each
+execution agent they spawn at level 2. These tasks are controller-scoped, so the
+controller itself must clean them up before it returns. Step 4 of the /act task
+cleanup cannot see them.
 
-Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-space indented `[{agent-name}] {sub-task}` for that agent's own work. Never use state machine names (INIT, ORCHESTRATED, etc.). Replace placeholders with actual agent names as soon as known.
+Use `[{parent} > {agent-name}] {verb phrase}` when you spawn an agent. Use a 2-space
+indented `[{agent-name}] {sub-task}` for the work of that agent. Never use a state
+machine name such as INIT or ORCHESTRATED. Replace each placeholder with the real
+agent name as soon as you know it.
 
 **Format rules:**
 - No slash prefix: `[tech-lead]` not `[/tech-lead]`
@@ -178,7 +234,7 @@ Use `[{parent} > {agent-name}] {verb phrase}` when spawning an agent, then 2-spa
 - 2-space indent for children
 - Include contextual detail (file counts, component names, etc.)
 
-**Example (interactive Claude Code — TaskCreate/TaskUpdate):**
+**Example for interactive Claude Code (TaskCreate and TaskUpdate):**
 ```
 TaskCreate({ subject: "[tech-lead > backend-developer] Implementing auth module", description: "Creating JWT middleware; Writing unit tests (4 files)" })
 TaskCreate({ subject: "[tech-lead > frontend-developer] Building login UI", description: "Creating login form component" })
@@ -209,56 +265,107 @@ See `controller-reference.md` for additional good/bad task-tracking examples.
 
 ## Key Guidelines
 
-- **Ask, don't assign**: "What is current auth?" not "Analyze auth"
-- **Synthesis drives implementation**: Combine answers coherently
-- **Adaptive coordination**: Follow-up questions based on answers
+- **Ask, do not assign**: write "What is the current auth?", not "Analyze auth".
+- **Synthesis drives implementation**: combine the answers into one coherent whole.
+- **Adaptive coordination**: base each follow-up question on the answers you have.
 
 ## Reviewer Loop
 
-Controllers include an internal reviewer loop (max 2 rounds). After each executor completes, spawn a reviewer to evaluate against acceptance criteria. PASS accepts, REVISE sends feedback back. On each REVISE round, spawn a fresh reviewer with no carried context so it does not anchor on its own prior verdict. See @.claude/rules/playbooks/pat-two-stage-review.md.
+Controllers include an internal reviewer loop (max 2 rounds). After each executor
+completes, spawn a reviewer to judge the work against the acceptance criteria. PASS
+accepts the work. REVISE sends the feedback back. On each REVISE round, spawn a
+fresh reviewer that carries no context, so it does not anchor on its own earlier
+verdict. See @.claude/rules/playbooks/pat-two-stage-review.md.
 
 **Tier 2**: Single reviewer. **Tier 3+**: Blind review with 2-3 independent reviewers + Devil's Advocate on unanimous PASS.
 
 ### Dead-Letter Promotion Contract (P1-6, v12.6.x)
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
-When a work item fails 2 consecutive reviewer rounds (rounds-cap reached per `controller_revision.max_internal_rounds: 2` in `pipeline_config.yaml`; lowered from 3 in LP-27, v12.7.x), the controller should promote the item rather than silently retrying or claiming completion. This is a by-convention contract — no hook currently enforces it (see the advisory note below):
+The rounds-cap is `controller_revision.max_internal_rounds: 2` in
+`pipeline_config.yaml`. LP-27 (v12.7.x) lowered it from 3. When a work item fails
+2 consecutive reviewer rounds, the controller should promote the item. It should not retry in silence, and it should
+not claim completion. This contract holds by convention, and no hook currently
+enforces it. The promotion has four steps:
 
 1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
 2. **Append the item to `dead_letter_items[]`** in `coordination_log.yaml` with the schema documented in `controller-reference.md` (task_id, name, rounds_attempted, last_feedback, best_attempt_location, reason).
-3. **Continue with the remaining work items** — do NOT halt coordination on a single dead_letter. The pipeline classifies a session with `dead_letter_items.length > 0` as `PARTIAL_PASS` (which maps to PASS in `pipeline_config.yaml` and reports the dead-letter items to the user via `validation_report.yaml`).
-4. **Do NOT re-route to PLANNED** for individual dead_letter items. The outer FAIL/REVISE revision loop (max 3 cycles) is for whole-session validator verdicts, not for per-item reviewer failures. Re-promoting a dead_letter item back into the reviewer loop without controller-level intervention (new acceptance criteria, different executor, escalation to user) wastes revision budget.
+3. **Continue with the remaining work items.** Do NOT halt coordination on a single
+   dead_letter. The pipeline classifies a session with `dead_letter_items.length > 0`
+   as `PARTIAL_PASS`. `pipeline_config.yaml` maps `PARTIAL_PASS` to PASS, and
+   `validation_report.yaml` reports the dead-letter items to the user.
+4. **Do NOT re-route to PLANNED** for an individual dead_letter item. The outer
+   FAIL/REVISE revision loop (max 3 cycles) handles whole-session validator
+   verdicts, not per-item reviewer failures. A dead_letter item that goes back into
+   the reviewer loop without controller-level intervention wastes revision budget.
+   Such an intervention is new acceptance criteria, a different executor, or an
+   escalation to the user.
 
-This contract is documented (here + in `controller-reference.md`'s dead-letter-queue section); enforcement is currently advisory. A future hook will mechanically verify that `review_rounds >= 2` items appear in `dead_letter_items[]` before the controller writes its terminal `status: completed` on the coordination log. (LP-27 in v12.7.x lowered the rounds-cap from 3 → 2 to save ~33% reviewer-call token budget per failed item; the promotion contract itself was unchanged.)
+This contract is documented here and in the dead-letter-queue section of
+`controller-reference.md`. Enforcement is advisory today. A future hook will check
+that every item with `review_rounds >= 2` appears in `dead_letter_items[]` before
+the controller writes its terminal `status: completed` on the coordination log.
+LP-27 in v12.7.x lowered the rounds-cap from 3 to 2, which saves about 33% of the
+reviewer-call token budget per failed item. The promotion contract itself did not
+change.
 
 See `controller-reference.md` for reviewer spawning patterns, blind review protocol, dead-letter queue schema, and confidence tiers.
 
 ### Rule-of-Three: Architecture-Question Escalation
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
-When 2-3 consecutive fixes each close the reported failure but surface a *new* downstream failure somewhere else (whack-a-mole), stop — a relocating failure is a design smell, not a code bug. Rather than silently promoting the item to dead_letter or spending more revision rounds, set `architecture_question: true` in `coordination_log.yaml` and escalate to the user.
+Sometimes 2-3 consecutive fixes each close the reported failure but surface a *new*
+downstream failure somewhere else. That is whack-a-mole. Stop, because a failure
+that relocates is a design smell, not a code bug. Do not promote the item to
+dead_letter in silence, and do not spend more revision rounds. Set
+`architecture_question: true` in `coordination_log.yaml` and escalate to the user.
 
-- **Trigger**: 2-3 fixes in a row, each fixing the prior failure but spawning a fresh one elsewhere (the failure set moves rather than shrinks).
-- **Action**: Stop the reviewer/fix loop for that item. Summarize the pattern — the sequence of fixes and where each new failure appeared — and ask the user for an architecture-level decision (change the interface, re-scope the acceptance criteria, or accept a documented tradeoff).
-- **Why**: A moving-target failure means the fixes are treating symptoms of a structural mismatch. One escalation is cheaper than burning the revision budget on a problem only the user can re-scope.
+- **Trigger**: 2-3 fixes in a row. Each one fixes the earlier failure but spawns a
+  fresh failure elsewhere, so the failure set moves and does not shrink.
+- **Action**: stop the reviewer loop and the fix loop for that item. Summarize the
+  pattern: the sequence of fixes, and where each new failure appeared. Then ask the
+  user for an architecture-level decision. The user can change the interface,
+  re-scope the acceptance criteria, or accept a documented tradeoff.
+- **Why**: a failure that moves means the fixes are treating the symptoms of a
+  structural mismatch. One escalation costs less than a revision budget burned on a
+  problem that only the user can re-scope.
 
-This differs from stuck-detection (the *same* failure recurring) and from dead-letter promotion (one item exhausting its rounds): here each fix succeeds locally, yet the failure keeps moving, which is the signal that the design — not the code — needs a decision.
+This differs from stuck-detection, where the *same* failure recurs. It also differs
+from dead-letter promotion, where one item uses up its rounds. Here each fix
+succeeds locally, yet the failure keeps moving. That is the signal that the design
+needs a decision, not the code.
 
 ### Two-Stage Review Protocol (V10.22.0)
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
-Every reviewer loop runs two ordered stages: Stage 1 spec compliance (binary PASS/REVISE on acceptance criteria) before Stage 2 code quality (severity-tagged findings). No code quality review begins until spec compliance passes.
+Every reviewer loop runs two stages in order. Stage 1 is spec compliance, a binary
+PASS or REVISE on the acceptance criteria. Stage 2 is code quality, with
+severity-tagged findings. No code-quality review starts until spec compliance
+passes.
 
-See @.claude/rules/playbooks/pat-two-stage-review.md for the canonical pattern, reviewer prompts per stage, REVISE thresholds, why-two-stages rationale, and coordination-log format.
+See @.claude/rules/playbooks/pat-two-stage-review.md for the canonical pattern. It
+holds the reviewer prompts per stage, the REVISE thresholds, the rationale for two
+stages, and the coordination-log format.
 
 ### Guard Command Pattern (V10.18.0)
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
-After the reviewer checks acceptance criteria, controllers SHOULD also run a **guard command** to verify no regressions were introduced. Guard commands are automated verification steps (tests, linting, type checks) that catch issues human-style review misses.
+After the reviewer checks the acceptance criteria, controllers SHOULD also run a
+**guard command** to make sure that no regression appeared. A guard command is an
+automated check, such as a test run, a lint run, or a type check. It catches the
+issues that a human-style review misses.
 
 **Guard command flow**:
 ```
@@ -290,13 +397,18 @@ implementation_tasks:
     guard_output: "45/45 tests passed"  # truncated output on failure
 ```
 
-**When to skip guards**: Bootstrap/scaffolding work items (no tests yet), pure documentation, design artifacts. Controllers use judgment but default to running guards when a command is available.
+**When to skip guards**: a bootstrap or scaffolding work item that has no tests yet,
+pure documentation, and a design artifact. Controllers use judgment, and they run
+the guards by default when a command is available.
 
 ### Regression Validation Chain (V10.23.0)
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
-Controllers SHOULD chain multiple guard commands for comprehensive regression detection. Run ALL applicable guards, not just the first one.
+Controllers SHOULD chain several guard commands, so that the chain covers every kind
+of regression. Run ALL applicable guards, not only the first one.
 
 #### Guard Command Chain
 
@@ -368,17 +480,40 @@ guard_chain_result:
 
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-**Nesting model (v12.17.0+).** Claude Code ≥ 2.1.172 lets subagents spawn their own subagents up to 5 levels deep. Controllers and subagents spawned at depth 1 **retain the `Agent` tool** and CAN spawn execution agents (and those execution agents can spawn deeper sub-agents, within the 5-level ceiling). Delegation is the expected behavior at every level — a controller normally still has `Agent` at depth 1 and MUST delegate.
+**Nesting model (v12.17.0+).** Claude Code 2.1.172 and later lets a subagent spawn
+its own subagents up to 5 levels deep. A controller or a subagent spawned at depth 1
+**keeps the `Agent` tool** and can spawn execution agents. Those execution agents
+can spawn deeper sub-agents, inside the 5-level ceiling. Delegation is the expected
+behavior at every level. A controller normally still has `Agent` at depth 1, and it
+MUST delegate.
 
-**Graceful degradation is a DEFENSIVE FALLBACK**, not the expected depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent — at the actual nesting ceiling (a subagent at depth 5 cannot spawn a depth-6 child) or if a future/older harness regresses the capability. Before reporting failure for a missing `Agent` tool, an agent MUST verify the tool is actually absent. When `Agent` is verifiably absent, the spawned agent gracefully degrades to direct execution + self-validation rather than failing.
+**Graceful degradation is a defensive fallback**, not the expected depth-1 behavior.
+It triggers only when the `Agent` tool is genuinely absent. That happens at the real
+nesting ceiling, where a subagent at depth 5 cannot spawn a depth-6 child. It also
+happens if an older harness or a future harness loses the capability.
 
-See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical fallback pattern, the tool-inventory-check-before-BLOCKED rule, documentation requirement, ceiling/regression scope, and the historical pre-v12.17.0 depth-1 stripping context.
+Before you report a failure for a missing `Agent` tool, make sure that the tool is
+absent. When `Agent` is verifiably absent, the spawned agent degrades to direct
+execution and self-validation. It does not fail.
+
+See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the canonical
+fallback pattern. That playbook holds:
+
+- the tool-inventory-check-before-BLOCKED rule;
+- what you must document;
+- the scope of the ceiling and of a harness regression;
+- the depth-1 stripping context from before v12.17.0.
 
 ## Agent ID Tracking
 
-When controllers spawn execution agents via Agent tool, they MUST record the returned `agent_id` in the coordination_log's `implementation_tasks` entry. This links work items to `agent_tree.yaml` entries for audit-trail traceability.
+When controllers spawn execution agents with the Agent tool, they MUST record the
+returned `agent_id`. It goes in the `implementation_tasks` entry of the
+coordination_log. That link joins a work item to its `agent_tree.yaml` entry, which
+makes the audit trail traceable.
 
-When calling the Agent tool to spawn an execution agent, include `subagent_type` set to the `cagents:{name}` identifier. This ensures the SubagentTracker hook can record the agent type in the audit trail without falling back to description parsing.
+When you call the Agent tool to spawn an execution agent, set `subagent_type` to the
+`cagents:{name}` identifier. The SubagentTracker hook then records the agent type in
+the audit trail. It does not have to fall back to a parse of the description.
 
 ```
 Agent(
@@ -397,7 +532,8 @@ implementation_tasks:
 
 ### Task Result Metadata (CC 2.1.30)
 
-The Agent tool returns rich metadata alongside the agent result. Controllers SHOULD capture and log this metadata in the coordination_log:
+The Agent tool returns rich metadata beside the agent result. Controllers SHOULD
+capture that metadata and log it in the coordination_log:
 
 ```yaml
 implementation_tasks:
@@ -413,13 +549,17 @@ implementation_tasks:
     duration_seconds: 47   # Wall-clock time
 ```
 
-**Why capture this**: Token counts enable cost tracking per work item. Tool use counts indicate agent efficiency (high counts may signal thrashing). Duration enables SLA tracking and helps identify stuck agents (Check 10 in mid-execution validation).
+**Why capture this**: a token count gives you the cost of each work item. A tool-use
+count shows how efficient the agent is, and a high count can signal thrashing. A
+duration gives you SLA tracking, and it helps you find a stuck agent. That is
+Check 10 in mid-execution validation.
 
 Controllers record this in `coordination_log.yaml` under the matching `implementation_tasks` entry.
 
 ## Confidence Tiers
 
-Every completed work item MUST include `confidence` (0.0-1.0) and `confidence_rationale`. Items < 0.7 trigger additional scrutiny.
+Every completed work item MUST include `confidence` (0.0-1.0) and
+`confidence_rationale`. An item below 0.7 triggers more scrutiny.
 
 ## Read-Before-Decide Pattern
 
@@ -427,46 +567,75 @@ Controllers MUST re-read plan objectives before major decisions to combat attent
 
 > Before synthesis and before spawning execution agents, re-read plan.yaml objectives to refresh goals in the attention window.
 
-**When to re-read**: Before synthesizing answers, before spawning executors, after 5+ delegated questions, before writing coordination_log.
+**When to re-read**: before you synthesize the answers, before you spawn an
+executor, after 5 or more delegated questions, and before you write the
+coordination_log.
 
 ## Pre-Execution and Mid-Execution Validation (V10.23.0)
 
-> **Advisory — not hook-enforced.** The steps below are agent-self-reported; no hook currently verifies them. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the deferred-enforcement roadmap.
+> **Advisory, not hook-enforced.** The steps below are agent-self-reported. No hook
+> checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
+> deferred-enforcement roadmap.
 
 Controllers MUST run validation checkpoints at two points:
 
-**Pre-Execution** (7 checks): Before spawning any executor — planner output schema (Check 0, added LP-28), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced file existence, coordination log schema.
+**Pre-Execution** (7 checks): run these before you spawn any executor.
 
-**Mid-Execution** (5 checks): After every 3 completed work items — evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check (random verification), dependency satisfaction.
+1. The planner output schema (Check 0, added LP-28).
+2. Plan completeness.
+3. Work item criteria.
+4. Dependency acyclicity.
+5. Agent existence.
+6. Existence of each referenced file.
+7. The coordination log schema.
+
+**Mid-Execution** (5 checks): run these after every 3 completed work items.
+
+1. Evidence capture.
+2. Stuck item detection.
+3. Timestamp monotonicity.
+4. Evidence spot-check, on a random sample.
+5. Dependency satisfaction.
 
 See @resources/controller-validation-checklist.md for detailed check descriptions and failure handling.
 
 ## Decision Log Protocol (V10.6.0)
 
-Controllers MUST maintain append-only DECISIONS.md and CORRECTIONS.md logs during coordination. Entries include timestamp, context, rationale, and confidence. These persist in `cagents-memory/_projects/{hash}/` and survive context compaction.
+Controllers MUST keep append-only DECISIONS.md and CORRECTIONS.md logs during
+coordination. Each entry holds a timestamp, the context, the rationale, and the
+confidence. These logs live in `cagents-memory/_projects/{hash}/`, and they survive
+context compaction.
 
 See `controller-reference.md` for examples and file location details.
 
 ## Evidence-First Execution Pattern (V10.10.0)
 
-Controllers MUST require specific evidence from execution agents (file paths, line numbers, test output, measured metrics) — not vague confirmations like "looks correct" or "reviewed code, all good".
+Controllers MUST ask execution agents for specific evidence: a file path, a line
+number, test output, or a measured metric. A vague confirmation is not evidence.
+"Looks correct" and "reviewed code, all good" are not acceptable.
 
-See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical pattern, bad-vs-good examples, and the four execution-agent response requirements.
+See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical
+pattern, the bad-versus-good examples, and the four things an execution agent must
+put in its response.
 
 ## CRITICAL: Do Not Ask Permission
 
 After completing coordination:
-- Write coordination_log.yaml (with `schema_version: "1"` at top), handoff document, and completion event
-- Signal completion (coordination_log.yaml with complete status)
-- DO NOT ask user to review or approve — /act auto-proceeds to validation
+- Write coordination_log.yaml with `schema_version: "1"` at the top. Write the
+  handoff document and the completion event.
+- Signal completion: coordination_log.yaml carries a complete status.
+- DO NOT ask the user to review or approve. /act auto-proceeds to validation.
 
-**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work item definitions. `team/task_list.yaml` is a status-only overlay (IDs + status + assigned_to).
+**Canonical Sources**: `workflow/work_items.yaml` is the canonical source for the
+work item definitions. `team/task_list.yaml` is a status-only overlay that holds
+IDs, status, and assigned_to.
 
 ---
 
 ## See Also
 
-- **controller-reference.md** - Detailed schemas, examples, and protocols (path-conditional)
-- **orchestration.md** - Workflow phases and automatic transitions
-- **execution.md** - Execution agent patterns (tier 3)
-- **completion.md** - Task completion protocol and evidence requirements
+- **controller-reference.md**: detailed schemas, examples, and protocols
+  (path-conditional).
+- **orchestration.md**: workflow phases and automatic transitions.
+- **execution.md**: execution agent patterns (tier 3).
+- **completion.md**: the task completion protocol and what evidence it needs.

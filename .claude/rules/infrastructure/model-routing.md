@@ -7,25 +7,34 @@ paths:
 
 # Model Routing Guidelines
 
-Project-level model routing configuration for cAgents V9.0.
+This file gives the project-level model routing configuration for cAgents V9.0.
 
 ## Overview
 
-cAgents supports project-level model routing overrides via `.cagents/model_routing.yaml`. This allows projects to customize model selection for cost control, quality requirements, or specific use cases.
+cAgents supports project-level model routing overrides. You declare them in
+`.cagents/model_routing.yaml`. A project can then customize its model selection
+for cost control, for a quality need, or for a specific use case.
 
-## Current Claude Model Generations (Opus 4.8 / Sonnet 4.6 / Haiku 4.5)
+## Current Claude Model Set
 
-As of June 2026, the latest Claude models are:
+These four ids are the complete set declared in `model_routing.yaml`. They are
+sourced from the `claude-api` skill, recorded in `outputs/model-ids.md` of
+session `act_ste100-concise-writing_260910_001`.
 
-| Model | API ID | Context Window | Max Output | Pricing (input/output per MTok) |
-|-------|--------|----------------|------------|----------------------------------|
-| **Claude Opus 4.8** | `claude-opus-4-8` | 200K / 1M (beta) | 128K tokens | $5 / $25 |
-| **Claude Sonnet 4.6** | `claude-sonnet-4-6` | 200K / 1M (beta) | 64K tokens | $3 / $15 |
-| **Claude Haiku 4.5** | `claude-haiku-4-5` | 200K | 64K tokens | $1 / $5 |
+| Display name | API ID |
+|---|---|
+| Claude Fable 5 | `claude-fable-5` |
+| Claude Opus 5 | `claude-opus-5` |
+| Claude Sonnet 5 | `claude-sonnet-5` |
+| Claude Haiku 4.5 | `claude-haiku-4-5` |
 
-All models support text/image input, extended thinking, and adaptive thinking (except Haiku). Opus 4.8 and Sonnet 4.6 support 1M token context windows via beta header.
+These ids are alias-form and complete as written. Never append a date suffix.
+There is no Haiku 5, so `claude-haiku-4-5` is both the alias and the current
+generation for that tier.
 
-> **Note (CC 2.1.77)**: Opus 4.8 has a **64K default output limit** with a **128K upper bound**. The upper bound requires extended output headers. Sonnet 4.6 has a 64K maximum output.
+Context-window and pricing figures are deliberately omitted here, matching
+`model_routing.yaml`. The provenance artifact records them for Fable 5 only.
+Read them there rather than reconstructing them.
 
 ## Configuration Location
 
@@ -40,28 +49,99 @@ your-project/
 
 ### Available Models (cAgents Aliases)
 
-cAgents uses abstract aliases that map to the latest Claude models:
+`model_routing.yaml` defines five aliases. Four resolve to an API model id.
+`opusplan` does not.
 
-| Alias | Maps To | API ID | Best For | Notes |
-|-------|---------|--------|----------|-------|
-| **opus** | Claude Opus 4.8 | `claude-opus-4-8` | Complex reasoning, architecture | Highest capability, 128K max output |
-| **opusplan** | Claude Opus 4.8 (plan) + Sonnet 4.6 (execute) | `claude-opus-4-8` / `claude-sonnet-4-6` | Controllers, coordination | Opus for planning/reasoning, Sonnet for execution. Ideal for controllers that reason about coordination but delegate implementation. |
-| **sonnet** | Claude Sonnet 4.6 | `claude-sonnet-4-6` | Implementation, general tasks | Balanced capability and cost, 1M context support |
-| **haiku** | Claude Haiku 4.5 | `claude-haiku-4-5` | Support, lightweight tasks | Fastest, lowest cost |
+| Alias | Maps to | API ID | Best for |
+|---|---|---|---|
+| **fable** | Claude Fable 5 | `claude-fable-5` | Pipeline planning, architecture decisions |
+| **opus** | Claude Opus 5 | `claude-opus-5` | Executive oversight, risk assessment |
+| **opusplan** | Claude Code harness alias | none (`id: null`) | Controllers, coordination |
+| **sonnet** | Claude Sonnet 5 | `claude-sonnet-5` | Execution, implementation, documentation |
+| **haiku** | Claude Haiku 4.5 | `claude-haiku-4-5` | Background operations, simple lookups |
 
-### The `opusplan` Model
+No agent in the 60-agent catalog declares `haiku`. That entry exists so the
+background scenario has a defined target.
 
-The `opusplan` model uses a hybrid approach: Claude Opus 4.8-level reasoning for planning and coordination decisions, with Claude Sonnet 4.6-level execution for tool use and implementation. This makes it ideal for controller agents that need to reason about complex coordination but delegate all implementation to execution agents.
+### What selects a model
 
-**Default assignment**: All controller agents with `model: opus` are set to `opusplan`. Infrastructure agents like the optimizer also use `opusplan`.
+`metadata.model` in an agent file is an advisory record of intent. The readers
+of that key are the two linters, `scripts/lint-agents.sh` and
+`scripts/validate_agent.cjs`, and the catalog generator
+`scripts/generate-catalog.sh`. A maintenance writer,
+`scripts/update-agent-frontmatter.cjs`, also writes the key.
+
+Claude Code reads a top-level `model:` key in the frontmatter. No agent in the
+60-agent catalog declares one, so the loader gets no model value from a cAgents
+agent file.
+
+The `model` parameter of the Agent tool selects the model at spawn time. The
+agent that spawns passes that parameter. `model-routing-advisor.cjs` checks the
+parameter against `metadata.tier` and prints an advisory warning when the two
+disagree. The hook never blocks a spawn.
+
+A change to `metadata.model` in an agent file does not change which model
+runs. To change the model, pass a different `model` value to
+the Agent tool.
+
+The canonical allowlist is `opus, opusplan, sonnet, haiku, fable, inherit`.
+Three places enforce it:
+
+- `scripts/lint-agents.sh`, Check 23
+- `scripts/validate_agent.cjs`
+- `tests/regressions/model-allowlist-drift.test.js`, which pins the two lists
+  together and fails when an agent declares a model outside the list
+
+### The `fable` tier
+
+`fable` is the frontier tier. Exactly three agents use it:
+
+- **orchestrator** (moves from `opus`)
+- **planner** (moves from `opus`)
+- **architect** (moves from `opusplan`, per decision D2)
+
+No other agent uses `fable`. The set is a fixed list, not a category to infer
+from. Do not add a fourth agent on judgement. Further candidates are reviewed
+under WI-034, whose default is no change.
+
+> **Resolved.** `fable` is a valid frontmatter alias for `model:`, and Claude
+> Code documents it with `sonnet`, `opus`, and `haiku`. cAgents nests the key
+> under `metadata:`, and the agent loader reads only a top-level `model:` key.
+> The loader therefore ignores this declaration, which records intent only. The
+> Agent tool's `model` parameter selects the model at spawn time, as "What
+> selects a model" above explains. `model-routing-advisor.cjs` exempts these
+> three agent names from the tier advisory, so a spawn with `fable` gives no
+> warning for them. CI rejects a `model:` value outside the allowlist:
+> `scripts/lint-agents.sh` Check 23 and
+> `tests/regressions/model-allowlist-drift.test.js` run that check.
+
+### The `opusplan` harness alias
+
+`opusplan` is a **Claude Code harness alias, not an API model id.** You cannot
+call it. It carries `id: null` in `model_routing.yaml`.
+
+A grep over the whole `claude-api` skill bundle returns zero hits for
+`opusplan`. No `claude-opusplan-*` string exists, and none may be invented.
+
+The config can name the two ids that the harness composes:
+`claude-opus-5` for the planning turn, `claude-sonnet-5` for execution turns.
+No cAgents code path parses `planning_model` or `execution_model`. The harness
+does not read the cAgents agent files either, because cAgents nests `model:`
+under `metadata:`.
+
+**Controller assignment is unchanged.** The 24 controllers that declared
+`opusplan` keep it, with exactly one named exception: `architect` moves to
+`fable` per decision D2. That leaves 23 controllers on `opusplan`. Those 23
+declarations have the same advisory status as `fable`. The intent stands, and
+the routing is not wired.
 
 ### Context Window Options
 
-The `[1m]` context window option enables 1M token context for large codebases:
-- Use when working with 50+ files or 100K+ tokens of context
-- Supported by Sonnet and Haiku models
-- Higher cost per request due to extended context
-- Configure via `.cagents/model_routing.yaml` or agent frontmatter
+The `[1m]` context window option gives a 1M token context for a large codebase:
+- Use it when you work with 50+ files or 100K+ tokens of context
+- The Sonnet models and the Haiku models support it
+- The cost per request is higher, because the context is extended
+- Configure it in `.cagents/model_routing.yaml`, or in the agent frontmatter
 
 ### Default Model
 
@@ -91,7 +171,7 @@ Each tier maps to an effort level that influences model behavior:
 |------|-------------|-------------|
 | Tier 2 | medium | Moderate reasoning, balanced speed/quality |
 | Tier 3 | high | Deep reasoning, thorough analysis |
-| Tier 4 | high | Maximum reasoning, comprehensive review |
+| Tier 4 | high | Maximum reasoning, full review of every part |
 
 ### Scenario-Based Overrides
 
@@ -111,9 +191,9 @@ Override models for specific agents:
 
 ```yaml
 agent_models:
-  architect: opus           # Always use Opus for architecture
-  backend-developer: sonnet # Standard for implementation
-  scribe: haiku             # Lightweight for support tasks
+  architect: fable            # Frontier tier for architecture decisions
+  backend-developer: sonnet   # Standard for implementation
+  technical-writer: sonnet    # Standard for documentation
 ```
 
 ### Cost Limits
@@ -168,7 +248,7 @@ disable_opus: true
 
 ## Claude Code Model Configuration (Native)
 
-Claude Code provides several native model configuration mechanisms:
+Claude Code gives you several native model configuration mechanisms:
 
 ### Model Setting Methods (Priority Order)
 1. **During session**: `/model <alias|name>` to switch mid-session
@@ -181,15 +261,16 @@ Claude Code provides several native model configuration mechanisms:
 | Alias | Behavior |
 |-------|----------|
 | `default` | Depends on account type (Max/Team Premium: Opus, Pro/Team Standard: Sonnet) |
-| `sonnet` | Latest Sonnet (currently Sonnet 4.6) |
-| `opus` | Latest Opus (currently Opus 4.8) |
+| `sonnet` | Latest Sonnet (currently Sonnet 5) |
+| `opus` | Latest Opus (currently Opus 5) |
 | `haiku` | Fast, efficient Haiku |
 | `sonnet[1m]` | Sonnet with 1M token context window |
 | `opusplan` | Opus during plan mode, Sonnet for execution |
 
 ### modelOverrides Setting (CC 2.1.73)
 
-The `modelOverrides` setting in `settings.json` allows project-level model overrides without environment variables:
+The `modelOverrides` setting in `settings.json` gives you project-level model
+overrides. You need no environment variable:
 
 ```json
 {
@@ -206,7 +287,8 @@ The `modelOverrides` setting in `settings.json` allows project-level model overr
 | `backgroundModel` | Override the model used for background agent operations |
 | `summaryModel` | Override the model used for context summarization |
 
-This is equivalent to `CLAUDE_CODE_SUBAGENT_MODEL` but scoped to specific model roles and configurable per-project via settings.json.
+This setting is equivalent to `CLAUDE_CODE_SUBAGENT_MODEL`. It is scoped to
+specific model roles, and you configure it for each project in settings.json.
 
 ### Effort Levels (Claude Code Native)
 
@@ -215,11 +297,15 @@ Effort levels control Opus 4.8's adaptive reasoning:
 - **medium**: Balanced
 - **high** (default): Deeper reasoning for complex problems
 
-Set via: `/model` slider, `CLAUDE_CODE_EFFORT_LEVEL` env var, or `effortLevel` in settings.json.
+Set the effort level in one of three places: the `/model` slider, the
+`CLAUDE_CODE_EFFORT_LEVEL` environment variable, or `effortLevel` in
+settings.json.
 
 ### 1M Context Window
 
-Opus 4.8 and Sonnet 4.6 support 1M token context (beta). Standard rates up to 200K tokens, then long-context pricing. Disable with `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
+Opus 4.8 and Sonnet 4.6 support a 1M token context in beta. The standard rates
+apply up to 200K tokens, and the long-context pricing applies after that.
+Disable the option with `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`.
 
 ### Model Restriction (Managed)
 
@@ -251,17 +337,28 @@ Enabled by default. Disable with:
 
 ## KV-Cache Optimization Guidelines
 
-Optimize prompt structure for KV-cache efficiency. When the API processes prompts, the KV-cache stores computed attention for prefix tokens. Subsequent requests sharing the same prefix reuse cached computations, reducing latency and cost.
+Optimize the structure of your prompt for KV-cache efficiency. When the API
+processes a prompt, the KV-cache stores the computed attention for the prefix
+tokens. A later request with the same prefix reuses those cached computations.
+The reuse lowers the latency and the cost.
 
 ### Principles
 
-1. **Stable prefixes**: Keep system prompts, instructions, and static context at the TOP of prompts. These rarely change between calls and will cache effectively.
+1. **Stable prefixes**: keep the system prompts, the instructions, and the
+   static context at the TOP of a prompt. These parts change little between
+   calls, so they cache well.
 
-2. **Dynamic content last**: Place variable content (user input, tool results, conversation history) at the END of prompts. This maximizes the cacheable prefix length.
+2. **Dynamic content last**: place the variable content at the END of a prompt.
+   The user input, the tool results, and the conversation history are variable
+   content. This order makes the cacheable prefix as long as possible.
 
-3. **Append-only context**: When building multi-turn context, append new information rather than restructuring. Restructuring invalidates the cache for all subsequent tokens.
+3. **Append-only context**: when you build a multi-turn context, append the new
+   information. Do not restructure the context. A restructure invalidates the
+   cache for every token after the change.
 
-4. **Consistent agent prompts**: Agent SKILL.md content forms the system prompt. Keep this stable -- avoid per-request customization of the system prompt when possible. Pass variable context as user messages instead.
+4. **Consistent agent prompts**: the content of the agent SKILL.md forms the
+   system prompt. Keep that content stable. Do not customize the system prompt
+   for each request. Pass the variable context as user messages instead.
 
 ### Prompt Structure for Cache Efficiency
 
@@ -297,8 +394,8 @@ With proper prompt structure:
 
 ### Creative Domain Model Policy
 
-- 27 execution agents: `model: opus` (Claude Opus 4.8)
-- 3 controllers: `model: opusplan` (Opus 4.8 planning mode)
+- 27 execution agents: `model: opus` (Claude Opus 5)
+- 3 controllers: `model: opusplan` (Opus planning mode)
 - Rationale: Creative work demands highest-quality reasoning
 - Team mode: Custom model frontmatter respected since Claude Code 2.1.47
 
@@ -316,13 +413,17 @@ Model selection follows this priority order (highest wins):
 8. **Fallback chain** (if primary unavailable)
 9. **Cost limit enforcement** (downgrade if over budget)
 
+> **Known gap**: `model_routing.yaml` applies `agent_overrides` at its own step
+> 3 and defines no precedence against agent frontmatter. The two disagree today
+> for the six executive controllers.
+
 ## Validation
 
-Project override files are validated at workflow start:
+cAgents validates each project override file at workflow start:
 
-- Invalid model names are ignored with warning
-- Invalid YAML syntax causes fallback to system defaults
-- Cost limits are enforced after model selection
+- An invalid model name is ignored, and a warning goes to the log
+- Invalid YAML syntax causes a fallback to the system defaults
+- The cost limits are enforced after the model selection
 
 ## System Config
 

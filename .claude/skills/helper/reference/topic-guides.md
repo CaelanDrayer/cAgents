@@ -97,7 +97,7 @@ Use when the design decomposes into 3+ parallel work items.
 ```
 
 **Key integration flags:**
-- `/act improve <path>` (keyword router — infers mode=full) -- review + optimize with one shared baseline
+- `/act improve <path>` (the keyword router infers mode=full) -- review + optimize with one shared baseline
 - `--team` (on /act) -- activates /team mode
 - `--mode debug` (on /act) -- systematic 4-phase debugging
 - Build offer (on /designer) -- auto-triggers /act or /team
@@ -108,7 +108,7 @@ Use when the design decomposes into 3+ parallel work items.
 
 ### The 9 Archetypes (and legacy domain routing)
 
-cAgents organizes 57 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). When you use `/act` or `/team`, the planner routes the request via the legacy domain keyword overlays (e.g. engineering, creative, business) to the matching archetype agents. Two legacy domain dirs (`people/`, `shared/`) survive on disk as routing-config-only overlays; the historical per-domain agent breakdown below is retained for reference.
+cAgents organizes 60 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership). When you use `/act` or `/team`, the planner routes the request to the matching archetype agents. The planner uses the legacy domain keyword overlays, such as engineering, creative, and business. Two legacy domain dirs (`people/`, `shared/`) survive on disk as routing-config-only overlays. The historical per-domain agent breakdown below is for reference.
 
 #### Engineering (31 agents)
 
@@ -168,7 +168,7 @@ Cross-domain intelligence utilities:
 
 #### Science, Health, Education, Personal, Arts, Trades (10 + 5 + 5 + 5 + 5 + 5 agents)
 
-Smaller domains served by `coordinator` from `core/`. STEM research, medical/wellness, teaching, career/life coaching, visual arts/music/film, and culinary/construction/automotive/agriculture work routes here.
+The `coordinator` agent from `core/` serves these smaller domains. STEM research, medical/wellness, teaching, career/life coaching, visual arts/music/film, and culinary/construction/automotive/agriculture work routes here.
 
 #### Domain Detection
 
@@ -266,18 +266,18 @@ Every request is classified into a complexity tier, which determines how many ag
 
 ## Topic: agents
 
-### The 57 Agents and How They Are Organized
+### The 60 Agents and How They Are Organized
 
-cAgents has 57 specialized agents organized in a 4-tier hierarchy:
+cAgents has 60 specialized agents organized in a 4-tier hierarchy:
 
-#### Tier 1: Core Infrastructure (15 agents)
+#### Tier 1: Core Infrastructure (16 agents)
 
 These are the backbone -- they manage workflows, not tasks:
 - **trigger** -- Entry point, domain detection
 - **orchestrator** -- Phase conductor
 - **router/planner/executor/validator/self-correct** -- Universal workflow agents (planner absorbed `task-decomposer` and `prompt-engineer` in v12.0.0)
 - **task-merger/task-state** -- Task management (`task-decomposer` was absorbed into `planner` in v12.0.0)
-- **team** -- Team coordination (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0 — `/team` skill loop now does this work inline)
+- **team** -- Team coordination (replaces the standalone `team-trigger` and `team-lead-adapter` agents removed in v12.0.0; the `/team` skill loop now does this work inline)
 - **hitl** -- Human escalation
 - **optimizer** -- Universal optimization
 

@@ -20,15 +20,15 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Universal Router
 
-Complexity classifier enforcing minimum tier 2 for all domains.
+This agent is a complexity classifier. It enforces a minimum of tier 2 for all of the domains.
 
 ## Core Responsibilities
 
-1. Load domain routing config
-2. Classify complexity tier (2-4)
+1. Load the domain routing config
+2. Classify the complexity tier (2-4)
 3. **ALWAYS set requires_controller: true** (minimum tier 2)
-4. Match intent to templates
-5. Apply scope adjustments
+4. Match the intent to a template
+5. Apply the scope adjustments
 6. Write routing_decision.yaml
 
 ## CRITICAL: Minimum Tier 2 Enforcement
@@ -42,10 +42,10 @@ exceptions: none
 ```
 
 **Why Minimum Tier 2?**
-- Questions get comprehensive expert answers
-- Simple edits get specialist + review
-- Multi-agent coverage catches issues
-- Consistent quality across all requests
+- A question gets a comprehensive expert answer.
+- A simple edit gets a specialist and a review.
+- Multi-agent coverage catches the issues.
+- The quality stays consistent across all of the requests.
 
 ## Tier Classification
 
@@ -60,27 +60,29 @@ exceptions: none
 ## Scope Adjustments
 
 **Increase to Tier 3** (+1):
-- Multiple components/systems
-- External dependencies
-- High-risk/critical path
-- Team coordination needed
+- The request covers multiple components or systems.
+- The request has external dependencies.
+- The request is high-risk, or it is on the critical path.
+- The request needs team coordination.
 
 **Increase to Tier 4** (+2):
-- Strategic/architectural changes
-- Company-wide impact
-- Executive approval required
+- The request makes a strategic change or an architectural change.
+- The request has a company-wide impact.
+- The request needs an executive approval.
 
 ## Domain Detection (Multi-Archetype Matching Pass)
 
-The keyword-matching pass scans the request against ALL archetype-root catalogs and tracks **every** archetype that matches, not just the single highest-scoring one. This enables downstream consumers (planner, /team strategic-mode auto-detection) to detect cross-domain requests without re-scanning. (Pre-v12.2.0 the downstream consumer was /org; v12.2.0 absorbed /org into /team strategic mode, which reads `domain_count` from router to decide whether to engage C-suite Wave 0/1.)
+The keyword-matching pass scans the request against ALL archetype-root catalogs. It tracks **every** archetype that matches, not just the single highest-scoring one. The downstream consumers can then detect a cross-domain request with no re-scan. Those consumers are the planner and the /team strategic-mode auto-detection.
+
+Before v12.2.0 the downstream consumer was /org. Then v12.2.0 absorbed /org into /team strategic mode. That mode reads `domain_count` from the router, and it decides whether to engage the C-suite Wave 0/1.
 
 **Single-pass algorithm**:
-1. For each archetype root (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), score the request against its keyword catalog.
+1. Score the request against the keyword catalog of each archetype root. The nine roots are developer, operator, advisor, analyst, creator, writer, strategist, core, and leadership.
 2. Record every archetype with a non-zero score in `detected_domains[]`.
-3. Set `domain` to the highest-scoring archetype (back-compat — unchanged semantics).
+3. Set `domain` to the highest-scoring archetype. This keeps back-compat, and the semantics stay unchanged.
 4. Set `domain_count` to `len(detected_domains)`.
 
-A `domain_count >= 2` signals a cross-domain request and is consumed by the org-fold trigger in `/act` (v12.1.x+) to route the work through C-suite analysis before the standard pipeline.
+A `domain_count >= 2` signals a cross-domain request. The org-fold trigger in `/act` (v12.1.x+) consumes that signal. The trigger then routes the work through C-suite analysis before the standard pipeline.
 
 ## Routing Decision Format
 
@@ -126,6 +128,6 @@ routing_decision:
 
 ### Back-compat guarantee
 
-The `domain` field continues to return the **single highest-scoring archetype** exactly as in prior versions. Consumers that only read `domain` see unchanged behavior. `domain_count` and `detected_domains` are additive — agents that ignore them are unaffected.
+The `domain` field still returns the **single highest-scoring archetype**. That behavior is the same as it was in the prior versions. A consumer that reads only `domain` sees no change. The `domain_count` field and the `detected_domains` field are additive. An agent that ignores both of them is unaffected.
 
 See @router/resources/routing-patterns.md for template matching and tier examples.

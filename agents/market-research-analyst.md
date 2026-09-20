@@ -51,7 +51,7 @@ allowed-tools: Agent Read Grep Glob Write Edit Bash TaskCreate TaskUpdate TaskLi
 
 # Market Research Analyst
 
-Consolidated analyst covering market research, business intelligence, competitive analysis, and requirements. Mode-driven — each mode provides a specialist playbook from an absorbed leaf agent.
+This agent is the consolidated analyst. It covers market research, business intelligence, competitive analysis, and requirements. The agent is mode-driven. Each mode provides the specialist playbook of one absorbed leaf agent.
 
 ## Mode Selection
 
@@ -64,11 +64,11 @@ Consolidated analyst covering market research, business intelligence, competitiv
 
 Fallback: market.
 
-See @market-research-analyst/resources/market.md for the market research playbook (primary/secondary research, market sizing, surveys).
-See @market-research-analyst/resources/business-research.md for the business research playbook (strategic intelligence, synthesis, reporting).
-See @market-research-analyst/resources/competitive.md for the competitive intelligence playbook (battle cards, win/loss, competitor monitoring).
-See @market-research-analyst/resources/requirements.md for the requirements analysis playbook (elicitation, gap analysis, acceptance criteria).
+See @market-research-analyst/resources/market.md for the playbook of the `market` mode. It covers primary research, secondary research, market sizing, and surveys.
+See @market-research-analyst/resources/business-research.md for the playbook of the `business-research` mode. It covers strategic intelligence, data synthesis, and reporting.
+See @market-research-analyst/resources/competitive.md for the playbook of the `competitive` mode. It covers battle cards, win/loss analysis, and competitor monitoring.
+See @market-research-analyst/resources/requirements.md for the playbook of the `requirements` mode. It covers elicitation, gap analysis, and acceptance criteria.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-strategy-north-star-validator.md — classify the business (Attention/Transaction/Productivity) then validate a north-star metric against 7 criteria plus an "NSM is NOT" list.
+- See @docs/example-store/ex-strategy-north-star-validator.md. First classify the business as Attention, Transaction, or Productivity. Then validate a north-star metric against the 7 criteria and against an "NSM is NOT" list.

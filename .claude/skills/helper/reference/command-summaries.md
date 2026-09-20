@@ -4,7 +4,7 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 ## /act - Universal Workflow Engine
 
-**What**: The general-purpose command that handles any task. It detects the domain (engineering, creative, business, people, service), classifies complexity via a 9-signal scoring system, selects the optimal pipeline path (minimal/medium/full), coordinates specialist agents, and validates results. Think of it as "do this thing for me."
+**What**: The general-purpose command that handles any task. It detects the domain: engineering, creative, business, people, or service. It then classifies the complexity with a 9-signal scoring system. It selects the best pipeline path: minimal, medium, or full. Finally, it coordinates the specialist agents and validates the results. Think of it as "do this thing for me."
 
 **When to use**:
 - Fix a bug, add a feature, refactor code
@@ -32,9 +32,9 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Workflow**: Discovery (15%) -> Ideation (25%) -> Refinement (35%) -> Specification (25%) -> Build offer
 
-## review / optimize / audit / improve — Keyword Router Modes on /act (v12.1.2+)
+## review / optimize / audit / improve: Keyword Router Modes on /act (v12.1.2+)
 
-**What**: In v12.1.2, the standalone `/improve` skill was folded into `/act` via a first-token keyword router. When the first word of `/act`'s request is one of `improve`, `review`, `audit`, or `optimize`, `/act` strips the keyword, sets an internal `mode`, and proceeds through the standard 5-state pipeline (INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED). Same controller-based quality engine as V11.0 `/improve`, but invoked through `/act`.
+**What**: In v12.1.2, the standalone `/improve` skill was folded into `/act` via a first-token keyword router. If the first word of the `/act` request is `improve`, `review`, `audit`, or `optimize`, `/act` strips the keyword and sets an internal `mode`. The request then proceeds through the standard 5-state pipeline: INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED. This is the same controller-based quality engine as V11.0 `/improve`, and you now invoke it through `/act`.
 
 **When to use**:
 - Audit code, docs, content, infrastructure (`/act review <target>` or `/act audit <target>`)
@@ -47,16 +47,16 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 |--------------------|---------------|----------|
 | `improve` | `full` | Review-then-optimize with single shared baseline |
 | `review` | `review` | 3-group parallel specialist review; optional auto-fix |
-| `audit` | `review` (alias) | Synonym for `review` — same pipeline |
+| `audit` | `review` (alias) | Synonym for `review` with the same pipeline |
 | `optimize` | `optimize` | Opportunity scanners; ROI rank; atomic apply; before/after benchmark delta |
 
 **Key flags** (mode-specific flags carry through from V11.0 /improve surface unchanged): `--scope <path>`, `--baseline` / `--suppress <id>` (review), `--benchmark auto|lighthouse|k6|hyperfine` (optimize), `--auto-fix safe` (review), `--dry-run` (all).
 
-**Workflow**: Same 5-state /act pipeline. The inferred mode shapes the controller's coordination — e.g., `review` mode spawns specialist review agents; `optimize` mode spawns opportunity scanners and benchmark runners.
+**Workflow**: Same 5-state /act pipeline. The inferred mode shapes how the controller coordinates the work. For example, `review` mode spawns specialist review agents. `optimize` mode spawns opportunity scanners and benchmark runners.
 
 **Canonical reference**: See `@.claude/skills/act/reference/improve-mode.md` for the full keyword-router contract, override rules, stripping examples, and mode-specific controller behavior.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug` — see [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/act context`, and `/debug` to `/act --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/act context`, and `/debug` to `/act --mode debug`._
 
 ## /team - Parallel Team Execution
 
@@ -74,6 +74,6 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 ## /org - REMOVED in v12.2.0
 
-`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination — CEO + C-suite deliberation, strategic brief, per-domain dispatch — now runs inside `/team` when `router.domain_count >= 2`. The 12 leadership agents are preserved and act as Wave 0/1 subagents.
+`/org` was removed in v12.2.0 and absorbed into `/team` strategic mode. Cross-domain coordination now runs inside `/team` when `router.domain_count >= 2`. That coordination covers the CEO and C-suite deliberation, the strategic brief, and the per-domain dispatch. The 12 leadership agents are preserved and act as Wave 0/1 subagents.
 
 **Migration**: `/org X` -> `/team X` (strategic mode auto-enables for multi-domain). Force-enable via `--strategic`; force-disable via `--no-strategic`. See `command-details.md` § /org for the full migration table.

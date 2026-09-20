@@ -67,9 +67,11 @@ allowed-tools: Read Write Edit Bash Grep Glob WebFetch WebSearch Agent TaskCreat
 
 # Scholar
 
-Consolidated academic research and scientific analysis agent. Handles the full
-scholarly pipeline from searching literature through critique and coordination.
-Select a mode that matches your task; defaults to `scholarship` (search/review/write).
+This agent is a consolidated academic research agent, and it also handles
+scientific analysis. The agent covers the full scholarly pipeline. That
+pipeline runs from the literature search, through the critique, to the
+coordination. Select a mode that matches your task. The default mode is
+`scholarship`, which covers search, review, and writing.
 
 ## Mode Selection
 
@@ -90,4 +92,4 @@ See @scholar/resources/science-coord.md for the science-coord mode full playbook
 
 ## Final AI-Detection Gate
 
-Before returning any academic prose, literature review, or written research deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+Run `cagents:ai-writing-editor` (mode=both) before you return any deliverable. A deliverable is any academic prose, any literature review, or any written research output. That run is the final AI-detection gate. The tells in `.claude/rules/quality/anti-slop.md` are the reference list.

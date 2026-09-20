@@ -11,7 +11,7 @@ If research files unavailable, fall back to inline analysis.
 
 ## Step 2: Concept Exploration
 
-Present 2-3 high-level conceptual framings. These are NOT detailed solutions — they are mental models and approaches:
+Present 2-3 high-level conceptual framings. These are NOT detailed solutions. They are mental models and approaches:
 
 ```javascript
 AskUserQuestion({
@@ -42,7 +42,7 @@ Which framing resonates most with your vision?`,
 
 ## Steps 3 & 4: Domain Framing + Scope Boundaries
 
-Determine the design domain and scope in a single batched call — these two questions establish the shape of the solution together (what kind of thing are we building + how much of it). Always include the defer option on each question.
+Determine the design domain and scope in a single batched call. These two questions establish the shape of the solution together. The domain says what kind of thing you build. The scope says how much of that thing you build. Always include the defer option on each question.
 
 ```javascript
 // Batch domain + scope together — both orient the solution direction, same conceptualize concern

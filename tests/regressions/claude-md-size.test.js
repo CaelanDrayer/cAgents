@@ -61,6 +61,6 @@ describe('REC-33: CLAUDE.md size ceiling (< 400 lines)', () => {
     expect(claudeMd).toContain('MUST NOT depend on MCP servers');
     expect(claudeMd).toMatch(/\b60 agents\b/);
     expect(claudeMd).toContain('34 .cjs files');
-    expect(claudeMd).toContain('Total: 43 .md');
+    expect(claudeMd).toContain('Total: 45 .md');
   });
 });

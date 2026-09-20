@@ -1,10 +1,12 @@
 # Gate Validation Protocol
 
-7-check evidence-based gate validation, validation YAML template, and storage format for /team.
+This file gives the 7 gate validation checks for /team. It also gives the
+validation YAML template and the storage format.
 
 ## GATE Validation Standards
 
-GATE validation criteria are standardized by wave type. The lead uses these criteria when validating each gate (Step 5d).
+The GATE validation criteria are different for each wave type. The lead uses
+these criteria at each gate. Step 5d is the step that applies them.
 
 | Wave Type | Validation Criteria | Method |
 |-----------|-------------------|--------|
@@ -17,31 +19,40 @@ GATE validation criteria are standardized by wave type. The lead uses these crit
 
 ### Gate Validation Algorithm
 
-1. For each work item in the wave, check if output directory exists (`outputs/task-{N}/`)
-2. Apply wave-type-specific criteria from the table above
-3. Compute gate score: `completed_criteria / total_criteria`
-4. Gate result:
-   - Score >= 0.9: **PASS** (proceed to next wave)
-   - Score >= 0.7 with no critical failures: **CONDITIONAL_PASS** (proceed with noted gaps)
-   - Score < 0.7 or critical failures: **FAIL** (attempt fix-up or escalate)
+1. For each work item in the wave, make sure that the output directory
+   `outputs/task-{N}/` exists.
+2. Apply the criteria for that wave type from the table above.
+3. Compute the gate score with `completed_criteria / total_criteria`.
+4. Read the gate result from this list:
+   - If the score is 0.9 or more, the result is **PASS**. Go on to the next
+     wave.
+   - If the score is 0.7 or more and no check has a critical failure, the
+     result is **CONDITIONAL_PASS**. Go on to the next wave, and write down
+     each gap.
+   - If the score is less than 0.7, or a check has a critical failure, the
+     result is **FAIL**. Try a fix-up, or escalate.
 
-**Conditional pass**: If blocked items caused the gap, log the gaps and proceed. The integration wave (final) accounts for these gaps in its validation.
+**Conditional pass**: If blocked items caused the gap, write the gaps to the
+log. Then go on to the next wave. The integration wave is the last wave. Its
+validation accounts for these gaps.
 
 ## Evidence-Based Gate Validation Protocol (V10.23.0)
 
-Before marking ANY gate (GATE-0, GATE-1, ...) as complete, the team lead MUST run ALL 7 gate validation checks. No gate passes without 7/7 checks passing.
+Before the team lead marks a gate as complete, the lead MUST run all 7 gate
+validation checks. This applies to every gate: GATE-0, GATE-1, and each gate
+after them. A gate passes only when all 7 checks pass.
 
 ### Gate Validation Checklist
 
 | # | Check | What It Verifies | Failure Action |
 |---|-------|-----------------|----------------|
-| 1 | Task Completion | All wave tasks marked completed in TaskList | HOLD — wait for remaining tasks |
-| 2 | Evidence Presence | Every completed task has non-empty evidence | HOLD — request evidence from subagent |
-| 3 | Evidence Specificity | Evidence cites file:line, not vague descriptions | WARN — request re-verification |
-| 4 | Acceptance Criteria Coverage | Every acceptance criterion has matching evidence | FAIL — task not actually complete |
-| 5 | Contract Fulfillment | All inter-wave contracts have artifacts | HOLD — contract provider must deliver |
-| 6 | Regression Check | Guard commands pass (tests, lint, type check) | FAIL — regression introduced |
-| 7 | Cross-Wave Consistency | New wave outputs don't contradict previous wave | WARN — review for conflicts |
+| 1 | Task Completion | All wave tasks marked completed in TaskList | HOLD: wait for the remaining tasks |
+| 2 | Evidence Presence | Every completed task has non-empty evidence | HOLD: request evidence from the subagent |
+| 3 | Evidence Specificity | Evidence cites file:line, not vague descriptions | WARN: request re-verification |
+| 4 | Acceptance Criteria Coverage | Every acceptance criterion has matching evidence | FAIL: the task is not complete |
+| 5 | Contract Fulfillment | All inter-wave contracts have artifacts | HOLD: the contract provider must deliver |
+| 6 | Regression Check | Guard commands pass (tests, lint, type check) | FAIL: a regression was introduced |
+| 7 | Cross-Wave Consistency | New wave outputs don't contradict previous wave | WARN: review for conflicts |
 
 ### Gate Validation YAML Template
 
@@ -63,7 +74,8 @@ gate_validation:
 
 ### Gate Validation Task (TaskCreate)
 
-When validating a gate, the team lead MUST add a validation TaskCreate entry:
+When the team lead validates a gate, the lead MUST add a validation TaskCreate
+entry:
 
 ```
 TaskCreate({
@@ -75,7 +87,8 @@ TaskUpdate({ taskId: "{id}", status: "completed" })
 
 ### Gate Validation Storage
 
-Gate validation results are appended to `${SESSION_DIR}/workflow/gate_validations.yaml`:
+Append each gate validation result to
+`${SESSION_DIR}/workflow/gate_validations.yaml`:
 
 ```yaml
 gate_validations:
@@ -93,4 +106,8 @@ gate_validations:
 
 ### Integration with Gate Validation Algorithm (Step 5d)
 
-The 7-check protocol supersedes the simple score-based gate validation. When running Step 5d, execute the 7 checks in order. If any check returns FAIL, the gate fails regardless of other checks. If any check returns HOLD, pause until the hold condition is resolved. If checks return only PASS and WARN, the gate passes (WARNs are logged but do not block).
+The protocol of 7 checks replaces the simple gate validation by score. At Step
+5d, do the 7 checks in order. If any check returns FAIL, the gate fails. The
+other checks do not change that result. If any check returns HOLD, stop until
+the hold condition is resolved. If the checks return only PASS and WARN, the
+gate passes. A WARN goes to the log, and it does not block the gate.

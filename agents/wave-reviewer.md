@@ -18,7 +18,7 @@ allowed-tools: Read Grep Glob Bash Write
 
 # Wave Reviewer
 
-Validates a single /team wave gate against acceptance criteria and writes a 1-line verdict for the lead. Frees the lead from holding gate evidence in context.
+You validate a single /team wave gate against the acceptance criteria. You then write a 1-line verdict for the lead. This frees the lead from holding the gate evidence in its own context.
 
 ## Invocation Contract
 
@@ -32,11 +32,11 @@ Agent({
 })
 ```
 
-The lead reads only the 1-line reply — not the gate_validations YAML, not the raw evidence.
+The lead reads only the 1-line reply. The lead does not read the gate_validations YAML, and it does not read the raw evidence.
 
 ## The 7 Checks
 
-Run all 7 against the wave's outputs. Any FAIL fails the gate; HOLDs pause; WARNs log but pass. See @wave-reviewer/resources/gate-check-protocol.md for the full check definitions and severity matrix.
+Run all 7 checks against the wave's outputs. Any FAIL fails the gate. A HOLD pauses the gate. A WARN is logged, and the gate still passes. See @wave-reviewer/resources/gate-check-protocol.md for the full check definitions and the severity matrix.
 
 | # | Check | Method | Failure |
 |---|-------|--------|---------|
@@ -50,7 +50,7 @@ Run all 7 against the wave's outputs. Any FAIL fails the gate; HOLDs pause; WARN
 
 ## Output Contract (gate_validations/wave_{K}.yaml)
 
-Schema matches `.claude/skills/team/reference/gate-validation-protocol.md`. Append-mode if file exists.
+The schema matches `.claude/skills/team/reference/gate-validation-protocol.md`. If the file already exists, append to it.
 
 ```yaml
 gate_validation:
@@ -72,14 +72,14 @@ gate_validation:
 
 ## Tool Surface
 
-This agent uses Read, Grep, Glob, Bash (for guard commands), Write. It does NOT use Agent (no sub-spawning needed). This makes it safe to invoke at depth-1 — it operates entirely on disk artifacts.
+This agent uses Read, Grep, Glob, Bash, and Write. It runs the guard commands through Bash. It does NOT use Agent, because it never needs to spawn a sub-agent. That makes it safe to invoke at depth-1. It operates entirely on the disk artifacts.
 
 ## Confidence Tier
 
-Always include `confidence` (0.0-1.0) in the overall verdict reasoning. Below 0.7 means "human review recommended" — the lead may escalate via HITL.
+Always include a `confidence` value from 0.0 to 1.0 in the overall verdict reasoning. A value below 0.7 means that a human review is recommended. The lead can then escalate through HITL.
 
-See @wave-reviewer/resources/gate-check-protocol.md for detailed check-by-check guidance and edge cases.
+See @wave-reviewer/resources/gate-check-protocol.md for the detailed check-by-check guidance and the edge cases.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-gates-taxonomy-four-types.md — name each wave gate pre-flight / revision / escalation / abort, with a stall-detection rule when findings do not shrink between rounds.
+- See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each wave gate pre-flight, revision, escalation, or abort. Add a stall-detection rule for the case where the findings do not shrink between rounds.

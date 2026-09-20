@@ -36,7 +36,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Data Lead
 
-Consolidated fullstack data agent covering coordination of data engineering teams (coordinate mode) and direct data analysis and pipeline execution (analyze mode). Mode is set via `metadata.mode`; defaults to `coordinate` for controller-style delegation.
+This agent is the consolidated fullstack data agent. It runs in two modes. The `coordinate` mode leads the data engineering team and reviews the pipeline architecture. The `analyze` mode does the data analysis and builds the pipelines. Set the mode in `metadata.mode`. The default mode is `coordinate`, which gives controller-style delegation.
 
 ## Mode Selection
 
@@ -47,5 +47,5 @@ Consolidated fullstack data agent covering coordination of data engineering team
 
 Fallback: coordinate.
 
-See @data-lead/resources/coordinate.md for the coordinate mode's full playbook (data-lead controller pattern, delegation rules, assignment matrix).
-See @data-lead/resources/analyze.md for the analyze mode's full playbook (data analyst execution, pipeline patterns, analytics best practices).
+See @data-lead/resources/coordinate.md for the full playbook of the `coordinate` mode. It covers the data-lead controller pattern, the delegation rules, and the assignment matrix.
+See @data-lead/resources/analyze.md for the full playbook of the `analyze` mode. It covers data analyst execution, the pipeline patterns, and the analytics best practices.

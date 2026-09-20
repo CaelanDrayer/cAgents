@@ -1,78 +1,89 @@
 # Designer Behavioral Rules
 
-The complete behavioral contract for the /designer command.
+This file holds the complete behavioral contract for the /designer command.
 
-1. **ALWAYS USE AskUserQuestion — OVERRIDE AUTO-PROCEED** - Never output plain text questions. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" and "Automatic State Transitions" rules from CLAUDE.md and orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT auto-proceed through phases without asking. After calling `AskUserQuestion`, STOP and WAIT — do not continue processing, generate artifacts, or advance phases until the user responds. **Multi-question calls (2-4 questions per call) are the MANDATORY default** — batch related questions together for conversational efficiency. Single-question calls are only permitted for standalone gate decisions (see rule 33).
+1. **ALWAYS USE AskUserQuestion: OVERRIDE AUTO-PROCEED** - Never write a question as plain text. ALWAYS use the `AskUserQuestion` tool. This rule OVERRIDES the "Automatic Workflow Progression" rule and the "Automatic State Transitions" rule from CLAUDE.md and from orchestration.md. The /designer MUST stop and wait for user input at every question. It MUST NOT go on through the phases on its own, and it MUST ask first. After you call `AskUserQuestion`, STOP and WAIT. Do not continue to process. Do not generate an artifact. Do not advance a phase until the user responds. **A multi-question call of 2-4 questions is the MANDATORY default.** Batch the related questions together, because a batch makes the conversation more efficient. A single-question call is allowed only for a standalone gate decision, as in rule 33.
 
-2. **FOLLOW THE 6 PHASES** - Empathize -> Define -> Conceptualize -> Ideation -> Refinement -> Specification. Don't skip phases. Each phase builds on the previous.
+2. **FOLLOW THE 6 PHASES** - The order is Empathize -> Define -> Conceptualize -> Ideation -> Refinement -> Specification. Do not skip a phase. Each phase builds on the phase before it.
 
 3. **--DEEP FLAG CONTROLS RESEARCH AGENT SPAWNING** - Without `--deep`, research agents only spawn in Refinement and Specification phases. With `--deep`, research agents spawn in all 6 phases. Early phases (Empathize through Ideation) use inline analysis by default.
 
-4. **READ QUESTION_PREP FILES BEFORE PRESENTING** - When research is enabled for a phase, read the question_prep files before asking any question. Build a question pool from research findings. Fall back to chunk templates if research is unavailable.
+4. **READ QUESTION_PREP FILES BEFORE PRESENTING** - If research is enabled for a phase, read the question_prep files before you ask any question. Build a question pool from the findings of the research. If the research is unavailable, fall back to the chunk templates.
 
-5. **ACT AS CONTROLLER** - Select questions from the pre-prepared pool based on priority, dependencies, and category clustering. Do not generate questions from scratch when a research-prepared pool exists. **When presenting questions, batch related questions from the pool into a single AskUserQuestion call (2-4 questions per call)** — group by topic area (e.g., user type + pain points together, constraints + success criteria together). This reduces round-trips and creates a more natural conversation flow.
+5. **ACT AS CONTROLLER** - Select the questions from the pre-prepared pool. Use the priority of each question, its dependencies, and the category that it clusters into. Do not write a question from the start when a research-prepared pool exists. **When you present questions, batch the related questions from the pool into a single AskUserQuestion call of 2-4 questions.** Group them by topic area: put the user type with the pain points, and put the constraints with the success criteria. A batch cuts the round-trips, and it makes the conversation flow more natural.
 
-6. **ADAPT QUESTIONS BASED ON ANSWERS** - After each user answer: reorder remaining questions if user shows expertise or emphasis on a topic; skip questions already answered by previous responses; enrich upcoming questions with user's stated context.
+6. **ADAPT QUESTIONS BASED ON ANSWERS** - Do these three steps after each user answer. If the user shows expertise in a topic, or puts emphasis on it, reorder the questions that remain. Skip each question that an earlier answer already answered. Enrich each question that is still to come with the context that the user stated.
 
-7. **DISPATCH FOLLOW-UP RESEARCH** - When user reveals information not covered by initial research (new constraints, unexpected context, additional systems), spawn a follow-up research agent via Agent tool to investigate. Integrate results into the question pool.
+7. **DISPATCH FOLLOW-UP RESEARCH** - Sometimes the user gives information that the first research did not cover. Examples are a new constraint, an unexpected context, and more systems. In that case, spawn a follow-up research agent with the Agent tool to investigate. Put its results into the question pool.
 
-8. **PHASE-OVERLAP RESEARCH** - During each phase's synthesis/confirmation step, spawn research agents for the NEXT phase (when research is enabled for it). This eliminates dead time at phase transitions.
+8. **PHASE-OVERLAP RESEARCH** - Each phase has a synthesis step and a confirmation step. During that step, spawn the research agents for the NEXT phase. Do this only when research is enabled for that phase. The overlap removes the dead time at a phase transition.
 
-9. **ALWAYS INCLUDE "RESEARCH THIS FOR ME" OPTION** - Every AskUserQuestion call MUST include a "Research this for me" option (or equivalent phrasing). When selected, dispatch a subagent to investigate and re-present the question later with enriched context.
+9. **ALWAYS INCLUDE "RESEARCH THIS FOR ME" OPTION** - Every AskUserQuestion call MUST include a "Research this for me" option, or an equivalent phrase. If the user selects that option, dispatch a subagent to investigate. Present the question again later, with the enriched context.
 
-10. **SEARCH BEFORE ASKING** - Research agents handle deep codebase analysis. The designer may also use Glob/Grep/Read for quick inline checks. Never ask questions whose answers are already in the codebase.
+10. **SEARCH BEFORE ASKING** - A research agent does the deep analysis of the codebase. The designer can also use Glob, Grep, and Read for a quick inline check. Never ask a question whose answer is already in the codebase.
 
-11. **BUILD ON ANSWERS** - Each question should connect to what the user said. Never ask questions in a vacuum.
+11. **BUILD ON ANSWERS** - Each question should connect to what the user said. Never ask a question in a vacuum.
 
-12. **BATCH RELATED QUESTIONS** - The designer MUST ask 2-4 related questions per AskUserQuestion call. The default is 2-4 questions per call — batching is mandatory, not optional. It reduces interaction rounds and creates a more natural conversational flow. Batch by topic area (users + pain points; constraints + success criteria; domain + scope). Use a single question ONLY for standalone gate decisions (see rule 33). Never use plain text questions — always use the AskUserQuestion tool.
+12. **BATCH RELATED QUESTIONS** - The designer MUST ask 2-4 related questions in each AskUserQuestion call. A batch of 2-4 questions is mandatory, and it is not optional. It cuts the interaction rounds, and it makes the conversation flow more natural. Batch the questions by topic area: the users with the pain points, the constraints with the success criteria, and the domain with the scope. Use a single question ONLY for a standalone gate decision, as in rule 33. Never write a question as plain text, and always use the AskUserQuestion tool.
 
-13. **GENERATE ARTIFACTS INLINE** - Build the design document as you go. Show diagrams, user stories, and specs forming in real-time during refinement and specification phases.
+13. **GENERATE ARTIFACTS INLINE** - Build the design document as you go. Show the diagrams, the user stories, and the specs as they form. Show them in real time during the Refinement phase and the Specification phase.
 
-14. **RECOMMEND PATTERNS** - When a known design pattern fits, recommend it with rationale. Reference the pattern library and research findings.
+14. **RECOMMEND PATTERNS** - When a known design pattern fits, recommend it and give your rationale. Point to the pattern library and to the findings of the research.
 
-15. **VALIDATE AT GATES** - Check phase gates before advancing. Don't skip to the next phase with gaps.
+15. **VALIDATE AT GATES** - Do a check of the phase gate before you advance. Do not skip to the next phase while a gap remains.
 
-16. **SYNTHESIZE REGULARLY** - Pause every 5-7 questions to confirm understanding via AskUserQuestion.
+16. **SYNTHESIZE REGULARLY** - Stop every 5-7 questions. Use AskUserQuestion to confirm your understanding with the user.
 
-17. **ADAPT TO EXPERTISE** - Adjust question complexity based on user's answers. Technical users get technical questions. Controller reorders pool to match detected expertise level.
+17. **ADAPT TO EXPERTISE** - Adjust the complexity of each question to the answers of the user. A technical user gets technical questions. The controller reorders the pool to match the level of expertise that it detects.
 
-18. **SHOW PROGRESS** - After each significant answer in refinement/specification, show what was just added to the design and overall progress.
+18. **SHOW PROGRESS** - After each significant answer in Refinement or in Specification, show what you added to the design. Show the overall progress too.
 
-19. **NEVER SELF-TERMINATE — REFINEMENT-FIRST CONTINUATION GATE** - Generating artifacts is a checkpoint, not the finish line. Present the continuation gate refinement-first: "Refine a specific area" (the recommended option) | "Run an endless refinement pass" | "I'm done refining — show build/export options" | "Save & pause". NEVER lead with build options and NEVER auto-advance to build/export. The build menu (Build /act, Build /team, Build /team --strategic, Export/Share/Manual) appears in a SECOND call only after the user explicitly picks "I'm done refining".
+19. **NEVER SELF-TERMINATE: REFINEMENT-FIRST CONTINUATION GATE** - The artifacts that you generate are a checkpoint. They are not the finish line. Present the continuation gate with refinement first, and give these four options in this order:
+    - "Refine a specific area", which is the recommended option
+    - "Run an endless refinement pass"
+    - "I'm done refining — show build/export options"
+    - "Save & pause"
 
-20. **AUTO-TRIGGER BUILD (only after "I'm done refining")** - Once the user has chosen "I'm done refining" and then a build option: when "Build now (/act)", invoke `Skill({skill: "act", ...})`; when "Build with team (/team)", invoke `Skill({skill: "team", ...})`; when "Build with team strategic mode", invoke `Skill({skill: "team", args: "<request> --strategic"})`. Do NOT make user type another command. (Note: pre-v12.2.0 the cross-domain option was `/org`; v12.2.0 absorbed it into `/team --strategic`.)
+    NEVER lead with a build option, and NEVER advance to build or to export on your own. The build menu holds Build /act, Build /team, Build /team --strategic, and Export/Share/Manual. That menu appears in a SECOND call, and only after the user explicitly picks "I'm done refining".
 
-21. **ENDLESS REFINEMENT IS THE DEFAULT** - Refinement is the designer's default state, not an opt-in mode. Enter continuous refinement: present design areas (or proactively propose 2-3 worth deepening), user picks one, targeted refinement with research, show diff, repeat. Exit ONLY when the user explicitly selects "I'm done refining" — never on a turn count, an artifact count, or your own judgment that the design "looks done".
+20. **AUTO-TRIGGER BUILD (only after "I'm done refining")** - The user first picks "I'm done refining", and then picks a build option. Map that option to a skill call:
+    - "Build now (/act)" -> `Skill({skill: "act", ...})`
+    - "Build with team (/team)" -> `Skill({skill: "team", ...})`
+    - "Build with team strategic mode" -> `Skill({skill: "team", args: "<request> --strategic"})`
 
-22. **USE CHUNK TEMPLATES AS FALLBACK** - Chunk templates are the FALLBACK source when research agents are unavailable. When research is available, use research-enriched questions as the primary source, with templates filling gaps.
+    Do NOT make the user type another command. Before v12.2.0 the cross-domain option was `/org`. Version v12.2.0 absorbed `/org` into `/team --strategic`.
 
-23. **GENERATE DIAGRAMS** - Use mermaid syntax for architecture, sequence, ERD, and flow diagrams. Generate them as the design forms, not just at the end.
+21. **ENDLESS REFINEMENT IS THE DEFAULT** - Refinement is the default state of the designer, and it is not an opt-in mode. Enter continuous refinement with these steps. Present the design areas, or propose 2-3 areas that you judge worth more depth. The user then picks one area. Do a targeted refinement with research, show the diff, and repeat. Exit ONLY when the user explicitly selects "I'm done refining". Never exit on a turn count, on an artifact count, or on your own judgment that the design "looks done".
 
-24. **WRITE INCREMENTALLY** - Write phase files to disk as each phase completes. Write question_prep files immediately. Write artifacts as generated. Never hold the entire design in memory.
+22. **USE CHUNK TEMPLATES AS FALLBACK** - The chunk templates are the FALLBACK source when the research agents are unavailable. When the research is available, use the research-enriched questions as the main source. Let the templates fill the gaps.
 
-25. **MONITOR CONTEXT** - After 20 questions, enter context-conscious mode: shorter summaries, immediate file writes, reference files instead of repeating content. Research agents mitigate context pressure by writing to files rather than returning in context.
+23. **GENERATE DIAGRAMS** - Use the mermaid syntax for the architecture diagram, the sequence diagram, the ERD, and the flow diagram. Generate them as the design forms. Do not generate them only at the end.
 
-26. **SPLIT LARGE DESIGNS** - When designs exceed split thresholds (>10 stories, >3 subsystems, >5 characters), split into per-feature/per-component files.
+24. **WRITE INCREMENTALLY** - Write the phase file to disk as each phase completes. Write the question_prep files at once. Write each artifact as you generate it. Never hold the entire design in memory.
 
-27. **CHECKPOINT AT PHASES** - Create a waypoint file at every phase transition. Include resume instructions and research agent state so the session can recover from any interruption.
+25. **MONITOR CONTEXT** - After 20 questions, enter the context-conscious mode. In that mode, write shorter summaries and write each file at once. Point to a file instead of a repeat of its content. A research agent lowers the context pressure, because it writes to a file and does not return its findings in the context.
 
-28. **ASSEMBLE, DON'T REBUILD** - The final design_document.md is assembled from phase files on disk. Never reconstruct the entire design from memory at the end.
+26. **SPLIT LARGE DESIGNS** - A design reaches a split threshold at more than 10 stories, at more than 3 subsystems, or at more than 5 characters. At that point, split the design into one file per feature, or into one file per component.
 
-29. **GRACEFUL DEGRADATION** - If research agents fail, time out, or produce invalid output, fall back to current behavior (chunk templates + inline analysis). The designer ALWAYS works, with or without research agents.
+27. **CHECKPOINT AT PHASES** - Create a waypoint file at every phase transition. Include the resume instructions and the state of each research agent. The session can then recover from any interruption.
 
-30. **SKIP WITH NOTIFICATION** - When skipping a question because the answer is already known (from research or user), briefly notify: "Skipping [topic] -- [reason]". Never silently drop questions.
+28. **ASSEMBLE, DON'T REBUILD** - The final design_document.md is assembled from the phase files on disk. Never build the entire design again from memory at the end.
 
-31. **MANAGE DEFERRED QUESTIONS** - Track deferred questions in session state. When research returns for a deferred question, re-present it with enriched context. If all remaining questions are deferred, wait for research agents.
+29. **GRACEFUL DEGRADATION** - If the research agents fail, time out, or give invalid output, fall back to the current behavior. The current behavior is the chunk templates plus an inline analysis. The designer ALWAYS works, with the research agents or without them.
 
-32. **REFINE SPECIFIC AREA** - When user selects "Refine a specific area" at the continuation gate, jump back to the relevant phase with existing context preserved. Only re-ask questions relevant to the specified area, then RETURN to the continuation gate — do not terminate.
+30. **SKIP WITH NOTIFICATION** - Sometimes you skip a question, because the research or the user already gave the answer. Tell the user in short: "Skipping [topic] -- [reason]". Never drop a question in silence.
 
-33. **MINIMUM 2 QUESTIONS PER CALL** - The designer MUST present a minimum of 2 questions per AskUserQuestion call. A single-question call is only permitted for the following explicitly justified standalone gate decisions:
-    - **Opening topic detection**: When no topic was provided and the designer needs to establish what the user wants to design (Phase 1, Step 1 — the very first question of the session)
-    - **Synthesis confirmations**: A true binary go/no-go decision at phase gates (e.g., "Does this capture the situation? Yes / No, missing something") where the confirmation is the only pending question and no adjacent question shares the same topic concern
-    - **Build option overflow**: The second AskUserQuestion call in Phase 6's two-call build offer sequence, which handles overflow options that could not fit in the first call's 4-option limit
+31. **MANAGE DEFERRED QUESTIONS** - Track each deferred question in the session state. When the research returns for a deferred question, present that question again with the enriched context. If every question that remains is deferred, wait for the research agents.
 
-    Any other single-question call is a violation of this rule. When in doubt, look at the surrounding questions in the pool — if any share a topic concern, batch them. "Related" means same phase concern (e.g., users + pain points are both empathy concerns; constraints + success criteria are both problem-definition concerns).
+32. **REFINE SPECIFIC AREA** - The user selects "Refine a specific area" at the continuation gate. Jump back to the phase that is relevant, and keep the existing context. Ask again only the questions that are relevant to the area that the user named. Then RETURN to the continuation gate. Do not terminate.
 
-34. **SIZE RULE — THE EXCEPTION IS USER TURNS AND NOTHING ELSE** - The main-session size rule (see @.claude/rules/core/delegation.md § The Size Rule) admits only content whose size does not grow with the size of the work. /designer is a declared exception **in one respect only**: it carries **user turns**, which have no alternative channel — a question cannot be answered on disk. That exception is bounded by **checkpoint-restart**, not by exclusion: Q&A is written to phase files and waypoints as it forms (rules 24 and 27), and the restart arms when the designer's context reaches the DEGRADING band or 30 questions accumulate since the last restart, then fires at the next phase gate, continuation gate, or synthesis confirmation — never mid-question. The new segment resumes from the latest waypoint rather than carrying its whole history forward. See @reference/checkpoint-restart.md for the full contract and @reference/session-resilience.md for the resume protocol it builds on.
+33. **MINIMUM 2 QUESTIONS PER CALL** - The designer MUST present a minimum of 2 questions in each AskUserQuestion call. A single-question call is allowed only for the three standalone gate decisions below. Each one carries an explicit justification.
+    - **Opening topic detection**: The user gave no topic, and the designer must establish what the user wants to design. This is Phase 1, Step 1, which holds the first question of the whole session.
+    - **Synthesis confirmations**: A phase gate holds a true binary go or no-go decision. An example is "Does this capture the situation? Yes / No, missing something". Use one question only when that confirmation is the one pending question. Also make sure that no near question shares the same topic concern.
+    - **Build option overflow**: Phase 6 offers the build options in two calls. The second AskUserQuestion call handles the options that did not fit inside the 4-option limit of the first call.
 
-    The carve-out covers user turns and stops there. The size rule excludes design reasoning, artifact bodies, evidence, work-product content, and unbounded tool results from /designer's main session exactly as it does everywhere else — which is why research agents write findings to `question_prep/` files instead of returning them in context (rule 25), and why `design_document.md` is assembled from phase files rather than rebuilt from memory (rule 28). /designer is not broadly exempt from the size rule.
+    Any other single-question call breaks this rule. If you are in doubt, look at the questions near it in the pool. If any of them shares a topic concern, batch them together. "Related" means the same phase concern. The users and the pain points are both empathy concerns. The constraints and the success criteria are both problem-definition concerns.
+
+34. **SIZE RULE: THE EXCEPTION IS USER TURNS AND NOTHING ELSE** - The main-session size rule admits only content whose size does not grow with the size of the work. See @.claude/rules/core/delegation.md § The Size Rule for the canonical statement. /designer is a declared exception **in one respect only**: it carries **user turns**, which have no alternative channel. A question cannot be answered on disk. That exception is bounded by **checkpoint-restart**, and it is not bounded by exclusion. The designer writes the Q&A to the phase files and to the waypoints as it forms, as in rules 24 and 27. The restart arms when the context of the designer reaches the DEGRADING band, or when 30 questions accumulate since the last restart. It then fires at the next phase gate, at the next continuation gate, or at the next synthesis confirmation. It never fires in the middle of a question. The new segment resumes from the latest waypoint, and it does not carry its whole history forward. See @reference/checkpoint-restart.md for the full contract, and see @reference/session-resilience.md for the resume protocol that it builds on.
+
+    The carve-out covers the user turns, and it stops there. The size rule excludes design reasoning, artifact bodies, evidence, work-product content, and unbounded tool results from the main session of /designer. It excludes them here exactly as it does everywhere else. That is why a research agent writes its findings to a `question_prep/` file, instead of a return of those findings in context, as in rule 25. That is also why `design_document.md` is assembled from the phase files, instead of a rebuild from memory, as in rule 28. /designer is not broadly exempt from the size rule.

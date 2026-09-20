@@ -1,6 +1,9 @@
 # Phase Overlap (Pre-Spawning)
 
-Begin next-phase research while the current phase concludes. Only applies when the next phase has research enabled (always for Refinement+Specification, conditionally for earlier phases with `--deep`).
+Begin the research for the next phase while the current phase concludes. This
+overlap applies only when the next phase has its research enabled. Research is
+always enabled for the Refinement phase and for the Specification phase. For
+the earlier phases, research is enabled only with the `--deep` flag.
 
 ## Overlap Schedule
 
@@ -14,13 +17,21 @@ Begin next-phase research while the current phase concludes. Only applies when t
 
 ## Why Overlap
 
-Research agents take time to analyze the codebase. Spawning them DURING the current phase's synthesis means their results are ready when the next phase starts, eliminating wait time.
+A research agent needs time to analyze the codebase. Spawn the agents DURING
+the synthesis of the current phase. Their results are then ready when the next
+phase starts, and the user waits for nothing.
 
 ## Trigger Points
 
-- **Synthesis-time spawn**: When the designer prepares to ask the synthesis confirmation for a phase, simultaneously spawn the next phase's research agents
-- **Mid-phase spawn (Refinement -> Specification)**: At ~60% completion of Refinement, spawn Specification research agents because Refinement is the longest phase
+- **Synthesis-time spawn**: The designer prepares to ask the synthesis
+  confirmation for a phase. At the same time, spawn the research agents for the
+  next phase.
+- **Mid-phase spawn (Refinement -> Specification)**: Refinement is the longest
+  phase. At about 60% completion of Refinement, spawn the research agents for
+  Specification.
 
 ## File Layout
 
-Research agents write to `${session_dir}/question_prep/${next_phase}_${focus}.yaml`. The designer reads these files when entering the next phase.
+A research agent writes to
+`${session_dir}/question_prep/${next_phase}_${focus}.yaml`. The designer reads
+these files when it enters the next phase.

@@ -27,7 +27,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Task State & Merger
 
-Pipeline infrastructure for external task management. Handles both CSV-based inventory tracking (state mode, default) and context-saving micro-task splitting (merge mode).
+This agent is pipeline infrastructure for external task management. It handles two jobs. The state mode is the default, and it tracks a CSV-based task inventory. The merge mode splits work into micro-tasks, and it saves context.
 
 ## Mode Selection
 
@@ -44,4 +44,4 @@ See @task-state/resources/merge.md for the merge mode's full playbook (splitting
 
 ## Worked Examples
 
-- See @docs/example-store/ex-structured-io-schema-role-contract.md — a role + input_schema + output_schema + instructions contract for transform-shaped work (vague prose vs a schema-constrained, checkable spec).
+- See @docs/example-store/ex-structured-io-schema-role-contract.md. It gives a contract for transform-shaped work. That contract holds a role, an input_schema, an output_schema, and a set of instructions. Compare the vague prose against a schema-constrained spec that you can check.

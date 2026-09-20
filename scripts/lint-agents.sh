@@ -41,7 +41,11 @@ const VALID_COLORS  = new Set([
   'white','blue','green','yellow','red','cyan','magenta',
   'black','gray','grey',
 ]);
-const VALID_MODELS  = new Set(['opus','opusplan','sonnet','haiku']);
+// Canonical model allowlist. This exact list is mirrored in
+// scripts/validate_agent.cjs; tests/regressions/model-allowlist-drift.test.js
+// pins the two together (same values, same order). `metadata.model` is
+// ADVISORY documentation -- see .claude/rules/infrastructure/model-routing.md.
+const VALID_MODELS  = new Set(['opus','opusplan','sonnet','haiku','fable','inherit']);
 // v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude Code
 // discovers plugin agents with a non-recursive scan of agents/.
 const AGENTS_DIR = 'agents';

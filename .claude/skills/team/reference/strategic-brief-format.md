@@ -1,12 +1,12 @@
 # Strategic Brief Format
 
-The full schema for `strategic_brief.yaml` and the validation protocol that ensures it is complete, measurable, and acyclic.
+This file gives the full schema for `strategic_brief.yaml`. It also gives the validation protocol. That protocol makes sure that the brief is complete, that it is measurable, and that it is acyclic.
 
-Used by `/team` in strategic mode (introduced in v12.2.0). The CEO role is played by the `/team` strategic-mode prefix waves (Wave 0 C-suite analysis, Wave 1 objection phase, Wave 2 brief synthesis); subsequent waves dispatch per-domain work according to the brief's `domain_assignments`.
+`/team` uses this schema in strategic mode, which v12.2.0 introduced. The prefix waves of strategic mode play the CEO role. Wave 0 holds the C-suite analysis. Wave 1 holds the objection phase. Wave 2 holds the brief synthesis. The waves after them dispatch the per-domain work, as the `domain_assignments` of the brief direct.
 
 ## Step 6: Finalize Strategic Brief (DELIBERATED -> BRIEFED)
 
-Write final `strategic_brief.yaml` incorporating all resolutions.
+Write the final `strategic_brief.yaml` file. Include all of the resolutions.
 
 ```yaml
 strategic_brief:
@@ -48,28 +48,28 @@ strategic_brief:
       completed_wis: []
 ```
 
-Update status to BRIEFED. (v12.6.0: `workflow/events/EVT-{N}.yaml` emission removed — the `status.yaml` `pipeline_state` update plus the `strategic_brief.yaml` output are the canonical state-transition signal.)
+Update the status to BRIEFED. Release v12.6.0 removed the `workflow/events/EVT-{N}.yaml` emission. Two artifacts are now the canonical signal of the state transition. They are the `pipeline_state` update in `status.yaml`, and the `strategic_brief.yaml` output.
 
 ## domain_assignments Schema Extensions (v12.2.0)
 
-Two new fields position at the **top level of each `domain_assignments` entry** (peer to `name`, `priority`, `work_required`, etc.). These fields drive the post-brief dispatch logic in `/team` strategic mode: independent domains dispatch in parallel via the Agent tool, dependent domains dispatch sequentially via the Skill tool with `--brief` passing.
+Two new fields sit at the **top level of each `domain_assignments` entry**. They are peers of `name`, of `priority`, and of `work_required`. These fields drive the dispatch logic that follows the brief in `/team` strategic mode. An independent domain dispatches in parallel through the Agent tool. A dependent domain dispatches in sequence through the Skill tool, and that call passes `--brief`.
 
 ### dependency_type (required)
 
 Allowed values: `independent` | `dependent_on`
 
-- **`independent`** — the domain's work items can begin immediately once the strategic brief is finalized. No upstream domain output is required as input. Independent domains are dispatched **in parallel** during the per-domain wave (Wave 3+ in /team strategic mode), using the Agent tool to spawn the domain controller.
-- **`dependent_on`** — the domain's work items require output from one or more upstream domains before they can begin. Dependent domains are dispatched **sequentially** after their upstream dependencies complete, via `Skill(/act --brief {strategic_brief.yaml} --domain {key})` so the upstream outputs are available as context.
+- **`independent`**: the work items of the domain can start as soon as the strategic brief is final. The domain needs no output from an upstream domain. The lead dispatches each independent domain **in parallel** during the per-domain wave. That wave is Wave 3 or later in /team strategic mode. The lead uses the Agent tool to spawn the domain controller.
+- **`dependent_on`**: the work items of the domain need output from one upstream domain or more. That output must arrive before the work items start. The lead dispatches each dependent domain **in sequence**, after its upstream dependencies complete. The call is `Skill(/act --brief {strategic_brief.yaml} --domain {key})`. The upstream outputs are then available as context.
 
-If `dependency_type` is omitted from an entry, the planner SHOULD treat the entry as `independent` and emit a warning that the field is missing (the field becomes required in v12.3.0).
+If an entry has no `dependency_type` field, the planner SHOULD treat that entry as `independent`. The planner SHOULD also emit a warning about the missing field. The field becomes required in v12.3.0.
 
-### dependent_on (optional — required when dependency_type == dependent_on)
+### dependent_on (optional; required when dependency_type == dependent_on)
 
-Allowed value: an array of `domain_key` strings naming upstream domains whose outputs the dependent domain needs.
+Allowed value: an array of `domain_key` strings. Each string names an upstream domain. The dependent domain needs the outputs of that upstream domain.
 
-- Must contain at least one entry when `dependency_type` is `dependent_on`.
-- Each listed domain_key MUST exist as another entry in `domain_assignments` and MUST be either `independent` or upstream of this entry in the dependency graph (no cycles).
-- The dependency graph formed by `dependent_on` arrays MUST be acyclic. Cycle detection is performed during Validation Point 3 (`dependency_graph_acyclic` check below).
+- When `dependency_type` is `dependent_on`, the array must hold one entry or more.
+- Each `domain_key` in the list MUST exist as another entry in `domain_assignments`. That entry MUST be `independent`, or it MUST be upstream of this entry in the dependency graph. The graph must hold no cycle.
+- The `dependent_on` arrays form a dependency graph. That graph MUST be acyclic. Validation Point 3 does the cycle detection with the `dependency_graph_acyclic` check below.
 
 Example:
 ```yaml
@@ -98,15 +98,15 @@ domain_assignments:
     dependency_type: independent
 ```
 
-In this example, `engineering` and `creative` dispatch in parallel during the first per-domain wave; `growth` waits and dispatches after both complete (because `growth` depends on both per its `dependent_on` list).
+In this example, `engineering` and `creative` dispatch in parallel during the first per-domain wave. `growth` waits, and it dispatches after both of them complete. The `dependent_on` list of `growth` names both of them.
 
 ## Cross-Domain Validation Protocol (V10.23.0)
 
-Every state transition in the `/team` strategic-mode pipeline MUST include structured validation. The strategic-mode lead (formerly the CEO role) validates outputs at 5 checkpoints to ensure cross-domain consistency and completeness.
+Every state transition in the `/team` strategic-mode pipeline MUST include a structured validation. The strategic-mode lead validates the outputs at 5 checkpoints. That role was the CEO role before. The checkpoints make sure that the work is consistent across the domains, and that the work is complete.
 
 ### Validation Point 1: Pre-Deliberation (after ANALYZED)
 
-Verify all C-suite analyses are complete and non-empty before drafting the strategic brief.
+Before you draft the strategic brief, make sure that each C-suite analysis is complete. Also make sure that no analysis is empty.
 
 ```yaml
 pre_deliberation_validation:
@@ -130,7 +130,7 @@ pre_deliberation_validation:
 
 ### Validation Point 2: Post-Deliberation (after DELIBERATED)
 
-Verify objections were addressed and no contradictions remain between domains.
+Make sure that each objection was addressed. Also make sure that no contradiction stays between two domains.
 
 ```yaml
 post_deliberation_validation:
@@ -155,7 +155,7 @@ post_deliberation_validation:
 
 ### Validation Point 3: Strategic Brief (after BRIEFED)
 
-Verify the brief has all required fields and is internally consistent.
+Make sure that the brief holds every required field. Also make sure that the brief is consistent with itself.
 
 ```yaml
 strategic_brief_validation:
@@ -197,7 +197,7 @@ strategic_brief_validation:
 
 ### Validation Point 4: Post-Execution (after EXECUTED)
 
-Verify all domain execution results align with the strategic brief.
+Make sure that the execution results of every domain agree with the strategic brief.
 
 ```yaml
 post_execution_validation:
@@ -230,7 +230,7 @@ post_execution_validation:
 
 ### Validation Point 5: Integration (after INTEGRATED)
 
-Verify cross-domain deliverables are consistent and all contracts fulfilled.
+Make sure that the cross-domain deliverables are consistent. Also make sure that every contract is fulfilled.
 
 ```yaml
 integration_validation:
@@ -261,7 +261,7 @@ integration_validation:
 
 ### Validation Storage
 
-All validation results are appended to `${SESSION_DIR}/workflow/strategic_validations.yaml`:
+The lead appends every validation result to `${SESSION_DIR}/workflow/strategic_validations.yaml`:
 
 ```yaml
 strategic_validations:
@@ -291,8 +291,8 @@ strategic_validations:
 
 | Checkpoint | Failure Action |
 |-----------|---------------|
-| Pre-deliberation | Re-spawn missing/empty C-suite agents (1 retry). If still fails, proceed with available analyses and note gaps. |
-| Post-deliberation | Re-run objection phase for domains with unresolved blocking objections (1 retry). If contradictions persist, escalate to user. |
-| Strategic brief | Fix missing fields inline. If criteria are unmeasurable, add measurement methods. If `dependency_type` is missing on any entry, default to `independent` and emit warning. If `dependent_on` references an unknown domain or forms a cycle, escalate to user — no auto-fix. |
-| Post-execution | For incomplete domains: report partial results. For unmet criteria: check if evidence exists but was not mapped. For unresolved escalations: escalate to user. |
-| Integration | For unsatisfied dependencies: check if outputs exist in unexpected locations. For conflicts: strategic-mode lead resolves by priority. For missing deliverables: document gaps in integration_report.yaml. |
+| Pre-deliberation | Re-spawn each C-suite agent that is missing, and each one that is empty. Use 1 retry. If the retry fails, continue with the analyses that you have, and write down the gaps. |
+| Post-deliberation | Run the objection phase again for each domain with an unresolved blocking objection. Use 1 retry. If a contradiction stays, escalate to the user. |
+| Strategic brief | Fix each missing field inline. If a criterion is not measurable, add a measurement method. If an entry has no `dependency_type`, default to `independent` and emit a warning. If `dependent_on` names an unknown domain, escalate to the user. If `dependent_on` forms a cycle, also escalate to the user. There is no auto-fix. |
+| Post-execution | For an incomplete domain, report the partial results. For an unmet criterion, do a check for evidence that exists but was not mapped. For an unresolved escalation, escalate to the user. |
+| Integration | For an unsatisfied dependency, do a check for outputs in an unexpected location. For a conflict, the strategic-mode lead resolves it by priority. For a missing deliverable, write down the gap in integration_report.yaml. |

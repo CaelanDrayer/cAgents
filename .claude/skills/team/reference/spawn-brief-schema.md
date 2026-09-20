@@ -1,20 +1,20 @@
 # Spawn Brief Schema — Per-Wave Disk-Handoff Spawn Prompts
 
-Reduces per-subagent spawn prompt token cost from ~600 tokens to ~80 tokens by writing the shared wave context to disk ONCE per wave and passing each subagent a pointer.
+This schema reduces the token cost of each spawn prompt. The cost falls from about 600 tokens to about 80 tokens. The lead writes the shared wave context to disk ONCE for each wave. The lead then gives each subagent a pointer to that file.
 
 ## The Problem (CI-3 from enriched_context)
 
-`teammate-spawning-template.md` is the prompt template each Agent() call inlines. With 5-7 subagents per wave × 5-7 waves, the lead's tool-call history accumulates 25-49 large spawn prompts, each carrying repeated role boilerplate, self-registration scripts, and shared session paths. That bloat lives in the lead's context for the entire run.
+`teammate-spawning-template.md` is the prompt template that each `Agent()` call inlines. A run has 5 to 7 subagents in each wave, and it has 5 to 7 waves. The tool-call history of the lead therefore collects 25 to 49 large spawn prompts. Each prompt repeats the role boilerplate, the self-registration script, and the shared session paths. That bloat stays in the context of the lead for the entire run.
 
 ## The Solution
 
-For each wave K, the lead writes ONE `spawn_brief.md` file containing the role description, shared context, acceptance envelope, and self-validation instructions. Each subagent spawn then passes a short prompt that points to the brief plus the subagent's specific WI row.
+For each wave K, the lead writes ONE `spawn_brief.md` file. That file holds the role description, the shared context, the acceptance envelope, and the self-validation instructions. Each subagent spawn then passes a short prompt. That prompt points to the brief, and it points to the specific WI row of the subagent.
 
 ## Brief File Location
 
 `${SESSION_DIR}/outputs/wave-{K}/spawn_brief.md`
 
-Written once per wave before any subagent is spawned.
+The lead writes this file once for each wave. It writes the file before it spawns any subagent.
 
 ## Brief Schema
 
@@ -58,7 +58,7 @@ Append your entry to `${SESSION_DIR}/workflow/agent_tree.yaml` on start. See `.c
 
 ## Short Spawn Prompt (per subagent)
 
-The lead spawns each subagent with this ~80-token prompt (`run_in_background: false` on the default path):
+The lead spawns each subagent with this prompt of about 80 tokens. The default path sets `run_in_background: false`:
 
 ```javascript
 Agent({
@@ -78,7 +78,7 @@ On done: TaskUpdate({taskId:'{task_id}', status:'completed'}). Return at most 12
 
 ## Required Fields per WI Row
 
-In `work_items_wave_{K}.yaml`, each row must carry these fields (so the spawn prompt doesn't need to inline them):
+In `work_items_wave_{K}.yaml`, each row must carry these fields. The spawn prompt then does not need to inline them:
 
 ```yaml
 - id: WI-N
@@ -96,9 +96,9 @@ In `work_items_wave_{K}.yaml`, each row must carry these fields (so the spawn pr
 |--------|--------------------------|---------------------|
 | Per-spawn prompt tokens | ~600 | ~80 |
 | Per-wave brief writes | 0 | 1 |
-| Tokens saved per spawn | — | ~520 |
+| Tokens saved per spawn | not applicable | ~520 |
 | 5-wave × 5-subagent run | ~15K spawn tokens | ~2K spawn tokens + 5×(~400 brief) = ~4K |
-| Net savings | — | ~11K (~73%) |
+| Net savings | not applicable | ~11K (~73%) |
 
 ## Schema Required Fields
 

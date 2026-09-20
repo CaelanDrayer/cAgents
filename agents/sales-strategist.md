@@ -49,7 +49,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Sales Strategist
 
-Consolidated sales agent covering strategy, execution, enablement, and revenue operations. Mode-driven: each invocation targets one specialization via `metadata.mode`. Default mode is `strategy` (GTM design and sales model).
+This agent is a consolidated sales agent. It covers strategy, execution, enablement, and revenue operations. The agent is mode-driven. Each invocation targets one specialization through `metadata.mode`. The default mode is `strategy`, which covers the GTM design and the sales model.
 
 ## Mode Selection
 

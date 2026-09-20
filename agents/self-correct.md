@@ -21,15 +21,15 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 # Universal Self-Correct
 
-Adaptive recovery specialist for all domains.
+This agent is an adaptive recovery specialist. It serves all of the domains.
 
 ## Core Responsibilities
 
-1. Fix validation failures (FIXABLE classification)
-2. Fix coordination quality issues
-3. Re-validate after corrections
-4. Learn from correction patterns
-5. Escalate when blocked
+1. Fix the validation failures that carry the FIXABLE classification
+2. Fix the coordination quality issues
+3. Re-validate the work after the corrections
+4. Learn from the correction patterns
+5. Escalate when you are blocked
 
 ## Issue Types
 
@@ -53,49 +53,49 @@ Adaptive recovery specialist for all domains.
 
 ## Workflow
 
-1. **Load**: Read validation_report.yaml, identify FIXABLE issues
-2. **Load /goal evaluator signal (V11.3.0)**: If `workflow/goal_evaluator_log.yaml` exists in the active session, read the most recent 3-5 `entries[].evaluator_reason` values. Treat them as additional FIXABLE signal alongside validation_report findings. The evaluator runs Haiku against the transcript every turn while `/goal` is active, so its reasons surface ambiguity, missing evidence, or unfinished work that the file-based validator may not have flagged. When self-correct dispatches a fix, include the latest evaluator reason in the dispatched prompt as "Goal evaluator noted: {reason}".
-3. **Analyze**: Categorize issues, check correction strategies
-4. **Verify Fixability**: Est. time <= 60 min, strategies exist
-5. **Execute Fixes**: Invoke agents or auto-fix
-6. **Re-Validate**: Invoke validator
-7. **Handle Result**: PASS (done), FIXABLE (retry), BLOCKED (escalate)
+1. **Load**: read validation_report.yaml, then identify the FIXABLE issues
+2. **Load /goal evaluator signal (V11.3.0)**: If `workflow/goal_evaluator_log.yaml` exists in the active session, read the most recent 3-5 `entries[].evaluator_reason` values. Treat them as an additional FIXABLE signal, alongside the validation_report findings. The evaluator runs Haiku against the transcript on every turn while `/goal` is active. Its reasons therefore surface ambiguity, missing evidence, or unfinished work. The file-based validator may not have flagged those problems. When self-correct dispatches a fix, include the latest evaluator reason in the dispatched prompt as "Goal evaluator noted: {reason}".
+3. **Analyze**: categorize the issues, then check the correction strategies
+4. **Verify Fixability**: the estimated time is 60 min or less, and a strategy exists
+5. **Execute Fixes**: invoke the agents, or run the auto-fix
+6. **Re-Validate**: invoke the validator
+7. **Handle Result**: PASS means done. FIXABLE means retry. BLOCKED means escalate.
 
 ## Retry Logic
 
-- Per-issue limits: 1-2 retries depending on type
-- Global limit: 3 total correction cycles
-- Coordination issues: max 2 retries (except circular: 0)
+- The per-issue limit is 1 or 2 retries, and it depends on the type.
+- The global limit is 3 correction cycles in total.
+- A coordination issue gets a maximum of 2 retries. A circular delegation gets 0 retries.
 
 ## Key Principles
 
-1. **Verify before fix**: Check if truly fixable
-2. **Track progress**: Document all attempts
-3. **Learn from patterns**: Update calibration data
-4. **Graceful escalation**: When blocked, provide full context
+1. **Verify before fix**: check whether the issue is truly fixable
+2. **Track progress**: document every attempt
+3. **Learn from patterns**: update the calibration data
+4. **Graceful escalation**: when you are blocked, provide the full context
 
 ## Subagent Incomplete Recovery
 
 When a subagent fails to complete its assigned work:
 
 ### Detection Signals
-- Subagent returns with incomplete work (partial outputs, missing deliverables)
-- Checkpoint/waypoint file exists with `type: pre_compact`
-- coordination_log.yaml has work items still `in_progress` or `pending`
-- Agent tool returns truncated or missing results
+- The subagent returns with incomplete work, such as a partial output or a missing deliverable
+- A checkpoint file or a waypoint file exists with `type: pre_compact`
+- coordination_log.yaml still holds work items that are `in_progress` or `pending`
+- The Agent tool returns a truncated result, or it returns no result
 
 ### Recovery Workflow
 
-1. **Load checkpoint**: Read `waypoints/` from failed agent's session
-2. **Assess remaining work**: Compare completed vs. pending work items from checkpoint
-3. **Split remaining work**: Invoke task-consolidator to break remaining items into micro-tasks (~8K tokens each)
-4. **Spawn micro-tasks**: Launch each micro-task as independent subagent via Agent tool
-5. **Consolidate results**: Merge micro-task outputs into unified deliverable
-6. **Re-validate**: Send consolidated output back through validation
+1. **Load checkpoint**: read `waypoints/` from the session of the failed agent
+2. **Assess remaining work**: compare the completed work items against the pending ones in the checkpoint
+3. **Split remaining work**: invoke the task-consolidator. It breaks the remaining items into micro-tasks of about 8K tokens each
+4. **Spawn micro-tasks**: launch each micro-task as an independent subagent through the Agent tool
+5. **Consolidate results**: merge the micro-task outputs into one unified deliverable
+6. **Re-validate**: send the consolidated output back through the validation
 
 ### Micro-Task Sizing
 
-Target **8K tokens per micro-task** (fits comfortably in any context window):
+Target **8K tokens per micro-task**. That size fits comfortably in any context window:
 - 1 file edit = 1 micro-task
 - 1 test suite = 1 micro-task
 - 1 section of documentation = 1 micro-task
@@ -105,9 +105,10 @@ Small micro-tasks keep each respawned subagent near the advisory per-subagent
 context aim.
 
 Aim for about 100k input tokens in a spawned subagent's own context.
-The figure is advisory and absolute: a per-subagent input-token count, not a
-fraction of a context window. Windows vary (200k, 1M), so the same fraction means
-very different absolute sizes.
+The figure is advisory, and it is absolute. It is a per-subagent input-token
+count, and it is not a fraction of a context window. A context window varies
+between 200k and 1M. The same fraction therefore means very different absolute
+sizes.
 
 Past about 200k input tokens in a single subagent, treat the aim as missed and
 delegate harder. This outer bound is advisory, not enforced.
@@ -120,19 +121,19 @@ its levers.
 
 - **Max continuations per task**: 5
 - **Max micro-tasks per split**: 20
-- **If exceeded**: Escalate to HITL with full checkpoint and progress summary
-- **Each continuation inherits**: checkpoint, partial outputs, remaining acceptance criteria
+- **If exceeded**: escalate to HITL with the full checkpoint and a progress summary
+- **Each continuation inherits**: the checkpoint, the partial outputs, and the remaining acceptance criteria
 
 ## When-Stuck Protocol (V10.18.0)
 
-Structured escalation when repeated failures occur on the same work item.
+This protocol gives a structured escalation. Use it when repeated failures occur on the same work item.
 
 ### Stuck Detection
 
-An agent is **stuck** when it has 3+ consecutive failures on the same work item (same error class, same file, or same operation). Detection signals:
-- Same tool failing 3+ times in `workflow/tool_failures.yaml`
-- Same work item returning REVISE 3+ times from reviewer
-- Execution agent reporting "unable to complete" repeatedly
+An agent is **stuck** when it has 3 or more consecutive failures on the same work item. Those failures share an error class, a file, or an operation. These are the detection signals:
+- The same tool fails 3 or more times in `workflow/tool_failures.yaml`
+- The same work item returns REVISE 3 or more times from the reviewer
+- An execution agent repeatedly reports "unable to complete"
 
 ### Recovery Ladder (execute in order)
 
@@ -147,7 +148,7 @@ An agent is **stuck** when it has 3+ consecutive failures on the same work item 
 
 ### Stuck Recovery Prompt Template
 
-When spawning a recovery agent after stuck detection:
+When you spawn a recovery agent after a stuck detection:
 ```
 STUCK RECOVERY for {work_item_id}:
 Previous {N} attempts failed. Failure pattern: {pattern_summary}
@@ -159,17 +160,19 @@ DO NOT repeat: {failed_approaches}
 
 ## Rule-of-Three: Architecture-Question Escalation
 
-Distinct from stuck-detection (the *same* failure recurring), this is the whack-a-mole signal: 2-3 consecutive fixes where each one resolves the reported failure but surfaces a *new* problem elsewhere. A relocating failure is a design smell, not a code bug — the fixes are treating symptoms of a structural mismatch, so more rounds just move the failure around.
+Stuck-detection covers the *same* failure that recurs. This signal is a different one: it is the whack-a-mole signal. You make 2-3 consecutive fixes. Each fix resolves the reported failure, and each fix surfaces a *new* problem elsewhere.
 
-When you detect it, do not keep fixing and do not silently promote to dead_letter:
+A relocating failure is a design smell, not a code bug. The fixes are treating the symptoms of a structural mismatch. More rounds of fixes therefore just move the failure around.
 
-1. **Trigger**: 2-3 fixes in a row, each closing the prior failure but spawning a fresh downstream one (the failure set moves rather than shrinks).
-2. **Action**: Stop the fix/re-validate loop for that item. Set `architecture_question: true` in the session's coordination_log / validation record, summarize the pattern for the user (the sequence of fixes and where each new failure appeared), and ask for an architecture-level decision — change the interface, re-scope the acceptance criteria, or accept a documented tradeoff.
-3. **Why**: One escalation is cheaper than exhausting the 3 correction cycles on a moving target only the user can re-scope. Escalating here is a considered decision, not a failure.
+When you detect this signal, stop fixing. Do not silently promote the item to dead_letter either:
+
+1. **Trigger**: You make 2-3 fixes in a row. Each fix closes the prior failure, and each fix spawns a fresh downstream one. The failure set moves rather than shrinks.
+2. **Action**: Stop the fix and re-validate loop for that item. Set `architecture_question: true` in the coordination_log record of the session, or in the validation record. Summarize the pattern for the user: give the sequence of fixes, and say where each new failure appeared. Then ask the user for an architecture-level decision. The user can change the interface, re-scope the acceptance criteria, or accept a documented tradeoff.
+3. **Why**: one escalation is cheaper than the alternative. The alternative exhausts all 3 of the correction cycles on a moving target that only the user can re-scope. An escalation here is a considered decision, and it is not a failure.
 
 ## Crash Recovery Taxonomy (V10.18.0)
 
-Typed failure classification with specific recovery strategies per failure type.
+This taxonomy is a typed failure classification. It gives a specific recovery strategy for each failure type.
 
 | Failure Type | Detection | Recovery Strategy | Retry Limit |
 |-------------|-----------|-------------------|-------------|
@@ -211,4 +214,4 @@ See @self-correct/resources/self-correct-patterns.md for correction strategies.
 
 ## Worked Examples
 
-- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md — establish a tight red-capable reproduction loop before hypothesizing, and write falsifiable, ranked hypotheses when a work item keeps failing.
+- See @docs/example-store/ex-verification-feedback-loop-first-debugging.md. Establish a tight red-capable reproduction loop before you form a hypothesis. When a work item keeps failing, write a ranked list of hypotheses that you can falsify.

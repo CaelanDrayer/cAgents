@@ -61,7 +61,9 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent Skill TaskCreate TaskUpdate 
 
 # Narrative Director (consolidated)
 
-The narrative director is the creative intelligence that sees what a story needs to become and coordinates every specialist toward that vision. In v12.x (consolidation), four formerly-separate writer agents — `narrative-director`, `story-architect`, `narrative-designer`, `plot-developer` — were consolidated into this single agent with a `mode` flag.
+The narrative director is the creative intelligence behind a story. It sees what a story needs to become. It then coordinates every specialist toward that vision.
+
+Four writer agents were formerly separate. The v12.x consolidation merged all four into this single agent. Those four agents were `narrative-director`, `story-architect`, `narrative-designer`, and `plot-developer`. The merged agent selects its behavior with a `mode` flag.
 
 Pick the mode that matches the work:
 
@@ -76,7 +78,7 @@ Pick the mode that matches the work:
 
 Fallback: `direct`.
 
-When invoked, read `metadata.mode` (or the explicit mode in the controller's prompt) and follow the matching protocol.
+Read `metadata.mode` when a caller invokes you. If the controller's prompt names an explicit mode, use that mode instead. Then follow the matching protocol.
 
 ## Controller Delegation Protocol
 
@@ -84,7 +86,7 @@ When invoked, read `metadata.mode` (or the explicit mode in the controller's pro
 
 See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step protocol.
 
-Call **TaskCreate BEFORE delegating** to give the user visibility. Example delegation targets:
+Call **TaskCreate BEFORE delegating** to give the user visibility. The table below lists example delegation targets.
 
 | Need | Agent / Mode |
 |---|---|
@@ -99,14 +101,14 @@ Call **TaskCreate BEFORE delegating** to give the user visibility. Example deleg
 
 ## Full playbooks
 
-See @narrative-director/resources/direct.md for the `direct` mode full playbook (creative vision, tonal control, brief methodology, cross-agent coordination, creative risk, anti-slop standards).
+See @narrative-director/resources/direct.md for the full playbook of the `direct` mode. It covers creative vision, tonal control, the brief methodology, cross-agent coordination, creative risk, and the anti-slop standards.
 
-See @narrative-director/resources/architecture.md for the `architecture` mode full playbook (multi-act structures, genre structures, non-linear architecture, series planning, ensemble structures, structural rhythm).
+See @narrative-director/resources/architecture.md for the full playbook of the `architecture` mode. It covers multi-act structures, genre structures, non-linear architecture, series planning, ensemble structures, and structural rhythm.
 
-See @narrative-director/resources/reading-experience.md for the `reading-experience` mode full playbook (scene/sequel theory, MRUs, opening strategies, chapter architecture, transition craft, information revelation, narrative momentum).
+See @narrative-director/resources/reading-experience.md for the full playbook of the `reading-experience` mode. It covers scene and sequel theory, MRUs, the opening strategies, and chapter architecture. It also covers transition craft, information revelation, and narrative momentum.
 
-See @narrative-director/resources/plot.md for the `plot` mode full playbook (plot structures, twist mechanics, subplot craft, midpoint mastery, escalation theory, climax engineering, pacing).
+See @narrative-director/resources/plot.md for the full playbook of the `plot` mode. It covers plot structures, twist mechanics, subplot craft, and midpoint mastery. It also covers escalation theory, climax engineering, and pacing.
 
 ## Final AI-Detection Gate
 
-Before returning any prose or narrative deliverable, run `cagents:ai-writing-editor` (mode=both) as the final AI-detection gate; the tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+Before you return any prose deliverable or narrative deliverable, run `cagents:ai-writing-editor` with `mode=both`. That run is the final AI-detection gate. The tells in `.claude/rules/quality/anti-slop.md` are the reference list.

@@ -6,7 +6,8 @@
 # Derives canonical counts from disk and compares against documented values
 # in CLAUDE.md, README.md, AGENTS.md, package.json, .claude/settings.json,
 # .claude/rules/core/hooks.md, .claude/rules/core/version-registry.md,
-# docs/agents/index.md, and docs/12-FACTOR-COMPLIANCE.md. Exits 0 if all counts
+# .claude/skills/** (Checks 16-17), docs/agents/index.md, and
+# docs/12-FACTOR-COMPLIANCE.md. Exits 0 if all counts
 # match, exits 1 with the offending file + claimed-vs-derived diff on first
 # mismatch.
 #
@@ -381,6 +382,84 @@ if [ -f "$PACKAGE_JSON_PATH" ]; then
         "$USER_SKILLS user skills"
     fi
   fi
+fi
+
+# Check 16 (COR-3): .claude/skills/** ABSENCE check for a STALE agent TOTAL.
+# validate-counts.sh historically read CLAUDE.md, README.md, AGENTS.md,
+# package.json, .claude/settings.json, two .claude/rules files and two docs/
+# files. It NEVER read .claude/skills/**, so 13 user-facing false claims (an
+# agent total of 57 while disk said 60, "Tier 1 (15 agents)" while disk said 16,
+# and two wrong archetype headings) survived every gate. This check closes that
+# hole. It mirrors the Check 2b (README) and Check 12 (docs/) absence guards.
+#
+# The agent-TOTAL phrasings this surface uses are:
+#   "<N> agents"   "<N> specialized agents"   "<N>-agent catalog"   "<N> available"
+# A SUBSET count must not be flagged. Each phrase is therefore extracted with up
+# to 12 characters of leading context, and a phrase is dropped when that context
+# shows it is not a catalog total:
+#   - a parenthesized qualifier count, such as "### Core archetype (16 agents)",
+#     "#### Tier 1: Core Infrastructure (16 agents)" or "(~3 agents)";
+#   - an archetype, a tier or a wave qualifier, such as "the Wave 1 agents";
+#   - a range or a sum, such as "3-5 agents" or "(10 + 5 + 5 + 5 agents)";
+#   - a historical transition arrow, such as "251 -> 240 agents" (line level,
+#     the same exclusion Check 13 makes).
+# A scoped historical count keeps its own wording and never matches the regex.
+# One example is the v12.20.0 line "It enumerated 30 moded agents across 8
+# archetypes" in _MODE_REGISTRY.md: the word "moded" sits between the number and
+# the word "agents", so the phrase is never a candidate.
+#
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_SKILLS_DIR lets the
+# skills-count-drift.test.js mutation test point Checks 16 and 17 at a temp-dir
+# copy of the skills tree (the same idiom as CAGENTS_VALIDATE_COUNTS_CLAUDE_MD
+# in Check 1), so the real .claude/skills tree is never mutated in place.
+# Production callers do NOT set it, and the default path is unchanged. The
+# USER_SKILLS derivation above deliberately does NOT honor this override,
+# because it reads the real catalog, not a claim.
+SKILLS_DIR="${CAGENTS_VALIDATE_COUNTS_SKILLS_DIR:-.claude/skills}"
+if [ -d "$SKILLS_DIR" ]; then
+  skills_stale_totals="$(grep -rhE "[Aa]gent" "$SKILLS_DIR" --include='*.md' 2>/dev/null \
+    | grep -vE "(->|→)" \
+    | grep -oE ".{0,12}[0-9]+([ -](specialized )?agents?\b| available\b)" \
+    | grep -vE "\(~?[0-9]+[ -](specialized )?agents?$" \
+    | grep -vE "(Wave|wave|Tier|tier|archetype|Archetype)[[:space:]]+\(?[0-9]+[ -](specialized )?agents?$" \
+    | grep -vE "[0-9][[:space:]]*[-+][[:space:]]*[0-9]+[ -](specialized )?agents?$" \
+    | grep -vE "(^|[^0-9])${ACTIVE_AGENTS}([ -](specialized )?agents?| available)$" \
+    | sort -u || true)"
+  if [ -n "$skills_stale_totals" ]; then
+    while IFS= read -r phrase; do
+      [ -z "$phrase" ] && continue
+      report_mismatch "$SKILLS_DIR (skills agent-total absence check)" "$phrase" \
+        "$ACTIVE_AGENTS (agent total)"
+    done <<< "$skills_stale_totals"
+  fi
+fi
+
+# Check 17 (COR-3): _MODE_REGISTRY.md per-archetype heading counts.
+# That file carries one heading for each archetype, in the exact form
+# "### <Archetype> archetype (<N> agents)". Check 16 above deliberately treats
+# such a parenthesized count as a subset, so a wrong archetype heading needs its
+# own comparison. Each <N> is compared against the derived ARCH_COUNTS entry for
+# the lowercased archetype name, which comes from the `archetype:` frontmatter
+# of the flat agents/*.md tree.
+#
+# Only a heading that EXISTS is checked. There is no Leadership heading today,
+# and that is correct, because the leadership archetype carries no mode flags.
+# Honors the same CAGENTS_VALIDATE_COUNTS_SKILLS_DIR override as Check 16.
+MODE_REGISTRY_PATH="$SKILLS_DIR/_MODE_REGISTRY.md"
+if [ -f "$MODE_REGISTRY_PATH" ]; then
+  while IFS= read -r heading; do
+    [ -z "$heading" ] && continue
+    arch_name=$(printf '%s' "$heading" | sed -E 's/^#+[[:space:]]+([A-Za-z]+)[[:space:]]+archetype[[:space:]]+\(([0-9]+) agents?\)[[:space:]]*$/\1/')
+    claimed=$(printf '%s' "$heading" | sed -E 's/^#+[[:space:]]+([A-Za-z]+)[[:space:]]+archetype[[:space:]]+\(([0-9]+) agents?\)[[:space:]]*$/\2/')
+    arch_lc=$(printf '%s' "$arch_name" | tr '[:upper:]' '[:lower:]')
+    if [ -n "${ARCH_COUNTS[$arch_lc]+set}" ]; then
+      expected=${ARCH_COUNTS[$arch_lc]}
+      if [ "$claimed" != "$expected" ]; then
+        report_mismatch "$MODE_REGISTRY_PATH" "$heading" \
+          "### ${arch_name} archetype (${expected} agents)"
+      fi
+    fi
+  done < <(grep -E "^#+[[:space:]]+[A-Za-z]+[[:space:]]+archetype[[:space:]]+\([0-9]+ agents?\)[[:space:]]*$" "$MODE_REGISTRY_PATH" 2>/dev/null)
 fi
 
 # ---- Result ----------------------------------------------------------------

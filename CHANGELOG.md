@@ -10,6 +10,118 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.71.0] - 2026-09-20
+
+A writing standard, plus a judgment rewrite of the load-bearing prose surfaces.
+The standard derives from ASD-STE100 Simplified Technical English. `paths:`
+frontmatter enforces it, not a script. Claude Code loads the standard whenever
+an agent edits a covered path, so every future edit is written to the standard
+by the agent making it.
+
+The headline number is a 98 percent cut in over-long sentences across the 138
+rewritten files, 302 down to 6, measured at the sentence level. The second
+number proves the method. Words ROSE 10.9 percent, from 138,077 to 153,098. That
+rise is the intended signature. The standard forbids shortening by deletion, so
+simplified prose gets longer, not shorter.
+
+NO MECHANICAL TRANSFORM SHIPPED, and that is the main engineering finding here.
+A deterministic rewrite script was built, reviewed five times by five
+independent methods, narrowed twice, and then abandoned. The count of NEW
+blocking defect classes found per independent review method ran 17, then 5, then
+4, then 14, then 12. It never converged, so the remaining defect population was
+unknown rather than small. The final review killed even the two transforms that
+two earlier methods had certified safe. It found 3,386 manufactured comma
+splices and a diff that failed to apply on 138 of 718 files. It also found 10
+broken test assertions and one broken CI gate.
+
+The decisive defect class needs no words changed at all. A counted framework
+asserts its count through punctuation, so "Porter's Five Forces — a, b, c, d, e"
+becomes six items and the sentence turns FALSE. No word-level or structural
+check can catch that. A green structural guard certifies structure and is blind
+to meaning. The hardened `invariants.sh` returned 1018 of 1018 passing while 152
+meaning inversions were live in that same corpus.
+
+### Added
+- **The STE-100 writing standard**
+  (`.claude/rules/quality/ste100-technical-writing.md`), with a word-choice table
+  at `.claude/rules/quality/resources/ste100-word-choices.md`. Ten mandates cover
+  short sentences (20 words procedural, 25 descriptive), active voice and
+  imperative, simple tenses, one term per concept, and flat structure. They also
+  forbid em dashes in repository prose. The last mandate is load-bearing:
+  shorten by simplifying, never by deleting.
+- **Enforcement through `paths:` frontmatter**, covering `agents/**`,
+  `.claude/rules/**`, `.claude/skills/**`, `.claude/hooks/**`, `docs/**`,
+  `tests/**`, `CLAUDE.md` and `README.md`. There is no lint step and no gate.
+  The standard loads into the agent that is about to edit a covered path, which
+  is the whole enforcement mechanism.
+- **`scripts/ci/validate-ste100.sh`**, which measures any file or file set on
+  demand, backed by `scripts/ste100/rules.cjs`.
+- **Measurement tooling**: `scripts/ste100/metrics.sh`,
+  `scripts/ste100/routability.sh` (an 87-case golden routability gate over agent
+  descriptions), `scripts/ste100/invariants.sh`, and fixtures at
+  `tests/fixtures/ste100/`.
+- **`scripts/ste100/mechanize.cjs` as a MEASUREMENT AND DETECTION harness**, with
+  98 passing tests. Its `--apply` path must never run corpus-wide.
+
+### Changed
+- **138 files rewritten by judgment** across four surfaces: `.claude/rules/**`,
+  `.claude/skills/**`, `agents/*.md` bodies, plus `CLAUDE.md` and `README.md`.
+  Measured result across those 138 files: sentences over 25 words 302 to 6, a 98
+  percent reduction; words 138,077 to 153,098, a rise of 10.9 percent; em dashes
+  1,189 to 254. Nearly every surviving em dash sits in a heading another file
+  cites, in YAML frontmatter, inside a fenced block, or in a sentence a test
+  asserts byte-identically.
+- **The line-based counters `long_lines_20` and `long_lines_25` ROSE.** They are
+  line-based proxies for a sentence-level rule, and they invert when short
+  sentences share one physical line. An audit of the 763 long prose lines found
+  761 of them hold more than one sentence. Only 2 are genuinely one long
+  sentence. Both numbers belong in the record, and the sentence-level rule is
+  the real one.
+- **All 60 agents moved to `metadata.model`**, so the model configuration no
+  longer contradicts the catalog.
+
+### Not changed, deliberately
+- **Agent descriptions.** The 24 descriptions over 300 characters were NOT
+  rewritten. `tests/agents/description-quality.test.js` requires every
+  `metadata.supported_modes` key to appear verbatim in the description. It also
+  requires a literal `NOT for:` boundary, and it pins the length window at 120 to
+  1024 characters, not 300. For multi-mode agents the mode list plus the boundary
+  already exceeds 300 characters. Shortening one means deleting a routing
+  keyword. The `description:` field is the router's selection surface. The
+  87-case golden routability gate ran after every batch and reported `OK 87
+  cases` with zero drift throughout.
+
+### Accepted, protected regressions
+- **`.claude/rules/core/hooks.md` went from 19 to 52 on `long_lines_20`.** A test
+  caps that file at 400 lines, which forces short sentences onto shared lines.
+  `scripts/ci/validate-ste100.sh` counts 10 sentences in that file over the
+  25-word cap. The line proxy overstates the problem, because short sentences
+  share lines. Character wrapping was measured and is strictly worse on both
+  counts. Do not "fix" either number.
+- **`.claude/skills/team/SKILL.md` now sits at 248 lines** against a 250-line cap
+  in `tests/v12/team-context-discipline.test.js`. That is two lines of headroom.
+  Any future edit to that file must cut a line or raise the cap deliberately.
+
+### Coverage
+- 138 of the 1,018 in-scope files were rewritten in this release. Counting
+  earlier batches, 149 files total.
+- `agents/*/resources/`: 10 of the 447 files WERE rewritten, as a side effect of
+  batches that covered their parent agents. The other 437 were not. An earlier
+  draft of this entry claimed that none were; that was false, and it was caught
+  during the pre-push review.
+- `docs/**` was not rewritten. `docs/README.md` carries a one-line factual
+  correction only. `CHANGELOG.md` and `docs/RELEASE_NOTES.md` were not rewritten.
+- Corpus-wide the numbers moved modestly, exactly as that coverage implies: em
+  dashes 6,632 to 5,443, sentences-over-25 proxy 3,472 to 3,166, words 712,547 to
+  731,755.
+- Those surfaces converge incrementally, through the paths-scoped standard, as
+  agents edit them. There was no corpus-wide sweep and there is no corpus-wide
+  claim.
+
+### Fixed
+- **`scripts/ci/validate-counts.sh` mismatches**, so the pinned counts agree with
+  disk again.
+
 ## [12.70.0] - 2026-09-09
 
 Subagent spawning was being denied on clean machines and nobody could see it. The

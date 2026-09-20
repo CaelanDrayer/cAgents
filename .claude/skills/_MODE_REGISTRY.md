@@ -1,11 +1,14 @@
 # cAgents Skill Mode & Flag Registry
 
-Single source of truth for all skill modes, flags, and trigger phrases. Skill
-SKILL.md bodies SHOULD reference this registry rather than redefining modes inline.
-This prevents documentation drift across `team/`, `act/`, and the
-other 2 user skills.
+This file is the single source of truth for every skill mode, every flag, and
+every trigger phrase. A SKILL.md body SHOULD reference this registry, and it
+SHOULD NOT redefine a mode inline. This rule prevents documentation drift
+across `team/`, `act/`, and the other 2 user skills.
 
-**Last regenerated**: 2026-06-18 (v12.20.0 — Agent Modes section added for consolidated catalog; 30 moded agents enumerated across 8 archetypes; added by int-docs wave-10 in team_consolidate-catalog_260617_001)
+**Last regenerated**: 2026-06-18, in v12.20.0. That bump added the Agent Modes
+section for the consolidated catalog. It enumerated 30 moded agents across 8
+archetypes. The int-docs wave-10 of team_consolidate-catalog_260617_001 added
+that section.
 **Reference pattern**: Imbad0202/academic-research-skills MODE_REGISTRY.md (Apache-2.0)
 
 ---
@@ -14,7 +17,7 @@ other 2 user skills.
 
 | Flag / Mode | Type | Description | Trigger phrases |
 |-------------|------|-------------|-----------------|
-| (default) | mode | Standard pipeline — orchestrator → planner → controller → validator | "run X", "fix Y", "implement Z" |
+| (default) | mode | Standard pipeline: orchestrator → planner → controller → validator | "run X", "fix Y", "implement Z" |
 | `--mode standard` | mode | Explicit standard pipeline (same as default) | — |
 | `--mode debug` | mode | Debug-focused execution with verbose logging | flag form only (`--mode debug`; NOT in the Step 1a first-word keyword router) |
 | `--mode review` | mode | Audit + identify issues, no changes (v12.1.2: from absorbed /improve) | "review code", "audit docs" |
@@ -58,9 +61,9 @@ other 2 user skills.
 
 ## /org (REMOVED in v12.2.0 — absorbed into /team strategic mode)
 
-REMOVED. /org was absorbed into `/team` strategic mode in v12.2.0. Cross-domain
-strategic requests now flow through `/team`, which auto-enables strategic mode
-when `router.domain_count >= 2`. Migration mapping:
+REMOVED. `/team` strategic mode absorbed /org in v12.2.0. A cross-domain
+strategic request now flows through `/team`. That skill auto-enables strategic
+mode when `router.domain_count >= 2`. This is the migration mapping:
 
 | Pre-v12.2.0 invocation | v12.2.0 replacement |
 |------------------------|---------------------|
@@ -70,8 +73,8 @@ when `router.domain_count >= 2`. Migration mapping:
 | `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 
-See `## /team` section above for the full flag/mode catalog including
-`--strategic` / `--no-strategic` overrides.
+See the `## /team` section above for the full catalog of flags and modes. That
+catalog includes the `--strategic` override and the `--no-strategic` override.
 
 ## /designer
 
@@ -82,7 +85,7 @@ See `## /team` section above for the full flag/mode catalog including
 | Conceptualize | High-level concepts, mental models, framing; domain + scope selection (10%) |
 | Ideation | 2-4 alternatives, trade-offs, approach selection (20%) |
 | Refinement | Architecture, flows, data model, security, testing (30%) |
-| Specification | User stories, specs, diagrams, checklists, validation — readiness gate: ambiguity < 20% (20%) |
+| Specification | User stories, specs, diagrams, checklists, validation. Readiness gate: ambiguity < 20% (20%) |
 
 | Flag | Description |
 |------|-------------|
@@ -92,12 +95,12 @@ See `## /team` section above for the full flag/mode catalog including
 | `--brief <path>` | Consume a brief to seed design questions |
 | `--iterate <session_id>` | Iterate on a prior design session |
 
-Interactive Q&A throughout. EXEMPT from auto-proceed per CLAUDE.md.
+The session uses interactive Q&A throughout. It is exempt from auto-proceed, as CLAUDE.md states.
 
 ## /improve (REMOVED in v12.1.2 — folded into /act, which was then named `run`)
 
-Removed in v12.1.2. The standalone `/improve` skill was folded into `/act`
-(named `run` at the time) via a keyword router. The three modes and three
+Removed in v12.1.2. A keyword router folded the standalone `/improve` skill
+into `/act`, which carried the name `run` at that time. The three modes and three
 flags are now available under `/act`:
 
 - `/improve --mode review X` -> `/act review X` (or `/act X --mode review`)
@@ -106,9 +109,9 @@ flags are now available under `/act`:
 - `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix` flags
   remain valid on `/act` when an improve mode is active.
 
-See `## /act` section above for the full flag/mode catalog. See
+See the `## /act` section above for the full catalog of flags and modes. See
 `.claude/skills/act/reference/improve-mode.md` for the keyword router
-contract and mode-specific behavior.
+contract, and for the mode-specific behavior.
 
 ## /helper
 
@@ -127,13 +130,13 @@ contract and mode-specific behavior.
 
 ## How to reference this registry from a SKILL.md
 
-In SKILL.md body, instead of redefining a mode/flag inline:
+In a SKILL.md body, do not redefine a mode or a flag inline. Write this instead:
 
 ```markdown
 See `.claude/skills/_MODE_REGISTRY.md § /team` for all flags this skill accepts.
 ```
 
-Or for a specific flag:
+For one specific flag, write this:
 
 ```markdown
 `--waves N` — see `.claude/skills/_MODE_REGISTRY.md § /team` for definition.
@@ -141,22 +144,22 @@ Or for a specific flag:
 
 ## When to update this registry
 
-- Adding a new flag to any user-facing skill: update this file in the same commit
-- Removing or renaming a flag: update + add a deprecation note in the row
-- This file is enforced by `tests/v12/mode-registry-coverage.test.js` (regression test added in v12.0.3)
+- When you add a new flag to a user-facing skill, update this file in the same commit
+- When you remove or rename a flag, update this file and add a deprecation note in the row
+- `tests/v12/mode-registry-coverage.test.js` enforces this file. That regression test was added in v12.0.3
 
 ## Out of scope
 
-- This registry indexes USER-FACING flags only. Internal flags consumed by agents (e.g., orchestrator → planner handoff fields) are documented in `cagents-memory/_system/config/pipeline_config.yaml`.
-- Skill SKILL.md prose for behaviour-defining content (what the skill DOES) stays in each SKILL.md. This registry only catalogs the DIAL (flags/modes/phases).
+- This registry indexes the user-facing flags only. An internal flag that an agent consumes lives in `cagents-memory/_system/config/pipeline_config.yaml`. The orchestrator-to-planner handoff fields are one example.
+- The behaviour-defining prose of a skill stays in its own SKILL.md. That SKILL.md says what the skill does. This registry catalogs the DIAL only, which is the flags, the modes and the phases.
 
 ---
 
 ## Agent Modes
 
-Agent modes enumerate the `metadata.supported_modes` of every consolidated agent (v12.20.0 catalog). Where an old agent was absorbed into a survivor, the survivor exposes its capabilities via `mode=<value>` in the invocation. Agents without modes listed here are single-purpose and have no `mode` flag.
+The agent modes enumerate the `metadata.supported_modes` of every consolidated agent in the v12.20.0 catalog. Sometimes a survivor agent absorbed an old agent. The survivor then exposes the capabilities of that old agent through `mode=<value>` in the invocation. An agent with no mode listed here is single-purpose, and it has no `mode` flag.
 
-**How to use**: Pass `mode=<value>` in the Agent invocation prompt, or the planner/controller sets `metadata.mode` based on the absorbed-agent name from routing aliases.
+**How to use**: pass `mode=<value>` in the Agent invocation prompt. The planner or the controller can set `metadata.mode` instead. It derives that value from the absorbed-agent name in the routing aliases.
 
 ### Developer archetype (8 agents)
 
@@ -171,16 +174,17 @@ Agent modes enumerate the `metadata.supported_modes` of every consolidated agent
 | `security-engineer` | `coordinate` (security-lead), `owasp-audit` (security-owasp) |
 | `qa-lead` | `code-review` (code-reviewer), `standards-audit` (code-standards-auditor), `a11y` (accessibility-checker), `playwright` (playwright-test-engineer) |
 
-### Operator archetype (7 agents)
+### Operator archetype (8 agents)
 
 | Survivor agent | Modes (absorbed agents → mode) |
 |---|---|
-| `operations-manager` | `agile` (agile-coach), `project` (program-project-manager), `procurement` (procurement-specialist), `supply-chain` (supply-chain-manager), `quality-mgmt` (quality-manager) — REC-26 (v12.56.0): `scribe`→technical-writer, `finance`→cfo/data-scientist |
+| `operations-manager` | `agile` (agile-coach), `project` (program-project-manager), `procurement` (procurement-specialist), `supply-chain` (supply-chain-manager), `quality-mgmt` (quality-manager). REC-26 (v12.56.0): `scribe`→technical-writer, `finance`→cfo/data-scientist |
 | `marketing-strategist` | `brand` (brand-manager), `creative-direction` (creative-director), `growth` (growth-marketer), `ops` (marketing-ops-specialist), `partnership` (partnership-marketing-manager) |
 | `marketing-analyst` | `seo` (seo-specialist) |
 | `sales-strategist` | `rep` (sales-rep), `enablement` (sales-enablement-specialist), `revops` (revenue-operations-manager) |
 | `hr-manager` | `hrbp` (hr-business-partner), `recruit` (talent-recruiter), `learning` (learning-specialist), `onboarding` (onboarding-specialist) |
 | `support-director` | `agent` (support-agent), `support-ops` (support-operations-manager), `escalation` (escalation-manager), `customer-success` (customer-success-manager), `account` (account-manager), `advocacy` (customer-advocacy-manager), `relationship` (relationship-manager), `community` (community-manager) |
+| `customer-success-manager` | `onboarding`, `adoption`, `retention` (native modes, no absorbed agents) |
 | `technical-writer` | — (no absorbed modes) |
 
 ### Advisor archetype (4 agents)
@@ -209,13 +213,14 @@ Agent modes enumerate the `metadata.supported_modes` of every consolidated agent
 | `visual-artist` | `concept` (concept-artist), `photography` (photographer) |
 | `composer` | `scoring`, `adaptive`, `orchestration` (absorbed music-composer; REC-27 split from film-director, v12.55.0) |
 
-### Writer archetype (3 agents)
+### Writer archetype (4 agents)
 
 | Survivor agent | Modes (absorbed agents → mode) |
 |---|---|
 | `narrative-director` | `architecture` (story-architect), `reading-experience` (narrative-designer), `plot` (plot-developer) |
 | `editor` | `copy` (copywriter) |
 | `worldbuilder` | `character` (character-designer), `dialogue` (dialogue-specialist) |
+| `ai-writing-editor` | `detect` (ai-writing-detector), `rewrite` (ai-writing-rewriter), `both` (default one-pass gate) |
 
 ### Strategist archetype (3 agents)
 
@@ -246,4 +251,7 @@ Agent modes enumerate the `metadata.supported_modes` of every consolidated agent
 | `validator` | — |
 | `wave-reviewer` | — |
 
-> **Note**: Leadership archetype agents (ceo, cto, cfo, cmo, coo, chro, cco, cro, cpo) have no absorbed modes — they are all single-purpose C-suite agents used directly by `/team` strategic mode. CSO, CLO, and VP-Engineering were removed in v12.20.0.
+> The leadership archetype agents have no absorbed modes. They are ceo, cto,
+> cfo, cmo, coo, chro, cco, cro and cpo. Each one is a single-purpose C-suite
+> agent, and `/team` strategic mode uses it directly. The v12.20.0 bump removed
+> CSO, CLO and VP-Engineering.

@@ -1,26 +1,30 @@
 # Subagent Spawning Template
 
-(File retained as `teammate-spawning-template.md` for @-ref/back-compat.) Full subagent spawn prompt template, self-registration block, and isolation/worktree details for /team.
+This file keeps the name `teammate-spawning-template.md` for back-compat with each @-reference. It gives the full spawn prompt template for a subagent. It also gives the self-registration block, and the details of the isolation worktree for /team.
 
 ## Spawn Mechanism: Concurrent Agent Waves (DEFAULT)
 
-Teams are implicit since Claude Code v2.1.178 — `TeamCreate`/`TeamDelete` were removed; there is nothing to create and nothing to register a team with. The DEFAULT spawn mechanism is: for each wave K, issue ALL wave-K subagent `Agent()` calls as CONCURRENT tool uses in ONE assistant message, each with `run_in_background: false`. Synchronous spawning (`run_in_background: false`) is required because subagents are background-by-default since v2.1.198 — it is what makes the lead receive all wave results together before validating GATE-K. On the default path a subagent needs NO `name` and NO `team_name` field; those are addressing fields for the experimental named-teammate path below. Each wave subagent can itself spawn its own subagents (depth 5) for any specialty it needs. This path works in every harness.
+Teams are implicit from Claude Code v2.1.178. That release removed `TeamCreate` and `TeamDelete`. There is nothing to create, and there is nothing to register a team with. The DEFAULT spawn mechanism works one wave at a time. For each wave K, issue ALL of the wave-K subagent `Agent()` calls as CONCURRENT tool uses in ONE assistant message. Give each call `run_in_background: false`.
+
+A synchronous spawn is necessary, because a subagent is background-by-default from v2.1.198. The synchronous spawn is what makes the lead receive all of the wave results together, before it validates GATE-K. On the default path a subagent needs NO `name` field and NO `team_name` field. Those are addressing fields for the experimental named-teammate path below. Each wave subagent can spawn its own subagents to depth 5, for any specialty that it needs. This path works in every harness.
 
 ### EXPERIMENTAL named-teammate option (OPTIONAL)
 
-Only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive agent teams, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })` and coordinate via `SendMessage({to: name})` (auto-resumes a stopped teammate by name, v2.1.77). Any `team_name` argument is accepted-but-ignored. `teammateMode` (default `in-process` since v2.1.179; or `tmux`/`iterm2`) controls display; panes require tmux/iTerm2 and are experimental-only. If the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path above.
+Two conditions open this option. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set, AND the harness must support interactive agent teams. You MAY then spawn named background teammates with `Agent({ name, run_in_background: true })`. Coordinate them with `SendMessage({to: name})`. From v2.1.77, that call auto-resumes a stopped teammate by its name. Any `team_name` argument is accepted, and then it is ignored.
+
+`teammateMode` controls the display. Its default is `in-process` from v2.1.179, and the other values are `tmux` and `iterm2`. A split pane needs tmux or iTerm2, and it belongs to the experimental path only. If the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path above.
 
 ## Disk-Handoff Spawn Pattern (Preferred, v12.1.0+)
 
-To minimize per-spawn token cost in the lead's context, write a per-wave `spawn_brief.md` to disk ONCE per wave and pass each subagent a short pointer prompt. See @spawn-brief-schema.md for the brief schema, short prompt template, and token savings (~73% on a 5-wave × 5-subagent run).
+The per-spawn token cost sits in the context of the lead. To make that cost small, write a `spawn_brief.md` file to disk ONCE for each wave. Then give each subagent a short pointer prompt. For the brief schema and the short prompt template, see @spawn-brief-schema.md. That file also gives the token savings. The savings are about 73 percent on a run of 5 waves with 5 subagents in each wave.
 
-When using the disk-handoff pattern, the lead writes `${SESSION_DIR}/outputs/wave-{K}/spawn_brief.md` before spawning the wave's subagents, then spawns each subagent with a ~80-token prompt that points to the brief plus the subagent's WI row in `work_items_wave_{K}.yaml`.
+In the disk-handoff pattern, the lead first writes `${SESSION_DIR}/outputs/wave-{K}/spawn_brief.md`. It does this before it spawns the subagents of the wave. It then spawns each subagent with a prompt of about 80 tokens. That prompt points to the brief, and it points to the WI row of the subagent in `work_items_wave_{K}.yaml`.
 
-The inline template below is preserved for back-compat and for cases where a wave has only 1-2 subagents (where the brief overhead exceeds savings).
+The inline template below stays for back-compat. It also stays for a wave with only 1 subagent or 2 subagents. In that case the overhead of the brief is larger than the savings.
 
 ## Full Subagent Spawn Block (Inline Pattern)
 
-On the DEFAULT concurrent-Agent path, keep `run_in_background: false` and OMIT the `name` / `team_name` fields (they are addressing fields for the EXPERIMENTAL named-teammate path only). Issue all of a wave's spawn calls as concurrent tool uses in one message.
+On the DEFAULT concurrent-Agent path, keep `run_in_background: false`. OMIT the `name` field and the `team_name` field. They are addressing fields for the EXPERIMENTAL named-teammate path only. Issue all of the spawn calls of a wave as concurrent tool uses in one message.
 
 ```
 Agent({
@@ -98,4 +102,4 @@ SESSION_ID: {SESSION_ID}'
 
 ## Worktree Isolation
 
-Add `isolation: "worktree"` to the Agent call when subagents modify overlapping files. See `reference/wave-execution-detail.md` § Worktree Isolation for details.
+If two subagents change the same files, add `isolation: "worktree"` to the Agent call. For the details, see `reference/wave-execution-detail.md` § Worktree Isolation.

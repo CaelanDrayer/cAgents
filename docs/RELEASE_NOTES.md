@@ -1,10 +1,103 @@
 # cAgents Release Notes
 
-**Current Version**: 12.70.0
-**Release Date**: September 9, 2026
+**Current Version**: 12.71.0
+**Release Date**: September 20, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.71.0 - September 20, 2026 (STE-100 writing standard; judgment rewrite of the load-bearing prose surfaces)
+
+This release adds a writing standard, then applies it by hand to the prose
+surfaces that carry the most weight.
+
+**The standard.** `.claude/rules/quality/ste100-technical-writing.md` derives
+from ASD-STE100 Simplified Technical English. A word-choice table sits at
+`.claude/rules/quality/resources/ste100-word-choices.md`. Ten mandates cover
+short sentences (20 words procedural, 25 descriptive), active voice and
+imperative, simple tenses, one term per concept, and flat structure. They also
+forbid em dashes in repository prose. The last mandate is the load-bearing one:
+shorten by simplifying, never by deleting.
+
+**How it is enforced.** The standard carries `paths:` frontmatter covering
+`agents/**`, `.claude/rules/**`, `.claude/skills/**`, `.claude/hooks/**`,
+`docs/**`, `tests/**`, `CLAUDE.md` and `README.md`. Claude Code loads it
+whenever an agent edits those paths. That is the enforcement mechanism. Every
+future edit is written to the standard by the agent making it.
+
+**Tooling.** `scripts/ci/validate-ste100.sh` measures any file or file set on
+demand, backed by `scripts/ste100/rules.cjs`. Measurement tooling adds
+`scripts/ste100/metrics.sh`, `scripts/ste100/routability.sh` (an 87-case golden
+routability gate over agent descriptions), `scripts/ste100/invariants.sh`, and
+fixtures at `tests/fixtures/ste100/`.
+
+**The rewrite.** This release rewrites 138 files by judgment across four
+surfaces: `.claude/rules/**`, `.claude/skills/**`, `agents/*.md` bodies, plus
+`CLAUDE.md` and `README.md`. Measured result across those 138 files:
+
+- Sentences over 25 words: **302 to 6**, a 98 percent reduction, measured at the
+  sentence level.
+- Words: **138,077 to 153,098**, a rise of 10.9 percent. That rise is the
+  intended signature. The standard forbids shortening by deletion, so simplified
+  prose gets longer, not shorter.
+- Em dashes: **1,189 to 254**. Nearly every survivor sits in a heading another
+  file cites, in YAML frontmatter, inside a fenced block, or in a sentence a
+  test asserts byte-identically.
+- The line-based counters `long_lines_20` and `long_lines_25` ROSE. They are
+  line-based proxies for a sentence-level rule, and they invert when short
+  sentences share one physical line. An audit of the 763 long prose lines found
+  761 of them hold more than one sentence. Only 2 are genuinely one long
+  sentence. Both numbers belong in the record, and the sentence-level rule is
+  the real one.
+
+**Two accepted, protected regressions.** `.claude/rules/core/hooks.md` went from
+19 to 52 on `long_lines_20`. A test caps that file at 400 lines, which forces
+short sentences onto shared lines. Its sentence-level compliance is zero
+sentences over 25 words. Character wrapping was measured and is strictly worse
+on both counts. Do not "fix" either number. `.claude/skills/team/SKILL.md` now
+sits at 249 lines against a 250-line cap in
+`tests/v12/team-context-discipline.test.js`. That is one line of headroom. Any
+future edit to that file must cut a line or raise the cap deliberately.
+
+**Agent descriptions are deliberately unchanged.** The 24 descriptions over 300
+characters were NOT rewritten. `tests/agents/description-quality.test.js`
+requires every `metadata.supported_modes` key to appear verbatim in the
+description. It also requires a literal `NOT for:` boundary, and it pins the
+length window at 120 to 1024 characters, not 300. For multi-mode agents the mode
+list plus the boundary already exceeds 300 characters. Shortening one means
+deleting a routing keyword. The `description:` field is the router's selection
+surface. The 87-case golden routability gate ran after every batch and reported
+`OK 87 cases` with zero drift throughout.
+
+**No mechanical transform shipped.** A deterministic rewrite script was built,
+reviewed five times by five independent methods, narrowed twice, and then
+abandoned. The count of NEW blocking defect classes found per independent review
+method ran 17, then 5, then 4, then 14, then 12. It never converged, so the
+remaining defect population was unknown rather than small. The final review
+killed even the two transforms that two earlier methods had certified safe. It
+found 3,386 manufactured comma splices and a diff that failed to apply on 138 of
+718 files. It also found 10 broken test assertions and one broken CI gate. The
+decisive defect class needs no words changed at all. A counted framework asserts
+its count through punctuation, so "Porter's Five Forces — a, b, c, d, e" becomes
+six items and the sentence turns FALSE. No word-level or structural check can
+catch that. A green structural guard certifies structure and is blind to
+meaning. The hardened `invariants.sh` returned 1018 of 1018 passing while 152
+meaning inversions were live in that same corpus.
+`scripts/ste100/mechanize.cjs` is kept as a MEASUREMENT AND DETECTION harness
+with 98 passing tests. Its `--apply` path must never run corpus-wide.
+
+**Coverage.** 138 of the 1,018 in-scope files were rewritten in this release.
+Counting earlier batches, 149 files total. `agents/*/resources/` (447 files) and
+`docs/**` were NOT rewritten. Neither was `CHANGELOG.md` or
+`docs/RELEASE_NOTES.md`. Corpus-wide the numbers moved modestly, exactly as that
+coverage implies: em dashes 6,632 to 5,443, sentences-over-25 proxy 3,472 to
+3,166, words 712,547 to 731,755. Those surfaces converge incrementally, through
+the paths-scoped standard, as agents edit them. There was no corpus-wide sweep
+and there is no corpus-wide claim.
+
+**Also in this release.** `scripts/ci/validate-counts.sh` mismatches are fixed.
+All 60 agents moved to `metadata.model`, so the model configuration no longer
+contradicts the catalog.
 
 ## V12.70.0 — September 9, 2026 (subagent spawning unblocked; denials made visible)
 
@@ -2325,5 +2418,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.70.0
+**Current Version**: 12.71.0
 **Release Date**: August 21, 2026

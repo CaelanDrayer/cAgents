@@ -6,9 +6,13 @@ paths:
 
 # Completion Validation Framework
 
-End-to-end traceability from "what is done" definition to completion verification.
+This framework gives end-to-end traceability. It runs from the definition of "what is done" to the verification of completion.
 
-**Canonical validation-number statement**: the validation surface is three honest layers — **5 enforced** (hook-enforced cross-cutting checks) + **advisory-by-convention** (controller pre-execution 7 + mid-execution 5; executor self-validation 5, verifier hook deferred; two-stage review — real guidance, NOT hook-enforced) + **24 aspirational-deferred** (Phases 1-3 in `docs/FUTURE_VALIDATION_FRAMEWORK.md`, which does NOT auto-load into agent context). See the single legible **Validation Layers** map in `@.claude/rules/quality/completion.md`. *(HISTORICAL: the original framework was framed as 29 = those same 5 active + 24 aspirational; the 15→5 and 29→5 churn is history, not the live count.)*
+**Canonical validation-number statement**: the validation surface has three honest layers. The first layer is **5 enforced** hook-enforced cross-cutting checks. The second layer is **advisory-by-convention**. It holds the controller pre-execution 7 and mid-execution 5, the executor self-validation 5 with its verifier hook deferred, and the two-stage review. Every item in the second layer is real guidance, and it is NOT hook-enforced.
+
+The third layer is **24 aspirational-deferred** checks. Phases 1-3 in `docs/FUTURE_VALIDATION_FRAMEWORK.md` hold them, and that file does NOT auto-load into agent context. See the single legible **Validation Layers** map in `@.claude/rules/quality/completion.md`.
+
+*(HISTORICAL: the original framework was framed as 29 = those same 5 active + 24 aspirational. The 15→5 and 29→5 churn is history, not the live count.)*
 
 ## The Validation Chain
 
@@ -38,7 +42,7 @@ work_item:
       evidence_type: file_exists
 ```
 
-**Key Addition**: `verification_method` tells validator HOW to check.
+**Key Addition**: `verification_method` tells the validator HOW to check the criterion.
 
 ### Plan Creates Success Criteria
 
@@ -87,7 +91,7 @@ work_item_status:
         evidence: null  # Not yet completed
 ```
 
-**Key Addition**: Structured evidence capture during coordination.
+**Key Addition**: the controller captures structured evidence during coordination.
 
 ## Phase 3: Verify Complete (Validation)
 
@@ -215,15 +219,15 @@ If some work items incomplete:
 
 ## Key Principles
 
-1. **Define verification at planning** - Don't wait until validation to figure out how to verify
-2. **Capture evidence during execution** - Controllers record evidence as work completes
-3. **Trace everything** - Every objective links to work items, every criterion has verification method
-4. **Fail fast** - If evidence is missing, fail early in validation
-5. **Be specific** - Evidence must be concrete (file paths, test outputs, metrics)
+1. **Define verification at planning** - Do not wait until validation to work out how to check a criterion.
+2. **Capture evidence during execution** - Controllers record the evidence as each work item completes.
+3. **Trace everything** - Every objective links to work items, and every criterion has a verification method.
+4. **Fail fast** - If the evidence is missing, fail early in validation.
+5. **Be specific** - Evidence must be concrete: a file path, a test output, or a metric.
 
 ## Workflow YAML Schema Validation (V10.23.0)
 
-Every workflow YAML file MUST conform to its schema. Five schema files are validated:
+Every workflow YAML file MUST conform to its schema. The list below gives the five schema files and their required fields:
 
 **plan.yaml**: plan_id, tier (2-4), domain, mission (len>10), objectives (>=1), controller_assignment (primary field required), success_criteria (>=1 each with verification_method)
 
@@ -235,7 +239,7 @@ Every workflow YAML file MUST conform to its schema. Five schema files are valid
 
 **status.yaml**: pipeline_state, revision_round (0-3), validation_cycles, created_at (ISO 8601), state_history (>=1 each with state + entered_at)
 
-> **Revision-round range**: `0-3` is canonical — the outer FAIL/REVISE pipeline loop is capped at **3 total cycles** (`revision.max_cycles: 3` in `pipeline_config.yaml`, lowered from 5 in v12.0.0; after 3, escalate to user HITL). This is distinct from the controller's **2** internal executor-reviewer rounds (`controller_revision.max_internal_rounds: 2`, lowered from 3 in LP-27). Any `(0-5)` range elsewhere is stale and should read `(0-3)`.
+> **Revision-round range**: `0-3` is canonical. The outer FAIL/REVISE pipeline loop has a cap of **3 total cycles**. `pipeline_config.yaml` sets that cap with `revision.max_cycles: 3`, lowered from 5 in v12.0.0. After 3 cycles, escalate to user HITL. This cap is distinct from the controller's **2** internal executor-reviewer rounds (`controller_revision.max_internal_rounds: 2`, lowered from 3 in LP-27). Any `(0-5)` range elsewhere is stale and should read `(0-3)`.
 
 The schema summaries above document the required fields for each workflow YAML file.
 

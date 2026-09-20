@@ -35,19 +35,20 @@ invocation where X is the appropriate keyword. There is no separate
 2. **Override rules**: An explicit `--mode <value>` flag overrides the
    inferred mode. Use this in /helper recommendations only when the user
    has already typed a keyword but wants a different mode.
-3. **Non-first-word safety**: Keywords matched only on the first token.
-   `/act check the audit logs` does NOT trigger review mode — `check` is
-   the first token. /helper recommendations should always lead with the
-   keyword.
+3. **Non-first-word safety**: Keywords match only on the first token.
+   `/act check the audit logs` does NOT trigger review mode, because
+   `check` is the first token. /helper recommendations should always
+   lead with the keyword.
 4. **Pre-v12.1.2 surfaces**: Any `/improve --mode <X>` invocation seen
    in user history or old docs maps to `/act <X>`. /helper should
    translate when surfacing examples.
 
 ### Canonical Reference
 
-`@.claude/skills/act/reference/improve-mode.md` — full keyword-router
-contract, override rules, stripping examples, and mode-specific
-controller behavior. /helper should defer to it on any contract question.
+`@.claude/skills/act/reference/improve-mode.md` holds the full
+keyword-router contract, the override rules, the stripping examples, and
+the mode-specific controller behavior. /helper should defer to it on any
+contract question.
 
 ## Weighted Scoring Algorithm
 
@@ -152,7 +153,7 @@ When the user provides a natural language description of what they want to do, c
 - "Fix the login bug" -> `/act Fix the login bug`
 - "Resolve the CORS error" -> `/act Resolve the CORS error`
 
-**Note**: For bugs with known fixes, use `/act`. For bugs that have resisted 2+ fixes or have unclear root cause, use `/act --mode debug` (the V11 replacement for the removed `/debug` skill).
+**Note**: For bugs with known fixes, use `/act`. For bugs that have resisted 2+ fixes, use `/act --mode debug`. If the root cause is unclear, use the same command. `/act --mode debug` is the V11 replacement for the removed `/debug` skill.
 
 ### Debug / Investigate Intent -> /act --mode debug
 
