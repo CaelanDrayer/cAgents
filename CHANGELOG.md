@@ -10,6 +10,20 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.72.1] - 2026-09-24
+
+### Fixed
+- `.claude-plugin/plugin.json`'s `hooks` field pointed straight at the full
+  `.claude/settings.json`. Claude Code's plugin hooks manifest schema
+  recognizes only `description` and `hooks` at the top level, so every
+  session logged `hooks.json: unknown keys "$comment", "displayOrigin",
+  "trustProjectMdFiles", "teammateMode", "$comment_teammateMode" and 3 more
+  ignored`. The hooks still ran; only the warning was spurious. New
+  `scripts/sync-plugin-hooks.cjs` generates `.claude/hooks.json`, a wrapper
+  carrying only the `hooks` block, from `.claude/settings.json` (which stays
+  the single source of truth for hook registration). `plugin.json` now points
+  there instead.
+
 ## [12.72.0] - 2026-09-24
 
 ### Added

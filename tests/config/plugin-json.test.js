@@ -36,9 +36,30 @@ describe('root plugin.json', () => {
     expect(plugin.skills).toBe('./.claude/skills/');
   });
 
-  it('should reference hooks settings', () => {
+  it('should reference the generated hooks.json wrapper, not settings.json directly', () => {
+    // .claude/settings.json also carries project-settings keys (env, permissions,
+    // worktree, teammateMode, ...) that Claude Code's plugin hooks-manifest schema
+    // does not recognize. Pointing "hooks" straight at it made every session log
+    // `hooks.json: unknown keys "..." ignored`. .claude/hooks.json is a generated
+    // wrapper carrying ONLY {description, hooks} — see scripts/sync-plugin-hooks.cjs.
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect(plugin.hooks).toBe('./.claude/settings.json');
+    expect(plugin.hooks).toBe('./.claude/hooks.json');
+  });
+
+  it('.claude/hooks.json exists, uses wrapper format, and matches settings.json hooks (no drift)', () => {
+    const wrapperPath = join(PROJECT_ROOT, '.claude', 'hooks.json');
+    expect(existsSync(wrapperPath)).toBe(true);
+
+    const wrapper = JSON.parse(readFileSync(wrapperPath, 'utf8'));
+    // Wrapper format per Claude Code's plugin hooks schema: only "description"
+    // and "hooks" are recognized top-level keys.
+    expect(Object.keys(wrapper).sort()).toEqual(['description', 'hooks']);
+
+    const settings = loadPluginJson('.claude/settings.json');
+    // .claude/settings.json stays the single source of truth for hook
+    // registration (scripts/lint-hooks.cjs parses it directly). The wrapper is
+    // generated from it via scripts/sync-plugin-hooks.cjs and must never drift.
+    expect(wrapper.hooks).toEqual(settings.hooks);
   });
 
   it('omits the agents array — discovery is the flat agents/ scan (v12.68.0)', () => {

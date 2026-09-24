@@ -3,7 +3,7 @@
 **Research Date**: 2026-01-21
 **Purpose**: Document correct hook specification to fix "hooks: Invalid input" validation error
 
-> **LEGACY DOCUMENT (Pre-V9.5)**: This document was written for the shell-based hook system used in V7.x-V9.4. As of V9.5, cAgents uses a **CJS-only hook architecture** with all hooks in `.claude/hooks/*.cjs` and the `createHook()` factory pattern. Hook registration is in `.claude/settings.json`, not `hooks/hooks.json`. The shell hook examples below (e.g., `hooks/session/on-session-start.sh`) no longer apply. See `.claude/rules/core/hooks.md` for the current V9.5+ hook system documentation.
+> **LEGACY DOCUMENT (Pre-V9.5)**: This document was written for the shell-based hook system used in V7.x-V9.4. As of V9.5, cAgents uses a **CJS-only hook architecture** with all hooks in `.claude/hooks/*.cjs` and the `createHook()` factory pattern. Hook registration lives in `.claude/settings.json`, not `hooks/hooks.json`. The shell hook examples below (e.g., `hooks/session/on-session-start.sh`) no longer apply. See `.claude/rules/core/hooks.md` for the current V9.5+ hook system documentation. **§ 2 and § 13 stayed accurate, and a later fix applied them**: `.claude-plugin/plugin.json`'s `hooks` field used to point straight at `.claude/settings.json`, which broke the wrapper-format rule of § 2 (a hooks manifest recognizes only `description` and `hooks`, not `env`/`permissions`/`worktree`/...) and logged an `unknown keys ... ignored` warning every session. `scripts/sync-plugin-hooks.cjs` now generates a `.claude/hooks.json` wrapper from the `hooks` block of `.claude/settings.json`, and `plugin.json` points there instead.
 
 ---
 
