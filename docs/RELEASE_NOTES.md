@@ -1,10 +1,28 @@
 # cAgents Release Notes
 
-**Current Version**: 12.72.0
-**Release Date**: September 20, 2026
+**Current Version**: 12.72.1
+**Release Date**: September 24, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.72.1 - September 24, 2026 (fix spurious plugin hooks.json warning)
+
+`.claude-plugin/plugin.json`'s `hooks` field pointed straight at the full
+`.claude/settings.json`. Claude Code's plugin hooks manifest schema recognizes
+only `description` and `hooks` at the top level, so `.claude/settings.json`'s
+project-settings keys (`env`, `permissions`, `worktree`, `teammateMode`,
+`displayOrigin`, `trustProjectMdFiles`, the `$comment` fields) tripped
+`hooks.json: unknown keys "..." ignored` on every session of every project
+with cAgents installed. The hooks themselves still ran; only the warning was
+spurious.
+
+New `scripts/sync-plugin-hooks.cjs` generates `.claude/hooks.json`, a wrapper
+carrying only `{description, hooks}`, from the `hooks` block of
+`.claude/settings.json`, which stays the single source of truth for hook
+registration. `plugin.json` now points at the generated wrapper instead. A new
+regression test in `tests/config/plugin-json.test.js` pins the wrapper against
+drift from its source.
 
 ## V12.71.0 - September 20, 2026 (STE-100 writing standard; judgment rewrite of the load-bearing prose surfaces)
 
@@ -2418,5 +2436,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.72.0
+**Current Version**: 12.72.1
 **Release Date**: August 21, 2026

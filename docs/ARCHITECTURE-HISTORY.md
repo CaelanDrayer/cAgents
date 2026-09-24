@@ -101,7 +101,16 @@ manifest pointer; the extended feature list lives here.
 **Key Manifest Fields**:
 - `agents`: Array of SKILL.md paths (60 agents registered)
 - `skills`: Path to skills directory (`.claude/skills/`)
-- `hooks`: Path to settings.json for hook registration
+- `hooks`: Path to `.claude/hooks.json`, a generated wrapper (`{description, hooks}`)
+  carrying only the `hooks` block of `.claude/settings.json`. Claude Code's
+  plugin hooks manifest schema recognizes only `description` and `hooks` at
+  the top level. Earlier versions pointed this field straight at the full
+  `.claude/settings.json`, which also carries project-settings keys (`env`,
+  `permissions`, `worktree`, `teammateMode`, ...); the plugin loader logged
+  `hooks.json: unknown keys "..." ignored` on every session as a result (the
+  hooks still ran; only the warning was spurious). `.claude/settings.json`
+  stays the single source of truth for hook registration — regenerate the
+  wrapper with `node scripts/sync-plugin-hooks.cjs` after editing it.
 - `settings.json`: Default settings applied when plugin loads (under `agent` key for subagent defaults)
 
 **Plugin Features** (Claude Code):
