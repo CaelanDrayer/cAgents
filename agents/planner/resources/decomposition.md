@@ -52,11 +52,11 @@ Before decomposing, classify how abstract the request is:
 ## Decomposition Framework — The 5 Steps
 
 1. **Request Analysis** - Extract core intent, identify request type
-2. **Component Extraction** - DISCOVER, DESIGN, CREATE, VALIDATE, DOCUMENT
-   - **DISCOVER** (formerly UNDERSTAND): discover requirements, context, and constraints for any domain
+2. **Component Extraction** - UNDERSTAND, DESIGN, BUILD, VERIFY, DOCUMENT
+   - **UNDERSTAND**: discover requirements, context, and constraints for any domain
    - **DESIGN**: plan and architect the approach (domain-neutral)
-   - **CREATE** (formerly BUILD): produce the primary deliverable — code, content, policy, analysis, or any artifact
-   - **VALIDATE** (formerly VERIFY): verify the deliverable meets acceptance criteria (tests, reviews, audits, compliance checks)
+   - **BUILD**: produce the primary deliverable, such as code, content, policy, analysis, or any artifact
+   - **VERIFY**: verify the deliverable meets acceptance criteria (tests, reviews, audits, compliance checks)
    - **DOCUMENT**: capture knowledge for future reference
 3. **Implicit Discovery** - What didn't user say but needs?
 4. **Dependency Mapping** - What depends on what?
@@ -66,6 +66,7 @@ See also:
 - `@resources/component-extraction.md` for the 5-type component breakdown.
 - `@resources/dependency-mapping.md` for dependency graph creation.
 - `@resources/work-item-generation.md` for work item format and quality.
+- `@resources/vertical-slice-extraction.md` for the slice-detection algorithm that runs as the tail of step 5.
 - `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework that powers step 3.
 
 ## Critical Rules

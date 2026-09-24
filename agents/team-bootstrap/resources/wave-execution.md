@@ -50,7 +50,7 @@ TaskUpdate({ taskId: "6", addBlockedBy: ["4", "5"] })
 
 ```
 for each wave in template.waves:
-  if wave.type == "bootstrap" or wave.type == "integration":
+  if wave.execution_style == "bootstrap" or wave.execution_style == "integration":
     # Orchestrator executes via /act sequentially
     for each work_item tagged with wave:
       Execute via /act (orchestrator handles directly)
@@ -59,7 +59,7 @@ for each wave in template.waves:
     Verify gate criteria
     Mark GATE-{wave.id} as completed
 
-  if wave.type == "parallel":
+  if wave.execution_style == "parallel":
     # Teams execute in parallel via teammates
     # Tasks already created with GATE dependency
     # Teammates claim and execute via /act

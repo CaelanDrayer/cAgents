@@ -82,6 +82,7 @@ See `.claude/rules/quality/implicit-discovery.md` for the Unsaid Framework.
 3. **Implicit Discovery**: what did the user not say, but still need?
 4. **Dependency Mapping**: what depends on what?
 5. **Work Item Generation**: concrete tasks with acceptance criteria
+See @planner/resources/vertical-slice-extraction.md for the tail action that extracts a vertical slice.
 
 ## Pre-emptive Consultation (LP-21, v12.7.x)
 
@@ -195,6 +196,7 @@ See @planner/resources/prompt-templates.md for the optional delegation-prompt cr
 See @planner/resources/component-extraction.md for 5-type component breakdown.
 See @planner/resources/work-item-generation.md for work item format and quality.
 See @planner/resources/dependency-mapping.md for dependency graph creation.
+See @planner/resources/vertical-slice-extraction.md for the slice-detection algorithm and the Wave-1 rule.
 
 ## Plan Output Format
 

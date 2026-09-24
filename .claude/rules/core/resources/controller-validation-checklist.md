@@ -144,7 +144,7 @@ cannot be computed, set `status: partial`.
 
 ## Mid-Execution Validation Checklist (5 checks)
 
-The controller runs these checks after every 3 completed work items.
+The controller runs these checks after every 3 completed work items, or immediately when the last vertical-slice-tagged item completes, whichever comes first. An item counts as completed only after its bounded reviewer loop resolves, not merely after its executor pass finishes.
 
 ### Checkpoint 1: Evidence Capture Verification
 

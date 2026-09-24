@@ -765,6 +765,7 @@ quality gating, and they give more coordination points.
 | `testing` | Wave subagents (parallel) | QA, security, validation |
 | `documentation` | Wave subagents (parallel) | Docs, cleanup, optimization |
 | `integration` | Lead (sequential) | Merge, final testing, polish |
+| `vertical-slice` | Wave subagents (parallel) | Tracer-bullet: minimal chain covering every category the request touches |
 
 Not every request needs every wave type. Prefer MORE granular waves over fewer
 consolidated ones. If the work items span two or more concerns, such as research

@@ -97,7 +97,7 @@ for each work_item in decomposition:
       work_item.wave = wave.id
       break
 
-  if wave.type == "parallel":
+  if wave.execution_style == "parallel":
     for each team in wave.teams:
       if any(tag in work_item.tags for tag in team_def.work_item_tags):
         work_item.team = team

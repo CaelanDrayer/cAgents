@@ -18,6 +18,7 @@ work_item_template:
     - work_item_id
   estimated_effort: small | medium | large
   skills_required: [skill_1, skill_2]
+  tags: [tag_1, tag_2]  # optional, e.g. [vertical-slice]
 ```
 
 ## Work Item Examples

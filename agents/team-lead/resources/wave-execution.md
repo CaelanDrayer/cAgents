@@ -8,7 +8,7 @@ When the team manifest includes a template with waves, the lead coordinates wave
 
 ```
 for each wave in manifest.template.waves:
-  if wave.type == "bootstrap" or "integration":
+  if wave.execution_style == "bootstrap" or "integration":
     # Execute foundation/integration items sequentially via /act
     for each task tagged with this wave:
       Execute via /act (lead coordinates directly)
@@ -16,7 +16,7 @@ for each wave in manifest.template.waves:
     Verify gate criteria from template
     Mark GATE-{wave.id} as completed (TaskUpdate)
 
-  if wave.type == "parallel":
+  if wave.execution_style == "parallel":
     # Teammates claim and execute in parallel
     # Tasks already blocked by GATE-{wave.id - 1}
     # Monitor via TaskList until all wave tasks complete

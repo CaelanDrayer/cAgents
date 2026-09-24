@@ -41,6 +41,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
 const PLANNER_SKILL = path.join(REPO_ROOT, 'agents', 'planner.md');
 const PER_WAVE_DECOMP_DOC = path.join(REPO_ROOT, '.claude', 'skills', 'team', 'reference', 'per-wave-decomposition.md');
+const PER_WAVE_EMISSION_DOC = path.join(REPO_ROOT, 'agents', 'planner', 'resources', 'per-wave-emission.md');
 
 describe('FU-2 (v12.1.1): universal-planner per-wave emission contract', () => {
   describe('Invariant 1 — planner SKILL.md documents the dual-emission contract', () => {
@@ -177,11 +178,12 @@ waves:
     work_item_file: "workflow/work_items_wave_0.yaml"
     expected_duration_min: 5
   - wave: 1
-    type: implementation
+    type: vertical-slice
     summary: "Implement and test endpoint"
     work_item_ids: [WI-2, WI-3]
     work_item_file: "workflow/work_items_wave_1.yaml"
     expected_duration_min: 15
+vertical_slice_ids: [WI-2, WI-3]
 dependency_graph:
   critical_path: [WI-1, WI-2, WI-3]
   cross_wave_dependencies:
@@ -248,6 +250,21 @@ work_items:
       expect(meta).toMatch(/total_work_items:\s*3/);
     });
 
+    it('work_meta.yaml tags wave 1 vertical-slice and round-trips vertical_slice_ids, while wave 0 stays bootstrap', () => {
+      const meta = fs.readFileSync(path.join(workflowDir, 'work_meta.yaml'), 'utf8');
+
+      // Wave-1 placement rule: wave 1 is retyped to vertical-slice.
+      expect(meta).toMatch(/wave:\s*1\s*\n\s*type:\s*vertical-slice/);
+
+      // vertical_slice_ids round-trips the minimal work-item chain.
+      expect(meta).toMatch(/vertical_slice_ids:\s*\[WI-2,\s*WI-3\]/);
+
+      // Wave 0 must never be retyped to vertical-slice.
+      expect(meta).toMatch(/wave:\s*0\s*\n\s*type:\s*bootstrap/);
+      const wave0Block = meta.slice(meta.indexOf('wave: 0'), meta.indexOf('wave: 1'));
+      expect(wave0Block).not.toMatch(/type:\s*vertical-slice/);
+    });
+
     it('per-wave files reference work_items_wave_{K} naming pattern (K = 0..N-1)', () => {
       const files = fs.readdirSync(workflowDir).filter((f) => /^work_items_wave_\d+\.yaml$/.test(f));
       expect(files.length).toBe(2);
@@ -277,5 +294,12 @@ work_items:
       expect(wave1).toMatch(/criterion:/);
       expect(wave1).toMatch(/verification_method:/);
     });
+  });
+
+  it('agents/planner/resources/per-wave-emission.md documents vertical-slice in the wave-type enum', () => {
+    const content = fs.readFileSync(PER_WAVE_EMISSION_DOC, 'utf8');
+    const enumLineMatch = content.match(/type:\s*bootstrap[^\n]*/);
+    expect(enumLineMatch).not.toBeNull();
+    expect(enumLineMatch[0]).toMatch(/vertical-slice/);
   });
 });

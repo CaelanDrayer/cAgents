@@ -23,7 +23,7 @@ emitted_by: cagents:planner
 emitted_at: "{ISO_TIMESTAMP}"
 waves:
   - wave: 0
-    type: bootstrap | research | design | implementation | supporting | testing | documentation | integration
+    type: bootstrap | research | design | implementation | supporting | testing | documentation | integration | vertical-slice
     summary: "1-line description of what this wave delivers"
     work_item_ids: [WI-1]
     work_item_file: "workflow/work_items_wave_0.yaml"
@@ -109,6 +109,12 @@ The regression test for WI-7 is in `tests/v12/team-context-discipline.test.js`. 
 5. Also write the legacy `workflow/work_items.yaml` file for back-compat. This step is transitional, and it applies to v12.1.x only.
 
 Release v12.2.0 deprecates step 5. The per-wave files then become canonical.
+
+### Vertical-slice rules
+
+Apply the Wave-1 rule. For `/team`, always emit the vertical-slice wave as
+`wave: 1`. Wave 0 stays reserved for pure bootstrap. Never retype wave 0 as
+`vertical-slice`.
 
 ## Token Savings
 

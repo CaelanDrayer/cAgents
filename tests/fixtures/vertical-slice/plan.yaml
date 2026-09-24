@@ -1,0 +1,23 @@
+plan_id: plan_vertical_slice_fixture_001
+tier: 3
+domain: engineering
+mission: "Prove that the vertical_slice field coexists with the required plan.yaml schema"
+objectives:
+  - id: OBJ-1
+    description: "Validator accepts a plan.yaml that also carries a decomposition.vertical_slice block"
+controller_assignment:
+  primary: cagents:tech-lead
+success_criteria:
+  - "Validator returns exit 0 for a plan that adds vertical_slice under decomposition"
+
+# Additive field under test (TASK-28). The validator's required-field contract
+# does not read this block. See scripts/ci/validate-planner-output.cjs lines
+# 100-153 for the full required-field list of validatePlan().
+decomposition:
+  vertical_slice:
+    work_item_ids:
+      - TASK-01
+      - TASK-02
+    categories_covered:
+      - understand
+      - build

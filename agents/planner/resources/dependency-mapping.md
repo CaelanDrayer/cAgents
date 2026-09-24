@@ -80,6 +80,10 @@ dependency_graph:
     - TASK-12  # Security review
     - TASK-16  # Documentation
 
+  vertical_slice:
+    work_item_ids: [TASK-01, TASK-02, TASK-03, TASK-04]  # minimal chain crossing every category the request touches
+    categories_covered: [UNDERSTAND, BUILD, VERIFY]  # subset of UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT actually touched
+
   parallel_groups:
     group_1:  # After design complete
       - TASK-03  # User model
