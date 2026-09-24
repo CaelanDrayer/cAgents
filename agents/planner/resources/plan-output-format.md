@@ -10,6 +10,7 @@ decomposition:
   by_type: {understand: 5, design: 4, build: 12, verify: 8, document: 4}
   implicit_requirements_discovered: 15
   dependencies_mapped: 28
+  vertical_slice: {work_item_ids: [TASK-01, TASK-02, TASK-03], categories_covered: [UNDERSTAND, BUILD, VERIFY]}
 
 objectives:
   - "Implement complete user authentication system"

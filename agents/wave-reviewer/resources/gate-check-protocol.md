@@ -35,6 +35,10 @@ Average across all WIs in the wave. Threshold: avg >= 2.0 for PASS.
 
 **Failure (FAIL)**: Any criterion lacks matching evidence — the WI is not actually complete.
 
+**Vertical-slice wave clause**: for a `type: vertical-slice` wave only, add one
+more check. Confirm a downstream item's evidence cites the real artifact that
+its upstream slice dependency produced. Reject a placeholder citation.
+
 ## Check 5 — Contract Fulfillment
 
 **Method**: Read `workflow/contracts.yaml` (if exists). For every contract whose `established_in: {K}`, verify the listed `artifacts[]` paths exist on disk under `outputs/`.
@@ -49,6 +53,7 @@ Average across all WIs in the wave. Threshold: avg >= 2.0 for PASS.
 - implementation/testing waves: `npm test` (or `pytest`, detected from repo root)
 - research/design waves: skip (no code to regress)
 - documentation waves: link-check or markdown-lint if available
+- `type: vertical-slice` waves: run `npm test` only if the wave's item set includes a `build`-category item. Skip otherwise, because a pure-UNDERSTAND slice has nothing to test.
 
 Capture exit code and output excerpt (first/last 5 lines).
 

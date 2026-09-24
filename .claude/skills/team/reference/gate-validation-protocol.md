@@ -54,6 +54,13 @@ after them. A gate passes only when all 7 checks pass.
 | 6 | Regression Check | Guard commands pass (tests, lint, type check) | FAIL: a regression was introduced |
 | 7 | Cross-Wave Consistency | New wave outputs don't contradict previous wave | WARN: review for conflicts |
 
+**Vertical-slice wave clauses**: for a `type: vertical-slice` wave, Check 4
+gets one more rule. Confirm a downstream item's evidence cites the real
+artifact that its upstream slice dependency produced. Reject a placeholder
+citation. Check 6 gets a content-conditional rule for the same wave type: run
+`npm test` only if the wave's item set includes a `build`-category item.
+Skip otherwise.
+
 ### Gate Validation YAML Template
 
 ```yaml

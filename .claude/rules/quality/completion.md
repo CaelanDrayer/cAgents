@@ -210,7 +210,7 @@ cAgents' validation surface is honestly **layered**, not one monolithic checklis
 ### Advisory layer breakdown (supporting detail)
 
 - **Pre-Execution** (7 checks by controller, by convention): Planner output schema (Check 0), plan completeness, work item criteria, dependency acyclicity, agent existence, referenced files, log schema. See @.claude/rules/core/resources/controller-validation-checklist.md.
-- **Mid-Execution** (5 checks by controller after every 3 completions, by convention): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
+- **Mid-Execution** (5 checks by controller after every 3 completions, or immediately when the last vertical-slice-tagged item completes, whichever comes first, by convention): Evidence capture, stuck item detection, timestamp monotonicity, evidence spot-check, dependency satisfaction. See @.claude/rules/core/resources/controller-validation-checklist.md.
 - **Post-Execution / Executor Self-Validation** (5 mechanically-checkable checks by execution agent before DONE): Evidence freshness, file existence, guard exit codes, git state, file:line accuracy. The execution agent reports these checks itself, because the verifier hook is deferred. They are therefore advisory in practice. See @.claude/rules/core/resources/execution-self-validation.md.
 - **Cross-Cutting** (5 checks across agents, hook-enforced): Task cleanup, agent tree completeness, file change audit, context drift prevention, YAML/JSON syntax. This group is the only enforced group. See @resources/validation-checklist-active.md.
 

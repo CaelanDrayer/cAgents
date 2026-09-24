@@ -10,6 +10,33 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.72.0] - 2026-09-24
+
+### Added
+- Vertical-slice / tracer-bullet execution, baked into the planner, the
+  controller, and the `/team` wave machinery. The planner finds a minimal
+  work-item chain that crosses every category a request touches. That
+  chain runs and validates first, as `wave: 1` in `/team`. The rest of the
+  plan's depth-fill work runs after. Additive only: no new agent, no new
+  hook, on by default for every tier 2+ request across every domain.
+- New file `agents/planner/resources/vertical-slice-extraction.md`: the
+  slice-detection algorithm, the Wave-1 rule, the small-plan-collapse
+  rule, and 4 edge cases.
+- 11 new regression tests plus a new fixture pair under
+  `tests/fixtures/vertical-slice/`.
+
+### Fixed
+- `agents/planner/resources/decomposition.md` reverted to the canonical
+  UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT category set, dropping a stale
+  renamed set that had drifted from `planner.md`, `component-extraction.md`,
+  and `plan-output-format.md`.
+- Renamed the colliding `wave.type` field to `wave.execution_style` across
+  `team-bootstrap` and `team-lead` wave-execution resources (values
+  unchanged).
+- `agents/planner/resources/work-item-generation.md`'s work-item template
+  gained the `tags:` field that `CLAUDE.md` already documented as
+  supported.
+
 ## [12.71.0] - 2026-09-20
 
 A writing standard, plus a judgment rewrite of the load-bearing prose surfaces.

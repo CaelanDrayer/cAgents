@@ -132,7 +132,7 @@ Users state outcomes, not requirements. The planner unpacks everything needed.
 
 **5 Steps**: Request Analysis -> Component Extraction (UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT) -> Implicit Discovery (security, testing, infrastructure) -> Dependency Mapping -> Work Item Generation (30+ items with acceptance criteria)
 
-**Output** (`decomposition.yaml`): Work items with IDs, types, acceptance criteria, dependencies, and an optional `tags: []` array for categorization. The file also holds a dependency graph with the critical path and the parallel groups.
+**Output** (`decomposition.yaml`): Work items with IDs, types, acceptance criteria, dependencies, and an optional `tags: []` array for categorization. The file also holds a dependency graph with the critical path, the parallel groups, and an optional `vertical_slice` block for the minimal tracer-bullet chain.
 
 **Controller Integration**: Controllers receive decomposition, ask clarifying questions for ambiguous items, coordinate execution respecting dependencies, verify acceptance criteria.
 
@@ -318,7 +318,7 @@ reconstruct with `ls` has been removed deliberately.
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9). The split is 44 routable + 16 core. 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
 **Tests**: `npm test` runs 2034+ Vitest tests across 225+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
-**Version**: 12.71.0
+**Version**: 12.72.0
 
 ## Troubleshooting
 

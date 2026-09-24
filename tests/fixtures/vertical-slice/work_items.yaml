@@ -1,0 +1,19 @@
+schema_version: "1"
+# Additive field under test (TASK-28). The validator's required-field contract
+# does not read `tags`. See scripts/ci/validate-planner-output.cjs lines
+# 155-206 for the full required-field list of validateWorkItems().
+work_items:
+  - id: TASK-01
+    title: "Understand the current vertical-slice schema gap"
+    assigned_to: cagents:backend-developer
+    acceptance_criteria:
+      - "The gap between the plan schema and the vertical_slice field is documented"
+    tags:
+      - vertical-slice
+  - id: TASK-02
+    title: "Build the vertical-slice fixture pair"
+    assigned_to: cagents:qa-lead
+    acceptance_criteria:
+      - "plan.yaml and work_items.yaml fixtures exist under tests/fixtures/vertical-slice/"
+    tags:
+      - vertical-slice

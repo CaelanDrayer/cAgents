@@ -589,7 +589,7 @@ Controllers MUST run validation checkpoints at two points:
 6. Existence of each referenced file.
 7. The coordination log schema.
 
-**Mid-Execution** (5 checks): run these after every 3 completed work items.
+**Mid-Execution** (5 checks): run these after every 3 completed work items, or immediately when the last vertical-slice-tagged item completes, whichever comes first. An item counts as completed only after its bounded reviewer loop resolves, not merely after its executor pass finishes.
 
 1. Evidence capture.
 2. Stuck item detection.

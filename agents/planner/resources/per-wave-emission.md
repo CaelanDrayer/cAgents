@@ -21,7 +21,7 @@ emitted_by: cagents:planner
 emitted_at: "{ISO_TIMESTAMP}"
 waves:
   - wave: 0
-    type: bootstrap | research | design | implementation | supporting | testing | documentation | integration
+    type: bootstrap | research | design | implementation | supporting | testing | documentation | integration | vertical-slice
     summary: "1-line description of what this wave delivers"
     work_item_ids: [WI-1]
     work_item_file: "workflow/work_items_wave_0.yaml"
@@ -33,6 +33,7 @@ waves:
     work_item_file: "workflow/work_items_wave_1.yaml"
     expected_duration_min: 20
   # ... one entry per wave
+vertical_slice_ids: [WI-1, WI-2]  # the minimal work-item chain the planner tagged vertical-slice; empty [] if no slice was extracted
 dependency_graph:
   critical_path: [WI-1, WI-2, WI-5, WI-8]
   cross_wave_dependencies:
@@ -74,6 +75,16 @@ work_items:
 4. Write plan.yaml referencing both work_items.yaml and work_meta.yaml.
 5. Write the completion event listing all emitted artifacts.
 ```
+
+#### Vertical-slice rules
+
+Apply the small-plan-collapse rule. When `vertical_slice.work_item_ids` equals
+the full work-item list, the first wave IS the only wave. Type that wave
+`vertical-slice`. Do not add a synthetic extra wave.
+
+Apply the Wave-1 rule. For `/team`, always emit the vertical-slice wave as
+`wave: 1`. Wave 0 stays reserved for pure bootstrap. Never retype wave 0 as
+`vertical-slice`.
 
 ### When Waves Are Not Defined
 
