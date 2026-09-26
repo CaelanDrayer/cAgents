@@ -109,9 +109,10 @@ outputs, and the side effects of each hook.
 
 **Tier 2, HITL (ask, the user confirms and a safe alternative is shown)**:
 
-- **Git destructive**: `--force` push (suggest `--force-with-lease`),
+- **Git destructive**: a bare `--force` push (suggest `--force-with-lease`),
   `reset --hard` (suggest `stash` or `--soft`), `clean -fd` and `clean -fdx`
-  (suggest a `-n` preview)
+  (suggest a `-n` preview). The pattern is `--force(?![\w-])`, so
+  `--force-with-lease` and `--force-if-includes` do not ask (v12.72.2).
 - **SQL destructive**: `DROP TABLE/DATABASE/SCHEMA` (suggest backup), `TRUNCATE TABLE` (suggest `DELETE ... WHERE`), `DELETE FROM` without `WHERE` (suggest adding `WHERE`)
 - **Permission escalation**: `chmod 777`, `chmod -R 777`, and `chmod -R 666`
   (suggest `755` or `644`), `chown -R root` (suggest a check of the path)
@@ -126,6 +127,12 @@ outputs, and the side effects of each hook.
   without `-a`), `docker volume prune` (suggest `volume ls` first)
 - **Disk operations**: `mkswap` (suggest a check of the device), `fdisk`
   (suggest a backup of the partition table)
+
+**dontAsk mode (v12.72.2)**: if the hook payload has
+`permission_mode: dontAsk`, the hook drops each Tier 2 `ask`. A headless
+session cannot answer a prompt, so an `ask` only fails the tool call. The
+permission policy of the session, which is its allow rules and its deny rules,
+then decides. Each Tier 1 deny still applies in every mode.
 
 **Obfuscation detection** (strengthened by F7-1, audit
 run_fable-plugin-review_260609_001): the static regexes now catch three more

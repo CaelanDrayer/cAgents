@@ -22,12 +22,12 @@ function clearDedupFiles() {
  * Run the bash-validator hook with the given command string.
  * Uses stdin pipe to avoid shell interpretation of special characters.
  */
-function runHook(command) {
+function runHook(command, extra = {}) {
   clearDedupFiles();
   // Include _dedup_salt so the dedup hash differs from bash-validator.test.js
   // which sends the same tool_input for overlapping commands. Without this,
   // parallel test files race on the dedup guard and one gets a false pass-through.
-  const input = JSON.stringify({ tool_input: { command }, _dedup_salt: 'safety' });
+  const input = JSON.stringify({ tool_input: { command }, _dedup_salt: 'safety', ...extra });
   const result = execSync(`node "${HOOK_PATH}"`, {
     encoding: 'utf8',
     timeout: 5000,
@@ -417,6 +417,45 @@ describe('bash-validator two-tier safety', () => {
     it('docker system prune -a suggests without -a', () => {
       const result = runHook('docker system prune -a');
       expect(result.hookSpecificOutput.permissionDecisionReason).toMatch(/without -a/);
+    });
+  });
+
+  // ============================================================
+  // --force-with-lease is the safe alternative, so it must not ask
+  // ============================================================
+  describe('force-push regex precision', () => {
+    it('allows git push --force-with-lease', () => {
+      expectPass(runHook('git push --force-with-lease origin feature'));
+    });
+
+    it('allows git push --force-with-lease --force-if-includes', () => {
+      expectPass(runHook('git push --force-with-lease --force-if-includes origin feature'));
+    });
+
+    it('still asks for a bare --force after a lease push in the same chain', () => {
+      expectAsk(runHook('git push --force-with-lease origin a && git push --force origin b'));
+    });
+  });
+
+  // ============================================================
+  // dontAsk: a headless session cannot answer a prompt. The hook drops
+  // each ask, and the permission policy decides. Each deny still holds.
+  // ============================================================
+  describe('permission_mode dontAsk', () => {
+    it('drops the ask for git push --force', () => {
+      expectPass(runHook('git push --force origin main', { permission_mode: 'dontAsk' }));
+    });
+
+    it('drops the ask for git reset --hard', () => {
+      expectPass(runHook('git reset --hard HEAD~1', { permission_mode: 'dontAsk' }));
+    });
+
+    it('still denies catastrophic commands', () => {
+      expectDeny(runHook('rm -rf /', { permission_mode: 'dontAsk' }));
+    });
+
+    it('still asks in default mode', () => {
+      expectAsk(runHook('git push --force origin main', { permission_mode: 'default' }));
     });
   });
 });

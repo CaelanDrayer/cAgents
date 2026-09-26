@@ -1,10 +1,25 @@
 # cAgents Release Notes
 
-**Current Version**: 12.72.1
-**Release Date**: September 24, 2026
+**Current Version**: 12.72.2
+**Release Date**: September 26, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.72.2 - September 26, 2026 (bash guard: dontAsk mode and --force-with-lease)
+
+Headless subagents failed on guarded Bash commands. `bash-validator.cjs`
+returned `permissionDecision: ask` for a Tier 2 command such as
+`git push --force` or `git reset --hard`. A `dontAsk` session cannot answer a
+prompt, so the tool call failed. The hook now drops its `ask` verdicts when the
+payload has `permission_mode: dontAsk`, and the permission policy of the
+session decides. Deny verdicts still apply in every mode.
+
+The force-push guard also matched `--force-with-lease`, which is the safe
+alternative that its own message recommends. The pattern in
+`bash-validator.cjs` and in `bash-guard-evaluator.cjs` is now
+`--force(?![\w-])`, so `--force-with-lease` and `--force-if-includes` pass.
+New tests in `tests/hooks/bash-validator-safety.test.js` pin both changes.
 
 ## V12.72.1 - September 24, 2026 (fix spurious plugin hooks.json warning)
 
@@ -2436,5 +2451,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.72.1
+**Current Version**: 12.72.2
 **Release Date**: August 21, 2026
