@@ -127,7 +127,9 @@ const BLOCKED_REGEXES = [
 // Each pattern returns permissionDecision: 'ask' with a safe alternative suggestion.
 const HITL_PATTERNS = [
   // Git destructive operations (existing)
-  { pattern: /git push.*--force/, message: 'Force push may cause data loss. Consider using --force-with-lease for safer force pushes.' },
+  // `--force(?![\w-])` matches a bare --force only: --force-with-lease and
+  // --force-if-includes are the safe alternatives this message recommends.
+  { pattern: /git push.*--force(?![\w-])/, message: 'Force push may cause data loss. Consider using --force-with-lease for safer force pushes.' },
   { pattern: /git reset --hard/, message: 'Hard reset discards uncommitted changes. Consider git stash to save changes first, or git reset --soft to keep changes staged.' },
   { pattern: /git clean -fdx/, message: 'Git clean -fdx removes untracked AND ignored files. Consider git clean -fd (without -x) to keep ignored files, or git clean -n to preview first.' },
   { pattern: /git clean -fd/, message: 'Git clean -fd deletes untracked files. Consider git clean -n to preview what would be deleted first.' },
@@ -261,7 +263,7 @@ function resolveGuardMode() {
   return (raw === 'warn' || raw === 'off') ? raw : 'block';
 }
 
-createHook('BashValidator', async (input) => {
+async function validate(input) {
   const toolInput = input.tool_input || {};
 
   // RAW command — the evaluator MUST see the un-collapsed string. Whitespace
@@ -432,4 +434,22 @@ createHook('BashValidator', async (input) => {
   }
 
   return null;
+}
+
+function isAskVerdict(verdict) {
+  return !!(verdict && verdict.hookSpecificOutput &&
+    verdict.hookSpecificOutput.permissionDecision === 'ask');
+}
+
+// Under permission_mode 'dontAsk' nobody can answer a prompt (headless
+// subagents), so a hook `ask` just fails the tool call. Drop the ask and let
+// the session's permission policy (allow/deny rules) decide. Deny verdicts
+// are unaffected — the catastrophic floor holds in every mode.
+createHook('BashValidator', async (input) => {
+  const verdict = await validate(input);
+  if (input.permission_mode === 'dontAsk' && isAskVerdict(verdict)) {
+    console.error(`[BashValidator] dontAsk mode — deferring to permission policy: ${verdict.hookSpecificOutput.permissionDecisionReason}`);
+    return null;
+  }
+  return verdict;
 });

@@ -797,7 +797,7 @@ const DENY_CANON = [
 ];
 
 const ASK_CANON = [
-  { re: /git push\b.*--force\b/, msg: 'Force push may cause data loss. Consider --force-with-lease.' },
+  { re: /git push\b.*--force(?![\w-])/, msg: 'Force push may cause data loss. Consider --force-with-lease.' },
   { re: /git reset --hard\b/, msg: 'Hard reset discards uncommitted changes. Consider git stash or --soft first.' },
   { re: /git\s+clean\b.*-\w*f\w*d|git\s+clean\b.*-\w*d\w*f/, msg: 'git clean -fd removes untracked files. Consider git clean -n to preview.' },
   { re: /\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i, msg: 'DROP permanently destroys data. Consider renaming or backing up first.' },

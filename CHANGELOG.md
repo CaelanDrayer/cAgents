@@ -10,6 +10,19 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.72.2] - 2026-09-26
+
+### Fixed
+- Headless subagents failed on guarded Bash commands. `bash-validator.cjs`
+  returned `permissionDecision: ask`, and a `dontAsk` session cannot answer a
+  prompt, so the tool call failed. The hook now drops its `ask` verdicts when
+  the payload has `permission_mode: dontAsk`, and the session's permission
+  policy decides. Deny verdicts still apply in every mode.
+- The force-push guard matched `--force-with-lease`, which is the safe
+  alternative that its own message recommends. The pattern in
+  `bash-validator.cjs` and in `bash-guard-evaluator.cjs` is now
+  `--force(?![\w-])`, so `--force-with-lease` and `--force-if-includes` pass.
+
 ## [12.72.1] - 2026-09-24
 
 ### Fixed
