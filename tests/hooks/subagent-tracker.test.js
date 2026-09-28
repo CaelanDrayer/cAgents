@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync, spawnSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
@@ -87,13 +88,17 @@ describe('subagent-tracker.cjs', () => {
     });
   });
 
-  describe('fallback session discovery', () => {
-    it('should have fallback function findMostRecentSessionDir', () => {
+  describe('session discovery (no newest-session fallback)', () => {
+    it('has no findMostRecentSessionDir fallback and checks session ownership', () => {
+      // Strict ownership (WI-3): the newest-session guess is removed by design.
+      // The tracker files a spawn only in a session owned by the payload UUID,
+      // and drops a resolved dir whose marker names another transcript.
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('findMostRecentSessionDir');
+      expect(hookContent).not.toContain('findMostRecentSessionDir');
+      expect(hookContent).toContain('getSessionOwner');
     });
 
-    it('should skip completed sessions in fallback', () => {
+    it('hook-utils routes terminal-state checks through isTerminalState()', () => {
       // findMostRecentSessionDir was moved to hook-utils.cjs (GAP-4 fix: shared between
       // subagent-tracker and subagent-stop-tracker). Check the shared implementation.
       // REC-01 (v12.46.0): the raw `TERMINAL_STATES.includes(phase)` reader was routed
@@ -119,15 +124,39 @@ describe('subagent-tracker.cjs', () => {
 
   describe('cagents_type warning', () => {
     it('should emit WARNING on stderr when subagent_type is absent', () => {
-      const uniqueId = `agent_warn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      const input = { agent_type: 'general-purpose', agent_id: uniqueId };
-      const result = spawnSync('node', [HOOK_PATH], {
-        input: JSON.stringify(input),
-        encoding: 'utf8',
-        timeout: 5000
-      });
-      expect(result.stderr).toContain('WARNING');
-      expect(result.stderr).toContain('cagents_type');
+      // The warning fires only once a session is resolved. Under strict
+      // ownership that means a session owned by the payload UUID, so seed one
+      // in an isolated project dir instead of relying on the newest-session guess.
+      const uuid = 'a1b2c3d4-0000-4000-8000-00000000abcd';
+      const projectDir = mkdtempSync(join(tmpdir(), 'cagents-tracker-warn-'));
+      const sid = 'act_warn_260927_001';
+      const sessionDir = join(projectDir, 'cagents-memory', 'sessions', sid);
+      mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
+      writeFileSync(join(sessionDir, 'status.yaml'), `session_id: ${sid}\npipeline_state: COORDINATED\n`);
+      writeFileSync(join(sessionDir, 'session.sdk_id'), `${uuid}\n`);
+      const mapDir = join(projectDir, 'cagents-memory', '_system', 'sdk_session_map');
+      mkdirSync(mapDir, { recursive: true });
+      writeFileSync(join(mapDir, uuid), `${sid}\n`);
+      try {
+        const uniqueId = `agent_warn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const input = { agent_type: 'general-purpose', agent_id: uniqueId, session_id: uuid };
+        const env = { ...process.env, CLAUDE_PROJECT_DIR: projectDir };
+        delete env.CAGENTS_ACTIVE_SESSION;
+        delete env.CAGENTS_SESSION_ID;
+        const result = spawnSync('node', [HOOK_PATH], {
+          input: JSON.stringify(input),
+          encoding: 'utf8',
+          timeout: 60000,
+          env,
+        });
+        if (result.status === null) throw new Error(`hook killed (signal=${result.signal}) stderr=${result.stderr}`);
+        expect(result.stderr).toContain('WARNING');
+        expect(result.stderr).toContain('cagents_type');
+        // The spawn was filed in the owned session.
+        expect(readFileSync(join(sessionDir, 'workflow', 'agent_tree.yaml'), 'utf8')).toContain(uniqueId);
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
     });
   });
 

@@ -28,7 +28,7 @@ cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
   a standalone CLI that A2-10 moved to `scripts/`, so it no longer counts under `.claude/hooks/`.
 - **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0, D1b): one deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in process: `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED.
   This entry replaced three separate `Write|Edit` registrations, and it cut the cold-start node spawns per Write|Edit from 3 to 1.
-- **Agent dispatcher** (`agent-dispatch.cjs`, A2-12): one deny-first PreToolUse[Agent] entry that runs two sub-validators in process: `session-init-gate.cjs`, a session-presence DENY gate that fails CLOSED, and `model-routing-advisor.cjs`,
+- **Agent dispatcher** (`agent-dispatch.cjs`, A2-12): one deny-first PreToolUse[Agent] entry that runs two sub-validators in process: `session-init-gate.cjs`, a session-presence gate that allows when no owned session exists, fails CLOSED on a logic throw, and fails OPEN on an I/O error, and `model-routing-advisor.cjs`,
   an advisory check that fails OPEN. This entry replaced three separate `Agent` registrations, and it cut the cold-start node spawns per Agent spawn from
   3 to 1. A2-04 dropped the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op. A2-02 deleted `approval-gate.cjs`, because that hook was structurally dead: its `_data/policies/` dir
   and its `AGENT_MEMORY_DIR` env var never existed in production.
@@ -95,17 +95,15 @@ the Secret Detection pattern catalog.
 | `ConfigChange` | Config source | `user_settings`, `project_settings`, `local_settings`, `skills` |
 | `UserPromptSubmit`, `Stop`, `StopFailure`, `TeammateIdle`, `TaskCompleted`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `PostCompact` | *(no matcher)* | Always fires on every occurrence |
 
-## Concurrency Contract (v12.15.0+)
+## Concurrency Contract (v12.73.0+)
 
-When two cAgents sessions run at the same time in one directory, every hook must satisfy four invariants: deterministic session resolution through `findActiveSession(input.session_id)`, lock-protected
-writes to a shared file, liveness-aware session-catchup, and a secret restore that is bound to the session id. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md for the full contract,
-the default resolution chain, the regression tests, and the narrow `fallbackHeuristic: true` opt-in cases for the Stop hooks and the SessionEnd hooks.
+Two cAgents sessions can share one directory. Every hook then acts only on a session that its payload `session_id` (the transcript UUID) owns. Ownership lives in the
+`sessions/{sid}/session.sdk_id` marker and the `_system/sdk_session_map/{uuid}` pointer. A foreign marker beats a stale pointer. `hook-utils.cjs` exports `getSessionOwner`, `isOwnedBy`, `resolveOwnedSession`, and `claimSession`.
+`post-write-validator.cjs` claims an unclaimed session when a transcript writes its `status.yaml` or `instruction.yaml` (claim-on-write). It never steals a foreign session.
 
-**v12.32.0 additions**: v12.32.0 made two changes. First, a persisted map from an SDK transcript UUID to a cAgents session lets `findActiveSession` and `findTeamSession` resolve
-a UUID-only hook payload deterministically, before the env-var step. The map-writer hooks are `subagent-tracker.cjs` and `session-init-gate.cjs`. Each one calls `upsertSdkSessionMap` on a confident resolution,
-and never on the newest-session heuristic. `team-stop.cjs` unlinks the pointer at SessionEnd. Second, `verify-completion.cjs` gained a `sessionActivelyWorking` discriminator, which is true when a child
-agent runs or when the heartbeat is fresh. The Stop hook then WARNs on a session that is legitimately mid-flight, and it still blocks
-an abandoned one. Detail lives in @resources/hook-catalog.md, in session `run_hook-session-id_260701_001`.
+No owned session means no-op. Stop allows, SessionEnd skips finalization, governance allows, and the trackers log only to `_system/logs/agent_spawns.log`. No hook adopts the newest
+or an unclaimed session, and the `fallbackHeuristic` opt-in is retired. Writes stay lock-protected, catchup stays liveness-aware, and secret restore stays session-bound. The Stop hook
+keeps its `sessionActivelyWorking` discriminator (v12.32.0), so it warns on an owned session that is mid-flight. See @.claude/rules/playbooks/pat-concurrent-session-hooks.md and @resources/hook-catalog.md.
 
 ## createHook() Factory
 

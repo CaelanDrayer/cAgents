@@ -396,8 +396,10 @@ function sessionGenuinelyValidated(sessionDir, statusContent) {
  */
 let _cachedActiveSessions = new Map();
 
-function _makeCacheKey(sessionHint, envSession, promptHint, fallback) {
-  return `${sessionHint || ''}|${envSession || ''}|${promptHint || ''}|${fallback ? '1' : '0'}`;
+function _makeCacheKey(sessionHint, envSession, promptHint, fallback, sdkUuid) {
+  const base = `${sessionHint || ''}|${envSession || ''}|${promptHint || ''}|${fallback ? '1' : '0'}`;
+  // The owner UUID changes what the heuristic may return, so it is part of the key.
+  return sdkUuid ? `${base}|${sdkUuid}` : base;
 }
 
 /**
@@ -512,10 +514,11 @@ function _pruneSdkMap() {
 }
 
 /**
- * Persist a bidirectional SDK-UUID <-> session mapping. Writes both the global
- * pointer file and the per-session marker under per-file locks. Guarded by the
- * SDK-UUID shape (a non-UUID sdkUuid is a no-op) and idempotent (repeat upsert
- * of the same pair overwrites — never duplicates). Fail-open: a map-write
+ * Persist a bidirectional SDK-UUID <-> session mapping through claimSession.
+ * Writes the per-session marker only for an unclaimed session, and the global
+ * pointer only when the UUID owns the session. A foreign-owned session is left
+ * unchanged. Guarded by the SDK-UUID shape (a non-UUID sdkUuid is a no-op) and
+ * idempotent (repeat upsert of the same pair never duplicates). Fail-open: a map-write
  * failure must NEVER throw to the caller (WI-3 hook writers stay non-blocking).
  *
  * @param {string} sdkUuid   - SDK transcript UUID (input.session_id).
@@ -525,22 +528,11 @@ function upsertSdkSessionMap(sdkUuid, sessionDir) {
   try {
     if (!_isSdkUuidShape(sdkUuid)) return; // guard: non-UUID → no-op
     if (!sessionDir) return;
-    const sessionId = path.basename(sessionDir);
 
-    const mapDir = _sdkMapDir();
-    try { fs.mkdirSync(mapDir, { recursive: true }); } catch { /* race-safe */ }
-
-    // (b) global reverse pointer.
-    const pointerPath = _sdkPointerPath(sdkUuid);
-    withFileLock(pointerPath, () => {
-      fs.writeFileSync(pointerPath, sessionId);
-    });
-
-    // (a) per-session marker.
-    const markerPath = path.join(sessionDir, 'session.sdk_id');
-    withFileLock(markerPath, () => {
-      fs.writeFileSync(markerPath, sdkUuid);
-    });
+    // Claim semantics. The marker is written only when the session is
+    // unclaimed; an owned session only refreshes the map pointer. A marker
+    // that names another UUID is never overwritten, and no pointer is written.
+    claimSession(sessionDir, sdkUuid);
 
     // (WI-5 part 3) opportunistic prune — bound the registry to live + recent.
     try { _pruneSdkMap(); } catch { /* fail-open */ }
@@ -613,20 +605,220 @@ function removeSdkPointer(sdkUuid) {
   } catch { /* never throw */ }
 }
 
+// ============================================================
+// Strict session ownership (act_concurrent-session-hooks_260927_001, WI-1)
+// ============================================================
+// Two transcripts can share one project dir. A hook that holds an SDK UUID
+// must act only on a session that the UUID owns. The owner is the UUID in the
+// session.sdk_id marker. The map pointer _system/sdk_session_map/{uuid} is a
+// second record of the same fact. A session with no marker is unclaimed.
+
+const SDK_MARKER_FILE = 'session.sdk_id';
+
+/**
+ * Read the owner UUID of a session from its session.sdk_id marker.
+ * @param {string} sessionDir - Absolute session dir.
+ * @returns {string|null} The owner UUID, or null when the session is unclaimed.
+ */
+function getSessionOwner(sessionDir) {
+  try {
+    if (!sessionDir) return null;
+    const content = safeRead(path.join(sessionDir, SDK_MARKER_FILE));
+    const owner = content ? content.trim() : '';
+    return owner || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * True when the map pointer of the UUID names this session dir.
+ * The pointer body is a session_id basename.
+ */
+function _mapPointsTo(uuid, sessionDir) {
+  const content = safeRead(_sdkPointerPath(uuid));
+  if (!content) return false;
+  const sessionId = content.trim();
+  return !!sessionId && sessionId === path.basename(sessionDir);
+}
+
+/**
+ * Ownership check. The session is owned by the UUID when its marker names the
+ * UUID, or when the map pointer of the UUID names the session. A marker that
+ * names a different UUID always wins over a stale map pointer, so a foreign
+ * session is never owned.
+ * @param {string} sessionDir - Absolute session dir.
+ * @param {string} uuid - SDK transcript UUID.
+ * @returns {boolean}
+ */
+function isOwnedBy(sessionDir, uuid) {
+  try {
+    if (!uuid || !sessionDir) return false;
+    const owner = getSessionOwner(sessionDir);
+    if (owner) return owner === uuid;
+    return _isSdkUuidShape(uuid) && _mapPointsTo(uuid, sessionDir);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Filter used by the heuristic passes. With no UUID every session qualifies
+ * (legacy behavior). With a UUID only an owned session qualifies.
+ */
+function _ownershipQualifies(sessionDir, uuid) {
+  if (!uuid) return true;
+  return isOwnedBy(sessionDir, uuid);
+}
+
+/** True when the session dir is usable: present, and non-terminal unless includeTerminal. */
+function _sessionUsable(sessionsDir, sessionId, includeTerminal) {
+  if (includeTerminal) return fs.existsSync(path.join(sessionsDir, sessionId));
+  return !!_tryResolveCandidate(sessionsDir, sessionId);
+}
+
+/**
+ * Resolve the session that a UUID owns. Same return convention as
+ * findActiveSession: an absolute session dir path, or null.
+ *
+ * Order: the map pointer first, then a scan of sessions/* for a marker that
+ * names the UUID. A scan hit re-seeds the map pointer (fail-open). The newest
+ * owned session by mtime wins the scan. This never returns an unclaimed or a
+ * foreign-owned session.
+ *
+ * @param {string} uuid - SDK transcript UUID.
+ * @param {{includeTerminal?: boolean}} [options] - includeTerminal also accepts terminal sessions.
+ * @returns {string|null} Absolute owned session dir, or null.
+ */
+function resolveOwnedSession(uuid, { includeTerminal = false } = {}) {
+  try {
+    if (!uuid || !_isSdkUuidShape(uuid)) return null;
+    const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+    if (!fs.existsSync(sessionsDir)) return null;
+
+    // Step 1: map pointer. The marker must not name a different UUID.
+    const content = safeRead(_sdkPointerPath(uuid));
+    const mappedId = content ? content.trim() : '';
+    if (mappedId && mappedId === path.basename(mappedId)) {
+      const dir = path.join(sessionsDir, mappedId);
+      const owner = getSessionOwner(dir);
+      if ((!owner || owner === uuid) && _sessionUsable(sessionsDir, mappedId, includeTerminal)) {
+        return dir;
+      }
+    }
+
+    // Step 2: marker scan.
+    let entries;
+    try { entries = fs.readdirSync(sessionsDir); } catch { return null; }
+    let best = null;
+    let bestMtime = -1;
+    for (const entry of entries) {
+      if (!SESSION_PREFIXES.some(p => entry.startsWith(p))) continue;
+      const dir = path.join(sessionsDir, entry);
+      if (getSessionOwner(dir) !== uuid) continue;
+      if (!_sessionUsable(sessionsDir, entry, includeTerminal)) continue;
+      let mtime = 0;
+      try { mtime = fs.statSync(dir).mtimeMs; } catch { continue; }
+      if (mtime > bestMtime) {
+        bestMtime = mtime;
+        best = dir;
+      }
+    }
+    if (!best) return null;
+
+    // Re-seed the map pointer. A failure here must not hide the hit.
+    try {
+      try { fs.mkdirSync(_sdkMapDir(), { recursive: true }); } catch { /* race-safe */ }
+      const pointerPath = _sdkPointerPath(uuid);
+      withFileLock(pointerPath, () => {
+        fs.writeFileSync(pointerPath, path.basename(best));
+      });
+    } catch { /* fail-open */ }
+    return best;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Atomic claim of a session by a UUID.
+ *
+ * The marker is created with an exclusive link of a fully written temp file,
+ * so a reader never sees a half-written marker. If the file system refuses
+ * links, an exclusive 'wx' create is the fallback. The first claimant wins.
+ *
+ * @param {string} sessionDir - Absolute session dir.
+ * @param {string} uuid - SDK transcript UUID.
+ * @returns {boolean} true when the UUID owns the session after the call.
+ *   false when another UUID owns it, when the input is bad, or on an I/O error.
+ *   A false result writes nothing. This function never throws.
+ */
+function claimSession(sessionDir, uuid) {
+  try {
+    if (!_isSdkUuidShape(uuid) || !sessionDir) return false;
+    if (!fs.existsSync(sessionDir)) return false;
+    const markerPath = path.join(sessionDir, SDK_MARKER_FILE);
+
+    let created = false;
+    const tmpPath = `${markerPath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`;
+    try {
+      fs.writeFileSync(tmpPath, uuid, { flag: 'wx' });
+      try {
+        fs.linkSync(tmpPath, markerPath);
+        created = true;
+      } catch (err) {
+        if (!err || err.code !== 'EEXIST') {
+          // No link support: fall back to an exclusive create.
+          try {
+            fs.writeFileSync(markerPath, uuid, { flag: 'wx' });
+            created = true;
+          } catch (err2) {
+            if (!err2 || err2.code !== 'EEXIST') return false;
+          }
+        }
+      }
+    } finally {
+      try { fs.unlinkSync(tmpPath); } catch { /* already gone */ }
+    }
+
+    if (!created) {
+      // The marker exists. Only the same UUID may continue.
+      if (getSessionOwner(sessionDir) !== uuid) return false;
+    }
+
+    // Write or refresh the map pointer.
+    try { fs.mkdirSync(_sdkMapDir(), { recursive: true }); } catch { /* race-safe */ }
+    const pointerPath = _sdkPointerPath(uuid);
+    withFileLock(pointerPath, () => {
+      fs.writeFileSync(pointerPath, path.basename(sessionDir));
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function findActiveSession(hintOrOptions) {
   // Normalize args: accept legacy string OR options object.
   let sessionHint;
   let promptHint;
   let fallbackHeuristic = false;
+  let optionUuid;
   if (typeof hintOrOptions === 'string') {
     sessionHint = hintOrOptions;
   } else if (hintOrOptions && typeof hintOrOptions === 'object') {
     sessionHint = hintOrOptions.sessionHint;
     promptHint = hintOrOptions.promptHint;
     fallbackHeuristic = !!hintOrOptions.fallbackHeuristic;
+    optionUuid = hintOrOptions.sdkUuid;
   }
+  // The owner UUID for the heuristic passes. A UUID-shaped sessionHint is the
+  // owner; options.sdkUuid is the explicit form.
+  const ownerUuid = _isSdkUuidShape(sessionHint) ? sessionHint
+    : (_isSdkUuidShape(optionUuid) ? optionUuid : undefined);
   const envSession = process.env.CAGENTS_ACTIVE_SESSION || undefined;
-  const cacheKey = _makeCacheKey(sessionHint, envSession, promptHint, fallbackHeuristic);
+  const cacheKey = _makeCacheKey(sessionHint, envSession, promptHint, fallbackHeuristic,
+    ownerUuid !== sessionHint ? ownerUuid : undefined);
   if (_cachedActiveSessions.has(cacheKey)) return _cachedActiveSessions.get(cacheKey);
 
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
@@ -659,7 +851,9 @@ function findActiveSession(hintOrOptions) {
       // WI-2 (OBJ-1): SDK UUID — consult the persisted SDK-UUID -> session map
       // FIRST. A live hit is a DETERMINISTIC resolution (no heuristic); cache it
       // under the existing composite cacheKey.
-      const mapped = resolveSdkUuidToSession(sessionHint);
+      let mapped = resolveSdkUuidToSession(sessionHint);
+      // A pointer whose target marker names another UUID is stale. Treat it as a miss.
+      if (mapped && !isOwnedBy(mapped, sessionHint)) mapped = null;
       if (mapped) {
         _cachedActiveSessions.set(cacheKey, mapped);
         return mapped;
@@ -687,7 +881,16 @@ function findActiveSession(hintOrOptions) {
   }
 
   // Step 2: env-var.
-  if (envSession) {
+  // With a known UUID, skip an env session owned by another UUID.
+  // Unclaimed or owned sessions keep the legacy behavior.
+  const envForeign = !!(envSession && ownerUuid && (() => {
+    const owner = getSessionOwner(path.join(sessionsDir, envSession));
+    return !!owner && owner !== ownerUuid;
+  })());
+  if (envForeign) {
+    console.error(`[findActiveSession] CAGENTS_ACTIVE_SESSION="${envSession}" is owned by another UUID; skipping it.`);
+  }
+  if (envSession && !envForeign) {
     const dir = _tryResolveCandidate(sessionsDir, envSession);
     if (dir) {
       _cachedActiveSessions.set(cacheKey, dir);
@@ -702,7 +905,16 @@ function findActiveSession(hintOrOptions) {
 
   // Step 3: promptHint (for subagent-tracker Pass-3 substitute).
   if (promptHint) {
-    const dir = _tryResolveCandidate(sessionsDir, promptHint);
+    let dir = _tryResolveCandidate(sessionsDir, promptHint);
+    // A session owned by another UUID is foreign. Reject it.
+    // An unclaimed session stays acceptable: the prompt names it.
+    if (dir && ownerUuid) {
+      const owner = getSessionOwner(dir);
+      if (owner && owner !== ownerUuid) {
+        console.error(`[findActiveSession] promptHint="${promptHint}" names a session owned by another UUID; rejecting.`);
+        dir = null;
+      }
+    }
     if (dir) {
       _cachedActiveSessions.set(cacheKey, dir);
       return dir;
@@ -773,6 +985,8 @@ function findActiveSession(hintOrOptions) {
 
     const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
     if (phase && !isTerminalState(phase)) {
+      // Strict ownership: with a UUID, only an owned session qualifies.
+      if (!_ownershipQualifies(path.join(sessionsDir, session), ownerUuid)) continue;
       const result = path.join(sessionsDir, session);
       _cachedActiveSessions.set(cacheKey, result);
       return result;
@@ -787,6 +1001,8 @@ function findActiveSession(hintOrOptions) {
     const sessionPath = path.join(sessionsDir, session);
     const statusFile = path.join(sessionPath, 'status.yaml');
     if (safeRead(statusFile)) continue; // Already checked in first pass
+    // Strict ownership: with a UUID, only an owned session qualifies.
+    if (!_ownershipQualifies(sessionPath, ownerUuid)) continue;
 
     try {
       // Check for any recognizable session file: instruction.yaml, strategic_brief.yaml,
@@ -892,7 +1108,9 @@ function findTeamSession(input = {}) {
   // NOT in a team session (mirror the non-team concrete-id contract → null). A
   // miss falls through to env-var / heuristic exactly as today.
   if (hint && _isSdkUuidShape(hint)) {
-    const mapped = resolveSdkUuidToSession(hint);
+    let mapped = resolveSdkUuidToSession(hint);
+    // A pointer whose target marker names another UUID is stale. Treat it as a miss.
+    if (mapped && !isOwnedBy(mapped, hint)) mapped = null;
     if (mapped) {
       if (path.basename(mapped).startsWith('team_')) return mapped;
       return null; // resolved to a non-team session → not a team hook
@@ -901,8 +1119,12 @@ function findTeamSession(input = {}) {
   }
 
   // Step 2: CAGENTS_ACTIVE_SESSION env var (team_ sessions only). Same rules.
+  // With a UUID hint, skip an env team session owned by another UUID.
   const envSession = process.env.CAGENTS_ACTIVE_SESSION;
-  if (envSession && !_isSdkUuidShape(envSession) && envSession.startsWith('team_')) {
+  const envOwner = envSession && _isSdkUuidShape(hint)
+    ? getSessionOwner(path.join(sessionsDir, envSession)) : null;
+  const envForeign = !!envOwner && envOwner !== hint;
+  if (envSession && !envForeign && !_isSdkUuidShape(envSession) && envSession.startsWith('team_')) {
     const dir = path.join(sessionsDir, envSession);
     if (fs.existsSync(dir)) return dir;
     return null;
@@ -927,7 +1149,10 @@ function findTeamSession(input = {}) {
       return tsB.localeCompare(tsA);
     });
 
+  // Strict ownership: with a UUID hint, only a team session it owns qualifies.
+  const ownerUuid = _isSdkUuidShape(hint) ? hint : undefined;
   for (const session of teamSessions) {
+    if (!_ownershipQualifies(path.join(sessionsDir, session), ownerUuid)) continue;
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
     const content = safeRead(statusFile);
     if (!content) continue;
@@ -960,6 +1185,8 @@ function findTeamSession(input = {}) {
  */
 function findMostRecentSessionDir(options) {
   const includeTerminal = options && options.includeTerminal;
+  // Strict ownership: with a UUID, only an owned session qualifies.
+  const ownerUuid = options && _isSdkUuidShape(options.sdkUuid) ? options.sdkUuid : undefined;
   const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
   if (!fs.existsSync(sessionsDir)) return null;
 
@@ -976,6 +1203,7 @@ function findMostRecentSessionDir(options) {
       try {
         const stat = fs.statSync(fullPath);
         if (stat.isDirectory() && stat.mtimeMs > bestMtime) {
+          if (!_ownershipQualifies(fullPath, ownerUuid)) continue;
           // Skip sessions that are clearly completed/aborted
           const statusFile = path.join(fullPath, 'status.yaml');
           const statusContent = safeRead(statusFile);
@@ -1012,6 +1240,7 @@ function findMostRecentSessionDir(options) {
           try {
             const stat = fs.statSync(nestedPath);
             if (stat.mtimeMs > bestMtime) {
+              if (!_ownershipQualifies(nestedPath, ownerUuid)) continue;
               if (!includeTerminal) {
                 const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
                 if (statusContent) {
@@ -1083,7 +1312,11 @@ function resolveSdkUuidOwner(sdkUuid) {
     // corrupted one escape the sessions dir via `..` or an absolute path.
     if (sessionId !== path.basename(sessionId)) return null;
     const dir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionId);
-    return fs.existsSync(dir) ? dir : null;
+    if (!fs.existsSync(dir)) return null;
+    // A marker that names a different UUID wins over a stale pointer.
+    const owner = getSessionOwner(dir);
+    if (owner && owner !== sdkUuid) return null;
+    return dir;
   } catch {
     return null; // ownership lookup is evidence-gathering; it never throws at a caller
   }
@@ -1538,7 +1771,7 @@ function dedupGuard(hookName, input) {
     // plugin+project double-load case. The 2s window and double-load intent are
     // unchanged.
     const fullInput = JSON.stringify(input);
-    const hash = crypto.createHash('sha1').update(hookName + ' ' + fullInput).digest('hex').slice(0, 16);
+    const hash = crypto.createHash('sha1').update(hookName + '\0' + fullInput).digest('hex').slice(0, 16);
     const dedupFile = path.join(os.tmpdir(), `cagents-dedup-${hookName}-${hash}`);
 
     // Exclusive create: fails with EEXIST if another invocation already created it
@@ -1720,6 +1953,11 @@ module.exports = {
   _resetActiveSessionCache,
   findMostRecentSessionDir,
   findTeamSession,
+  // Strict session ownership (act_concurrent-session-hooks_260927_001, WI-1)
+  getSessionOwner,
+  isOwnedBy,
+  resolveOwnedSession,
+  claimSession,
   // SDK-UUID -> session persisted map (OBJ-1, WI-1/WI-2/WI-5)
   _sdkMapDir,
   _sdkPointerPath,

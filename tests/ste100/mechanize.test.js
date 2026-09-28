@@ -537,11 +537,12 @@ describe('structure', () => {
 
   it('reads a file that carries a NUL byte, which grep would drop (TRAP 2)', () => {
     const rel = '.claude/hooks/hook-utils.cjs';
-    const input = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8');
-    expect(input.indexOf(' ')).toBeGreaterThan(-1);
+    // hook-utils.cjs no longer carries a literal NUL, so append one in memory.
+    const input = fs.readFileSync(path.join(REPO_ROOT, rel), 'utf8') + `const SEP = '${NUL}';\n`;
+    expect(input.indexOf(NUL)).toBeGreaterThan(-1);
     const out = mech.transformText(rel, input, {});
     expect(out.text.split('\n').length).toBe(input.split('\n').length);
-    expect(out.text.indexOf(' ')).toBeGreaterThan(-1);
+    expect(out.text.indexOf(NUL)).toBeGreaterThan(-1);
   });
 
   it('shells out to nothing, so it cannot use awk (TRAP 1)', () => {

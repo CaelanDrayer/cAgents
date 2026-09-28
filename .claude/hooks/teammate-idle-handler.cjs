@@ -22,7 +22,15 @@
 // -----------------------------------------------------------------------------
 
 const path = require('path');
-const { createHook, findTeamSession, findAvailableWork, parseTaskList, safeRead, extractYamlValue } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, getSessionOwner, findAvailableWork, parseTaskList, safeRead, extractYamlValue } = require('./hook-utils.cjs');
+
+const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** True when the payload is a UUID and the session marker names another UUID. */
+function _isForeign(sessionDir, sessionId) {
+  if (!_UUID_RE.test(sessionId || '')) return false;
+  const owner = getSessionOwner(sessionDir);
+  return !!owner && owner !== sessionId;
+}
 
 /**
  * Detect current wave from teammate name or task metadata.
@@ -53,6 +61,8 @@ createHook('TeammateIdle', async (input) => {
 
   const sessionDir = findTeamSession(input);
   if (!sessionDir) return null;
+  // Never act on a team session owned by another transcript.
+  if (_isForeign(sessionDir, input.session_id)) return null;
 
   const taskListPath = path.join(sessionDir, 'team', 'task_list.yaml');
   const allAvailable = findAvailableWork(taskListPath);

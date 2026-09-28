@@ -23,7 +23,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findTeamSession, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, getSessionOwner, safeRead, countPattern, ensureDir, getTimestampSlug, parseTaskList, areDependenciesMet, withFileLock } = require('./hook-utils.cjs');
+
+const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** True when the payload is a UUID and the session marker names another UUID. */
+function _isForeign(sessionDir, sessionId) {
+  if (!_UUID_RE.test(sessionId || '')) return false;
+  const owner = getSessionOwner(sessionDir);
+  return !!owner && owner !== sessionId;
+}
 
 function extractWorkItemId(input) {
   // Primary: use task_id directly from official TaskCompleted schema
@@ -42,6 +50,8 @@ createHook('TeamTaskComplete', async (input) => {
 
   const sessionDir = findTeamSession(input);
   if (!sessionDir) return null;
+  // Never act on a team session owned by another transcript.
+  if (_isForeign(sessionDir, input.session_id)) return null;
 
   const workItemId = extractWorkItemId(input);
   if (!workItemId) return null;

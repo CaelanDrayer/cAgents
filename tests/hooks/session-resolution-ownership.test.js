@@ -283,7 +283,7 @@ describe('the tracker files records in the OWNING session (the observed regressi
     expect(agentIds(fx.staleTree)).toEqual([]);
   });
 
-  it('a GUESSED resolution is declared to the model, not presented as fact', () => {
+  it('an unowned spawn is never guessed into a session: no GUESSED text, trees untouched, global log only', () => {
     const fx = fixture('guess');
     // Strip every deterministic signal: no pointer, no hint. Leave ONE non-terminal
     // session so the guess has something to land on.
@@ -292,14 +292,24 @@ describe('the tracker files records in the OWNING session (the observed regressi
       join(fx.sessions, 'act_owner_260909_001', 'status.yaml'),
       'session_id: act_owner_260909_001\npipeline_state: PLANNED\n'
     );
-    const { verdict } = runTracker(fx.root, {
+    const { verdict, status } = runTracker(fx.root, {
       session_id: 'ffffffff-0000-4000-8000-ffffffffffff',
       agent_type: 'general-purpose',
       agent_id: 'a2ed46c696985762c',
     });
+    // Strict ownership (WI-3): the newest-session guess and its GUESSED notice
+    // are removed by design. The payload UUID owns no session, so the tracker
+    // files nothing into any session dir and records the spawn only in the
+    // global audit log. The context never names a session it does not own.
+    expect(status).toBe(0);
     const ctx = verdict?.hookSpecificOutput?.additionalContext || '';
-    expect(ctx, 'a guess must never masquerade as a resolution').toMatch(/GUESSED/);
-    expect(ctx).toMatch(/SESSION_DIR/); // carries the remediation, not just the complaint
+    expect(ctx).not.toMatch(/GUESSED/);
+    expect(ctx, 'context names a session this transcript does not own').not.toContain('act_owner_260909_001');
+    expect(ctx).not.toContain('designer_stale_260805_001');
+    expect(agentIds(fx.ownerTree)).toEqual([]);
+    expect(agentIds(fx.staleTree)).toEqual([]);
+    const log = readFileSync(join(fx.root, 'cagents-memory', '_system', 'logs', 'agent_spawns.log'), 'utf8');
+    expect(log).toContain('agent_id=a2ed46c696985762c');
   });
 
   it('resolves nothing rather than guessing wildly when no session exists at all', () => {

@@ -39,7 +39,9 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createHook, findActiveSession, safeRead, PLUGIN_ROOT } = require('./hook-utils.cjs');
+const {
+  createHook, findActiveSession, resolveOwnedSession, getSessionOwner, safeRead, PLUGIN_ROOT,
+} = require('./hook-utils.cjs');
 
 // Resolve enforcement mode: env var > settings.json > default 'block'.
 // B1 (v12.18.0): default is now 'block' (was 'warn'). Because enforcement is
@@ -539,6 +541,24 @@ function findActiveController(treeContent) {
   return active;
 }
 
+/**
+ * Resolve the session this transcript owns. The map pointer or the marker of
+ * the UUID wins. The deterministic chain (env var, explicit hint) is a second
+ * try, and its result counts only when it is unclaimed or owned by this UUID.
+ * @param {string} uuid - Payload session_id (SDK transcript UUID).
+ * @returns {string|null} Absolute session dir, or null.
+ */
+function resolveGovernedSession(uuid) {
+  const owned = resolveOwnedSession(uuid);
+  if (owned) return owned;
+  const dir = findActiveSession(uuid);
+  if (!dir) return null;
+  const owner = getSessionOwner(dir);
+  if (owner === null || owner === uuid) return dir;
+  console.error(`[ControllerDelegationValidator] resolved session is owned by another transcript — no-op allow.`);
+  return null;
+}
+
 // Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher
 // (write-edit-dispatch.cjs) can run this GOVERNANCE DENY GATE in-process. The
 // dispatcher wraps this call in its own try/catch and FAILS CLOSED (deny) on throw.
@@ -571,22 +591,12 @@ async function handler(input) {
   // direct user edits to src/, services/, etc. This closes the footgun where a
   // default-on `block` mode would deny the user's own legitimate edits outside
   // any cAgents workflow.
-  let sessionDir = findActiveSession(input.session_id);
-  if (!sessionDir) {
-    // H3 (v12.20.0): `input.session_id` is an SDK transcript UUID and
-    // CAGENTS_ACTIVE_SESSION may not propagate to this hook subprocess, so the
-    // deterministic chain returns null. Without a fallback the GOVERNANCE gate
-    // would SILENTLY FAIL-OPEN: a controller's illegal write to src/ (etc.) would
-    // slip through unchecked because the agent_tree active-writer probe below
-    // never runs. Fall back to the documented opt-in legacy heuristic, which
-    // resolves the most-recent session with a non-terminal status.yaml, so the
-    // active-writer check can still fire. If no active session exists (or the
-    // resolved session has no active agent), this remains a no-op — correct
-    // for an ordinary direct user edit outside any cAgents workflow.
-    sessionDir = findActiveSession({ sessionHint: input.session_id, fallbackHeuristic: true });
-    if (!sessionDir) return null;
-    console.error(`[ControllerDelegationValidator] findActiveSession(null) — resolved via fallbackHeuristic: ${path.basename(sessionDir)}`);
-  }
+  // Strict ownership (WI-5): judge the write only against a session that this
+  // transcript owns. A foreign or missing session means no-op allow. The old
+  // newest-session fallback let transcript B be denied by transcript A's
+  // controller, so it is gone.
+  const sessionDir = resolveGovernedSession(input.session_id);
+  if (!sessionDir) return null;
 
   const agentTreePath = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
   const agentTreeContent = safeRead(agentTreePath);

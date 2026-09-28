@@ -1,10 +1,41 @@
 # cAgents Release Notes
 
-**Current Version**: 12.72.2
-**Release Date**: September 26, 2026
+**Current Version**: 12.73.0
+**Release Date**: September 27, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.73.0 - September 27, 2026 (strict session ownership for concurrent sessions)
+
+Two Claude Code sessions in one project dir interfered with each other. Hooks
+fired in one transcript found the other transcript's cAgents session through
+newest-session fallbacks. They blocked Stop, denied writes, and wrote files
+into a session that the transcript did not own. Hooks now enforce strict
+session ownership, keyed on the hook payload's `session_id`.
+
+`hook-utils.cjs` adds `getSessionOwner`, `isOwnedBy`, `resolveOwnedSession`,
+and `claimSession`. `post-write-validator.cjs` claims an unclaimed session dir
+on the first write of `status.yaml` or `instruction.yaml`, and the
+`status.yaml` heartbeat runs for the owner only. `verify-completion.cjs`,
+`team-stop.cjs`, `controller-delegation-validator.cjs`,
+`session-init-gate.cjs`, `subagent-tracker.cjs`, and
+`subagent-stop-tracker.cjs` resolve only an owned session. `team-start.cjs`,
+`team-task-complete.cjs`, and `teammate-idle-handler.cjs` gained owner guards.
+`session-init-gate.cjs` allows a spawn in silence when no owned session exists,
+and `heuristicNotice` is removed.
+
+`/designer` now seeds ownership. The seeding blocks in all three skills skip
+the write when another transcript owns the session. The step that told a skill
+to set `process.env.CAGENTS_ACTIVE_SESSION` is gone, since a skill cannot set
+environment variables for hook subprocesses. A stray NUL byte in
+`hook-utils.cjs` is now the `'\0'` escape.
+
+**Behavior change**: a UUID payload no longer adopts an unclaimed session. A
+transcript that owns no cAgents session gets no-op hooks.
+
+Tests: new regression `tests/regressions/concurrent-session-ownership.test.js`
+plus 6 new hook test files. Legacy tests were updated, and none were deleted.
 
 ## V12.72.2 - September 26, 2026 (bash guard: dontAsk mode and --force-with-lease)
 
@@ -2451,5 +2482,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.72.2
+**Current Version**: 12.73.0
 **Release Date**: August 21, 2026

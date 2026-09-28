@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.72.2"
+  version: "12.73.0"
   argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
   user-invocable: "true"
   context: "fork"
@@ -118,13 +118,14 @@ MEM="$CAGENTS_ROOT/cagents-memory"
 SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 ```
 
-Then run `mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"`. (v12.6.0: do NOT create `workflow/events/`.) Write `instruction.yaml` and `status.yaml` with `phase: INIT`. Write the lead entry to `workflow/agent_tree.yaml`. Set `CAGENTS_ACTIVE_SESSION=${SESSION_ID}`. Never run `npm install` or `npm ci` with the cwd inside a session directory or a scratch directory. An install runs from `$CAGENTS_ROOT` only.
+Then run `mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"`. (v12.6.0: do NOT create `workflow/events/`.) Write `instruction.yaml` and `status.yaml` with `phase: INIT`. Write the lead entry to `workflow/agent_tree.yaml`. A skill cannot set environment variables for hook subprocesses. Hooks bind this session to your transcript by claim-on-write: the first write of `instruction.yaml` or `status.yaml` claims an unclaimed session dir. Step 2a-i seeds the same binding up front. Never run `npm install` or `npm ci` with the cwd inside a session directory or a scratch directory. An install runs from `$CAGENTS_ROOT` only.
 
-**2a-i (BEST-EFFORT PRIMARY, SDK-UUID map).** The session dir and `status.yaml` now exist. If `${CLAUDE_SESSION_ID}` is available AND SDK-UUID-shaped, persist the mapping. The hooks then resolve this session deterministically by its SDK transcript UUID. This write is **best-effort PRIMARY only**. The **authoritative and robust fallback** is the WI-3 hook self-population, which is `upsertSdkSessionMap` in `subagent-tracker.cjs` and in `session-init-gate.cjs`. That fallback is needed for two reasons. `${CLAUDE_SESSION_ID}` can be empty at skill init. It can also differ from the `input.session_id` of the hook payload. The map must never depend SOLELY on the skill capturing its own UUID.
+**2a-i (BEST-EFFORT, SDK-UUID map).** The session dir and `status.yaml` now exist. If `${CLAUDE_SESSION_ID}` is set and SDK-UUID-shaped, write the marker and the map pointer. The owner guard skips the write when the marker names another UUID. This step is optional. `${CLAUDE_SESSION_ID}` can be empty, or it can differ from the hook payload UUID. The robust path is claim-on-write in `post-write-validator.cjs`. `claimSession` in `subagent-tracker.cjs` and `session-init-gate.cjs` also seeds ownership.
 
 ```bash
 SID="${CLAUDE_SESSION_ID:-}"
-if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; then
+OWNER="$(cat "${SESSION_DIR}/session.sdk_id" 2>/dev/null)"  # never re-own a foreign session
+if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] && [[ -z "$OWNER" || "$OWNER" == "$SID" ]]; then
   printf '%s' "$SID" > "${SESSION_DIR}/session.sdk_id"
   mkdir -p "$MEM/_system/sdk_session_map"
   printf '%s' "${SESSION_ID}" > "$MEM/_system/sdk_session_map/${SID}"

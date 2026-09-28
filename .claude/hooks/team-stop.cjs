@@ -40,7 +40,7 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, findActiveSession, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, resolveOwnedSession, isOwnedBy, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated } = require('./hook-utils.cjs');
 
 // Defensive: REC-01 terminal-state normalizer (v12.46.0). Guarded in the same
 // try/catch style as the js-yaml require above so an older hook-utils.cjs without
@@ -514,20 +514,18 @@ createHook('SessionEnd', async (input) => {
   let summary = '';
 
   // --- Phase 1: Agent tree cleanup for ANY session type ---
-  // SessionEnd legitimately operates on terminal sessions (finalizing). Resolve
-  // session strictly from input.session_id when present (bypassing the
-  // non-terminal-only filter in findActiveSession's deterministic chain).
-  // Falls back to findActiveSession({fallbackHeuristic:true}) when no hint —
-  // SessionEnd does need to find SOME session to finalize.
+  // Strict ownership. SessionEnd finalizes only the session this transcript
+  // owns. A UUID payload resolves through resolveOwnedSession (terminal
+  // sessions allowed, since SessionEnd finalizes them). A non-UUID payload is
+  // an exact cAgents session id pin, used as a dir name. There is no newest
+  // session guess: with no owned session, Phase 1 is skipped.
+  const payloadUuid = SDK_UUID_RE.test(input.session_id || '') ? input.session_id : null;
   let anySession = null;
-  if (input.session_id) {
+  if (payloadUuid) {
+    anySession = resolveOwnedSession(payloadUuid, { includeTerminal: true });
+  } else if (input.session_id && input.session_id === path.basename(input.session_id)) {
     const direct = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
-    if (fs.existsSync(direct)) {
-      anySession = direct;
-    }
-  }
-  if (!anySession) {
-    anySession = findActiveSession({ fallbackHeuristic: true });
+    if (fs.existsSync(direct)) anySession = direct;
   }
   let agentTreeSessionDir = null;
 
@@ -580,7 +578,22 @@ createHook('SessionEnd', async (input) => {
   }
 
   // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---
-  const teamSessionDir = findTeamSession(input);
+  // With a UUID payload, only a team session owned by that UUID qualifies.
+  // The owned Phase 1 session is used first, because findTeamSession skips
+  // terminal team sessions on its UUID path.
+  // With no session_id at all, skip Phase 2. findTeamSession would fall back to
+  // the newest team session, and nothing proves who owns it.
+  let teamSessionDir = null;
+  if (payloadUuid) {
+    if (anySession && path.basename(anySession).startsWith('team_')) {
+      teamSessionDir = anySession;
+    } else {
+      const candidate = findTeamSession(input);
+      if (candidate && isOwnedBy(candidate, payloadUuid)) teamSessionDir = candidate;
+    }
+  } else if (input.session_id) {
+    teamSessionDir = findTeamSession(input);
+  }
   if (!teamSessionDir) {
     // No team session — return agent tree cleanup summary if any
     if (summary) {
