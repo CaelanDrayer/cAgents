@@ -42,9 +42,13 @@ function sessionsDir() {
   return join(projectDir, 'cagents-memory', 'sessions');
 }
 
-function makeSession(sid, { controller = true, terminal = false } = {}) {
+// `owner` seeds the strict-ownership marker (session.sdk_id). Hooks act only on
+// a session owned by the payload session_id, so a test whose intent is "the
+// transcript's own session" must say so on disk.
+function makeSession(sid, { controller = true, terminal = false, owner = null } = {}) {
   const dir = join(sessionsDir(), sid);
   mkdirSync(join(dir, 'workflow'), { recursive: true });
+  if (owner) writeFileSync(join(dir, 'session.sdk_id'), `${owner}\n`);
   const phase = terminal ? 'VALIDATED' : 'coordinating';
   const state = terminal ? 'VALIDATED' : 'COORDINATING';
   writeFileSync(join(dir, 'status.yaml'), `session_id: ${sid}\nphase: ${phase}\npipeline_state: ${state}\n`);
@@ -133,7 +137,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
     expect(surfaced).toMatch(/CAUSE:/);
   });
 
-  it('H4 — terminal-only sessions do not RESOLVE, but no longer block the spawn', () => {
+  it('H4 — unowned terminal-only sessions do not resolve, do not block the spawn, and are never named', () => {
     makeSession('act_h4-terminal_001', { controller: true, terminal: true });
     const parsed = runHook('session-init-gate', {
       tool_name: 'Agent',
@@ -142,8 +146,10 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
     });
     expect(decisionOf(parsed)).not.toBe('deny');
     const surfaced = `${parsed.systemMessage || ''}\n${parsed.hookSpecificOutput?.permissionDecisionReason || ''}`;
-    // Branch-specific: it must say TERMINAL, not the old generic "run a skill first".
-    expect(surfaced).toMatch(/TERMINAL/);
+    // Strict ownership (WI-5): this transcript owns no session, so the terminal
+    // session on disk is not ours. The gate allows in silence and never names it.
+    expect(surfaced).not.toMatch(/TERMINAL/);
+    expect(surfaced).not.toContain('act_h4-terminal_001');
   });
 
   it('H4 — RF-2: a non-cAgents subagent_type is never touched by this gate', () => {
@@ -162,7 +168,7 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
   // ---- H3: controller-delegation-validator must NOT silently fail-open ----
 
   it('H3 — controller-delegation DENIES a controller src/ write when an active controller is present (UUID payload, no env)', () => {
-    makeSession('act_h3-controller_001', { controller: true });
+    makeSession('act_h3-controller_001', { controller: true, owner: UUID });
 
     const parsed = runHook(
       'controller-delegation-validator',
@@ -175,8 +181,21 @@ describe('session-gate env-propagation fallback (H3/H4)', () => {
     expect(decisionOf(parsed)).toBe('deny');
   });
 
+  it('H3 — controller-delegation does NOT deny on a controller session owned by ANOTHER transcript', () => {
+    // Strict ownership: a foreign session's active controller must not block this write.
+    makeSession('act_h3-foreign_001', { controller: true, owner: '00000000-0000-4000-8000-000000000000' });
+
+    const parsed = runHook(
+      'controller-delegation-validator',
+      { tool_name: 'Write', tool_input: { file_path: 'src/app/foo.ts' }, session_id: UUID },
+      { CAGENTS_DELEGATION_ENFORCEMENT: 'block' }
+    );
+
+    expect(decisionOf(parsed)).not.toBe('deny');
+  });
+
   it('H3 — controller-delegation does NOT over-deny when only an execution agent is active (no controller)', () => {
-    makeSession('act_h3-exec_001', { controller: false });
+    makeSession('act_h3-exec_001', { controller: false, owner: UUID });
 
     const parsed = runHook(
       'controller-delegation-validator',

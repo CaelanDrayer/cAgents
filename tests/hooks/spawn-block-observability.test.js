@@ -183,13 +183,36 @@ function fixtureHeuristic() {
   return root;
 }
 
+// Strict ownership (WI-5): the third column is the branch-specific phrase the
+// notice must carry, or null when the branch is now SILENT by design. The
+// all-terminal, orphan, and heuristic branches all mean "session dirs exist but
+// this transcript owns none of them". Those dirs belong to other transcripts, so
+// the gate allows and says nothing, and above all never names them.
 const PRESENCE_BRANCHES = [
   ['absent-dir  (FS-1 / C1: no cagents-memory at all)', fixtureAbsentDir, /AUTO-CREATED|could NOT be created/],
   ['empty-dir   (sessions/ exists, holds nothing)', fixtureEmptyDir, /CAUSE:/],
-  ['all-terminal(C2: only a VALIDATED session)', fixtureAllTerminal, /TERMINAL/],
-  ['orphan      (session dirs exist, none resolvable)', fixtureOrphan, /CAUSE:/],
-  ['heuristic   (FS-8: authorised by an unrelated session)', fixtureHeuristic, /FALLBACK HEURISTIC/],
+  ['all-terminal(C2: only a VALIDATED session)', fixtureAllTerminal, null],
+  ['orphan      (session dirs exist, none resolvable)', fixtureOrphan, null],
+  ['heuristic   (FS-8: authorised by an unrelated session)', fixtureHeuristic, null],
 ];
+const NOTICE_BRANCH_COUNT = PRESENCE_BRANCHES.filter(([, , phrase]) => phrase !== null).length;
+
+/** Session dir names a fixture created. A silent verdict must name none of them. */
+function sessionNamesIn(root) {
+  try { return readdirSync(join(root, 'cagents-memory', 'sessions')); } catch { return []; }
+}
+
+/** The new contract for a no-owned-session branch: allow, bare continue, name nothing. */
+function expectSilentAllow(verdict, root, label) {
+  expect(verdict?.hookSpecificOutput?.permissionDecision, `${label}: presence check must never deny`).not.toBe('deny');
+  // null (no output) and a bare {continue:true} are both a plain allow with no notice.
+  expect(verdict === null || isBareContinue(verdict), `${label}: a no-owned-session spawn must allow with no notice`).toBe(true);
+  const text = surfaced(verdict);
+  for (const name of sessionNamesIn(root)) {
+    expect(text, `${label}: notice names a session this transcript does not own`).not.toContain(name);
+  }
+  expect(text).not.toMatch(/FALLBACK HEURISTIC|NOT YOUR SESSION/);
+}
 
 describe('spawn-block observability — every degrade reaches the model', () => {
   afterEach(() => {
@@ -201,11 +224,16 @@ describe('spawn-block observability — every degrade reaches the model', () => 
   });
 
   describe('session-init-gate presence branches', () => {
-    it.each(PRESENCE_BRANCHES)('%s is reported in systemMessage/permissionDecisionReason', async (label, makeFixture, expectedPhrase) => {
+    it.each(PRESENCE_BRANCHES)('%s is reported in systemMessage/permissionDecisionReason, or allowed silently when the transcript owns no session', async (label, makeFixture, expectedPhrase) => {
       const root = makeFixture();
       const { mod, restore } = gateFor(root);
       try {
         const verdict = await mod.handler(spawnInput());
+        if (expectedPhrase === null) {
+          // Strict ownership: this branch is silent by design (see PRESENCE_BRANCHES).
+          expectSilentAllow(verdict, root, label);
+          return;
+        }
         expectVisible(verdict, label);
         expect(surfaced(verdict), `${label}: branch-specific remediation missing`).toMatch(expectedPhrase);
         // RF-1: advisory only — no branch of the presence check may deny.
@@ -215,12 +243,18 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       }
     });
 
-    it.each(PRESENCE_BRANCHES)('%s carries the one-line install self-check (RF-5 #5)', async (label, makeFixture) => {
+    it.each(PRESENCE_BRANCHES)('%s carries the one-line install self-check (RF-5 #5), or emits no notice at all when silent', async (label, makeFixture, expectedPhrase) => {
       const root = makeFixture();
       const { mod, restore } = gateFor(root);
       try {
         const verdict = await mod.handler(spawnInput());
         const text = surfaced(verdict);
+        if (expectedPhrase === null) {
+          // Silent branch: no notice at all, so no self-check line either.
+          expect(text, `${label}: silent branch emitted a SELF-CHECK notice`).not.toMatch(/SELF-CHECK/);
+          expectSilentAllow(verdict, root, label);
+          return;
+        }
         expect(text, `${label}: no SELF-CHECK line`).toMatch(/SELF-CHECK: cAgents v/);
         expect(text, `${label}: SELF-CHECK omits the flat agents/ count`).toMatch(/agents\/=\d+/);
       } finally {
@@ -228,23 +262,30 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       }
     });
 
-    it('the fallback-heuristic notice names the session AND its last-modified time', async () => {
+    it('an unowned session is never named: no fallback-heuristic notice, no mtime, silent allow', async () => {
+      // Strict ownership (WI-5): the heuristic and its notice are removed. An
+      // unclaimed session owned by nobody no longer authorises this spawn and is
+      // never named to the model. The spawn is still allowed (advisory gate).
       const root = fixtureHeuristic();
       const { mod, restore } = gateFor(root);
       try {
         const verdict = await mod.handler(spawnInput());
         const text = surfaced(verdict);
-        expect(text).toContain('designer_abandoned_260805_001');
-        expect(text).toMatch(/last modified \d{4}-\d{2}-\d{2}T/);
-        expect(text).toMatch(/NOT YOUR SESSION/i);
+        expect(text).not.toContain('designer_abandoned_260805_001');
+        expect(text).not.toMatch(/last modified \d{4}-\d{2}-\d{2}T/);
+        expect(text).not.toMatch(/NOT YOUR SESSION/i);
+        expectSilentAllow(verdict, root, 'heuristic');
+        expect(typeof mod.heuristicNotice, 'heuristicNotice should no longer be exported').toBe('undefined');
       } finally {
         restore();
       }
     });
 
-    it('branch remediations are DISTINCT (not one generic "run a skill first")', async () => {
+    it('notice-bearing branch remediations are DISTINCT (not one generic "run a skill first")', async () => {
       const texts = [];
-      for (const [, makeFixture] of PRESENCE_BRANCHES) {
+      for (const [, makeFixture, expectedPhrase] of PRESENCE_BRANCHES) {
+        // Silent branches (strict ownership) have no remediation to compare.
+        if (expectedPhrase === null) continue;
         const root = makeFixture();
         const { mod, restore } = gateFor(root);
         try {
@@ -258,7 +299,8 @@ describe('spawn-block observability — every degrade reaches the model', () => 
           restore();
         }
       }
-      expect(new Set(texts).size, 'branches share a remediation message').toBe(PRESENCE_BRANCHES.length);
+      expect(texts.every((t) => t.trim().length > 0), 'a notice branch reported nothing').toBe(true);
+      expect(new Set(texts).size, 'branches share a remediation message').toBe(NOTICE_BRANCH_COUNT);
     });
 
     it('an UNREADABLE sessions dir is reported with its errno and path (RF-4, fails OPEN)', async () => {
@@ -382,7 +424,7 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       expect(`${parsed.systemMessage}`).toMatch(/SESSION BOOTSTRAP WINDOW/);
     });
 
-    it('its remediation is DISTINCT from all five absence-branch remediations', async () => {
+    it('its remediation is DISTINCT from every notice-bearing absence-branch remediation', async () => {
       const norm = (t) => t
         .replace(/\/[^\s`,)]*cagents-obs-[^\s`,)]*/g, '<PATH>')
         .replace(/\d{4}-\d{2}-\d{2}T[\d:.]+Z/g, '<TS>');
@@ -397,7 +439,9 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       }
 
       const others = [];
-      for (const [, makeFixture] of PRESENCE_BRANCHES) {
+      for (const [, makeFixture, expectedPhrase] of PRESENCE_BRANCHES) {
+        // Silent branches (strict ownership) emit no remediation to compare.
+        if (expectedPhrase === null) continue;
         const root = makeFixture();
         const { mod, restore } = gateFor(root);
         try {
@@ -410,7 +454,7 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       // Distinct AND present: an empty string is trivially distinct, so guard it.
       expect(bootstrapText.trim().length, 'bootstrap branch reported nothing').toBeGreaterThan(0);
       expect(others, 'bootstrap reuses an absence branch remediation verbatim').not.toContain(bootstrapText);
-      expect(new Set([...others, bootstrapText]).size).toBe(PRESENCE_BRANCHES.length + 1);
+      expect(new Set([...others, bootstrapText]).size).toBe(NOTICE_BRANCH_COUNT + 1);
       // It is a different KIND of event, so it must not borrow their head line.
       expect(bootstrapText).not.toMatch(/SESSION PRESENCE/);
     });

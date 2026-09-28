@@ -19,7 +19,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, ensureDir, safeRead, extractYamlValue, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock, updateStatusHeartbeat } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, ensureDir, safeRead, extractYamlValue, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock, updateStatusHeartbeat, claimSession, getSessionOwner } = require('./hook-utils.cjs');
+
+const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 // Auto-format detection cache (v10.6.0)
 let _formatterCache = null;
@@ -208,6 +210,23 @@ function detectSlopPatterns(content) {
   return matches;
 }
 
+/**
+ * Return the session dir when the path is cagents-memory/sessions/{sid}/status.yaml
+ * or instruction.yaml under this project, with {sid} a direct child of sessions/.
+ * A relative path resolves against the payload cwd, then the project root.
+ * Returns null otherwise.
+ */
+function sessionDirForClaim(filePath, cwd) {
+  if (!filePath) return null;
+  const base = path.basename(filePath);
+  if (base !== 'status.yaml' && base !== 'instruction.yaml') return null;
+  const abs = path.resolve(cwd || PROJECT_ROOT, filePath);
+  const sessionDir = path.dirname(abs);
+  const sessionsRoot = path.resolve(AGENT_MEMORY_DIR, 'sessions');
+  if (path.dirname(sessionDir) !== sessionsRoot) return null;
+  return sessionDir;
+}
+
 createHook('PostWriteValidator', async (input) => {
   const toolName = input.tool_name || '';
   const toolInput = input.tool_input || {};
@@ -302,9 +321,25 @@ createHook('PostWriteValidator', async (input) => {
   // reader (verify-completion.cjs revision counter) matches FAIL/REVISE event
   // bodies, which the state_transition emitter never produced. The heartbeat
   // update below is the only behavior retained.)
+  // Claim-on-write. A write to sessions/{sid}/status.yaml or instruction.yaml
+  // binds an unclaimed session to the writer's UUID. A session owned by another
+  // UUID stays unchanged. Runs before the heartbeat and the audit trail so the
+  // claimed session is the one that gets them. Fail-open.
+  try {
+    const claimDir = sessionDirForClaim(filePath, input.cwd);
+    if (claimDir && input.session_id) claimSession(claimDir, input.session_id);
+  } catch { /* best effort */ }
+
+  // Heartbeat is ownership-gated: a UUID writer does not refresh a status.yaml
+  // whose session is owned by a different UUID, so transcript B cannot keep
+  // A's heartbeat fresh. Unclaimed or non-UUID cases keep the old behavior.
   if (basename === 'status.yaml') {
     try {
-      updateStatusHeartbeat(path.dirname(filePath));
+      const statusDir = path.dirname(filePath);
+      const sid = input.session_id;
+      const owner = SDK_UUID_RE.test(sid || '') ? getSessionOwner(statusDir) : null;
+      const foreign = owner && SDK_UUID_RE.test(owner) && owner !== sid;
+      if (!foreign) updateStatusHeartbeat(statusDir);
     } catch { /* best effort */ }
   }
 

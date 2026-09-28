@@ -44,6 +44,12 @@ outputs, and the side effects of each hook.
   experimental path alike. This teardown does not depend on `TeamCreate` or on
   `TeamDelete`, which version 2.1.178 removed. Cleanup of an implicit team is
   automatic.
+- **Resolution (v12.73.0, strict ownership)**: a UUID payload resolves through
+  `resolveOwnedSession(uuid, { includeTerminal: true })`. A non-UUID payload is
+  an exact session-id pin. Phase 2 takes a team session only when `isOwnedBy`
+  holds for the UUID, and it is skipped when the payload has no `session_id`.
+  There is no `fallbackHeuristic` and no newest-session guess. With no owned
+  session the hook skips session finalization.
 - **Phase 1, agent tree cleanup (all session types)**: Marks any unstopped agent
   in `workflow/agent_tree.yaml` with `stopped_at`. It computes
   `duration_seconds` from `spawned_at`. It uses `yaml.load` with a regex
@@ -333,6 +339,12 @@ per-class scorecard, and the complete residual list.
   a subagent now retains `Agent` and self-registers reliably. Scoping prevents
   the footgun where a default-on `block` mode would deny the user's own
   legitimate edits.
+- **Session resolution (v12.73.0, strict ownership)**: the current session is
+  the one the payload transcript owns. The hook tries `resolveOwnedSession`
+  first. It then tries `findActiveSession` and keeps that result only when it
+  is unclaimed or owned. A foreign or missing session means a no-op allow.
+  There is no newest-session fallback, so one transcript's controller never
+  blocks another transcript's writes.
 - **Output (hard deny for protected paths)**: When a controller is active, the
   hook returns `permissionDecision: "deny"` in `block` mode. It does so for a
   Write or an Edit that targets `src/`, `lib/`, `components/`, `app/`,
@@ -409,21 +421,22 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
 **Consolidated sub-validator: session-init-gate.cjs** (dispatched first, FAIL-CLOSED session-presence gate; not independently registered)
 
 - **Purpose**: Two-phase guard before any Agent spawn. Phase 1 (session-presence gate) DENIES; Phase 2 (alias check) is advisory.
-- **Output (Phase 1, the session-presence gate)**: Calls `denyWithReason()` when
-  no active session directory exists. That is the case when `findActiveSession`
-  returns null and no `CAGENTS_SESSION_ID` bypass is set. The call blocks an
-  agent spawn that would have no session to write into.
+- **Output (Phase 1, the session-presence gate)**: Advisory. It resolves only
+  a session that the payload transcript owns: `resolveOwnedSession(uuid)` first,
+  then `findActiveSession(uuid)` when that result is unclaimed or owned. There
+  is no newest-session fallback. When session dirs exist but none is owned by
+  this transcript, it allows the spawn in silence (stderr only, no notice). A
+  notice therefore never names another transcript's session. When no session
+  dir exists at all, it self-heals the scaffold and allows with an absence
+  notice.
 - **Output (Phase 2, the alias check)**: An advisory `systemMessage` only. It
   does not block. It resolves a `cagents:*` alias through `v12-aliases.yaml`.
   A1-06 removed the former Phase 3 advisory, which downgraded trust on
   `metadata.data_access_level`. No agent adopted it, so it never fired.
-- **SDK-UUID map writer (v12.32.0, secondary)**: on a confident session
-  resolution it also calls `upsertSdkSessionMap(input.session_id, sessionDir)`.
-  The behavior is the same as in `subagent-tracker.cjs`: idempotent, fail-open,
-  and `withFileLock`-guarded. It is the secondary writer behind the
-  SubagentStart tracker. It covers the case where the tracker did not fire first
-  for a given UUID. It also covers the case where `${CLAUDE_SESSION_ID}` does
-  not equal the `input.session_id` of the hook payload.
+- **Ownership seeding (v12.73.0)**: on a confident resolution it calls
+  `claimSession(sessionDir, input.session_id)`. The claim never overwrites a
+  foreign marker. It is fail-open and never changes the verdict. The primary
+  claim path is claim-on-write in `post-write-validator.cjs`.
 - **Bypass**: Set `CAGENTS_SESSION_ID` to skip the presence gate during tests or out-of-session work.
 
 **Consolidated sub-validator: model-routing-advisor.cjs** (dispatched second, ADVISORY/FAIL-OPEN; not independently registered)
@@ -439,6 +452,11 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
 - **Also**: Stop-workflow cleanup. It replaces stop-workflow.sh.
 - **Creates**: `completion_summary.yaml`
 - **Can block**: Returns `{decision: "block", reason: "..."}` for incomplete workflows.
+- **Resolution (v12.73.0, strict ownership)**: a UUID payload resolves through
+  `resolveOwnedSession(uuid, { includeTerminal: true })`. With no owned session
+  the hook allows the stop and writes nothing. It never falls back to the
+  newest session. A non-UUID payload keeps the legacy exact-name pin, but a
+  session with an owner marker is treated as foreign and left alone.
 - **Actively-working discriminator (FIX 2, v12.32.0)**:
   `sessionActivelyWorking(sessionDir, statusContent)` returns true in two cases.
   The first case is a spawned child agent that still runs, which is an
@@ -490,26 +508,19 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
 ### SubagentStart: subagent-tracker.cjs + team-start.cjs + role-manifest-injector.cjs
 
 - **subagent-tracker.cjs**: Logs each agent spawn to `workflow/agent_tree.yaml`
-  and to the global audit log at `_system/logs/agent_spawns.log`. It carries a
-  fallback session discovery for the race where nothing has written `status.yaml`
-  yet. It injects `additionalContext` that asks a cAgents agent to self-register
-  its `cagents:{name}` type. That is needed because the `agent_type` field of
+  and to the global audit log at `_system/logs/agent_spawns.log`. It injects
+  `additionalContext` that asks a cAgents agent to self-register its
+  `cagents:{name}` type. That is needed because the `agent_type` field of
   Claude Code reports `general-purpose` for a plugin agent.
-- **subagent-tracker.cjs, the SDK-UUID map writer (v12.32.0, primary)**: it
-  first resolves the owning session with confidence. It resolves through an env
-  var, through promptHint, or through the `session.sdk_id` marker. It does not
-  resolve through the new UUID map, because that would be circular. It also
-  never resolves through the newest-session heuristic, because that would bring
-  back the concurrency bug. It then calls
-  `upsertSdkSessionMap(input.session_id, sessionDir)`. That call writes the
-  per-session marker `sessions/{id}/session.sdk_id`, which holds the SDK UUID.
-  It also writes the global pointer
-  `cagents-memory/_system/sdk_session_map/{uuid}`, whose content is the owning
-  session_id. Each one is an atomic per-UUID file, mutated under `withFileLock`,
-  with an opportunistic prune on upsert. The call is idempotent and fail-open,
-  so a failed map write never blocks the spawn. This is the primary writer path,
-  and it is the reliable one. The skill-layer `session.sdk_id` write is the
-  best-effort secondary path.
+- **subagent-tracker.cjs, session resolution (v12.73.0, strict ownership)**: it
+  tries three deterministic passes: `findActiveSession` (map and env var),
+  `resolveSdkUuidOwner` (pointer owner, terminal-agnostic), and the
+  `SESSION_DIR` prompt hint. It drops any result whose marker names another
+  UUID. There is no newest-session guess. With no owned session it writes only
+  to the global log. After a resolution it calls
+  `claimSession(sessionDir, input.session_id)`, which seeds the marker and the map
+  pointer. The claim never overwrites a foreign marker, and a failure never
+  blocks the spawn.
 - **team-start.cjs**: Initializes the team monitoring directories and the
   metrics files. **It serves the experimental named-background-teammate path
   only**, and `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` gates it. It is a no-op on
@@ -560,6 +571,9 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
 - **Also**: Appends stop events with summaries to the global audit log.
 - **Updates**: `workflow/agent_tree.yaml` (adds `stopped_at`, `completion_summary`, `duration_seconds`).
 - **Captures**: `last_assistant_message` from SubagentStop input (truncated to 300 chars for audit trail).
+- **Resolution**: the same passes as `subagent-tracker.cjs`, so a start and its
+  stop land in one session. A foreign-owned result is dropped. There is no
+  newest-session guess, so an unowned stop goes to the global log only.
 
 ### PostToolUse[Write|Edit|NotebookEdit]: post-write-validator.cjs
 
@@ -568,6 +582,12 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
   write to the file_changes audit trail of the session.
 - **Validates**: JSON parsing, YAML tab detection, duplicate YAML top-level keys, anti-slop patterns, SKILL.md schema.
 - **Logs**: All file changes to `workflow/file_changes.log` with timestamps and validation status (`status: "warn"` when warnings are detected).
+- **Claim-on-write (v12.73.0)**: a write to `sessions/{sid}/status.yaml` or
+  `sessions/{sid}/instruction.yaml` calls `claimSession(sessionDir,
+  input.session_id)`. The `{sid}` dir must be a direct child of `sessions/`. An
+  unclaimed session becomes owned by the writing transcript. A foreign-owned
+  session stays unchanged. The claim runs before the audit-trail line and is
+  fail-open. This is the primary way a session gets its owner.
 - **Output**: Returns `{ continue: true }` and no systemMessage. The
   thinking-block-immutability contract (run_team-thinking-400_260531_001) stops a
   PostToolUse hook from emitting a systemMessage. A warning surfaces through

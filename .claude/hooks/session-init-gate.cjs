@@ -46,11 +46,10 @@
  *    It was the last path in this gate that degraded with no notice at all;
  *    it now pushes `bootstrapWindowNotice()` like every other absence branch.
  *
- *    FALLBACK-HEURISTIC VISIBILITY (RF-5): when the spawn is authorised by the
- *    newest-non-terminal-session heuristic rather than the deterministic
- *    SDK-UUID map, that fact is reported TO THE MODEL (systemMessage), not just
- *    to stderr. A month-old abandoned `designer_*` dir silently authorising
- *    production spawns is exactly the failure this makes impossible to miss.
+ *    STRICT OWNERSHIP (WI-5): only a session owned by the payload session_id
+ *    counts as present. The newest-session fallback heuristic was removed. When
+ *    session dirs exist but none is owned by this transcript, the spawn is
+ *    allowed with no notice, so a notice never names another transcript's session.
  *
  * 2. ALIAS LOOKUP (P0-2 v12.7.x; catalog root fixed in RF-3, v12.70.0):
  *    For `cagents:<name>` spawns where <name> is NOT in the flat `agents/`
@@ -93,7 +92,9 @@ const {
   safeRead,
   extractYamlValue,
   isTerminalState,
-  upsertSdkSessionMap,
+  resolveOwnedSession,
+  getSessionOwner,
+  claimSession,
 } = require('./hook-utils.cjs');
 
 // --- metadata.requires removed (P2-10 v12.7.x) ---
@@ -459,27 +460,11 @@ function absenceNotice(diag, heal) {
 }
 
 /**
- * RF-5 (FS-8): the fallback heuristic resolved this spawn against SOME session
- * on disk — possibly an abandoned one from months ago. Say so, to the model.
- */
-function heuristicNotice(sessionDir) {
-  let mtime = 'unknown';
-  try { mtime = new Date(fs.statSync(sessionDir).mtimeMs).toISOString(); } catch { /* keep 'unknown' */ }
-  return '[session-init-gate] SPAWN AUTHORISED VIA FALLBACK HEURISTIC against ' +
-         `\`${path.basename(sessionDir)}\` (last modified ${mtime}) — THIS IS NOT YOUR SESSION. ` +
-         'The deterministic chain (SDK-UUID map -> CAGENTS_ACTIVE_SESSION) did not resolve, so the newest ' +
-         'non-terminal session directory on disk was used instead. Artifacts this spawn writes through the ' +
-         'session hooks may land in THAT session. FIX: start your own session with `/act`, or set ' +
-         'CAGENTS_ACTIVE_SESSION.\n' + envFingerprint();
-}
-
-/**
  * RF-5 (LOW-2, review round 1): the agent catalog could not be found, so the
  * registered-agent / alias advisory is DISABLED for this spawn. That degrade was
  * previously INVISIBLE — `aliasResult` went null, no notice was pushed, and the
  * gate emitted a bare `{continue:true}`. `envFingerprint()` does report
- * `catalog_root=NOT-FOUND`, but it is only reachable from `absenceNotice` /
- * `heuristicNotice`, so in the common shape (session resolves fine, catalog
+ * `catalog_root=NOT-FOUND`, but it is only reachable from `absenceNotice`, so in the common shape (session resolves fine, catalog
  * missing) nothing at all was emitted. RF-5's own doctrine is that every degrade
  * is visible TO THE MODEL, not stderr-only — so say it, naming WHAT was looked
  * for and WHERE it was looked for.
@@ -596,58 +581,44 @@ const handler = async (input) => {
   }
 
   if (!sessionPresent) {
-    let sessionDir = findActiveSession(input.session_id);
-    // WI-3 (secondary writer): only the no-fallback findActiveSession resolution
-    // (SDK-UUID map / env-var) is trustworthy enough to seed the SDK-UUID map. The
-    // fallbackHeuristic path below is the newest-session heuristic, which can
-    // mis-resolve under concurrent same-dir sessions — it MUST NOT seed the map.
-    let confidentSeed = !!sessionDir; // trustworthy: map/env
-    let viaHeuristic = false;
+    // Strict ownership (WI-5): only a session this transcript owns counts. The
+    // map pointer or marker of the UUID wins. The deterministic chain (env var,
+    // explicit hint) is a second try, and counts only when the session is
+    // unclaimed or owned by this UUID. The newest-session fallback is gone: it
+    // let transcript B's spawn be authorised by, and named after, A's session.
+    const uuid = input.session_id;
+    let sessionDir = resolveOwnedSession(uuid);
     if (!sessionDir) {
-      // H4 (v12.20.0): Claude Code's `input.session_id` is an SDK transcript UUID,
-      // not a cAgents session-dir name, so the deterministic chain skips step 1.
-      // If CAGENTS_ACTIVE_SESSION did NOT propagate to this hook subprocess (a
-      // known unreliability), findActiveSession returns null even when a perfectly
-      // valid active session dir exists on disk — and this gate would then HARD-DENY
-      // EVERY Agent spawn, hanging the entire pipeline at its first delegation.
-      // Fall back to the documented opt-in legacy heuristic, which resolves the
-      // most-recent session that has a NON-TERMINAL status.yaml (or recent
-      // session markers within the grace window). This only flips deny -> allow
-      // when a genuinely-active session exists — it rejects abandoned husk dirs
-      // (no status.yaml, stale mtime) — which is the safe direction for a presence
-      // gate (its job is to catch orphan spawns with NO session at all).
-      sessionDir = findActiveSession({ sessionHint: input.session_id, fallbackHeuristic: true });
-      if (sessionDir) {
-        viaHeuristic = true;
-        console.error(`[SessionInitGate] findActiveSession(null) — resolved via fallbackHeuristic: ${path.basename(sessionDir)}`);
-      }
+      const dir = findActiveSession(uuid);
+      const owner = dir ? getSessionOwner(dir) : null;
+      if (dir && (owner === null || owner === uuid)) sessionDir = dir;
     }
     if (sessionDir) {
       sessionPresent = true;
-      // RF-5 (FS-8): a heuristic resolution is a DEGRADED path. Stderr alone let a
-      // month-old abandoned session silently authorise production spawns for months.
-      if (viaHeuristic) notices.push(heuristicNotice(sessionDir));
-      // WI-3 (secondary writer): seed the SDK-UUID → session map on a CONFIDENT
-      // resolution only (map/env — never the fallbackHeuristic newest-session path).
-      // Fail-open — the upsert is already internally fail-open and the belt-and-
-      // suspenders try/catch guarantees a map-write NEVER changes this gate's
-      // allow/deny verdict.
-      if (confidentSeed && input.session_id) {
-        try { upsertSdkSessionMap(input.session_id, sessionDir); }
-        catch (e) { console.error('[SessionInitGate] map upsert non-fatal: ' + (e && e.message)); }
+      // Seed ownership on a confident resolution. claimSession never
+      // overwrites a foreign marker. It is fail-open and never changes the verdict.
+      if (uuid) {
+        try { claimSession(sessionDir, uuid); }
+        catch (e) { console.error('[SessionInitGate] claim non-fatal: ' + (e && e.message)); }
       }
     } else {
-      // RF-1 SELF-HEAL: no session resolved. Classify WHY, create the missing
-      // scaffold, and ALLOW with a branch-specific notice. This path previously
-      // denied — and denied C1/C2/C3 (clean checkout / terminal session /
-      // no-litter machine) far more often than it caught a genuine orphan.
+      // RF-1 SELF-HEAL: no owned session. Classify WHY and ALLOW.
       const diag = classifySessionAbsence();
-      const heal = selfHealSessionScaffold(diag);
-      console.error(
-        `[SessionInitGate] no active session (branch=${diag.branch}, dir=${diag.sessionsDir}, ` +
-        `created=${heal.created}) — ALLOWING (advisory presence check).`
-      );
-      notices.push(absenceNotice(diag, heal));
+      if (diag.branch === 'orphan' || diag.branch === 'all-terminal') {
+        // Session dirs exist, but none is owned by this transcript. They belong
+        // to other transcripts (or to nobody). Their state must not shape this
+        // spawn's verdict or notice, so allow in silence.
+        console.error(
+          `[SessionInitGate] no owned session (branch=${diag.branch}) — ALLOWING without notice (other sessions are not ours).`
+        );
+      } else {
+        const heal = selfHealSessionScaffold(diag);
+        console.error(
+          `[SessionInitGate] no active session (branch=${diag.branch}, dir=${diag.sessionsDir}, ` +
+          `created=${heal.created}) — ALLOWING (advisory presence check).`
+        );
+        notices.push(absenceNotice(diag, heal));
+      }
       sessionPresent = true;
     }
   }
@@ -693,7 +664,6 @@ module.exports = {
   resolveCatalogRoot,
   classifySessionAbsence,
   absenceNotice,
-  heuristicNotice,
   catalogMissingNotice,
   bootstrapWindowNotice,
   envFingerprint,

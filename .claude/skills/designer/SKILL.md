@@ -5,7 +5,7 @@ license: MIT
 compatibility: "Claude Code >= 2.1.69"
 metadata:
   author: CaelanDrayer
-  version: "12.72.2"
+  version: "12.73.0"
   argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
   user-invocable: "true"
   context: "none"
@@ -108,6 +108,18 @@ If the user gives `--iterate <session_id>`, load the completed design from the e
 
 Write `instruction.yaml` with these fields: session_id, session_type: designer, command, request, created_at, flags, parent_session_id, and working_directory.
 Write `status.yaml` with `phase: empathize`, and initialize `state_history`.
+
+Then seed ownership (best-effort; hooks also claim the session on the first `instruction.yaml` or `status.yaml` write). Skip it when `session.sdk_id` names a different UUID:
+
+```bash
+SID="${CLAUDE_SESSION_ID:-}"
+OWNER="$(cat "${SESSION_DIR}/session.sdk_id" 2>/dev/null)"  # never re-own a foreign session
+if [[ "$SID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] && [[ -z "$OWNER" || "$OWNER" == "$SID" ]]; then
+  printf '%s' "$SID" > "${SESSION_DIR}/session.sdk_id"
+  mkdir -p "$MEM/_system/sdk_session_map"
+  printf '%s' "${SESSION_ID}" > "$MEM/_system/sdk_session_map/${SID}"
+fi
+```
 
 /designer uses the `phase` field, and it does not use `pipeline_state`. The hooks check both fields as a fallback. See `.claude/skills/act/reference/session-schema.md` for the canonical session YAML contract.
 

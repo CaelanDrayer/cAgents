@@ -29,10 +29,9 @@ const path = require('path');
 // skips the agent_tree.yaml mutation when the module is absent.
 let yaml = null;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-// GAP-4 fix: import findMostRecentSessionDir from hook-utils.cjs (shared with subagent-stop-tracker.cjs).
-// This ensures start and stop events use identical session discovery logic,
-// including env-var fast path (Pass 0) and nested org subdir scanning.
-const { createHook, findActiveSession, findMostRecentSessionDir, resolveSdkUuidOwner, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, upsertSdkSessionMap, appendSessionEvent } = require('./hook-utils.cjs');
+// Start and stop trackers share session discovery from hook-utils.cjs.
+// Neither guesses the newest session: no owned session means global log only.
+const { createHook, findActiveSession, resolveOwnedSession, getSessionOwner, claimSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
@@ -241,7 +240,8 @@ if (failureFlagIdx !== -1) {
   }
   let failDir = payload.session_dir || null;
   if (!failDir) {
-    try { failDir = findActiveSession(payload.session_id) || findMostRecentSessionDir(); }
+    // No newest-session guess. An unresolved failure goes to the global log only.
+    try { failDir = findActiveSession(payload.session_id) || null; }
     catch { failDir = null; }
   }
   const recorded = recordSpawnFailure(failDir, payload);
@@ -384,33 +384,15 @@ createHook('SubagentTracker', async (input) => {
     return null;
   }
 
-  // ---- Session resolution: EVIDENCE FIRST, GUESS LAST (ENG-OBS-2, v12.70.0) ----
-  //
-  // WI-3: track whether the resolution came from a TRUSTWORTHY path. Trustworthy
-  // passes may seed the SDK-UUID map; the newest-session GUESS must never seed it
-  // (that would reintroduce the OBJ-1 concurrency bug by binding a UUID to a
-  // session it does not own).
-  //
-  // ORDER MATTERS, and it used to be WRONG. The newest-session heuristic ran
-  // BEFORE the explicit prompt hint, and it almost always returns *something*
-  // (any non-terminal session dir on disk qualifies) — so the hint pass below was
-  // effectively DEAD CODE: a guess shadowed the one piece of hard evidence in the
-  // payload. Observed consequence in act_subagent-token-budget_260909_001: every
-  // SubagentStart record for this session was written into
-  // designer_census-postcut_260805_001, a five-week-stale sibling, whose mtime
-  // each write then refreshed — so it kept winning the newest-session race. 116
-  // agents accumulated in the wrong tree while this session's agent_tree.yaml sat
-  // at `agents: []`, which read as "the tracker never wrote" when in truth it
-  // wrote constantly, next door.
+  // ---- Session resolution: evidence only (ENG-OBS-2, v12.70.0) ----
   //
   // Passes, strongest evidence first:
   //   1. findActiveSession    — SDK-UUID map / env-var      (deterministic)
-  //   2. resolveSdkUuidOwner  — pointer OWNERSHIP, terminal-agnostic (deterministic)
+  //   2. resolveOwnedSession  — pointer or session.sdk_id marker OWNERSHIP, terminal-agnostic (deterministic)
   //   3. prompt hint          — explicit SESSION_DIR in the spawn prompt (explicit)
-  //   4. newest-session       — LAST-RESORT GUESS, and labelled as one downstream
-  let resolutionPass = null;
+  // There is no newest-session guess. A spawn with no owned session goes to the
+  // global log only. A resolved session owned by another UUID is dropped below.
   let sessionDir = findActiveSession(input.session_id);
-  if (sessionDir) resolutionPass = 'map/env';
 
   // Pass 2: OWNERSHIP. The pointer map records which session a transcript UUID
   // belongs to; `findActiveSession` discards that fact when the target's
@@ -419,19 +401,20 @@ createHook('SubagentTracker', async (input) => {
   // label (`incomplete` on a still-running session) must not divert this
   // session's audit trail into a stranger's directory. See the
   // `resolveSdkUuidOwner` JSDoc for why this is additive rather than a
-  // relaxation of the existing liveness gate.
+  // relaxation of the existing liveness gate. resolveOwnedSession also finds a
+  // session owned only by its session.sdk_id marker (no map pointer) and
+  // re-seeds the pointer: the marker alone is ownership.
   if (!sessionDir) {
-    sessionDir = resolveSdkUuidOwner(input.session_id);
+    sessionDir = resolveOwnedSession(input.session_id, { includeTerminal: true });
     if (sessionDir) {
-      resolutionPass = 'uuid-owner';
-      console.error(`[SubagentTracker] resolved via pointer OWNERSHIP (target reads terminal but owns this transcript): ${path.basename(sessionDir)}`);
+      console.error(`[SubagentTracker] resolved via OWNERSHIP (pointer or session.sdk_id marker): ${path.basename(sessionDir)}`);
     }
   }
 
   // Pass 3: Prompt-based resolution. Task-spawned subagents carry SESSION_DIR or
-  // CAGENTS_SESSION_ID in their prompt; that hint is explicit evidence and must
-  // outrank the newest-session guess below. (It exists because
-  // CAGENTS_ACTIVE_SESSION is not inherited by Task-spawned subprocesses.)
+  // CAGENTS_SESSION_ID in their prompt. It exists because CAGENTS_ACTIVE_SESSION
+  // is not inherited by Task-spawned subprocesses. A hint naming a session owned
+  // by another UUID is ignored.
   if (!sessionDir) {
     const promptText = ((input.tool_input || {}).prompt || '');
     const sessionMatch =
@@ -443,9 +426,12 @@ createHook('SubagentTracker', async (input) => {
       // hint may be a full path (e.g. cagents-memory/sessions/team_foo_260317_001) or just a name
       const sessionName = path.basename(hint);
       const candidateDir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionName);
-      if (fs.existsSync(candidateDir)) {
+      const hintOwner = fs.existsSync(candidateDir) ? getSessionOwner(candidateDir) : null;
+      if (hintOwner && input.session_id && hintOwner !== input.session_id) {
+        // The hint names a session owned by another transcript. Never file into it.
+        console.error(`[SubagentTracker] Prompt hint names a foreign session; ignoring: ${sessionName}`);
+      } else if (fs.existsSync(candidateDir)) {
         sessionDir = candidateDir;
-        resolutionPass = 'prompt-hint';
         console.error(`[SubagentTracker] Resolved session from prompt hint: ${sessionName}`);
       } else {
         console.error(`[SubagentTracker] Prompt hint session not found on disk: ${sessionName}`);
@@ -453,20 +439,15 @@ createHook('SubagentTracker', async (input) => {
     }
   }
 
-  // Pass 4: LAST-RESORT GUESS. Kept (removing it would lose tracking for
-  // non-cAgents spawns that carry no hint at all) but demoted below every
-  // evidence-based pass, and surfaced as a guess in additionalContext so a
-  // misattributed tree is visible TO THE MODEL instead of silently authoritative.
-  if (!sessionDir) {
-    sessionDir = findMostRecentSessionDir();
-    if (sessionDir) {
-      resolutionPass = 'newest-session-guess';
-      console.error(`[SubagentTracker] no deterministic resolution; GUESSING newest session: ${path.basename(sessionDir)} — this record may be filed against the wrong session.`);
+  // No newest-session guess. A spawn with no owned session goes to the global
+  // log only. A resolved dir whose marker names another UUID is foreign; drop it.
+  if (sessionDir && input.session_id) {
+    const owner = getSessionOwner(sessionDir);
+    if (owner && owner !== input.session_id) {
+      console.error(`[SubagentTracker] resolved session is owned by another transcript; not filing: ${path.basename(sessionDir)}`);
+      sessionDir = null;
     }
   }
-
-  // Only deterministic/explicit passes may seed the UUID map. The guess must not.
-  const confidentSeed = resolutionPass !== null && resolutionPass !== 'newest-session-guess';
 
   // C-03/C-04: Infer parent from session context instead of relying on input.parent_agent
   // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
@@ -493,7 +474,7 @@ createHook('SubagentTracker', async (input) => {
       attempt_id: agentId,
       attempted_type: subagentType,
       status: 'untracked',
-      reason: 'no active session resolved (all 4 resolution passes returned null: map/env, uuid-owner, prompt-hint, newest-session-guess)',
+      reason: 'no owned session resolved (map/env, uuid-owner and prompt-hint passes returned null or a foreign session)',
       source: 'subagent-tracker.cjs:no-session'
     });
     // Still return context even without session tracking
@@ -505,19 +486,15 @@ createHook('SubagentTracker', async (input) => {
     };
   }
 
-  // WI-3: sessionDir is now confirmed non-null (the guard above returned on null).
-  // Seed the SDK-UUID → session map ONLY from a trustworthy resolution (Pass 1 =
-  // map/env/promptHint, or Pass 3 = explicit prompt hint). NEVER seed when only the
-  // newest-session heuristic (Pass 2) resolved — that path can bind a UUID to the
-  // WRONG session under concurrent same-dir sessions and would reintroduce the
-  // OBJ-1 concurrency bug. This closes the seed loop: the first hook that resolves
-  // via env/promptHint/marker seeds the map, and every subsequent UUID-only hook
-  // then resolves deterministically via the map (findActiveSession is map-first).
-  // The upsert is already internally fail-open; the belt-and-suspenders try/catch
-  // guarantees a map-write failure NEVER blocks or alters spawn tracking (AC#4).
-  if (confidentSeed && sessionDir && input.session_id) {
-    try { upsertSdkSessionMap(input.session_id, sessionDir); }
-    catch (e) { console.error('[SubagentTracker] map upsert non-fatal: ' + (e && e.message)); }
+  // WI-3: sessionDir is non-null here, and it came from one of the three
+  // deterministic passes with any foreign-owned session already dropped. Seed
+  // ownership with claimSession, so later UUID-only hooks resolve via the map.
+  // claimSession never overwrites a foreign marker and is a no-op for a
+  // non-UUID session_id. The try/catch keeps a write failure from blocking
+  // spawn tracking.
+  if (sessionDir && input.session_id) {
+    try { claimSession(sessionDir, input.session_id); }
+    catch (e) { console.error('[SubagentTracker] claim non-fatal: ' + (e && e.message)); }
   }
 
   // WI-2: graceful degradation when js-yaml is unavailable (plugin install
@@ -728,12 +705,6 @@ createHook('SubagentTracker', async (input) => {
   // When the hook already wrote cagents_type (from subagent_type param or description parsing),
   // asking the agent to self-register causes duplicate cagents_type fields in agent_tree.yaml
   // because the hook writes structured YAML but self-registration appends raw YAML lines.
-  // ENG-OBS-2 (RF-5 doctrine: every degrade is visible TO THE MODEL). When no
-  // deterministic pass resolved the session, this record was filed against a
-  // GUESS. Say so, rather than presenting a possibly-misattributed tree as fact.
-  const guessNotice = resolutionPass === 'newest-session-guess'
-    ? ` NOTE: this session was GUESSED (newest non-terminal session on disk) because no SDK-UUID map entry, pointer owner, or SESSION_DIR prompt hint resolved \u2014 the record above may be filed against the WRONG session. Include SESSION_DIR in spawn prompts to make this deterministic.`
-    : '';
 
   const selfRegisterPrompt = cagentsType
     ? '' // Already captured — do NOT ask for self-registration
@@ -746,7 +717,7 @@ createHook('SubagentTracker', async (input) => {
   return {
     hookSpecificOutput: {
       hookEventName: 'SubagentStart',
-      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}).${guessNotice}${migrationNotice}${selfRegisterPrompt}`
+      additionalContext: `Agent tree: ${total} agents spawned in session ${path.basename(sessionDir)} (latest: ${subagentType}${roleInfo}, id: ${agentId}, depth: ${depth}).${migrationNotice}${selfRegisterPrompt}`
     }
   };
 });

@@ -108,7 +108,7 @@ describe('session-init-gate.cjs', () => {
     expect(result.continue).toBe(true);
   });
 
-  it('ALLOWS with an orphan-branch advisory when CAGENTS_SESSION_ID is set and the session dir exists but resolves to nothing', () => {
+  it('ALLOWS silently (no orphan notice, session id not surfaced) when CAGENTS_SESSION_ID names a dir that resolves to nothing', () => {
     // Dir exists but findActiveSession cannot find any non-terminal session —
     // no session_id hint is passed in the tool input, and the dir has no status.yaml
     // or any other recognisable session file. Pre-RF-1 this DENIED. It is now the
@@ -132,9 +132,13 @@ describe('session-init-gate.cjs', () => {
       { CLAUDE_PROJECT_DIR: tmpDir, CAGENTS_SESSION_ID: sessionId }
     );
     expect(result.hookSpecificOutput?.permissionDecision).not.toBe('deny');
+    expect(result.continue).toBe(true);
+    // Strict ownership (WI-5): session dirs exist but this transcript owns none
+    // of them, so the orphan advisory is removed by design. The gate allows in
+    // silence and never names a session it does not own.
     const surfaced = `${result.systemMessage || ''}\n${result.hookSpecificOutput?.permissionDecisionReason || ''}`;
-    expect(surfaced).toMatch(/CAUSE:/);
-    expect(surfaced).toMatch(/CAGENTS_ACTIVE_SESSION|start a NEW session/);
+    expect(surfaced).not.toMatch(/CAUSE:/);
+    expect(surfaced).not.toContain(sessionId);
   });
 });
 
@@ -191,7 +195,7 @@ describe('session presence gate — clean-project bootstrap', () => {
     expect(result.systemMessage || '').toMatch(/AUTO-CREATED/);
   });
 
-  it('(b) a project whose ONLY session is pipeline_state: VALIDATED does NOT deny', () => {
+  it('(b) a project whose ONLY session is an unowned pipeline_state: VALIDATED does NOT deny and is not named', () => {
     const sessionDir = join(tmpDir, 'cagents-memory', 'sessions', 'act_finished_260909_001');
     mkdirSync(sessionDir, { recursive: true });
     writeFileSync(
@@ -205,9 +209,11 @@ describe('session presence gate — clean-project bootstrap', () => {
     );
     expect(result.hookSpecificOutput?.permissionDecision).not.toBe('deny');
     expect(result.continue).toBe(true);
-    // Branch-specific remediation (RF-5 #3): says TERMINAL, not "run a skill first".
+    // Strict ownership (WI-5): the only session is not owned by this transcript,
+    // so its terminal state must not shape this spawn's notice. Silent allow.
     const surfaced = `${result.systemMessage || ''}\n${result.hookSpecificOutput?.permissionDecisionReason || ''}`;
-    expect(surfaced).toMatch(/TERMINAL/);
+    expect(surfaced).not.toMatch(/TERMINAL/);
+    expect(surfaced).not.toContain('act_finished_260909_001');
   });
 
   it("(c) subagent_type 'Explore' is never denied in either shape (MUST NEVER REGRESS)", () => {

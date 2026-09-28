@@ -11,11 +11,21 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findTeamSession, ensureDir } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, getSessionOwner, ensureDir } = require('./hook-utils.cjs');
+
+const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** True when the payload is a UUID and the session marker names another UUID. */
+function _isForeign(sessionDir, sessionId) {
+  if (!_UUID_RE.test(sessionId || '')) return false;
+  const owner = getSessionOwner(sessionDir);
+  return !!owner && owner !== sessionId;
+}
 
 createHook('TeamStart', async (input) => {
   const sessionDir = findTeamSession(input);
   if (!sessionDir) return null;
+  // Never act on a team session owned by another transcript.
+  if (_isForeign(sessionDir, input.session_id)) return null;
 
   const teamDir = path.join(sessionDir, 'team');
   const metricsDir = path.join(teamDir, 'metrics');

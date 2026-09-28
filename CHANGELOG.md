@@ -10,6 +10,46 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.73.0] - 2026-09-27
+
+### Fixed
+- Two Claude Code sessions running in one project dir interfered with each
+  other. Hooks fired in one transcript resolved the other transcript's cAgents
+  session through newest-session fallbacks. They blocked Stop, denied writes,
+  and wrote files into a session that the transcript did not own. Hooks now
+  enforce strict session ownership, keyed on the hook payload's `session_id`.
+- A stray NUL byte in `hook-utils.cjs` is now the `'\0'` escape.
+
+### Added
+- `hook-utils.cjs` ownership API: `getSessionOwner`, `isOwnedBy`,
+  `resolveOwnedSession`, and `claimSession`.
+- Claim-on-write in `post-write-validator.cjs`: the first write of
+  `status.yaml` or `instruction.yaml` claims an unclaimed session dir for the
+  writing transcript. The `status.yaml` heartbeat now runs for the owner only.
+- New regression test `tests/regressions/concurrent-session-ownership.test.js`
+  and 6 new hook test files: `claim-on-write`, `governance-ownership`,
+  `session-ownership`, `team-stop-ownership`, `tracker-ownership`, and
+  `verify-completion-ownership`.
+
+### Changed
+- Hooks that now resolve only an owned session: `verify-completion.cjs`,
+  `team-stop.cjs` (plus owner guards in `team-start.cjs`,
+  `team-task-complete.cjs`, and `teammate-idle-handler.cjs`),
+  `controller-delegation-validator.cjs`, `session-init-gate.cjs`,
+  `subagent-tracker.cjs`, and `subagent-stop-tracker.cjs`.
+- `session-init-gate.cjs` allows a spawn in silence when this transcript owns
+  no session. `heuristicNotice` is removed.
+- `/designer` now seeds session ownership. The seeding blocks in `/act`,
+  `/team`, and `/designer` skip the write when another transcript owns the
+  session. The step that told a skill to set
+  `process.env.CAGENTS_ACTIVE_SESSION` is gone, since a skill cannot set
+  environment variables for hook subprocesses.
+- Legacy hook tests updated for the ownership model. No tests deleted.
+
+### Behavior change
+- A UUID payload no longer adopts an unclaimed session. A transcript that owns
+  no cAgents session gets no-op hooks.
+
 ## [12.72.2] - 2026-09-26
 
 ### Fixed

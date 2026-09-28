@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, findMostRecentSessionDir, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, resolveOwnedSession, getSessionOwner, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent } = require('./hook-utils.cjs');
 
 // Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
 // Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
@@ -1569,33 +1569,36 @@ createHook('VerifyCompletion', async (input) => {
     return null;
   }
 
-  let sessionDir = findActiveSession(input.session_id);
-  // Explicit-hint, terminal-inclusive resolution (concurrency contract,
-  // pat-concurrent-session-hooks.md § Stop/SessionEnd fallback). verify-completion
-  // is a Stop hook that legitimately finalizes a TERMINAL session: by the time it
-  // fires, the skill has usually written pipeline_state: complete, so the default
-  // findActiveSession() chain refuses to resolve (it returns null for terminal
-  // sessions). Under two concurrent same-directory sessions, falling straight
-  // through to findMostRecentSessionDir() would bind this hook to whichever
-  // session was touched last — the WRONG session (the H1/H3 cross-session leak).
-  // When the Stop payload carries an explicit cAgents-shaped session_id naming an
-  // existing directory, resolve THAT directory directly (terminal or not) so the
-  // hook stays bound to its own session regardless of sibling-session mtimes.
-  if (!sessionDir && input && input.session_id && !isSdkUuidShape(input.session_id)) {
-    const hintedDir = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
-    if (fs.existsSync(hintedDir)) {
-      sessionDir = hintedDir;
-      console.error(`[VerifyCompletion] findActiveSession returned null (session terminal); resolving explicit session_id hint directly: ${path.basename(sessionDir)}`);
+  // Strict ownership (concurrent-session contract). The Stop hook acts only on
+  // a session owned by the payload transcript UUID. It never adopts the newest
+  // session in the dir, because that can be another transcript's session.
+  // No owned session => allow stop and write nothing.
+  let sessionDir = null;
+  const payloadId = input && input.session_id;
+  if (isSdkUuidShape(payloadId)) {
+    // Terminal-inclusive: by the time Stop fires the skill has usually
+    // written pipeline_state: complete, and the hook still finalizes it.
+    sessionDir = resolveOwnedSession(payloadId, { includeTerminal: true });
+    if (!sessionDir) {
+      console.error(`[VerifyCompletion] no session owned by transcript ${payloadId}; allowing stop`);
     }
-  }
-  // Fallback: no usable explicit hint (e.g. SDK UUID payload, or no session_id).
-  // Use findMostRecentSessionDir with includeTerminal to find recently-completed
-  // sessions for lifecycle finalization. This path is only reached when the hook
-  // has no session-specific binding to honor.
-  if (!sessionDir) {
-    sessionDir = findMostRecentSessionDir({ includeTerminal: true });
-    if (sessionDir) {
-      console.error(`[VerifyCompletion] findActiveSession returned null and no resolvable session_id hint, using terminal-inclusive fallback: ${path.basename(sessionDir)}`);
+  } else {
+    // Legacy non-UUID payload (a cAgents session_id name, or none).
+    sessionDir = findActiveSession(payloadId);
+    // Explicit-hint, terminal-inclusive resolution. findActiveSession returns
+    // null for a terminal session, so resolve the named dir directly.
+    if (!sessionDir && payloadId) {
+      const hintedDir = path.join(AGENT_MEMORY_DIR, 'sessions', payloadId);
+      if (payloadId === path.basename(payloadId) && fs.existsSync(hintedDir)) {
+        sessionDir = hintedDir;
+        console.error(`[VerifyCompletion] findActiveSession returned null (session terminal); resolving explicit session_id hint directly: ${path.basename(sessionDir)}`);
+      }
+    }
+    // A non-UUID payload names no transcript, so it cannot own a claimed
+    // session. A session with an owner marker is foreign here: leave it alone.
+    if (sessionDir && getSessionOwner(sessionDir)) {
+      console.error(`[VerifyCompletion] session ${path.basename(sessionDir)} is owned by another transcript; allowing stop`);
+      sessionDir = null;
     }
   }
   if (!sessionDir) return null;
