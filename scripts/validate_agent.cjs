@@ -71,8 +71,8 @@ function validateAgent(agentDir) {
     } else if (fs.existsSync(nestedPath)) {
       skillMdPath = nestedPath;
       warnings.push(
-        'Nested <agent>/SKILL.md layout is NOT discovered by Claude Code ' +
-        '(agents/ is scanned non-recursively) - move it to agents/<name>.md'
+        'Nested <agent>/SKILL.md layout is NOT registered by Claude Code ' +
+        '(only agents listed in plugin.json "agents" are registered; nested files are not agents) - move it to agents/<name>.md'
       );
     } else {
       errors.push('No agent definition found (expected agents/<name>.md)');

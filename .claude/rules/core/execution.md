@@ -261,7 +261,7 @@ gives you a clean rollback on failure.
 
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-**Nesting model (v12.17.0+).** Claude Code 2.1.172 and later lets a subagent spawn
+**Nesting model (v12.17.0+).** Claude Code 2.1.219 and later lets a subagent spawn
 its own subagents up to depth 3 by default. An execution agent spawned at depth 2 **keeps
 the `Agent` tool**. It can spawn its own sub-agents inside the depth-3 ceiling when
 a work item needs them.

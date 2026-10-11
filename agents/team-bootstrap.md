@@ -120,7 +120,7 @@ See @team-bootstrap/resources/spawn-protocol.md for the controller-resolution ru
 - Use TaskList to check the progress. Mark each GATE-N sentinel as completed, so that the next wave unblocks
 - Validate the quality gates at the wave boundaries
 
-On Claude Code >= 2.1.172, a teammate controller keeps the `Agent` tool and spawns execution agents reliably. Sometimes the `Agent` tool is verifiably absent. That happens at the real nesting ceiling of depth 3 (the default), and it happens under a regressed or older harness. In that case the controller degrades gracefully to direct execution plus self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+On Claude Code >= 2.1.219, a teammate controller keeps the `Agent` tool and spawns execution agents reliably. Sometimes the `Agent` tool is verifiably absent. That happens at the real nesting ceiling of depth 3 (the default), and it happens under a regressed or older harness. In that case the controller degrades gracefully to direct execution plus self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## CRITICAL: Teammates Spawn Controllers Directly
 

@@ -477,7 +477,7 @@ guard_chain_result:
 
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
-**Nesting model (v12.17.0+).** Claude Code 2.1.172 and later lets a subagent spawn
+**Nesting model (v12.17.0+).** Claude Code 2.1.219 and later lets a subagent spawn
 its own subagents up to depth 3 by default. A controller or a subagent spawned at depth 1
 **keeps the `Agent` tool** and can spawn execution agents. Those execution agents
 can spawn deeper sub-agents, inside the depth-3 ceiling. Delegation is the expected

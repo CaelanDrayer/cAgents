@@ -68,7 +68,7 @@ The orchestrator does NOT invoke the `/context` skill during enrichment:
   invoking it from another agent would add an unnecessary subagent spawn during
   `/team` wave execution. A direct YAML read is the cheaper, clearer path — the
   orchestrator only needs read access, so re-entering a skill dispatch buys
-  nothing. (On Claude Code >= 2.1.172 the spawn is technically allowed within the
+  nothing. (On Claude Code >= 2.1.219 the spawn is technically allowed within the
   depth-3 nesting budget; avoiding it here is a cost/clarity choice, not a
   harness limit.)
 - The orchestrator only needs READ access. The skill's write surface (`init`,

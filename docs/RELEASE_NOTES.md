@@ -1,10 +1,22 @@
 # cAgents Release Notes
 
-**Current Version**: 12.74.0
+**Current Version**: 12.74.1
 **Release Date**: October 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.74.1 - October 11, 2026 (stale nesting-depth and agent-scan claims)
+
+This patch corrects stale claims in the live rules, skills, agents, and hook
+comments. The claims were "depths 1-4", "up to 5 levels deep", and "default
+nesting on CC 2.1.172+". The correct model is a default nesting depth of 3
+since Claude Code 2.1.219. On Claude Code 2.1.217 and 2.1.218 nesting is off
+by default. The `scripts/validate_agent.cjs` warning and the
+`scripts/package-plugin.sh` comment no longer claim a non-recursive scan of
+`agents/`. The regression test
+`tests/regressions/cc-min-version-and-nesting-claims.test.js` has 5 more
+guards.
 
 ## V12.74.0 - October 11, 2026 (Claude Code changelog compatibility)
 
@@ -2507,5 +2519,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.74.0
+**Current Version**: 12.74.1
 **Release Date**: August 21, 2026

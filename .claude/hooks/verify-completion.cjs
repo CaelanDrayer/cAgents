@@ -1032,9 +1032,11 @@ function verifyCompletion(sessionDir) {
         //
         // v12.17.0 repositioning: the "Agent tool stripped at depth >= 1" behavior
         // this downgrade was originally written for is NO LONGER the default.
-        // Claude Code 2.1.172+ lets subagents spawn their own subagents up to 5
-        // levels deep, with the Agent tool present at every level (verified on CC
-        // 2.1.173 in session run_deep-nesting-enablement_260611_001). Graceful
+        // Claude Code 2.1.172 added nested subagents. Since CC 2.1.219 subagents
+        // spawn their own subagents up to depth 3 by default, with the Agent
+        // tool present below the ceiling (CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH
+        // changes it; nesting was verified on CC 2.1.173 in session
+        // run_deep-nesting-enablement_260611_001). Graceful
         // degradation is now a DEFENSIVE FALLBACK that fires only when the Agent
         // tool is genuinely absent — at the actual nesting ceiling (a subagent at
         // depth 3 cannot spawn depth 4) or if a future/older harness regresses the

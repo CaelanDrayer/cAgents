@@ -14,9 +14,9 @@ paths:
   - "tests/v12/deep-nesting-enablement.test.js"
   - "tests/hooks/verify-completion-graceful-degradation.test.js"
 name: pat-graceful-degradation-depth1
-description: "Pattern: Nesting-Ceiling Degradation. A defensive fallback for when the Agent (and TodoWrite/TaskUpdate) tools are genuinely absent, i.e. at the actual nesting ceiling (a subagent at depth 3 cannot spawn depth 4) or if a harness regresses. REPOSITIONED in v12.17.0: deep subagent nesting is now the default on Claude Code 2.1.172+, so this is no longer the expected depth-1 behavior."
+description: "Pattern: Nesting-Ceiling Degradation. A defensive fallback for when the Agent (and TodoWrite/TaskUpdate) tools are genuinely absent, i.e. at the actual nesting ceiling (a subagent at depth 3 cannot spawn depth 4 by default) or if a harness regresses. REPOSITIONED in v12.17.0: Claude Code 2.1.172 added subagent nesting, and since Claude Code 2.1.219 nesting to depth 3 is the default, so this is no longer the expected depth-1 behavior."
 license: MIT
-compatibility: "Claude Code 2.1.172+, cAgents 12.17.0+"
+compatibility: "Claude Code 2.1.219+ for default depth-3 nesting (2.1.172 added nesting), cAgents 12.17.0+"
 metadata:
   version: "2.0.0"
   author: cagents
@@ -52,8 +52,12 @@ metadata:
 > check, the TaskUpdate substitution, the no-reviewer-call rule, the
 > coordination_log sentinel sentence, and the self-validation YAML path.
 >
-> **Default expectation on CC 2.1.172+**: an agent at depth 1–4 keeps the
-> `Agent` tool and spawns subagents normally. Do NOT degrade before you need to.
+> **Default expectation on CC 2.1.219+**: an agent at depth 1 or 2 keeps the
+> `Agent` tool and spawns subagents normally. Depth 3 is the default ceiling. The
+> CC 2.1.219 changelog says: "Subagents can now spawn nested subagents up to
+> depth 3 by default (was 1); set CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1 to
+> disable nesting". On CC 2.1.217 and 2.1.218 nesting is off by default.
+> `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` changes the ceiling. Do NOT degrade before you need to.
 > Degrade only after a verified tool-inventory check shows that `Agent` is
 > absent.
 
@@ -77,8 +81,8 @@ both of them:
    restores correct behavior.
 
 In both cases the agent confirms the absence with the tool-inventory check
-below, before it degrades. On CC 2.1.172+ at depths 1–4 the tool is present, and
-you must NOT degrade.
+below, before it degrades. On CC 2.1.219+ at depths 1 and 2 the tool is present by
+default, and you must NOT degrade.
 
 ## Root cause (historical)
 
@@ -94,8 +98,8 @@ you must NOT degrade.
 > that config is `.claude/settings.json` plus `.claude-plugin/plugin.json`. No
 > documented CC setting re-exposed `Agent` to a depth-1 subagent.
 >
-> **This is no longer the case.** Claude Code 2.1.172 added deep subagent
-> nesting. On 2.1.173, which is this environment, the `Agent` tool is present at
+> **This is no longer the case.** Claude Code 2.1.172 added nesting (default
+> depth 3 since 2.1.219). On 2.1.173, which is this environment, the `Agent` tool is present at
 > every level of a depth 1 → 6 chain. The historical limitation now survives only
 > as the ceiling fallback and the regression fallback described above.
 
@@ -142,7 +146,7 @@ execution. It MUST NOT fail the work item.
    pass with `Agent(cagents:reviewer)`, against any output that needs deeper
    validation. Any parent agent that DOES have `Agent` can run that pass too.
 
-On CC 2.1.172+ at depths 1–4, none of the above applies. Spawn normally.
+On CC 2.1.219+ at depths 1 and 2, none of the above applies by default. Spawn normally.
 
 ## Documentation requirement (fallback)
 
@@ -156,8 +160,8 @@ regression case.
 ## Tool inventory check before BLOCKED
 
 Before you report `BLOCKED` for a missing `Agent` tool, **make sure that the
-tool is absent.** Do not assume it. On CC ≥ 2.1.172 the `Agent` tool is normally
-present at depths 1–4. An assumption of a missing `Agent` is therefore wrong most
+tool is absent.** Do not assume it. On CC ≥ 2.1.219 the `Agent` tool is normally
+present at depths 1 and 2 (depth 3 is the default ceiling). An assumption of a missing `Agent` is therefore wrong most
 of the time.
 
 Run the tool-inventory check first. It can confirm that `Agent` or `TaskUpdate`
@@ -184,8 +188,9 @@ gate or at the session gate.
 > correct response."
 >
 > **As of v12.17.0 this is moot for the default case.** Claude Code 2.1.172
-> ships deep nesting natively, so no config workaround is needed. The `Agent`
-> tool is present. The historical guidance still holds for the ceiling fallback
+> introduced nesting. Since 2.1.219 nesting to depth 3 is the default, so no
+> config workaround is needed. On 2.1.217 and 2.1.218 nesting is off by default.
+> Below the ceiling the `Agent` tool is present. The historical guidance still holds for the ceiling fallback
 > and for the regression fallback. Do not propose a config fix to re-enable
 > `Agent` past the genuine nesting ceiling. Degrade to direct execution instead.
 
@@ -218,8 +223,9 @@ gone.**
 
 ## Future work: the future arrived
 
-The future that this playbook once anticipated is now live. Claude Code 2.1.172+
-exposes the `Agent` tool to a nested subagent, up to the ceiling (depth 3 by default since 2.1.219). The
+The future that this playbook once anticipated is now live. Claude Code 2.1.172
+added nested subagents. Since 2.1.219 a nested subagent keeps the `Agent` tool
+up to the ceiling, which is depth 3 by default. The
 unconditional "spawned agents ARE delegators" pattern is therefore the default
 again.
 

@@ -98,9 +98,10 @@ subagent as a controller agent, such as `cagents:tech-lead`. That controller
 delegates to execution agents through the Agent tool. It then spawns
 `cagents:reviewer` to validate the work.
 
-Claude Code 2.1.172 and cAgents v12.17.0 changed the tool surface. A subagent
-spawned at depth 1 now keeps the `Agent` tool reliably. It spawns its execution
-agents and its reviewer in the normal way.
+Claude Code 2.1.172 and cAgents v12.17.0 changed the tool surface. On CC
+2.1.219 and later a subagent spawned at depth 1 keeps the `Agent` tool by
+default. On CC 2.1.217 and 2.1.218 nesting is off by default. The subagent
+spawns its execution agents and its reviewer in the normal way.
 
 ```
 Subagent (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
@@ -116,7 +117,7 @@ a subagent can spawn its own helper sub-agent, and that chain continues up to
 the ceiling.
 
 **Wave subagents spawn execution agents DIRECTLY. They do not re-enter /act
-through the Skill tool.** On CC 2.1.172 a nested `/act` call from a subagent is
+through the Skill tool.** On CC 2.1.219 and later a nested `/act` call from a subagent is
 possible inside the depth budget. The design of cAgents avoids that call, **by
 intent, for cost and for clarity**.
 
@@ -144,7 +145,7 @@ you spawn. It also applies to every agent that they spawn beneath them.
 
 ## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
-**Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to
+**Current model (CC ≥ 2.1.219).** Subagents spawn their own subagents up to
 **depth 3 by default** (CC 2.1.219+; set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower
 it), and the skill loop is depth 0. The `Agent` tool is present at
 every level from depth 1 through depth 2. A depth-3 subagent is the last
@@ -158,7 +159,7 @@ That happens at the real nesting **ceiling**, where a subagent at depth 3 cannot
 spawn a depth-4 child. It also happens if an older harness or a future harness
 regresses the capability.
 
-Make sure the tool is absent before you degrade. On CC ≥ 2.1.172 the `Agent`
+Make sure the tool is absent before you degrade. On CC ≥ 2.1.219 the `Agent`
 tool is normally present at depths 1 and 2. The fallback applies to every
 spawning skill, and to every agent type. When `Agent` is verifiably absent,
 degrade to direct execution and self-validation. Do not fail the work item.

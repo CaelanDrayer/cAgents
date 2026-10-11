@@ -136,7 +136,7 @@ no new information, you break the status protocol.
   Nesting-Ceiling Degradation fallback. When the `Agent` tool is genuinely
   absent, prefer DONE through self-validation over BLOCKED. That case is rare.
   It arises at the depth-3 nesting ceiling, or on a regressed or older harness.
-  On Claude Code 2.1.172+ a subagent normally keeps `Agent` up to depth 3 by
-  default. Make sure the tool is absent before you degrade.
+  On Claude Code 2.1.219+ a subagent normally keeps `Agent` up to depth 3 by
+  default. On 2.1.217 and 2.1.218 nesting is off by default. Make sure the tool is absent before you degrade.
 - `.claude/rules/playbooks/pat-cross-teammate-request.md`: `/team` peer_request
   routing, used when `NEEDS_CONTEXT.requested_peer` is set.

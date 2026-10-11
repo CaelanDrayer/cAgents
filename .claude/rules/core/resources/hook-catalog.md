@@ -335,8 +335,9 @@ per-class scorecard, and the complete residual list.
   ordinary direct user edit to `src/`, to `services/`, or to any other path.
   This reverses the unconditional hard-deny of P1-7 (v12.7.1). That hard-deny
   rested on depth-1 `Agent`-tool stripping, which made `agent_tree` unreliable.
-  The justification is obsolete as of v12.17.0 and Claude Code 2.1.172, because
-  a subagent now retains `Agent` and self-registers reliably. Scoping prevents
+  The justification is obsolete as of v12.17.0. Claude Code 2.1.172 added
+  nesting, and since CC 2.1.219 a subagent retains `Agent` by default and
+  self-registers reliably. Scoping prevents
   the footgun where a default-on `block` mode would deny the user's own
   legitimate edits.
 - **Session resolution (v12.73.0, strict ownership)**: the current session is

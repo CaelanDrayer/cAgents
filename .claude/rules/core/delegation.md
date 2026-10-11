@@ -241,7 +241,8 @@ appears to refine it.
 ## Graceful Degradation (Defensive Fallback)
 
 As of v12.17.0, subagents keep the `Agent` tool and can spawn their own
-subagents up to depth 3 by default. This needs Claude Code 2.1.172 or later.
+subagents up to depth 3 by default. This needs Claude Code 2.1.219 or later
+(2.1.172 added nesting; 2.1.217 and 2.1.218 turn it off by default).
 Delegation is the expected behavior at every level. A controller or
 subagent spawned at depth 1 normally still has `Agent`, and it MUST
 delegate.
