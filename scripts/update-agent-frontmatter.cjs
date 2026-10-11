@@ -20,8 +20,9 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 // Directories to scan (exclude example/)
-// v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude Code
-// discovers plugin agents with a non-recursive scan of agents/.
+// v12.68.0: agent definitions are FLAT (agents/<name>.md). Claude Code scans
+// plugin agents/ recursively; plugin.json `agents` lists the top-level files,
+// so only those register.
 const AGENT_DIRS = ['agents'];
 
 // Infrastructure agent maxTurns overrides.

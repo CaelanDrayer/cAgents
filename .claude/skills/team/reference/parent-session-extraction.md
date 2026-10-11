@@ -87,7 +87,7 @@ org_* session (level 0)     <- /org created this; no new sessions of this type a
   team_* session (level 1)  <- /team creates this, parent_session_id = org_*
 ```
 
-There is no `team_* -> team_* -> act_*` chain. A /team subagent spawns its execution agents directly through the Agent tool. It does not invoke /act as a Skill. This is a design choice for cost and for clarity, and it is not a harness limit. CC 2.1.172 and later support subagent nesting to 5 levels deep. A nested /act is possible, but it duplicates the Wave 0 enrichment and it wastes tokens.
+There is no `team_* -> team_* -> act_*` chain. A /team subagent spawns its execution agents directly through the Agent tool. It does not invoke /act as a Skill. This is a design choice for cost and for clarity, and it is not a harness limit. CC 2.1.172 and later support subagent nesting. Since CC 2.1.219 the default ceiling is depth 3. A nested /act is possible, but it duplicates the Wave 0 enrichment and it wastes tokens.
 
 Therefore, the controller work is tracked at the level of the `team_*` session. It is not tracked in a separate child session. Strategic mode extends this model from v12.2.0. It runs the per-domain dispatch as more waves *inside* the same `team_*` session. It does not launch one child `team_*` session for each domain. A pre-v12.2.0 chain from `/org` to `/team` worked in that older way.
 

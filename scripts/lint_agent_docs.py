@@ -64,9 +64,10 @@ class AgentLinter:
 
         agent_files = []
 
-        # v12.68.0: agent definitions are FLAT - agents/<name>.md - because
-        # Claude Code discovers plugin agents with a non-recursive scan of
-        # agents/. Files in subdirectories are per-agent resources, not agents.
+        # v12.68.0: agent definitions are FLAT (agents/<name>.md). Claude Code
+        # scans plugin agents/ recursively; plugin.json `agents` lists the
+        # top-level files, so only those register. Files in subdirectories are
+        # per-agent resources, not agents.
         skip_filenames = {'README.md', 'CHANGELOG.md', 'INDEX.md'}
         agents_dir = self.project_root / "agents"
         if agents_dir.is_dir():

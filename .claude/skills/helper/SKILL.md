@@ -2,11 +2,11 @@
 name: helper
 description: "Explains cAgents commands and recommends the right one for your task. Use when choosing between skills or learning how they work. TRIGGER: help, which command, how do I, what can cAgents do. NOT for: executing tasks directly."
 license: MIT
-compatibility: "Claude Code >= 2.1.69"
+compatibility: "Claude Code >= 2.1.198"
+argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
 metadata:
   author: CaelanDrayer
-  version: "12.73.0"
-  argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
+  version: "12.74.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion

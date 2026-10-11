@@ -2,11 +2,11 @@
 name: team
 description: "Parallel multi-agent execution with wave-based quality gates. Use for complex tasks with 3+ parallelizable items, including cross-domain strategic work (via Strategic Mode). TRIGGER: team, parallel, swarm, complex multi-part, cross-domain, strategic. NOT for: simple single-domain tasks (/act)."
 license: MIT
-compatibility: "Claude Code >= 2.1.69"
+compatibility: "Claude Code >= 2.1.198"
+argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
 metadata:
   author: CaelanDrayer
-  version: "12.73.0"
-  argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
+  version: "12.74.0"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
@@ -16,7 +16,7 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, Tas
 
 **Current timestamp**: !`date -u +%Y-%m-%dT%H:%M:%SZ`
 
-You are a thin event loop. Do these steps. First, init the session. Second, run the Wave 0 enrichment. Then, for each wave K: write the spawn brief, spawn the wave subagents, spawn `cagents:wave-reviewer`, and mark the gate. To finalize: spawn the integration controller, spawn `cagents:coord-log-writer`, validate, and clean up. Parallelism comes from two sources. The first source is the concurrent per-wave subagent calls. The second source is each subagent, because a subagent spawns its own subagents to depth 5. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead.
+You are a thin event loop. Do these steps. First, init the session. Second, run the Wave 0 enrichment. Then, for each wave K: write the spawn brief, spawn the wave subagents, spawn `cagents:wave-reviewer`, and mark the gate. To finalize: spawn the integration controller, spawn `cagents:coord-log-writer`, validate, and clean up. Parallelism comes from two sources. The first source is the concurrent per-wave subagent calls. The second source is each subagent, because a subagent spawns its own subagents to depth 3. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead.
 
 **You are a delegator, not a doer.** Use the Agent tool only. Never implement a work item yourself.
 
@@ -30,7 +30,7 @@ Do nothing else before Step 1 and Step 2a. First, create the session directory. 
 
 ## Lead-Context Discipline (v12.1.0+)
 
-This skill lets the lead complete 5-10 wave workflows without exhausting its context. @reference/architecture.md holds the full team-execution model. That model covers the wave structure and the depth-5 nesting budget. It also says why wave subagents spawn execution agents directly, instead of re-entering `/act`. Four disciplines enforce the lead-context limit:
+This skill lets the lead complete 5-10 wave workflows without exhausting its context. @reference/architecture.md holds the full team-execution model. That model covers the wave structure and the depth-3 nesting budget. It also says why wave subagents spawn execution agents directly, instead of re-entering `/act`. Four disciplines enforce the lead-context limit:
 
 1. **Per-wave decomposition.** The planner emits `workflow/work_meta.yaml`, and the lead reads that file ONCE. The planner also emits one `workflow/work_items_wave_{K}.yaml` per wave, and the lead reads only the current wave. See @reference/per-wave-decomposition.md.
 2. **Disk-handoff spawn briefs.** The lead writes `outputs/wave-{K}/spawn_brief.md` one time per wave. Each subagent then gets a pointer prompt of about 80 tokens. See @reference/spawn-brief-schema.md.
@@ -134,7 +134,7 @@ fi
 
 **2b.** Classify the domain and the tier inline. See @reference/wave-execution-detail.md § Domain & Tier.
 
-**2c.** Call TaskCreate for the init, for the enrichment, for each planned wave, for the integration, and for the completion. Update each task with TaskUpdate as the phases land.
+**2c.** Call TaskCreate for the init, for the enrichment, for each planned wave, for the integration, and for the completion. Update each task with TaskUpdate as the phases land. If the task tools are absent (the default on Opus 4.8 and newer, Claude Code 2.1.233), record the same entries in `status.yaml` and continue. Never stop or block because a task tool is missing.
 
 **2d.** Spawn the enrichment agents sequentially. The primary output file of each agent is the state-advancement signal (v12.6.0: no `workflow/events/` EVT emission):
 - `cagents:orchestrator` → `enriched_context.yaml`
@@ -164,7 +164,7 @@ For each wave K:
 
 **5b.** Write `outputs/wave-{K}/spawn_brief.md` to the schema in @reference/spawn-brief-schema.md. The brief MUST carry the report cap as a Report Contract section. That cap is at most 12 lines, with at most 15 words per line.
 
-**5c. (DEFAULT: concurrent Agent waves, which work in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls, issued in ONE assistant message. Many tool uses in a single message run concurrently. Give each call `run_in_background: false`. Synchronous spawning is required. Subagents are background-by-default since v2.1.198. So `run_in_background: false` is what makes the lead receive all of the wave results together, before it validates GATE-K. Use pointer prompts of about 80 tokens, per @reference/spawn-brief-schema.md § Short Spawn Prompt. Each wave subagent is the `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. It can recursively spawn its own subagents to depth 5, for any specialty that it needs. There is no team to create, because teams are implicit. See @reference/teammate-spawning-template.md for the self-registration and for the worktree isolation.
+**5c. (DEFAULT: concurrent Agent waves, which work in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls, issued in ONE assistant message. Many tool uses in a single message run concurrently. Give each call `run_in_background: false`. Synchronous spawning is required. Subagents are background-by-default since v2.1.198. So `run_in_background: false` is what makes the lead receive all of the wave results together, before it validates GATE-K. Use pointer prompts of about 80 tokens, per @reference/spawn-brief-schema.md § Short Spawn Prompt. Each wave subagent is the `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. It can recursively spawn its own subagents to depth 3, for any specialty that it needs. There is no team to create, because teams are implicit. See @reference/teammate-spawning-template.md for the self-registration and for the worktree isolation.
 
 **5c-EXPERIMENTAL (OPTIONAL: named background teammates and panes).** Two conditions gate this path. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set, AND the harness must support interactive agent teams. When both conditions hold, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })`. The team forms implicitly, and any `team_name` arg is accepted-but-ignored. Coordinate those teammates with `SendMessage({to: name})` and with the shared Task list. Since v2.1.77, `SendMessage` auto-resumes a stopped teammate by name. `teammateMode` controls the display, and its default is `in-process` since v2.1.179. The other two values are `tmux` and `iterm2`. Panes need tmux or iTerm2, and panes belong to the experimental path only. This path is harness-variable. If the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path in 5c.
 
@@ -231,7 +231,7 @@ Read the 1-line confirmation only.
 4. All of the subagents within a wave run in parallel.
 5. Do the gate validation with `cagents:wave-reviewer`, and never inline the 7-check in the lead.
 6. Maximize the number of waves.
-7. Wave subagents ARE controller agents. They spawn execution agents directly with the Agent tool. They can also recursively spawn their own subagents, up to depth 5. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead. CC ≥ 2.1.172 retains the Agent tool up to 5 levels deep. Graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only. It applies when the Agent tool is verifiably absent at the nesting ceiling, or on a regressed harness.
+7. Wave subagents ARE controller agents. They spawn execution agents directly with the Agent tool. They can also recursively spawn their own subagents, up to depth 3. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead. CC ≥ 2.1.172 retains the Agent tool up to depth 3 by default. Graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only. It applies when the Agent tool is verifiably absent at the nesting ceiling, or on a regressed harness.
 8. The lead does Wave 0 and the final wave.
 9. Never ask for permission between the waves.
 10. Never create tasks without also spawning the subagents.

@@ -101,9 +101,9 @@ Teammate 2 (tech-lead):
   -> PASS or REVISE (max 3 rounds)
 ```
 
-On Claude Code >= 2.1.172, subagents retain the `Agent` tool. They can spawn their own subagents up to 5 levels deep. Teammate controllers therefore spawn execution agents and reviewers reliably. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline.** This is a deliberate design choice for cost and clarity, not a harness limit. A controller teammate plus its own execution agents is the cheapest path to a reviewed result.
+On Claude Code >= 2.1.172, subagents retain the `Agent` tool. They can spawn their own subagents up to depth 3 by default. Teammate controllers therefore spawn execution agents and reviewers reliably. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline.** This is a deliberate design choice for cost and clarity, not a harness limit. A controller teammate plus its own execution agents is the cheapest path to a reviewed result.
 
-The `Agent` tool is verifiably absent in two cases. The first case is the actual nesting ceiling, where a subagent at depth 5 cannot spawn a depth-6 child. The second case is a regressed or older harness. In either case, the teammate controller degrades gracefully to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+The `Agent` tool is verifiably absent in two cases. The first case is the actual nesting ceiling, where a subagent at depth 3 cannot spawn a depth-4 child. The second case is a regressed or older harness. In either case, the teammate controller degrades gracefully to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## Teammate Communication
 
@@ -137,7 +137,7 @@ When the team manifest includes a template with waves, coordinate the work wave 
 
 1. **Teammates ARE controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /act.
 2. **Spawn teammates IMMEDIATELY**: spawn them as soon as the wave's work items are ready. Never pause or ask permission.
-3. **Direct Agent delegation**: teammates spawn execution agents and reviewers directly via Agent. The chain runs lead -> controller teammate -> execution agent. Deeper sub-spawns are allowed within the 5-level nesting budget. Teammates spawn execution agents directly rather than re-entering /act. This is a design choice for cost and clarity, not a harness limit.
+3. **Direct Agent delegation**: teammates spawn execution agents and reviewers directly via Agent. The chain runs lead -> controller teammate -> execution agent. Deeper sub-spawns are allowed within the depth-3 nesting budget. Teammates spawn execution agents directly rather than re-entering /act. This is a design choice for cost and clarity, not a harness limit.
 4. **Delegate only**: never do direct implementation work.
 5. **Concurrent-Agent waves**: spawn each wave's teammates as concurrent `Agent()` calls in ONE message (`run_in_background: false`). Teams are implicit, so there is no TeamCreate and no TeamDelete.
 6. **Parallel first**: maximize the concurrent work items within each wave.

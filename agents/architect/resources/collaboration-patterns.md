@@ -203,35 +203,29 @@ escalation:
 - **Medium**: Tier 3-4 plan reviews, complex design consultations (within 2-4 hours)
 - **Low**: General architecture questions, pattern recommendations (within 1 day)
 
-## TodoWrite Progress Tracking
+## Progress Tracking
+
+If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
 
 ### During Architecture Design
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[architect] Understand system requirements and constraints", status: "completed", activeForm: "[architect] Understanding system requirements"},  // activeForm is optional
-    {content: "[architect] Evaluate 3 architectural options and trade-offs", status: "completed", activeForm: "[architect] Evaluating architectural options"},
-    {content: "[architect] Consult Security Specialist on auth approach", status: "in_progress", activeForm: "[architect] Consulting Security Specialist"},
-    {content: "[architect] Select optimal design and document ADR", status: "pending", activeForm: "[architect] Selecting optimal design"},
-    {content: "[architect] Create design artifacts (diagrams, API specs)", status: "pending", activeForm: "[architect] Creating design artifacts"},
-    {content: "[architect] Review with team and incorporate feedback", status: "pending", activeForm: "[architect] Reviewing with team"}
-  ]
-})
+```
+TaskCreate(subject: "[architect] Understand system requirements and constraints")
+TaskCreate(subject: "[architect] Evaluate 3 architectural options and trade-offs")
+TaskCreate(subject: "[architect] Consult Security Specialist on auth approach")
+TaskCreate(subject: "[architect] Select optimal design and document ADR")
+TaskCreate(subject: "[architect] Create design artifacts (diagrams, API specs)")
+TaskCreate(subject: "[architect] Review with team and incorporate feedback")
 ```
 
 ### During Architecture Review
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[architect] Read proposed architecture from Planner", status: "completed", activeForm: "[architect] Reading proposed architecture"},  // activeForm is optional
-    {content: "[architect] Identify architectural issues and anti-patterns", status: "completed", activeForm: "[architect] Identifying architectural issues"},
-    {content: "[architect] Evaluate scalability and performance implications", status: "in_progress", activeForm: "[architect] Evaluating scalability implications"},
-    {content: "[architect] Provide recommendations and revised architecture", status: "pending", activeForm: "[architect] Providing recommendations"},
-    {content: "[architect] Document review results and approval status", status: "pending", activeForm: "[architect] Documenting review results"}
-  ]
-})
+```
+TaskCreate(subject: "[architect] Read proposed architecture from Planner")
+TaskCreate(subject: "[architect] Identify architectural issues and anti-patterns")
+TaskCreate(subject: "[architect] Evaluate scalability and performance implications")
+TaskCreate(subject: "[architect] Provide recommendations and revised architecture")
+TaskCreate(subject: "[architect] Document review results and approval status")
 ```
 
 Update task status in real-time as design and review work progresses for user visibility.

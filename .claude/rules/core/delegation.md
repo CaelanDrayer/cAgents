@@ -179,7 +179,8 @@ that mandate synchronous spawning point here.
 | A genuinely resumable conversation you will collect later via `SendMessage` | A named teammate, which is background by definition | `TaskCreate` before the spawn, `TaskUpdate(status: completed)` when you collect it |
 
 `CLAUDE.md` § CRITICAL: Task Lifecycle requires a `TaskCreate` per background
-spawn so the user sees each subagent. It does not ask you to pass `name` to the
+spawn so the user sees each subagent, when `TaskCreate` is available. When it is
+absent, record each spawn in the session files and continue. It does not ask you to pass `name` to the
 Agent tool. The two rules are satisfiable together only if you read it
 this way: **name the TASK, never the SPAWN.**
 
@@ -240,15 +241,15 @@ appears to refine it.
 ## Graceful Degradation (Defensive Fallback)
 
 As of v12.17.0, subagents keep the `Agent` tool and can spawn their own
-subagents up to 5 levels deep. This needs Claude Code 2.1.172 or later.
+subagents up to depth 3 by default. This needs Claude Code 2.1.172 or later.
 Delegation is the expected behavior at every level. A controller or
 subagent spawned at depth 1 normally still has `Agent`, and it MUST
 delegate.
 
 Graceful degradation is a defensive fallback, not the expected depth-1
 behavior. It triggers only when the `Agent` tool is genuinely absent.
-That happens at the real nesting ceiling, where a subagent at depth 5
-cannot spawn a depth-6 child. It also happens if an older harness or a
+That happens at the real nesting ceiling, where a subagent at depth 3
+cannot spawn a depth-4 child. It also happens if an older harness or a
 future harness loses the capability. In that narrow case the spawned
 agent degrades to direct execution and self-validation.
 

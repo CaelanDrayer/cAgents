@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.73.0
+# Version: 12.74.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -56,8 +56,9 @@ STRICT=false
 COUNT_ONLY=false
 FILTER_ARCHETYPE=""
 
-# v12.68.0: agent definitions are FLAT — agents/<name>.md — because Claude
-# Code discovers plugin agents with a non-recursive scan of agents/. Archetype
+# v12.68.0: agent definitions are FLAT (agents/<name>.md). Claude Code scans
+# plugin agents/ recursively; plugin.json `agents` lists the 60 top-level
+# files, so only those register. Archetype
 # and branch survive as frontmatter fields, not as directory levels. Per-agent
 # resources live at agents/<name>/resources/.
 AGENTS_DIR="agents"
@@ -391,10 +392,11 @@ validate_archetype() {
 }
 
 #
-# Flat-layout guard. Claude Code discovers plugin agents with a NON-RECURSIVE
-# scan of agents/, so an agent definition parked in a subdirectory (the pre-
-# v12.68.0 agents/{archetype}/{branch}/{name}/SKILL.md shape) is invisible at
-# runtime — the plugin loads with zero agents. Fail loudly if one reappears.
+# Flat-layout guard. Claude Code scans plugin agents/ recursively, but
+# plugin.json `agents` lists only the top-level agents/<name>.md files, so an
+# agent definition parked in a subdirectory (the pre-v12.68.0
+# agents/{archetype}/{branch}/{name}/SKILL.md shape) never registers. Fail
+# loudly if one reappears.
 #
 check_orphans() {
     if [[ $COUNT_ONLY != true ]]; then

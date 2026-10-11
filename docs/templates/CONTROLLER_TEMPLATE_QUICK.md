@@ -26,8 +26,9 @@ tools:
   - Glob
   - Write
   - Bash
-  - TodoWrite
-  - Task
+  - Agent
+  - TaskCreate
+  - TaskUpdate
 ---
 
 # {Agent Name}

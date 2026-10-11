@@ -14,7 +14,7 @@ paths:
   - "tests/v12/deep-nesting-enablement.test.js"
   - "tests/hooks/verify-completion-graceful-degradation.test.js"
 name: pat-graceful-degradation-depth1
-description: "Pattern: Nesting-Ceiling Degradation — a defensive fallback for when the Agent (and TodoWrite/TaskUpdate) tools are genuinely absent, i.e. at the actual nesting ceiling (a subagent at depth 5 cannot spawn depth 6) or if a harness regresses. REPOSITIONED in v12.17.0: deep subagent nesting is now the default on Claude Code 2.1.172+, so this is no longer the expected depth-1 behavior."
+description: "Pattern: Nesting-Ceiling Degradation. A defensive fallback for when the Agent (and TodoWrite/TaskUpdate) tools are genuinely absent, i.e. at the actual nesting ceiling (a subagent at depth 3 cannot spawn depth 4) or if a harness regresses. REPOSITIONED in v12.17.0: deep subagent nesting is now the default on Claude Code 2.1.172+, so this is no longer the expected depth-1 behavior."
 license: MIT
 compatibility: "Claude Code 2.1.172+, cAgents 12.17.0+"
 metadata:
@@ -33,8 +33,9 @@ metadata:
 
 > ## Status: REPOSITIONED in v12.17.0
 >
-> As of **Claude Code 2.1.172**, subagents **can spawn their own subagents up
-> to 5 levels deep**. An experiment verified this on **Claude Code 2.1.173**, in
+> As of **Claude Code 2.1.172**, subagents **can spawn their own subagents**.
+> Since **Claude Code 2.1.219** the default ceiling is **depth 3**. Set
+> `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower it. An experiment verified this on **Claude Code 2.1.173**, in
 > session `run_deep-nesting-enablement_260611_001`. A spawn chain ran
 > depth 1 → 2 → 3 → 4 → 5 → 6. The `Agent` tool was present at every level, with
 > **zero stripping**. The "Agent tool stripped at depth ≥ 1" behavior that this
@@ -43,7 +44,7 @@ metadata:
 > This pattern is therefore **repositioned from "the expected depth-1 behavior"
 > to a defensive FALLBACK**. It now applies only when the `Agent` tool is
 > *genuinely* absent. That happens at the real nesting **ceiling**, where a
-> subagent at depth 5 cannot spawn a depth-6 child. It also happens if an older
+> subagent at depth 3 cannot spawn a depth-4 child. It also happens if an older
 > harness or a future harness regresses the capability.
 >
 > The load-bearing fallback guidance below is **retained intact**, because it is
@@ -66,8 +67,8 @@ applies whatever skill spawned that agent: `/act`, `/team`, or the legacy
 The `Agent` tool is genuinely absent in two cases, and this pattern applies to
 both of them:
 
-1. **Nesting ceiling reached.** A subagent at depth 5 cannot spawn a depth-6
-   child. The 5-level budget is `max_nesting_depth: 5`, and it counts the skill
+1. **Nesting ceiling reached.** A subagent at depth 3 cannot spawn a depth-4
+   child. The depth-3 budget is `max_nesting_depth: 3`, and it counts the skill
    loop as depth 0. That budget is now used up. The harness exposes no spawning
    tool past the ceiling.
 2. **Harness regression, or an older harness.** A future Claude Code version can
@@ -159,8 +160,9 @@ tool is absent.** Do not assume it. On CC ≥ 2.1.172 the `Agent` tool is normal
 present at depths 1–4. An assumption of a missing `Agent` is therefore wrong most
 of the time.
 
-Run the tool-inventory check first. It can confirm that `Agent`, `TodoWrite`, or
-`TaskUpdate` is genuinely absent. Only then complete the work item without that
+Run the tool-inventory check first. It can confirm that `Agent` or `TaskUpdate`
+is genuinely absent. `TaskUpdate` is off by default on Opus 4.8 and newer models
+(Claude Code 2.1.233), so its absence alone is no reason to degrade or block. Only then complete the work item without that
 tool. The cause is a ceiling that you reached, or a regressed or older harness. Never
 report `BLOCKED` for a missing `Agent` tool until you confirm that the tool is
 gone. Reserve `BLOCKED` for a genuinely absent critical tool, such as `Bash`,
@@ -209,21 +211,22 @@ gone.**
 - `run_deep-nesting-enablement_260611_001`, this session, on Claude Code 2.1.173.
   A spawn chain was driven depth 1 → 2 → 3 → 4 → 5 → 6. The `Agent` tool was
   present at every level, and **zero stripping** was observed. No cAgents config
-  blocked it. This confirms the CC 2.1.172 changelog entry, "Sub-agents can now
-  spawn their own sub-agents, up to 5 levels deep". It also obsoletes the
+  blocked it. This confirmed the CC 2.1.172 nested-subagent changelog entry, which had a
+  higher ceiling at that time. Since CC 2.1.219 the default ceiling is depth 3.
+  It also obsoletes the
   "Agent stripped at depth ≥ 1 as default" framing.
 
 ## Future work: the future arrived
 
 The future that this playbook once anticipated is now live. Claude Code 2.1.172+
-exposes the `Agent` tool to a nested subagent, up to the 5-level ceiling. The
+exposes the `Agent` tool to a nested subagent, up to the ceiling (depth 3 by default since 2.1.219). The
 unconditional "spawned agents ARE delegators" pattern is therefore the default
 again.
 
 This playbook is **retained only as a ceiling fallback and a regression
-fallback**. It is invoked when a subagent at the depth-5 ceiling cannot spawn
+fallback**. It is invoked when a subagent at the depth-3 ceiling cannot spawn
 deeper. It is also invoked on a regressed or older harness that withholds the
-`Agent` tool. If a future Claude Code version raises the 5-level ceiling or
+`Agent` tool. If a future Claude Code version raises the depth-3 ceiling or
 removes it, the ceiling branch of this fallback narrows further. The regression
 branch stays as defensive insurance.
 

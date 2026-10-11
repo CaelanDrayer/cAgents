@@ -28,7 +28,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 **Boundary vs `team-lead`**: `team-bootstrap` is the *entry point*. It decomposes the request and it starts wave 0 and wave 1. `team-lead` is the *delegate-mode wrapper*. It adapts a controller that is already selected, such as `tech-lead`, into a wave lead for gate validation and contract tracking. `team-bootstrap` starts the run, and `team-lead` shapes a controller mid-run. They are not interchangeable.
 
-**CRITICAL**: When a caller invokes you, you MUST do three things. Decompose the request into work items. Create the tasks with TaskCreate. Spawn real teammates with the Agent tool. If you do not spawn the teammates, you have FAILED.
+**CRITICAL**: When a caller invokes you, you MUST do three things. Decompose the request into work items. Record the tasks: use TaskCreate when it is available, otherwise write them to `team/task_list.yaml` and continue (never stop or block on a missing task tool). Spawn real teammates with the Agent tool. If you do not spawn the teammates, you have FAILED.
 
 Teams are IMPLICIT. Claude Code v2.1.178 removed TeamCreate/TeamDelete, so there is nothing to create and nothing to delete. Do NOT call them. Spawn ALL of a wave's teammates as concurrent `Agent()` calls in ONE assistant message, and set `run_in_background: false`. Do NOT stop after you create the tasks: spawn the TEAM MEMBERS, and they spawn the execution agents directly.
 
@@ -120,7 +120,7 @@ See @team-bootstrap/resources/spawn-protocol.md for the controller-resolution ru
 - Use TaskList to check the progress. Mark each GATE-N sentinel as completed, so that the next wave unblocks
 - Validate the quality gates at the wave boundaries
 
-On Claude Code >= 2.1.172, a teammate controller keeps the `Agent` tool and spawns execution agents reliably. Sometimes the `Agent` tool is verifiably absent. That happens at the real nesting ceiling of depth 5, and it happens under a regressed or older harness. In that case the controller degrades gracefully to direct execution plus self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
+On Claude Code >= 2.1.172, a teammate controller keeps the `Agent` tool and spawns execution agents reliably. Sometimes the `Agent` tool is verifiably absent. That happens at the real nesting ceiling of depth 3 (the default), and it happens under a regressed or older harness. In that case the controller degrades gracefully to direct execution plus self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
 ## CRITICAL: Teammates Spawn Controllers Directly
 

@@ -122,9 +122,10 @@ function parseSkillTier(skillPath) {
  * Build the {agent-name: tier} map by reading the flat agents/ directory.
  * Memoized: subsequent calls return the same object reference until process exit.
  *
- * v12.68.0: agent definitions live at agents/<name>.md (Claude Code discovers
- * plugin agents with a non-recursive scan of agents/), so the directory listing
- * IS the catalog — plugin.json no longer carries an `agents` array.
+ * Agent definitions live at agents/<name>.md. Claude Code scans agents/
+ * recursively, so plugin.json lists these same files in its `agents` array.
+ * tests/regressions/plugin-agents-explicit-list.test.js keeps the two sets
+ * equal, so the top-level listing is the catalog.
  */
 function loadKnownAgents() {
   if (_knownAgentsCache !== null) return _knownAgentsCache;

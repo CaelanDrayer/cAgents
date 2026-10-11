@@ -384,21 +384,17 @@ completion_time: 1h
 - `cagents-memory/{instruction_id}/decisions/` - Test strategy decisions
 - `cagents-memory/sessions/{session_id}/messages/{developer}/` - Consultations
 
-## Progress Tracking with TodoWrite
+## Progress Tracking
 
-**CRITICAL**: Use Claude Code's TodoWrite tool to display progress:
+If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[qa-lead] Analyze code to identify test boundaries", status: "completed", activeForm: "[qa-lead] Analyzing code to identify test boundaries"},  // activeForm is optional
-    {content: "[qa-lead] Design test strategy with coverage plan", status: "completed", activeForm: "[qa-lead] Designing test strategy with coverage plan"},
-    {content: "[qa-lead] Implement unit tests for core logic", status: "in_progress", activeForm: "[qa-lead] Implementing unit tests for core logic"},
-    {content: "[qa-lead] Create integration tests for API endpoints", status: "pending", activeForm: "[qa-lead] Creating integration tests for API endpoints"},
-    {content: "[qa-lead] Build e2e tests for user workflows", status: "pending", activeForm: "[qa-lead] Building e2e tests for user workflows"},
-    {content: "[qa-lead] Run tests locally and verify coverage", status: "pending", activeForm: "[qa-lead] Running tests locally and verifying coverage"}
-  ]
-})
+```
+TaskCreate(subject: "[qa-lead] Analyze code to identify test boundaries")
+TaskCreate(subject: "[qa-lead] Design test strategy with coverage plan")
+TaskCreate(subject: "[qa-lead] Implement unit tests for core logic")
+TaskCreate(subject: "[qa-lead] Create integration tests for API endpoints")
+TaskCreate(subject: "[qa-lead] Build e2e tests for user workflows")
+TaskCreate(subject: "[qa-lead] Run tests locally and verify coverage")
 ```
 
 Update task status in real-time as test creation progresses for user visibility.

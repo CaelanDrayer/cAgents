@@ -143,7 +143,7 @@ Pattern: "Use {subagent} to {task}"
 Example: Controller → backend-developer (question) → answer → synthesis
 ```
 
-Benefits: Modularity, specialization, parallelization (up to 50 concurrent)
+Benefits: Modularity, specialization, parallelization (up to 20 concurrent subagents by default since CC 2.1.217)
 
 ## Write Your Output to Disk, Return a Pointer
 
@@ -262,17 +262,17 @@ gives you a clean rollback on failure.
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
 **Nesting model (v12.17.0+).** Claude Code 2.1.172 and later lets a subagent spawn
-its own subagents up to 5 levels deep. An execution agent spawned at depth 2 **keeps
-the `Agent` tool**. It can spawn its own sub-agents inside the 5-level ceiling when
+its own subagents up to depth 3 by default. An execution agent spawned at depth 2 **keeps
+the `Agent` tool**. It can spawn its own sub-agents inside the depth-3 ceiling when
 a work item needs them.
 
 **Graceful degradation is a defensive fallback**, not the expected behavior. It
 triggers only when a needed tool is genuinely absent. That happens at the real
-nesting ceiling, where a subagent at depth 5 cannot spawn a depth-6 child. It also
+nesting ceiling, where a subagent at depth 3 cannot spawn a depth-4 child. It also
 happens if an older harness or a future harness loses the capability.
 
 Before you report `BLOCKED` for a missing tool, make sure that the tool is absent.
-When `Agent`, `TodoWrite`, or `TaskUpdate` is verifiably absent, finish the work item
+When `Agent` or `TaskUpdate` is verifiably absent, finish the work item
 with the tools you do have. Write self-validation YAML in place of the `TaskUpdate`
 calls. The tool-inventory-check-before-BLOCKED rule and the TaskUpdate-substitution
 rule stay the canonical fallback guidance.

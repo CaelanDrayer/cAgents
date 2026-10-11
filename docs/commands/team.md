@@ -43,4 +43,4 @@ Wave N (Lead): Integration + final validation
 Unsuitable requests (<3 work items or all sequential) auto-delegate to `/act`.
 
 ## Context Mode
-`context: fork` -- runs in a forked context with agent teams.
+`/team` runs inline in the main session. Its SKILL.md sets `metadata.context: "fork"`, but Claude Code does not act on keys under `metadata`.

@@ -110,7 +110,7 @@ Configure in settings.json (experimental path only):
 
 ## Wave Subagent Execution Model
 
-Each wave subagent IS a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. Wave subagents spawn their execution agents **directly**. They do NOT re-enter `/act` via the Skill tool. This keeps the nesting shallow within the 5-level depth budget. The skill loop is depth 0, and CC >= 2.1.172 supports up to 5 subagent generations beneath it:
+Each wave subagent IS a controller agent (e.g., `cagents:tech-lead`) that delegates to execution agents via Agent tool, then spawns `cagents:reviewer` to validate. Wave subagents spawn their execution agents **directly**. They do NOT re-enter `/act` via the Skill tool. This keeps the nesting shallow within the depth-3 nesting budget (the CC 2.1.219 default). The skill loop is depth 0. Since CC 2.1.219 the default allows 3 subagent generations beneath it (set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to change this):
 
 ```
 Wave subagent (controller, e.g., tech-lead)
@@ -119,9 +119,9 @@ Wave subagent (controller, e.g., tech-lead)
   -> PASS or REVISE (max 2 internal rounds)
 ```
 
-Wave subagents NEVER implement work directly. They always coordinate through execution agents via the Agent tool. A subagent may need a different specialty. It spawns that specialist as its own downward subagent. The same 5-level ceiling still applies. That is how parallelism compounds beyond the per-wave fan-out.
+Wave subagents NEVER implement work directly. They always coordinate through execution agents via the Agent tool. A subagent may need a different specialty. It spawns that specialist as its own downward subagent. The same depth-3 ceiling still applies. That is how parallelism compounds beyond the per-wave fan-out.
 
-**Why no Skill("act") fork**: Wave subagents are full Claude Code sessions. As of CC 2.1.172, a wave subagent can nest an `/act` call within the 5-level depth budget. The skill still avoids that call **by design for cost and clarity**. Invoking `/act` via Skill re-runs the full pipeline (orchestrator + planner + controller + validator). The extra run duplicates the Wave 0 enrichment the lead already did, and it burns extra context and tokens. Spawning execution agents directly keeps the chain short (subagent-controller -> execution agents -> reviewer) and reuses the lead's enrichment.
+**Why no Skill("act") fork**: Wave subagents are full Claude Code sessions. As of CC 2.1.172, a wave subagent can nest an `/act` call within the depth-3 nesting budget (the CC 2.1.219 default). The skill still avoids that call **by design for cost and clarity**. Invoking `/act` via Skill re-runs the full pipeline (orchestrator + planner + controller + validator). The extra run duplicates the Wave 0 enrichment the lead already did, and it burns extra context and tokens. Spawning execution agents directly keeps the chain short (subagent-controller -> execution agents -> reviewer) and reuses the lead's enrichment.
 
 ## Per-Wave Subagent Lifecycle
 

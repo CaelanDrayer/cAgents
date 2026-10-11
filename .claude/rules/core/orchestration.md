@@ -310,13 +310,13 @@ lead then collects the results together, validates GATE, and proceeds.
 
 Parallelism has two sources. The first source is the concurrent per-wave
 subagent calls. The second source is each subagent, because a subagent spawns
-its own subagents down to depth 5. A subagent that needs another specialty
+its own subagents down to depth 3. A subagent that needs another specialty
 spawns that specialty downward. It does not route sideways through the lead.
 
 Teams are implicit. CC v2.1.178 removed the `TeamCreate` tool and the
 `TeamDelete` tool, so there is nothing to create and nothing to delete, and the
 cleanup is automatic at session end. Each wave subagent is a controller. It
-spawns its own execution agents and its own reviewer, and it nests to depth 5.
+spawns its own execution agents and its own reviewer, and it nests to depth 3.
 
 An optional experimental path uses named background teammates with tmux panes
 or iTerm2 panes. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` gates that path. When

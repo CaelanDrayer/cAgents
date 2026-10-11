@@ -1037,7 +1037,7 @@ function verifyCompletion(sessionDir) {
         // 2.1.173 in session run_deep-nesting-enablement_260611_001). Graceful
         // degradation is now a DEFENSIVE FALLBACK that fires only when the Agent
         // tool is genuinely absent — at the actual nesting ceiling (a subagent at
-        // depth 5 cannot spawn depth 6) or if a future/older harness regresses the
+        // depth 3 cannot spawn depth 4) or if a future/older harness regresses the
         // capability. See .claude/rules/playbooks/pat-graceful-degradation-depth1.md
         // (§ Status: REPOSITIONED in v12.17.0).
         //

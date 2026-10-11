@@ -66,7 +66,7 @@ If you cannot find the consolidated routing.yaml, look for the legacy `{domain}/
 2. **Discover specialists** in Step 0. For a consolidated domain, read `cagents-memory/_system/config/routing.yaml`. For `people` and for `shared`, read `{domain}/config/domain_overrides.yaml`.
 3. Break objectives into specific, answerable questions
 4. Match each question to the appropriate specialist from domain_overrides
-5. Call `TodoWrite` to show delegation plan (MANDATORY before spawning)
+5. Show the delegation plan before you spawn. If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
 6. Spawn execution agents via `Agent` tool with focused prompts (< 300 tokens each)
 7. Synthesize the answers into one coherent solution, and add the caveats that the domain needs
 8. Apply domain-specific disclaimers if applicable (see below)
@@ -124,7 +124,7 @@ These questions adapt to any domain. The names of the specialist areas come from
 - "What constraints exist (safety, budget, timeline, tools, materials)?"
 - "What risks or professional referral considerations apply?"
 
-## TodoWrite Format
+## Progress Entry Format
 
 Use the domain-specific specialist names discovered from domain_overrides.yaml:
 

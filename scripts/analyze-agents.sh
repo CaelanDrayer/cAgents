@@ -8,8 +8,9 @@ echo "=== DEEP AGENT ANALYSIS ==="
 echo ""
 
 # Find all SKILL.md files (primary agent files)
-# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code
-# discovers plugin agents with a non-recursive scan of agents/).
+# v12.68.0: agent definitions are flat (agents/<name>.md). Claude Code scans
+# plugin agents/ recursively; plugin.json `agents` lists the top-level files,
+# so only those register.
 skill_files=$(find "$PROJECT_ROOT/agents" -maxdepth 1 -name "*.md" -type f 2>/dev/null | sort)
 
 echo "Agent files found: $(echo "$skill_files" | wc -l)"

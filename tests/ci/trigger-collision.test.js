@@ -201,8 +201,9 @@ describe('scanRoot() over a temp fixture tree', () => {
         'utf8',
       );
     };
-    // v12.68.0: agent definitions are flat (agents/<name>.md) — Claude Code
-    // discovers plugin agents with a non-recursive scan of agents/.
+    // v12.68.0: agent definitions are flat (agents/<name>.md). Claude Code
+    // scans plugin agents/ recursively; plugin.json `agents` lists the
+    // top-level files, so only those register.
     const writeAgent = (name, description) => {
       const dir = join(tmp, 'agents');
       mkdirSync(dir, { recursive: true });

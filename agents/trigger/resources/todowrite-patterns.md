@@ -1,100 +1,51 @@
-# TodoWrite Patterns for /act Workflow
+# Progress Tracking Patterns for the /act Workflow
 
-Progress tracking throughout all phases. **All tasks MUST be prefixed with the agent name in brackets** (e.g., `[/act]`, `[tech-lead]`) so the user can see which agent is executing each task.
+Progress tracking through all phases. Prefix each entry with the agent name in brackets (for example `[/act]` or `[tech-lead]`). The user then sees which agent runs each step.
 
-## Initial Task List (Step 2 of /act)
+The file name is kept for existing references. The legacy `TodoWrite` tool is no longer used. Do not call it.
 
-Create at start of workflow -- this is the FIRST TodoWrite call:
+## Tool Availability
 
-```
-TodoWrite([
-  {"content": "[/act] Route request to domain and tier", "status": "in_progress", "id": "route"},
-  {"content": "[/act] Plan objectives and select controller", "status": "pending", "id": "plan"},
-  {"content": "[controller] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
-```
+The task tools (`TaskCreate`, `TaskUpdate`, `TaskList`, `TaskGet`) are off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models (Claude Code 2.1.233). `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on.
 
-## After Routing (Step 3 of /act)
+- **Task tools present**: use `TaskCreate` and `TaskUpdate`.
+- **Task tools absent**: record each update in the session `status.yaml`. Then continue.
 
-After domain detection and tier classification -- this is the SECOND TodoWrite call:
+Never stop or block because the task tools are missing.
 
-```
-TodoWrite([
-  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/act] Plan objectives and select controller", "status": "in_progress", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "pending", "id": "coordinate"},
-  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
-```
+## Update Points
 
-Replace `{controller_name}` with the actual controller (e.g., `tech-lead`, `creative-director`).
+| Step | When | Update |
+|------|------|--------|
+| 2 | Session start | Create 4 entries: route (in_progress), plan, coordinate, validate |
+| 3 | After routing | Mark route completed. Rename `[controller]` to the real controller. Mark plan in_progress. |
+| 5 | Before delegation | Mark plan completed. Mark coordinate in_progress. |
+| 6 | After the controller returns | Mark all entries completed. |
 
-## Before Controller Delegation (Step 5 of /act)
-
-Mark planning completed and coordination starting -- this is the THIRD TodoWrite call:
+Initial entries:
 
 ```
-TodoWrite([
-  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/act] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "in_progress", "id": "coordinate"},
-  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
+[/act] Route request to domain and tier
+[/act] Plan objectives and select controller
+[controller] Coordinate work via question-based delegation
+[/act] Validate outputs and quality
 ```
 
-## After Controller Returns (Step 6 of /act)
+## Controller Refinement
 
-Mark all tasks completed -- this is the FOURTH TodoWrite call:
-
-```
-TodoWrite([
-  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/act] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[{controller_name}] Coordinate work via question-based delegation", "status": "completed", "id": "coordinate"},
-  {"content": "[/act] Validate outputs and quality", "status": "completed", "id": "validate"}
-])
-```
-
-## Controller TodoWrite Update (Progressive Refinement)
-
-When the controller identifies execution agents, it calls TodoWrite to add specific entries:
+When the controller picks execution agents, it adds one entry per agent:
 
 ```
-TodoWrite([
-  {"content": "[/act] Route request to domain and tier", "status": "completed", "id": "route"},
-  {"content": "[/act] Plan objectives and select controller", "status": "completed", "id": "plan"},
-  {"content": "[tech-lead] Coordinate: ask questions and synthesize", "status": "in_progress", "id": "coordinate"},
-  {"content": "[backend-developer] Implement authentication fix", "status": "pending", "id": "exec1"},
-  {"content": "[security-specialist] Review security implications", "status": "pending", "id": "exec2"},
-  {"content": "[qa-tester] Create regression tests", "status": "pending", "id": "exec3"},
-  {"content": "[/act] Validate outputs and quality", "status": "pending", "id": "validate"}
-])
+[backend-developer] Implement authentication fix
+[security-engineer] Review security implications
+[qa-lead] Create regression tests
 ```
-
-## Update Timing Requirements
-
-1. **Step 2** (session init): Initial 4-item task list
-2. **Step 3** (after routing): Replace `[controller]` with specific name, mark routing completed
-3. **Step 5** (before delegation): Mark planning completed, coordination in_progress
-4. **Step 6** (after completion): Mark all completed
-
-**Minimum 4 TodoWrite calls per /act execution. Every call is mandatory.**
 
 ## Rules
 
-- NEVER have zero tasks in_progress during execution
-- NEVER have multiple tasks in_progress (only ONE at a time, except when controller adds executor entries)
-- NEVER leave generic `[controller]` or `[executor]` after the specific agent is known
-- NEVER skip a TodoWrite call between steps
-- ALWAYS replace placeholders with actual agent names as soon as they are determined
-- Each execution agent gets its OWN entry with `[agent-name] specific task description`
+- Keep one entry in progress while work runs.
+- Replace placeholders with real agent names as soon as you know them.
+- Give each execution agent its own entry with a specific description.
+- Set every entry to `completed` or `deleted` before you stop.
 
-## Anti-Patterns (DO NOT DO)
-
-- DO NOT create TodoWrite only at start and never update
-- DO NOT forget to mark tasks complete when phases finish
-- DO NOT proceed to the next step without calling TodoWrite
-- DO NOT show a single `[executor] Execute tasks` when multiple executors are involved
-
-See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern.
+See `shared/patterns/todo_write_helper.md` for the full pattern.

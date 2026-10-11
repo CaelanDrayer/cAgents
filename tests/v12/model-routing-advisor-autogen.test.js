@@ -1,10 +1,10 @@
 /**
  * LP-16 (v12.x): model-routing-advisor.cjs KNOWN_AGENTS auto-generation
  *
- * v12.68.0: the catalog moved from plugin.json's `agents` array to the flat
- * agents/ directory (Claude Code discovers plugin agents with a non-recursive
- * scan of agents/, so agents/<name>.md IS the registration). This test now
- * pins the helper to that directory listing.
+ * v12.68.0: the catalog is the flat agents/<name>.md set. Claude Code scans
+ * plugin agents/ recursively, so plugin.json `agents` lists those top-level
+ * files and only they register. This test pins the helper to that top-level
+ * directory listing.
  *
  * Asserts:
  *   (a) the hook module exports a `loadKnownAgents()` helper

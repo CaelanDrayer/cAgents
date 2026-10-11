@@ -237,9 +237,10 @@ function lineOf(text, re) {
 }
 
 // Collect agent definition files under dir.
-// v12.68.0: definitions are FLAT (agents/<name>.md) because Claude Code
-// discovers plugin agents with a non-recursive scan of agents/; subdirectories
-// hold per-agent resources and _deprecated/ buckets, neither of which register.
+// v12.68.0: definitions are FLAT (agents/<name>.md). Claude Code scans plugin
+// agents/ recursively, but plugin.json `agents` lists only the top-level files;
+// subdirectories hold per-agent resources and _deprecated/ buckets, neither of
+// which register.
 function collectSkillMd(dir) {
   let entries;
   try {

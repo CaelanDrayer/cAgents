@@ -6,21 +6,24 @@ rules for env var propagation, and the stability of the hook input schema for
 
 ## Minimum Claude Code Version
 
-**Minimum CC version**: >= 2.1.69. The frontmatter `compatibility` field
+**Minimum CC version**: >= 2.1.198. The hard floor is 2.1.172 (nested subagents). The frontmatter `compatibility` field
 declares it.
 
 | Feature | Version | Notes |
 |---------|---------|-------|
 | `TeamCreate` / `TeamDelete` | **REMOVED in 2.1.178** | Do NOT call. Agent teams are now implicit. There is nothing to create, and cleanup is automatic at session end. |
 | Concurrent `Agent()` waves (DEFAULT model) | any | Spawn all wave-K subagents as concurrent `Agent()` calls in one message; works in every harness. |
-| Subagent nesting to depth 5 | 2.1.172 | Subagents retain `Agent` and spawn execution agents + reviewers up to 5 levels deep. |
+| Subagent nesting | 2.1.172 | Subagents retain `Agent` and spawn execution agents + reviewers. |
+| Nesting off by default | 2.1.217-2.1.218 | Subagents do not nest unless `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` is set. |
+| Nesting to depth 3 by default | 2.1.219 | Default ceiling is depth 3. Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower it. |
+| Concurrent-subagent cap (default 20) | 2.1.217 | Override with `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`. |
 | `Agent({ run_in_background })` background-by-default | 2.1.198 | Subagents run in background unless `run_in_background: false`; the default wave path uses `false` for synchronous collection. |
 | `SendMessage` (direct + broadcast) | 2.1.69 | Named-teammate communication (experimental path). |
 | `TaskCreate` / `TaskUpdate` / `TaskList` / `TaskGet` | 2.1.69 | Shared task list coordination (present). |
 | `settings.json` `env` block propagation | 2.1.x | Required for `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` to reach subagents (experimental path). |
 | `SendMessage` auto-resume of stopped teammates | 2.1.77 | Re-activate a stopped named teammate by name without a fresh spawn (experimental path). |
 | `isolation: "worktree"` in Agent calls | 2.1.72 | Git worktree isolation for parallel file safety. |
-| `ExitWorktree` tool | 2.1.72 | Clean exit from worktree-isolated subagents. |
+| `ExitWorktree` tool | 2.1.72 | Leaves an `EnterWorktree` session. Not available to subagents that run with `isolation: worktree`. |
 | `teammateMode: "in-process"` (default since 2.1.179) | 2.1.179 | Default display; works in any terminal. |
 | `teammateMode: "tmux"` / `"iterm2"` panes | 2.1.69 | EXPERIMENTAL path only; requires tmux / iTerm2 on host. |
 | `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | 2.1.74 | Extend SessionEnd hook timeout. |

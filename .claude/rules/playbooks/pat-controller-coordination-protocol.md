@@ -38,7 +38,9 @@ tool. NEVER do work directly.**
 1. Read plan.yaml for the objectives and the work items.
 2. Break each objective into specific questions.
 3. Delegate each question to the correct execution agent with `Agent({ subagent_type: "cagents:{agent}", ... })`.
-4. **MANDATORY: call TaskCreate after you identify the execution agents.** See
+4. **Record the delegation plan after you identify the execution agents.** Use
+   TaskCreate when it is available. If it is absent, record the plan in
+   `workflow/coordination_log.yaml` and continue. See
    `.claude/rules/core/controllers.md` for the task-tracking pattern that
    TaskCreate and TaskUpdate follow.
 5. Collect the answers from the specialists.

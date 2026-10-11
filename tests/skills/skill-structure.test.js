@@ -26,6 +26,10 @@ const ALLOWED_TOP_LEVEL_FIELDS = new Set([
   'compatibility',
   'metadata',
   'allowed-tools',
+  // Claude Code reads its own fields only at the top level. It does not act on
+  // keys under metadata (https://code.claude.com/docs/en/skills). argument-hint
+  // is the one Claude Code field that the skills declare at the top level.
+  'argument-hint',
 ]);
 
 /**
@@ -139,9 +143,9 @@ describe('SKILL.md frontmatter — required fields', () => {
   });
 });
 
-// ─── Agent Skills spec compliance: only 6 allowed top-level fields ─────────
+// ─── Agent Skills spec compliance: 6 spec fields + argument-hint ──────────
 
-describe('SKILL.md frontmatter — Agent Skills spec compliance (6 allowed top-level fields)', () => {
+describe('SKILL.md frontmatter: Agent Skills spec compliance (6 spec fields + argument-hint)', () => {
   it.each(SKILL_NAMES)('%s has only allowed top-level fields', (skill) => {
     const fm = parseFrontmatter(readSkill(skill));
     const actualFields = Object.keys(fm);
@@ -162,12 +166,22 @@ describe('SKILL.md frontmatter — metadata Claude Code extensions', () => {
     expect(typeof fm.metadata).toBe('object');
   });
 
-  it.each(SKILL_NAMES)('%s metadata has "argument-hint"', (skill) => {
+  it.each(SKILL_NAMES)('%s has top-level "argument-hint"', (skill) => {
     const fm = parseFrontmatter(readSkill(skill));
+    // Claude Code ignores metadata.argument-hint, so the hint must be top level.
     expect(
-      typeof fm.metadata['argument-hint'],
-      `${skill}/SKILL.md metadata missing argument-hint`
+      typeof fm['argument-hint'],
+      `${skill}/SKILL.md missing top-level argument-hint`
     ).toBe('string');
+  });
+
+  it.each(SKILL_NAMES)('%s has no top-level "context: fork" without "background: false"', (skill) => {
+    const fm = parseFrontmatter(readSkill(skill));
+    // CC 2.1.218 runs a top-level context: fork skill in the background by
+    // default. That breaks /team, which must collect its waves in the turn.
+    if (fm.context === 'fork') {
+      expect(fm.background, `${skill}/SKILL.md sets context: fork without background: false`).toBe(false);
+    }
   });
 
   it.each(SKILL_NAMES)('%s metadata has "user-invocable"', (skill) => {

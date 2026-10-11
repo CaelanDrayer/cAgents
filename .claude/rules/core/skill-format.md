@@ -19,10 +19,10 @@ paths:
 Agent/skill format based on official Claude Code SKILL.md, subagent specification, and the [Agent Skills spec](https://agentskills.io).
 
 **Layout (v12.68.0)**: agent definitions are flat, at `agents/<agent-name>.md`.
-They are flat because Claude Code discovers a plugin agent with a non-recursive
-scan of the `agents/` directory of the plugin. A definition parked in a
-subdirectory is never registered. The symptom is `claude plugin details`, which
-then reports `Agents (0)`. The 9 builder-role archetypes and their branches
+Claude Code scans a plugin `agents/` directory recursively. So
+`.claude-plugin/plugin.json` lists the 60 agent files explicitly in its `agents`
+array. The array replaces the default scan. Resource files under
+`agents/<name>/resources/` are therefore not registered. The 9 builder-role archetypes and their branches
 survive as the `archetype:` and `branch:` frontmatter fields. The v11.1.0 tree
 encoded those two fields as directory levels. The tier-3 resources of each agent
 live at `agents/<agent-name>/resources/`.
@@ -46,7 +46,7 @@ color: bright_blue                 # Optional: Display color
 maxTurns: 40                       # V9.0: Maximum agentic turns
 permissionMode: "bypassPermissions" # V9.0: For infrastructure + controllers
 memory: {"project": true}          # V9.0: Persistent memory for learning agents
-disallowedTools: ["Task"]          # V9.0: For support agents (prevent delegation)
+disallowedTools: ["Agent"]         # For support agents (prevent delegation)
 initialPrompt: "Load session state and summarize active work items before starting"  # Optional: Prompt run automatically on agent spawn
 ---
 ```
@@ -134,10 +134,12 @@ agent files still hold one. It is not load-bearing, and it is deprecated.
   silently at runtime.
 - Overridden by model_routing.yaml scenario detection and environment variables
 - If omitted, uses model_routing.yaml defaults
-- **Field placement is unresolved.** Claude Code documents a top-level `model:`; 59 of 60 cAgents
-  agents declare `metadata.model` instead (only `translator.md` uses top-level). `has_fm_field`
-  accepts both, so CI hides the divergence. New agents follow the `metadata.model` majority;
-  reconciling the two is filed as follow-up and deliberately out of scope here.
+- **Field placement is unresolved.** Claude Code reads only a top-level `model:` key. All 60
+  cAgents agents declare `metadata.model` instead, and no agent has a top-level `model:`.
+  Claude Code ignores `metadata.*`, so the value is advisory. Each subagent inherits the
+  session model unless the spawn passes a `model` parameter. `has_fm_field` accepts both
+  placements, so CI hides the divergence. A move to the top level changes the runtime model
+  of each agent, so that change waits for an owner decision.
 - See @.claude/rules/infrastructure/model-routing.md for model routing configuration and aliases.
 
 ### maxTurns (V9.0)
@@ -155,7 +157,7 @@ agent files still hold one. It is not load-bearing, and it is deprecated.
 - Enables persistent memory across sessions
 
 ### disallowedTools (V9.0)
-- `["Task"]` for support agents to prevent unauthorized delegation
+- `["Agent"]` for support agents to prevent unauthorized delegation. Use `Agent`, the canonical name. `Task` is the pre-2.1.63 name of the spawning tool, and Claude Code still accepts it as an alias, so `["Task"]` also blocks `Agent`. Write `Agent` in new agents.
 - Enforces tier boundaries
 
 ### initialPrompt
@@ -224,8 +226,10 @@ the regression test enforcing the ≥10 floor.
 ### tools (DEPRECATED)
 - **Deprecated in V10.22.5.** Use `allowed-tools` instead.
 - Legacy JSON array format for tool declarations
-- The `allowed-tools` field (space-separated string) is the single authoritative tool declaration per the Agent Skills spec
-- Agents should have `allowed-tools` only; the `tools` field will be removed in a future version
+- For a skill, `allowed-tools` (a space-separated string) pre-approves tools per the Agent Skills spec.
+- For an agent, Claude Code does not read `allowed-tools`. It reads only a top-level `tools:` key, and no cAgents agent declares one.
+- Thus each cAgents subagent currently inherits all tools. The agent `allowed-tools` value is advisory, and only cAgents linters and hooks read it.
+- A move to a top-level `tools:` key restricts the tools of each agent, so that change waits for an owner decision.
 
 ### color
 - Terminal display color for agent output
@@ -336,7 +340,7 @@ When creating a new agent:
 - [ ] Frontmatter: `name`, `archetype`, `branch` (3-level only), `description` at top level; `tier` in `metadata:`
 - [ ] Extract detailed content to `agents/{agent-name}/resources/`
 - [ ] Add `@{agent-name}/resources/<file>.md` references in the body
-- [ ] No registration step. The flat `agents/` scan is the registry
+- [ ] Add `./agents/{agent-name}.md` to the `agents` array in `.claude-plugin/plugin.json`. `tests/regressions/plugin-agents-explicit-list.test.js` enforces this
 - [ ] Run `bash scripts/ci/validate-agents.sh` to verify
 - [ ] Test agent loading
 - [ ] Measure token savings
@@ -348,8 +352,8 @@ Agents slated for removal should be moved to the `_deprecated/` bucket
 
 - **Are kept on disk**. `scripts/migration/v12-aliases.yaml` can still resolve an
   old user reference to the deprecated agent.
-- **Are structurally unregistered**. The `agents/` scan is non-recursive, so
-  discovery cannot see anything in a subdirectory. The planner and the router
+- **Are structurally unregistered**. The `agents` array in `plugin.json` does
+  not list them, and that array replaces the recursive `agents/` scan. The planner and the router
   will not select it for new work.
 - **Should not appear in CLAUDE.md catalog counts**. The catalog shows only the
   active agents.
@@ -400,10 +404,9 @@ license: MIT                       # Optional: License name or reference
 metadata:                          # Optional: Key-value map for extensions
   author: org-name
   version: "1.0"
-  argument-hint: "<request> [flags]"  # Claude Code extension: autocomplete hint
-  user-invocable: "true"              # Claude Code extension: show in / menu
-  context: "none"                     # Claude Code extension: fork|none
-  agent: "false"                      # Claude Code extension: subagent type
+  user-invocable: "true"              # Inert: Claude Code does not read it here
+  context: "none"                     # Inert: Claude Code does not read it here
+argument-hint: "<request> [flags]" # Claude Code field: autocomplete hint (top level)
 allowed-tools: Read, Grep, Bash    # Optional: Space-delimited pre-approved tools
 compatibility: "Claude Code"       # Optional: Environment requirements (1-500 chars)
 ---
@@ -413,22 +416,20 @@ compatibility: "Claude Code"       # Optional: Environment requirements (1-500 c
 `compatibility`, `metadata`, and `allowed-tools`. Any other field at the top
 level triggers a validation error in `skills-ref validate`.
 
-**Claude Code extensions in metadata**: `argument-hint`, `user-invocable`,
-`context`, and `agent` are Claude Code-specific fields. They are stored as string
-key-value pairs inside `metadata`. Claude Code reads the metadata keys for these
-values.
+**Claude Code reads its own fields only at the top level.** The skills docs say
+of `metadata`: "Claude Code doesn't act on its contents"
+(<https://code.claude.com/docs/en/skills>). Thus `argument-hint`,
+`user-invocable`, `context`, and `agent` have no effect when they are inside
+`metadata`.
 
-### Legacy Schema (pre-V10.22.5)
-
-The following top-level fields were used before Agent Skills spec alignment and are now stored in `metadata`:
-
-```yaml
-# DEPRECATED top-level fields, move to metadata:
-argument-hint: "<request> [flags]" # -> metadata.argument-hint
-user-invocable: false              # -> metadata.user-invocable
-context: fork                      # -> metadata.context
-agent: Explore                     # -> metadata.agent
-```
+The cAgents skills declare `argument-hint` at the top level, so the autocomplete
+hint shows. The value `metadata.context: "fork"` in `/team` is inert. Thus
+`/team` runs inline in the main session. Do not move `context: fork` to the top
+level for `/team`. Claude Code 2.1.218 runs a top-level `context: fork` skill in
+the background by default, and `/team` must collect its waves in the turn. If a
+skill sets a top-level `context: fork`, it must also set `background: false`.
+`tests/skills/skill-structure.test.js` and
+`tests/regressions/skill-frontmatter-cc-honored.test.js` enforce these rules.
 
 ### Skill Invocation Control
 
@@ -474,9 +475,12 @@ When `context: fork` is set:
 
 Available agent types: `Explore` (read-only, haiku), `Plan` (read-only), `general-purpose` (all tools), or any custom subagent name.
 
-The `ExitWorktree` tool (CC 2.1.72) is available inside a worktree-isolated
-subagent. It exits the worktree and returns to the parent context. Use it when
-the subagent finished its isolated work and needs to signal completion cleanly.
+The `ExitWorktree` tool (CC 2.1.72) leaves a session that `EnterWorktree`
+started. It is not available to a subagent that runs with `isolation: worktree`.
+The tools reference says: "Not available to subagents that already run in their
+own working directory, such as with `isolation: worktree`"
+(<https://code.claude.com/docs/en/tools-reference>). A worktree-isolated
+subagent signals completion with its final message.
 
 ### Skill Location Precedence
 
@@ -533,11 +537,10 @@ initialPrompt: "Read cagents-memory/sessions/*/workflow/plan.yaml if it exists a
 # Engineering Manager
 
 <!--
-  Note on task-tracking tools (V11.1.7+): Interactive Claude Code sessions MUST use
-  TaskCreate/TaskUpdate/TaskList/TaskGet for progress visibility. TodoWrite is the
-  Agent SDK / non-interactive equivalent (per docs.claude.com/docs/en/tools.md) and
-  remains valid only when the SDK is the runtime. Agents should declare TaskCreate
-  TaskUpdate TaskList TaskGet in `allowed-tools` for interactive runtimes.
+  Note on task-tracking tools: use TaskCreate/TaskUpdate/TaskList/TaskGet when they
+  are available. They are off by default on Opus 4.8+ (Claude Code 2.1.233) unless
+  CLAUDE_CODE_ENABLE_TODO_TOOLS=1. If they are absent, record progress in the session
+  files and continue. Agents can declare them in `allowed-tools`.
 -->
 
 

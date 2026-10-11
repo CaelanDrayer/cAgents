@@ -6,7 +6,7 @@ This file keeps the name `teammate-spawning-template.md` for back-compat with ea
 
 Teams are implicit from Claude Code v2.1.178. That release removed `TeamCreate` and `TeamDelete`. There is nothing to create, and there is nothing to register a team with. The DEFAULT spawn mechanism works one wave at a time. For each wave K, issue ALL of the wave-K subagent `Agent()` calls as CONCURRENT tool uses in ONE assistant message. Give each call `run_in_background: false`.
 
-A synchronous spawn is necessary, because a subagent is background-by-default from v2.1.198. The synchronous spawn is what makes the lead receive all of the wave results together, before it validates GATE-K. On the default path a subagent needs NO `name` field and NO `team_name` field. Those are addressing fields for the experimental named-teammate path below. Each wave subagent can spawn its own subagents to depth 5, for any specialty that it needs. This path works in every harness.
+A synchronous spawn is necessary, because a subagent is background-by-default from v2.1.198. The synchronous spawn is what makes the lead receive all of the wave results together, before it validates GATE-K. On the default path a subagent needs NO `name` field and NO `team_name` field. Those are addressing fields for the experimental named-teammate path below. Each wave subagent can spawn its own subagents to depth 3, for any specialty that it needs. This path works in every harness.
 
 ### EXPERIMENTAL named-teammate option (OPTIONAL)
 

@@ -26,7 +26,7 @@ git clone https://github.com/CaelanDrayer/cAgents.git
 claude --plugin-dir /path/to/cAgents
 ```
 
-Requires Claude Code 2.1.69+ and Node.js (for hooks).
+Requires Claude Code 2.1.198+ and Node.js (for hooks).
 
 ## 2. Your First Command
 

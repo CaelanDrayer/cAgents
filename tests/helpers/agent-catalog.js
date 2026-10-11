@@ -1,10 +1,10 @@
 /**
  * Shared helpers for the flat agent catalog (v12.68.0).
  *
- * Claude Code discovers plugin agents with a NON-RECURSIVE scan of the
- * plugin's agents/ directory, so agent definitions live at agents/<name>.md
- * and the directory listing IS the catalog. Archetype and branch — which used
- * to be encoded as directory levels — are frontmatter fields.
+ * Claude Code scans the plugin's agents/ directory recursively, so
+ * plugin.json `agents` lists the 60 top-level agents/<name>.md files and only
+ * those register. That top-level listing IS the catalog. Archetype and branch were once
+ * encoded as directory levels. Now they are frontmatter fields.
  *
  * Per-agent resources live at agents/<name>/resources/, referenced from the
  * agent body as `@<name>/resources/<file>.md` (agent-file-relative).

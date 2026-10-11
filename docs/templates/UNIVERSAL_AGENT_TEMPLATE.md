@@ -134,23 +134,18 @@ See template at: `cagents-memory/_system/domains/_template/{agent_type}_config.y
 - **Action**: Check if domain exists in any installed plugin
 - **Escalation**: If domain truly missing, escalate with helpful message
 
-## Progress Tracking with TodoWrite
+## Progress Tracking
 
-**CRITICAL**: Use TodoWrite to show {agent type} progress. **Prefix each task with the agent name in brackets** so the user can see which agent is executing each task:
+Show {agent type} progress. If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue. **Prefix each task with the agent name in brackets** so the user can see which agent runs each task:
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[{agent-name}] {Step 1}", status: "in_progress", activeForm: "[{agent-name}] {Doing step 1}"},  // activeForm is optional
-    {content: "[{agent-name}] {Step 2}", status: "pending", activeForm: "[{agent-name}] {Doing step 2}"},
-    ...
-  ]
-})
+```
+TaskCreate(subject: "[{agent-name}] {Step 1}")
+TaskCreate(subject: "[{agent-name}] {Step 2}")
 ```
 
 ### Progressive Refinement
 
-When this agent determines which downstream agent(s) will handle work, it MUST update TodoWrite to show the specific agent name(s). Replace generic placeholders (e.g., `[controller]`, `[executor]`) with the actual agent names as soon as they are known. If multiple agents will be involved, add a separate entry for EACH with its specific name and task description.
+When this agent determines which downstream agent(s) will handle work, it MUST update the progress entries to show the specific agent name(s). Replace generic placeholders (e.g., `[controller]`, `[executor]`) with the actual agent names as soon as they are known. If multiple agents will be involved, add a separate entry for EACH with its specific name and task description.
 
 See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern.
 
@@ -244,7 +239,7 @@ When creating a universal agent from this template:
 3. **Keep universal structure**:
    - Always load config from domain folder
    - Always handle missing configs gracefully
-   - Always use TodoWrite for progress
+   - Always record progress (task tools if available, else session files)
    - Always log domain being used
 
 4. **Reference existing agents**:

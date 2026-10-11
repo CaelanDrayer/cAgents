@@ -8,14 +8,14 @@
  * DEFAULT behavior of the harness.
  *
  * REPOSITIONED premise (v12.17.0): Claude Code 2.1.172 added subagent-spawns-
- * subagent support up to 5 levels deep. An empirical chain test (session
+ * subagent support up to depth 3 by default. An empirical chain test (session
  * run_deep-nesting-enablement_260611_001, verified on CC 2.1.173) ran a spawn
  * chain depth 1 → 2 → 3 → 4 → 5 → 6 with the `Agent` tool present at every
  * level and ZERO stripping. The "Agent stripped at depth >= 1" behavior is
  * therefore NO LONGER the default. Graceful degradation is repositioned from
  * "the expected depth-1 behavior" to a DEFENSIVE FALLBACK that triggers only
  * when the `Agent` tool is verifiably absent — at the nesting ceiling (a
- * subagent at depth 5 cannot spawn depth 6) or if a future/older harness
+ * subagent at depth 3 cannot spawn depth 4) or if a future/older harness
  * regresses the capability.
  *
  * This test asserts that the three rule docs:
@@ -138,16 +138,16 @@ describe('FU-1 → v12.17.0 repositioning: graceful-degradation semantics', () =
   describe('Invariant 4 — section carries the v12.17.0 repositioning signal', () => {
     // Each rule doc's nesting/graceful-degradation section must contain at least
     // one explicit repositioning marker — the CC 2.1.172 capability, the
-    // 5-levels-deep nesting model, the "repositioned in v12.17.0" tag, or the
+    // depth-3 default nesting model, the "repositioned in v12.17.0" tag, or the
     // "no longer the default" framing — so the repositioning is unambiguous for
     // future readers and AI agents loading these rules.
     const REPOSITION_MARKERS = [
       /2\.1\.172/,
-      /5 levels deep/i,
+      /depth 3 by default/i,
       /repositioned in v12\.17\.0/i,
       /no longer (the )?(default|expected)/i,
       /obsolete as (the )?default/i,
-      /depth\s*5/i,
+      /depth\s*3/i,
     ];
 
     for (const [docPath, docName] of [

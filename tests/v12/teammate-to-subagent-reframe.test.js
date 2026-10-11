@@ -9,7 +9,7 @@
  *   3. The experimental named-background-teammate path is LABELED, not deleted.
  *   4. The peer_request / cross-teammate machinery is DEMOTED, not deleted
  *      (playbook survives with a legacy banner + intact test surface).
- *   5. KEEP-list concepts (waves, GATE, synchronous spawning, depth-5) survive.
+ *   5. KEEP-list concepts (waves, GATE, synchronous spawning, depth-3) survive.
  *   6. Claude Code API tokens (teammateMode, --teammate-mode) are preserved.
  *
  * Positive-presence assertions only — NOT global "teammate" absence, because
@@ -132,12 +132,12 @@ describe('teammate -> subagent reframe (v12.62.0 regression)', () => {
       ['teams.md', TEAMS_DOC_PATH],
       ['team/SKILL.md', TEAM_SKILL_PATH],
     ]) {
-      it(`${label} retains wave / GATE / run_in_background:false / depth-5 / synchronous`, () => {
+      it(`${label} retains wave / GATE / run_in_background:false / depth-3 / synchronous`, () => {
         const doc = read(docPath);
         expect(/\bwave\b/i.test(doc)).toBe(true);
         expect(doc).toContain('GATE');
         expect(doc).toContain('run_in_background: false');
-        expect(/5 levels|depth 5/i.test(doc)).toBe(true);
+        expect(/depth 3/i.test(doc)).toBe(true);
         expect(/synchronous/i.test(doc)).toBe(true);
       });
     }
