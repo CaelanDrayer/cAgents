@@ -168,11 +168,11 @@ describe('/team strategic mode nesting diagram (replaces /org)', () => {
     expect(teamArchitecture).toMatch(/execution agents.*via Agent/);
   });
 
-  it('nesting model documents the 5-level depth budget (teammate -> execution agents, Agent available)', () => {
-    // As of CC 2.1.172 / v12.17.0 subagents can nest up to 5 levels deep.
+  it('nesting model documents the depth-3 nesting budget (teammate -> execution agents, Agent available)', () => {
+    // Since CC 2.1.219 subagents nest to depth 3 by default (2.1.172 added nesting).
     // architecture.md documents this budget and that teammates delegate to
     // execution agents via the Agent tool.
-    expect(teamArchitecture).toMatch(/5-level depth budget|up to 5 subagent generations|5 levels|5-level/i);
+    expect(teamArchitecture).toMatch(/depth-3 nesting budget|3 subagent generations/i);
     expect(teamArchitecture).toMatch(/execution agents via Agent/i);
   });
 

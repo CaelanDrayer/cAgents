@@ -13,7 +13,7 @@ Detailed workflow examples for tech lead coordination tasks.
 4. Consult Security: "What are the security requirements for token storage and session management?" → Security provides requirements
 5. Create task breakdown: T1 (Backend: OAuth endpoints), T2 (Frontend: Login UI), T3 (Backend: Session storage), T4 (QA: Auth test suite)
 6. Delegate: Backend Dev → T1, Frontend Dev → T2 (can start now), Backend Dev → T3 (after T1), QA Lead → T4 (design tests now, execute after T3)
-7. Monitor: Track via TodoWrite, check-in at handoff points (T1→T2 API contract, T3→T4 test environment)
+7. Monitor: Track with TaskUpdate (or in coordination_log.yaml if task tools are absent), check-in at handoff points (T1→T2 API contract, T3→T4 test environment)
 8. Coordinate: Ensure API contract agreed between frontend/backend before implementation diverges
 
 **Outcome**: Feature delivered in 5 days with clean handoffs, no rework, all security requirements met.

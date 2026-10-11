@@ -2,11 +2,11 @@
 name: designer
 description: "Guided design exploration that produces implementation-ready documents through structured Q&A. Use before building to clarify requirements. TRIGGER: design, plan this, think through, architecture. NOT for: implementation (/act) or review (/act review)."
 license: MIT
-compatibility: "Claude Code >= 2.1.69"
+compatibility: "Claude Code >= 2.1.198"
+argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 metadata:
   author: CaelanDrayer
-  version: "12.73.0"
-  argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
+  version: "12.74.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion

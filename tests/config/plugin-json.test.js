@@ -62,13 +62,13 @@ describe('root plugin.json', () => {
     expect(wrapper.hooks).toEqual(settings.hooks);
   });
 
-  it('omits the agents array — discovery is the flat agents/ scan (v12.68.0)', () => {
-    // Claude Code discovers plugin agents with a NON-RECURSIVE scan of agents/,
-    // and the accepted shape of an explicit `agents` array differs across
-    // versions (file paths vs directories). Omitting it is the only form that
-    // works everywhere; agents/<name>.md IS the registration.
+  it('lists the agents as an explicit array of .md file paths (v12.74.0)', () => {
+    // Claude Code scans a plugin agents/ directory recursively. The explicit
+    // `agents` array replaces that scan, so resource files are not registered.
+    // tests/regressions/plugin-agents-explicit-list.test.js checks the full set.
     const plugin = loadPluginJson(PLUGIN_PATH);
-    expect('agents' in plugin).toBe(false);
+    expect(Array.isArray(plugin.agents)).toBe(true);
+    for (const entry of plugin.agents) expect(entry).toMatch(/^\.\/agents\/[^/]+\.md$/);
   });
 
   it('the flat agents/ catalog is in the v12.consolidation band [40, 70]', () => {

@@ -24,10 +24,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 # ---- Derivation -------------------------------------------------------------
-# v12.68.0: agent definitions are flat — agents/<name>.md — because Claude Code
-# discovers plugin agents with a NON-RECURSIVE scan of agents/. The directory
-# listing is therefore the catalog (plugin.json no longer carries an `agents`
-# array), and archetype membership is read from each file's frontmatter.
+# v12.68.0: agent definitions are flat (agents/<name>.md). Claude Code scans
+# plugin agents/ recursively, so plugin.json `agents` lists the 60 top-level
+# files and only those register. The top-level listing is therefore the
+# catalog, and archetype membership is read from each file's frontmatter.
 ACTIVE_AGENTS=$(find agents -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
 
 # Per-archetype counts, derived from the top-level `archetype:` frontmatter

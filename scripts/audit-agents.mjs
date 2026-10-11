@@ -114,9 +114,9 @@ function parseFrontmatter(text) {
 function loadAgents() {
   // Returns array<{ name, path, archetype, branch?, description, capabilities, vibe,
   //                  tier, allowed_tools, body, bodyLines, tokens }>
-  // v12.68.0: the catalog is the flat agents/ directory — Claude Code discovers
-  // plugin agents with a non-recursive scan of it, so plugin.json no longer
-  // carries an `agents` array.
+  // v12.68.0: the catalog is the flat agents/*.md set. Claude Code scans
+  // plugin agents/ recursively, so plugin.json `agents` lists those top-level
+  // files and only they register.
   const agentsDir = path.join(ROOT, 'agents');
   const out = [];
   const entries = fs.existsSync(agentsDir)

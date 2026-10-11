@@ -7,7 +7,7 @@ specialization: [{capability-1}, {capability-2}]
 delegates_to: [{execution-agent-1}, {execution-agent-2}]
 reports_to: executor
 model: sonnet
-tools: Read, Grep, Glob, Write, Bash, TodoWrite, Task
+tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate
 ---
 
 # {Controller Name} (Controller Tier)
@@ -331,28 +331,22 @@ status: completed
 completed_at: 2026-01-12T11:30:00Z
 ```
 
-## TodoWrite: Progressive Refinement of Execution Agents
+## Progress Tracking: Progressive Refinement of Execution Agents
 
-**CRITICAL**: When you determine which execution agents you will delegate to, you MUST issue a TodoWrite update that adds a specific entry for EACH execution agent with its name and task description. This replaces any generic executor placeholders.
+When you choose the execution agents, add one entry for EACH execution agent with its name and task description. This replaces any generic executor placeholders. If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
 
-```javascript
-// After determining you need backend-developer, qa-lead, and security-specialist:
-TodoWrite({
-  todos: [
-    // ... completed routing/planning entries ...
-    {content: "[{controller-name}] Coordinate: ask questions and synthesize", status: "in_progress", activeForm: "[{controller-name}] Coordinating work"},  // activeForm is optional
-    {content: "[backend-developer] Implement OAuth2 endpoints", status: "pending", activeForm: "[backend-developer] Implementing OAuth2 endpoints"},
-    {content: "[qa-lead] Create OAuth2 tests", status: "pending", activeForm: "[qa-lead] Creating OAuth2 tests"},
-    {content: "[security-specialist] Security review of implementation", status: "pending", activeForm: "[security-specialist] Reviewing security"},
-    {content: "[/act] Validate outputs and quality", status: "pending", activeForm: "[/act] Validating outputs"}
-  ]
-})
+```
+// After you choose backend-developer, qa-lead, and security-engineer:
+TaskCreate(subject: "[{controller-name}] Coordinate: ask questions and synthesize")
+TaskCreate(subject: "[backend-developer] Implement OAuth2 endpoints")
+TaskCreate(subject: "[qa-lead] Create OAuth2 tests")
+TaskCreate(subject: "[security-engineer] Security review of implementation")
 ```
 
 **Rules**:
 - Add a SEPARATE entry for EACH execution agent -- never group multiple agents into one entry
 - Include the specific task description (not generic "execute work")
-- Update TodoWrite again as each executor completes (mark individual entries completed)
+- Update each entry as its executor completes (TaskUpdate, or the session file)
 - See `shared/patterns/todo_write_helper.md` for the full Progressive Refinement Pattern
 
 ## Delegation Targets

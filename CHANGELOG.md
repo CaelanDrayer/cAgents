@@ -10,6 +10,58 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.74.0] - 2026-10-11
+
+### Fixed
+- F1: Claude Code scans the plugin `agents/` directory recursively. It read
+  the 452 resource files under `agents/<name>/resources/` as agent files.
+  `plugin.json` now declares an explicit `agents` list of the 60 top-level
+  agent files. Source: the Claude Code sub-agents docs and the plugins
+  reference. A probe on Claude Code 2.1.296 confirmed the scan.
+- F2: Claude Code does not read `metadata.model` or `metadata.allowed-tools`
+  in agent frontmatter. The docs that said otherwise are corrected. A runtime
+  hoist of these fields to the top level is deferred to an owner decision.
+- F3: The live instructions that told agents to call `TodoWrite` are
+  rewritten. The `TaskCreate` mandate is now conditional on the tool being
+  present (Claude Code 2.1.233 and 2.1.268). `Task` is documented as an
+  accepted alias of `Agent`. Project settings set
+  `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` in `env`.
+- F4: The minimum Claude Code version is 2.1.198. The default subagent nesting
+  depth is 3 (Claude Code 2.1.219), and `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`
+  changes it. The concurrent subagent limit is 20 (Claude Code 2.1.217).
+- F5: Inside the cAgents repository, the plugin hooks and the project hooks
+  both fired for each event. The plugin copy of `run-hook.cjs` now stands down
+  when the project settings register the same hook. Source: the Claude Code hooks docs.
+- F6: `marketplace.json` had the unknown keys `categories` and
+  `compatibility`. Both keys are removed.
+- N1: `argument-hint` moved to the top level of the skill frontmatter, because
+  Claude Code ignores `metadata`. `/team` is documented as an inline skill.
+  `context: fork` was not hoisted, per Claude Code 2.1.218.
+- N3: The claim about `ExitWorktree` is corrected.
+
+### Added
+- New regression tests in `tests/regressions/`:
+  `plugin-agents-explicit-list.test.js`,
+  `agent-frontmatter-claims-honest.test.js`,
+  `no-live-removed-tool-refs.test.js`,
+  `cc-min-version-and-nesting-claims.test.js`,
+  `hook-plugin-project-double-fire.test.js`,
+  `marketplace-json-known-keys.test.js`,
+  `skill-frontmatter-cc-honored.test.js`, and
+  `exitworktree-isolation-claim.test.js`.
+- `scripts/package-plugin.sh`, a script that packages the plugin for release.
+
+### Changed
+- The CLAUDE.md Quick Reference test count is now 2215+ tests across 250+
+  files.
+
+### Not changed (UNVERIFIED)
+- F7: the `displayOrigin` and `trustProjectMdFiles` keys in
+  `.claude/settings.json`. The settings reference does not list them, but no
+  source says that Claude Code ignores them.
+- N4: the claim that the `teammateMode` default of `in-process` came in Claude
+  Code 2.1.179. The 2.1.179 changelog section does not mention it.
+
 ## [12.73.0] - 2026-09-27
 
 ### Fixed

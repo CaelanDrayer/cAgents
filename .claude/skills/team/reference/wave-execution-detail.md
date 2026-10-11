@@ -4,7 +4,7 @@ This file gives the details of the per-wave spawn cycle for /team. It also cover
 
 ## Step 5: Execute Waves 1..N-1 — Spawn Subagents Per Wave
 
-This is the core execution loop. For EACH wave, spawn a fresh round of subagents. Collect their results, and validate the gate. Then go on to the next wave. Each wave subagent can spawn its own subagents to depth 5, for any specialty that it needs. The parallelism therefore grows beyond the fan-out of one wave.
+This is the core execution loop. For EACH wave, spawn a fresh round of subagents. Collect their results, and validate the gate. Then go on to the next wave. Each wave subagent can spawn its own subagents to depth 3, for any specialty that it needs. The parallelism therefore grows beyond the fan-out of one wave.
 
 ```
 for each wave K from 1 to N-1:

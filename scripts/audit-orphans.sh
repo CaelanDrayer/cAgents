@@ -75,9 +75,9 @@ const REPO = process.env.REPO_ROOT;
 const OUT = process.env.OUT_FILE;
 const GREP_OUT = process.env.GREP_OUT;
 // Build catalog: name -> { archetype, skillPath }
-// v12.68.0: agent definitions are flat — "agents/<name>.md" — because Claude
-// Code discovers plugin agents with a non-recursive scan of agents/. The
-// directory listing IS the catalog; archetype comes from frontmatter.
+// v12.68.0: agent definitions are flat ("agents/<name>.md"). Claude Code scans
+// plugin agents/ recursively, so plugin.json `agents` lists the 60 top-level
+// files and only those register. Archetype comes from frontmatter.
 const AGENTS_DIR = path.join(REPO, "agents");
 const catalog = [];
 for (const entry of fs.readdirSync(AGENTS_DIR, { withFileTypes: true })) {

@@ -2,11 +2,11 @@
 // context-aware graceful-degradation downgrade regression test.
 //
 // v12.17.0 repositioning context: as of Claude Code 2.1.172+, subagents spawn
-// their own subagents up to 5 levels deep with the Agent tool present at every
+// their own subagents up to depth 3 by default with the Agent tool present at every
 // level (verified on CC 2.1.173, session run_deep-nesting-enablement_260611_001).
 // The "Agent stripped at depth >= 1" behavior is NO LONGER the default. Graceful
 // degradation is now a DEFENSIVE FALLBACK that fires only when the Agent tool is
-// VERIFIABLY ABSENT — at the nesting ceiling (depth 5 cannot spawn depth 6) or a
+// VERIFIABLY ABSENT, at the nesting ceiling (depth 3 cannot spawn depth 4) or a
 // regressed harness. The fallback sentinel sentence
 // "Agent/subagent-spawn tool was not available" is PRESERVED, and the hook still
 // keys on it for the fallback case.

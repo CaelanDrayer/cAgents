@@ -173,9 +173,10 @@ function initAgent(agentName, options) {
     model = getDefaultModel(tier)
   } = options;
 
-  // v12.68.0: the definition is a FLAT file (agents/<name>.md) because Claude
-  // Code discovers plugin agents with a non-recursive scan of agents/. Tier-3
-  // resources live in a sibling directory named after the agent.
+  // v12.68.0: the definition is a FLAT file (agents/<name>.md). Claude Code
+  // scans plugin agents/ recursively, so plugin.json `agents` lists the
+  // top-level files and only those register. Tier-3 resources live in a
+  // sibling directory named after the agent.
   const agentFile = path.join(outputPath, `${agentName}.md`);
   const agentDir = path.join(outputPath, agentName);
 

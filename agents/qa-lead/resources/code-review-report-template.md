@@ -77,16 +77,14 @@
 | Public | 🌐 | Public API surface |
 | Complex | 🔄 | High complexity score |
 
-## TodoWrite During Report Generation
+## Progress Tracking During Report Generation
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[reviewer] Generating executive summary", status: "in_progress"},
-    {content: "[reviewer] Formatting critical issues (2 found)", status: "pending"},
-    {content: "[reviewer] Adding auto-fix suggestions (12 available)", status: "pending"},
-    {content: "[reviewer] Computing review metrics", status: "pending"},
-    {content: "[reviewer] Writing recommendations", status: "pending"}
-  ]
-})
+If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
+
+```
+TaskCreate(subject: "[reviewer] Generate executive summary")
+TaskCreate(subject: "[reviewer] Format critical issues (2 found)")
+TaskCreate(subject: "[reviewer] Add auto-fix suggestions (12 available)")
+TaskCreate(subject: "[reviewer] Compute review metrics")
+TaskCreate(subject: "[reviewer] Write recommendations")
 ```

@@ -132,7 +132,7 @@ All editorial feedback and all creative output must avoid predictable AI writing
 1. Read plan.yaml for the objectives and the work items.
 2. Break the objectives into specific questions.
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`.
-4. **MANDATORY: Call TaskCreate after you identify the execution agents.** See `.claude/rules/core/controllers.md` for the required pattern.
+4. **Record the delegation plan after you identify the execution agents.** Use TaskCreate when it is available. Otherwise record the plan in `workflow/coordination_log.yaml` and continue. Never stop or block on a missing task tool. See `.claude/rules/core/controllers.md` for the pattern.
 5. Collect the answers from the specialists.
 6. Synthesize the answers into a coherent solution.
 7. Write coordination_log.yaml with all the Q&A, the synthesis, and the implementation tasks.

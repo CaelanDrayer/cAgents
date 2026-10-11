@@ -68,8 +68,9 @@ if ! $LIST_ONLY; then
   fi
 fi
 
-# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code discovers
-# plugin agents with a non-recursive scan of agents/). Grouping is by the
+# v12.68.0: agent definitions are flat (agents/<name>.md). Claude Code scans
+# plugin agents/ recursively; plugin.json `agents` lists the top-level files,
+# so only those register. Grouping is by the
 # `archetype:` frontmatter field, which replaced the per-domain directories.
 ARCHETYPES=(developer operator advisor analyst creator writer strategist core leadership)
 

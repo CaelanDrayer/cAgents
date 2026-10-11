@@ -6,7 +6,7 @@ description: Answers {specialization} questions and executes {specialization} im
 specialization: [{skill-1}, {skill-2}]
 reports_to: [{controller-1}, {controller-2}]
 model: sonnet
-tools: Read, Grep, Glob, Write, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Bash
 ---
 
 # {Execution Agent Name} (Execution Tier)

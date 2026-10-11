@@ -9,7 +9,7 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 ### 1. Wrong domain detected
 - **Symptom**: /act routes to engineering when you wanted marketing
 - **Likely cause**: The keywords of the request overlap across domains. For example, the word "improve" matches both engineering and grow
-- **Check**: Look at the TodoWrite output for the domain classification
+- **Check**: Look at the task list, or at `status.yaml` in the session, for the domain classification
 - **Fix**: Run the request again with the `--domain` flag: `/act Plan campaign --domain grow`
 - **Prevention**: Use a domain-specific keyword. The words campaign, marketing, and SEO all select grow
 

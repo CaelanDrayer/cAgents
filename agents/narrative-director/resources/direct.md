@@ -58,15 +58,15 @@ When reviewing specialist output, flag these patterns before integration. A draf
 1. Read plan.yaml for objectives and work items
 2. Break objectives into specific questions
 3. Delegate each question to the appropriate execution agent via `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TaskCreate after identifying execution agents** (see below)
+4. **Record the delegation plan after identifying execution agents** (TaskCreate when available; see below)
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. Write coordination_log.yaml with all Q&A, synthesis, and implementation tasks
 8. NEVER answer your own questions or implement solutions directly
 
-## MANDATORY: TaskCreate for Execution Agent Visibility
+## Execution Agent Visibility (TaskCreate when available)
 
-When you identify which execution agents you will delegate to, you MUST call TaskCreate to give the user visibility. This is not optional. Call TaskCreate BEFORE you start delegating questions.
+When you identify which execution agents you will delegate to, record them so the user can see the plan. Use TaskCreate when it is available, and call it before you start delegating questions. If TaskCreate is not available, record the plan in `workflow/coordination_log.yaml` and continue. Never stop or block on a missing task tool.
 
 ```
 TaskCreate({ subject: "[narrative-director > story-architect] Analyzing narrative structure", description: "Evaluating load-bearing scenes and structural model" })

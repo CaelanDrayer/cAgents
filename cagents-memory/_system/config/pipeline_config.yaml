@@ -10,14 +10,16 @@
 # revamp-design-v2.md Pillar 1.
 version: "2.0"
 
-# Subagent nesting ceiling (v12.17.0).
-# Claude Code 2.1.172 added: "Sub-agents can now spawn their own sub-agents
-# (up to 5 levels deep)." Verified live on CC 2.1.173. The skill loop counts
-# as depth 0; the 5 levels are the subagent generations beneath it. Subagents
-# retain the Agent tool and CAN spawn children up to this ceiling. A subagent
-# at depth 5 cannot spawn a depth-6 child -- that is the only point where the
-# graceful-degradation fallback (pat-graceful-degradation-depth1.md) applies.
-max_nesting_depth: 5
+# Subagent nesting ceiling (updated v12.74.0).
+# Claude Code 2.1.172 added nested subagents. Claude Code 2.1.219 set the
+# default: "Subagents can now spawn nested subagents up to depth 3 by default
+# (was 1); set CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1 to disable nesting."
+# The skill loop counts as depth 0. The controller is depth 1, the execution
+# agent is depth 2, and one more level (depth 3) is available. A subagent at
+# depth 3 cannot spawn a depth-4 child at the default setting. That is the only
+# point where the graceful-degradation fallback (pat-graceful-degradation-depth1.md)
+# applies. Set CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH to raise or lower the ceiling.
+max_nesting_depth: 3
 
 states:
   INIT:

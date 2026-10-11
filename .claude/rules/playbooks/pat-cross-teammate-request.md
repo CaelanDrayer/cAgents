@@ -34,11 +34,11 @@ allowed-tools: Read Write Edit Bash
 > subagent execution model.** Its founding premise was this: "Claude Code forbids
 > nested teams, so a teammate needing help must route sideways through the lead".
 > That premise is no longer true. Since Claude Code 2.1.172, a subagent spawns its
-> own subagents up to 5 levels deep.
+> own subagents up to depth 3 by default.
 >
 > **New canonical guidance under the default subagent model**: a wave subagent
 > that needs another specialty spawns that specialist itself. The specialist
-> becomes its OWN downward sub-subagent, and it nests to depth 5. It then
+> becomes its OWN downward sub-subagent, and it nests to depth 3. It then
 > collects the result synchronously, with `run_in_background: false`. On the
 > default path there is no sideways `peer_request`, no lead-as-router hop, and
 > no `SendMessage` round-trip. The subagent delegates downward directly. Use this downward-spawn

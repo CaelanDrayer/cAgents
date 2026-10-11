@@ -20,7 +20,7 @@ When the user runs `/command-name <args>`, this command:
 
 1. **Parse arguments** from command input
 2. **Validate input** (required parameters, format)
-3. **Create TodoWrite** for user visibility
+3. **Record progress** for user visibility (TaskCreate if available, else `status.yaml`)
 4. **Delegate to agent** via Agent tool
 5. **Report results** when agent completes
 
@@ -77,17 +77,13 @@ Agent({
 })
 ```
 
-## TodoWrite Pattern
+## Progress Tracking Pattern
 
-Create minimal todo for visibility. **Prefix each task with the executing agent name in brackets:**
+Create a minimal progress list for visibility. **Prefix each task with the agent name in brackets.** If `TaskCreate` is available, use it. If not, write the entries to `status.yaml` and continue.
 
-```javascript
-TodoWrite({
-  todos: [
-    {content: "[{agent-name}] Process request", status: "in_progress", activeForm: "[{agent-name}] Processing request"},  // activeForm is optional
-    {content: "[{agent-name}] Complete workflow", status: "pending", activeForm: "[{agent-name}] Completing workflow"}
-  ]
-})
+```
+TaskCreate(subject: "[{agent-name}] Process request")
+TaskCreate(subject: "[{agent-name}] Complete workflow")
 ```
 
 ## Command Responsibilities
@@ -95,7 +91,7 @@ TodoWrite({
 **This command ONLY does:**
 - Parse command arguments
 - Validate required inputs
-- Create initial TodoWrite
+- Record the initial progress entries
 - Invoke agent via Agent tool
 - Return agent's results
 

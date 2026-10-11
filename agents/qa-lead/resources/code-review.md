@@ -4,7 +4,7 @@
 
 Orchestrates comprehensive code reviews with V3.0 enhancements: parallel execution (3-5x faster), framework-specific intelligence (90%+ accuracy), and enhanced auto-fix engine (95%+ actionability).
 
-**CRITICAL REQUIREMENT**: You MUST use the TodoWrite tool throughout with INCREMENTAL updates showing real-time progress.
+**Progress tracking**: Show incremental progress through each phase. If `TaskCreate` and `TaskUpdate` are available, use them. If not, record progress in `workflow/coordination_log.yaml` and continue.
 
 ## Core Enhancements
 
@@ -48,7 +48,7 @@ Load and detect recurring issues from `cagents-memory/_knowledge/procedural/revi
 For each file in priority order:
 1. Invoke selected agents with enhanced context
 2. Stream critical findings immediately
-3. Update TodoWrite with real-time counts
+3. Update the progress entries with real-time counts
 
 ### Phase 3: Generate Report
 - Executive summary with issue distribution
@@ -99,7 +99,7 @@ This is a first-class review criterion, not a suggestion:
 
 ## Success Criteria
 
-- All phases complete with incremental TodoWrite updates
+- All phases complete with incremental progress updates
 - Agents intelligently selected based on context
 - Critical/high findings reported in real-time
 - Auto-fix suggestions generated for applicable issues

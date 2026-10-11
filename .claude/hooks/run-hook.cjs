@@ -43,6 +43,71 @@ if (!hookName) {
   process.exit(0);
 }
 
+// F5 (v12.74.0): one copy of each hook in the cAgents source repo.
+// Claude Code dedupes an identical handler across settings files, but "a
+// plugin's or skill's copy of the same handler stays separate". So in this
+// repo with the cagents plugin enabled, the plugin copy (.claude/hooks.json)
+// and the project copy (.claude/settings.json) both ran. dedupGuard in
+// hook-utils.cjs misses sequential runs, so side effects doubled.
+//
+// Rule: the PLUGIN copy stands down when all of these are true:
+//   1. CLAUDE_PLUGIN_ROOT is set. Only a plugin copy has it.
+//   2. The project dir has .claude-plugin/plugin.json with name "cagents".
+//   3. The project .claude/settings.json "hooks" block has a command that
+//      invokes run-hook.cjs with THIS hook name as its argument.
+//   4. The project .claude/hooks/run-hook.cjs and .claude/hooks/<hook>.cjs
+//      both exist, so the project copy can load this hook.
+// Checks 3 and 4 are per hook. A hook that only the plugin registers (for
+// example, the project is on an older branch) still runs from the plugin. If
+// the plugin copy stood down for that hook, no copy would run, and a deny hook
+// would silently stop blocking.
+// Then the project copy always runs, and it runs the local dev hook code. The
+// rule does not compare paths. With --plugin-dir . the plugin root IS the
+// project, and the plugin copy still stands down, so the project copy is the
+// one copy that runs. The project dir is CLAUDE_PROJECT_DIR, else cwd. This
+// launcher does not read stdin, because the hook itself consumes stdin.
+// Residual case: the rule reads the registration on disk. It cannot see if
+// Claude Code loaded it. If project settings are excluded (--setting-sources
+// without "project") or the workspace is not trusted, the project copy does
+// not run, and the plugin copy still stands down. Then this hook runs zero
+// times in the cAgents source repo. This is a dev-only case and is accepted.
+// Fail-open: on any error, the plugin copy runs as before.
+function projectRegistersHook(hooks, name) {
+  const re = /run-hook\.cjs["']?\s+["']?([A-Za-z0-9_.-]+)/g;
+  for (const groups of Object.values(hooks || {})) {
+    if (!Array.isArray(groups)) continue;
+    for (const group of groups) {
+      for (const h of (group && Array.isArray(group.hooks)) ? group.hooks : []) {
+        if (!h || typeof h.command !== 'string') continue;
+        for (const m of h.command.matchAll(re)) {
+          if (m[1] === name) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function pluginCopyShouldStandDown() {
+  if (!process.env.CLAUDE_PLUGIN_ROOT) return false;
+  try {
+    const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+    const manifest = JSON.parse(fs.readFileSync(path.join(projectDir, '.claude-plugin', 'plugin.json'), 'utf8'));
+    if (!manifest || manifest.name !== 'cagents') return false;
+    const settings = JSON.parse(fs.readFileSync(path.join(projectDir, '.claude', 'settings.json'), 'utf8'));
+    if (!settings || !projectRegistersHook(settings.hooks, hookName)) return false;
+    const projectHooks = path.join(projectDir, '.claude', 'hooks');
+    return fs.existsSync(path.join(projectHooks, 'run-hook.cjs')) &&
+      fs.existsSync(path.join(projectHooks, `${hookName}.cjs`));
+  } catch {
+    return false;
+  }
+}
+
+if (pluginCopyShouldStandDown()) {
+  process.exit(0);
+}
+
 // __dirname is ALWAYS correct when this file is executing (it's in .claude/hooks/).
 // All other candidates are fallbacks for edge cases.
 const candidates = [

@@ -3,18 +3,19 @@
  *
  * Locks the v12.17.0 architectural change (session
  * run_deep-nesting-enablement_260611_001): Claude Code 2.1.172 added
- * subagent-spawns-subagent support up to 5 levels deep, verified empirically on
+ * subagent-spawns-subagent support (since CC 2.1.219 the default ceiling is
+ * depth 3), verified empirically on
  * CC 2.1.173 (spawn chain depth 1 → 2 → 3 → 4 → 5 → 6, Agent tool present at
  * every level, zero stripping). The historical "Agent stripped at depth >= 1"
  * limitation is OBSOLETE as the default; graceful degradation is repositioned to
- * a defensive FALLBACK (nesting ceiling at depth 5, or a regressed harness).
+ * a defensive FALLBACK (nesting ceiling at depth 3 by default, or a regressed harness).
  *
  * Asserts:
  *   (a) the graceful-degradation playbook carries the v12.17.0 repositioning
- *       banner (mentions "2.1.172" and "5 levels");
- *   (b) max_nesting_depth of 5 is documented somewhere authoritative
- *       (pipeline_config.yaml `max_nesting_depth: 5`, OR CLAUDE.md "max depth: 5",
- *       OR teams.md "5 levels deep" / "max_nesting_depth"). Robust to WG-F
+ *       banner (mentions "2.1.172", "2.1.219" and "depth 3");
+ *   (b) max_nesting_depth of 3 is documented somewhere authoritative
+ *       (pipeline_config.yaml `max_nesting_depth: 3`, OR CLAUDE.md
+ *       `max_nesting_depth: 3`, OR teams.md "depth 3 by default"). Robust to WG-F
  *       landing the config AFTER this test;
  *   (c) no rule/skill file under .claude/rules/ states, as NON-historical
  *       current fact, that Agent is "stripped at depth 1 / >= 1" as the DEFAULT
@@ -65,11 +66,12 @@ describe('v12.17.0: deep subagent nesting enablement', () => {
       expect(fs.existsSync(PLAYBOOK)).toBe(true);
     });
 
-    it('mentions "REPOSITIONED in v12.17.0", "2.1.172", and "5 levels"', () => {
+    it('mentions "REPOSITIONED in v12.17.0", "2.1.172", and the depth-3 default (CC 2.1.219)', () => {
       const content = fs.readFileSync(PLAYBOOK, 'utf8');
       expect(content).toMatch(/REPOSITIONED in v12\.17\.0/i);
       expect(content).toMatch(/2\.1\.172/);
-      expect(content).toMatch(/5 levels/i);
+      expect(content).toMatch(/depth 3/i);
+      expect(content).toMatch(/2\.1\.219/);
     });
 
     it('preserves the fallback sentinel sentence for verify-completion.cjs', () => {
@@ -81,34 +83,32 @@ describe('v12.17.0: deep subagent nesting enablement', () => {
     });
   });
 
-  describe('(b) max nesting depth of 5 is documented authoritatively', () => {
-    // Robust to WG-F landing pipeline_config.yaml `max_nesting_depth: 5` AFTER
-    // this test: accept the config, OR CLAUDE.md "max depth: 5", OR a teams.md
-    // mention of "5 levels deep" / "max_nesting_depth".
-    it('documents max_nesting_depth: 5 (config) OR "max depth: 5" (CLAUDE.md) OR "5 levels deep" (teams.md)', () => {
+  describe('(b) max nesting depth of 3 (CC 2.1.219 default) is documented authoritatively', () => {
+    // Since CC 2.1.219 the default nesting ceiling is depth 3. Accept the config,
+    // OR CLAUDE.md `max_nesting_depth: 3`, OR a teams.md "depth 3 by default".
+    it('documents max_nesting_depth: 3 (config) OR "max_nesting_depth: 3" (CLAUDE.md) OR "depth 3 by default" (teams.md)', () => {
       const sources = [];
 
       if (fs.existsSync(PIPELINE_CONFIG)) {
         const cfg = fs.readFileSync(PIPELINE_CONFIG, 'utf8');
-        if (/max_nesting_depth:\s*5\b/.test(cfg)) sources.push('pipeline_config.yaml:max_nesting_depth: 5');
+        if (/max_nesting_depth:\s*3\b/.test(cfg)) sources.push('pipeline_config.yaml:max_nesting_depth: 3');
       }
       if (fs.existsSync(CLAUDE_MD)) {
         const claude = fs.readFileSync(CLAUDE_MD, 'utf8');
-        if (/max depth:\s*5\b/i.test(claude)) sources.push('CLAUDE.md:"max depth: 5"');
-        if (/max_nesting_depth/.test(claude)) sources.push('CLAUDE.md:max_nesting_depth');
+        if (/max_nesting_depth:\s*3\b/.test(claude)) sources.push('CLAUDE.md:max_nesting_depth');
       }
       if (fs.existsSync(TEAMS_RULE)) {
         const teams = fs.readFileSync(TEAMS_RULE, 'utf8');
-        if (/5 levels deep/i.test(teams)) sources.push('teams.md:"5 levels deep"');
+        if (/depth 3 by default/i.test(teams)) sources.push('teams.md:"depth 3 by default"');
         if (/max_nesting_depth/.test(teams)) sources.push('teams.md:max_nesting_depth');
       }
 
-      // Diagnostic message lists where the depth-5 ceiling was found.
+      // Diagnostic message lists where the depth-3 ceiling was found.
       expect(
         sources.length,
-        `Expected the depth-5 nesting ceiling to be documented in at least one of: ` +
-        `pipeline_config.yaml (max_nesting_depth: 5), CLAUDE.md ("max depth: 5"), ` +
-        `or teams.md ("5 levels deep"). Found: [${sources.join(', ') || 'NONE'}]. ` +
+        `Expected the depth-3 nesting ceiling to be documented in at least one of: ` +
+        `pipeline_config.yaml (max_nesting_depth: 3), CLAUDE.md (max_nesting_depth: 3), ` +
+        `or teams.md ("depth 3 by default"). Found: [${sources.join(', ') || 'NONE'}]. ` +
         `If NONE, this is pending WG-F adding pipeline_config.yaml max_nesting_depth.`
       ).toBeGreaterThanOrEqual(1);
     });

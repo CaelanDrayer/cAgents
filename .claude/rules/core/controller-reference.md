@@ -229,12 +229,14 @@ workflow/CORRECTIONS.md                                # Session-scoped copy
 - Contains DECISIONS.md, CORRECTIONS.md, and other cross-session state
 - Created on first use, never deleted automatically
 
-## Task-Tracking Examples (interactive: TaskCreate; SDK: TodoWrite)
+## Task-Tracking Examples
 
-Interactive Claude Code sessions are the primary cAgents runtime. They MUST use
-`TaskCreate`, `TaskUpdate`, `TaskList`, and `TaskGet`. `TodoWrite` is the equivalent
-for the Agent SDK and for a non-interactive run. Do not use `TodoWrite` in an
-interactive runtime. The examples below use the interactive `TaskCreate` form.
+When `TaskCreate`, `TaskUpdate`, `TaskList`, and `TaskGet` are available, use them.
+The task tools are off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models (Claude Code 2.1.233).
+`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. If the tools are absent, record progress in
+`workflow/coordination_log.yaml` or `status.yaml` and continue. Never stop because a task tool is missing.
+The legacy `TodoWrite` tool is gated the same way, so it is no fallback. Do not call it.
+The examples below use the `TaskCreate` form.
 
 **Good** (descriptive, action-oriented):
 ```

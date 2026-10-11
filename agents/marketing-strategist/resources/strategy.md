@@ -96,8 +96,10 @@ See the absorbed-agent resources for full playbooks:
 2. Break objectives into specific questions (campaign / PMM / SEO / strategy)
 3. Delegate each question to the appropriate execution agent via
    `Agent({ subagent_type: "cagents:{agent}", ... })`
-4. **MANDATORY: Call TaskCreate after identifying execution agents** — see
-   `.claude/rules/core/controllers.md` for the required task-tracking pattern
+4. **Record the delegation plan after identifying execution agents.** Use
+   TaskCreate when it is available. Otherwise record it in
+   `workflow/coordination_log.yaml` and continue. Never stop or block on a
+   missing task tool. See `.claude/rules/core/controllers.md` for the pattern.
 5. Collect answers from specialists
 6. Synthesize answers into a coherent solution
 7. **Run reviewer loop** for each work item — spawn `cagents:reviewer` to

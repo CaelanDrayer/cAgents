@@ -2,14 +2,14 @@
 name: act
 description: "Execute any task through coordinated agents. Use for building, fixing, writing, or any single-domain work. TRIGGER: act, implement, fix, build, create. NOT for: parallel work or cross-domain strategy (use /team)."
 license: MIT
-compatibility: "Claude Code >= 2.1.69"
+compatibility: "Claude Code >= 2.1.198"
+argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.73.0"
-  argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
+  version: "12.74.0"
   user-invocable: "true"
   context: "none"
-allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet, TodoWrite
+allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
 ---
 
 # /act - Event-Driven Pipeline Engine
@@ -65,13 +65,13 @@ Pipeline-level revision loop: max 3 cycles in total. The v12.0.0 release lowered
 
 See @reference/state-machine-detail.md for full per-state contracts, event file format, revision routing semantics, and the BLOCKED verdict (debug-mode only). See @reference/delegation-patterns.md for the full delegation chain and Agent tool patterns.
 
-## BLOCKING REQUIREMENT: TaskCreate / TodoWrite
+## REQUIREMENT: Progress Tracking at Every State Transition
 
-**TaskCreate is a BLOCKING PREREQUISITE for every state transition in interactive Claude Code sessions.** You CANNOT proceed to the next state until you have called TaskCreate (and TaskUpdate to drive status).
+**When `TaskCreate` is available, record progress with it at every state transition.** Call TaskCreate at least once per state transition, and call TaskUpdate as the status changes.
 
-Per docs.claude.com/docs/en/tools.md: `TodoWrite` is the equivalent fallback in non-interactive mode and the Agent SDK; interactive sessions use `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`. cAgents primarily runs interactively.
+**When `TaskCreate` is absent, record progress in the session `status.yaml` and continue.** Claude Code 2.1.233 turns the task tools off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. Never stop or block because a task tool is missing. The legacy `TodoWrite` tool is gated the same way, so do not call it.
 
-If you skip the task call, you break the workflow. The user then has zero visibility. At a minimum, call TaskCreate once per state transition, and call TaskUpdate as the status changes.
+If you skip the progress record, the user has zero visibility.
 
 See @reference/task-tracking-rules.md for the full task tracking protocol, format rules, validation pattern, and revision-task examples.
 
@@ -161,7 +161,7 @@ fi
 
 **ACTION 2**: Try to read `cagents-memory/_system/config/pipeline_config.yaml`. If absent, use the hardcoded state machine. Do not error.
 
-**ACTION 3**: Call TaskCreate (or TodoWrite in SDK). See @reference/task-tracking-rules.md for the initial task list template.
+**ACTION 3**: Record the initial task list. Use TaskCreate if it is available; otherwise write it to `status.yaml`. See @reference/task-tracking-rules.md for the template.
 
 **ACTION 4 (V11.3.0, /goal auto-anchor)**: Derive a `/goal` condition and offer to set it via Bash. Do this **unless** any of the following opt-out conditions hold:
 

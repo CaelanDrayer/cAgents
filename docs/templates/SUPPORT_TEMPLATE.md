@@ -21,7 +21,6 @@ tools:
   - Read
   - Grep
   - Glob
-  - TodoWrite
 ---
 
 # {Agent Name}

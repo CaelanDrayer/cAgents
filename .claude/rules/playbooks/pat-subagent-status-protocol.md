@@ -62,7 +62,7 @@ blocker: null                   # For BLOCKED: describe the blocking factor
 > named-background-teammate path, which is
 > `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Under the DEFAULT subagent model the
 > extension is obsolete. A wave subagent that needs another specialty spawns that
-> specialist as its OWN downward sub-subagent, and it nests to depth 5. It does
+> specialist as its OWN downward sub-subagent, and it nests to depth 3. It does
 > not route a `requested_peer` sideways through the lead. The extension stays for
 > the experimental path. See `pat-cross-teammate-request.md`.
 
@@ -135,8 +135,8 @@ no new information, you break the status protocol.
 - `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`: the
   Nesting-Ceiling Degradation fallback. When the `Agent` tool is genuinely
   absent, prefer DONE through self-validation over BLOCKED. That case is rare.
-  It arises at the depth-5 nesting ceiling, or on a regressed or older harness.
-  On Claude Code 2.1.172+ a subagent normally keeps `Agent` up to 5 levels
-  deep. Make sure the tool is absent before you degrade.
+  It arises at the depth-3 nesting ceiling, or on a regressed or older harness.
+  On Claude Code 2.1.172+ a subagent normally keeps `Agent` up to depth 3 by
+  default. Make sure the tool is absent before you degrade.
 - `.claude/rules/playbooks/pat-cross-teammate-request.md`: `/team` peer_request
   routing, used when `NEEDS_CONTEXT.requested_peer` is set.

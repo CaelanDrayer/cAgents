@@ -1,10 +1,35 @@
 # cAgents Release Notes
 
-**Current Version**: 12.73.0
-**Release Date**: September 27, 2026
+**Current Version**: 12.74.0
+**Release Date**: October 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.74.0 - October 11, 2026 (Claude Code changelog compatibility)
+
+An audit checked cAgents against the Claude Code docs and changelog. Each
+confirmed finding has a fix. Claude Code scans the plugin `agents/` directory
+recursively, so `plugin.json` now declares an explicit list of the 60 agent
+files. The docs no longer say that Claude Code reads `metadata.model` or
+`metadata.allowed-tools` in agent frontmatter. A runtime hoist of these fields
+waits for an owner decision.
+
+Live `TodoWrite` instructions are rewritten. The `TaskCreate` mandate applies
+only when the tool is present. `Task` is an accepted alias of `Agent`. Project
+settings set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`. The minimum Claude Code version
+is 2.1.198. The default nesting depth is 3, and the concurrent subagent limit
+is 20.
+
+Inside the cAgents repository, the plugin copy of `run-hook.cjs` stands down
+when the project settings register the same hook, so each hook fires once.
+`marketplace.json` drops the unknown keys `categories` and `compatibility`.
+`argument-hint` moves to the top level of the skill frontmatter, and `/team` is
+documented as an inline skill. The `ExitWorktree` claim is corrected.
+`scripts/package-plugin.sh` is new and packages the plugin for release.
+
+Tests: 8 new regression tests in `tests/regressions/`. Not changed, because no
+source confirmed them: F7 (`displayOrigin`, `trustProjectMdFiles`) and N4.
 
 ## V12.73.0 - September 27, 2026 (strict session ownership for concurrent sessions)
 
@@ -2482,5 +2507,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.73.0
+**Current Version**: 12.74.0
 **Release Date**: August 21, 2026

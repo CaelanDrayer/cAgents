@@ -10,7 +10,7 @@ An OPTIONAL, EXPERIMENTAL path (named background teammates displayed in tmux/iTe
 
 > **Claude Code API change (v2.1.178)**: the `TeamCreate` / `TeamDelete` tools were **REMOVED**. Agent teams are now implicit — there is nothing to create or delete. The lead spawns teammates directly via the `Agent` tool, and cleanup is automatic at session end. This document describes the concurrent-Agent DEFAULT that no longer depends on those tools.
 
-**Core Architecture (DEFAULT — concurrent-Agent waves)**: `/team` decomposes the request into work items with maximum wave granularity (3-10 waves). For each wave K, the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in one message, synchronously (`run_in_background: false`), so it receives every wave result together, validates GATE-K, then proceeds to wave K+1. Each teammate is a controller agent (e.g. `cagents:tech-lead`) that spawns its own execution agents and reviewer, nesting up to 5 levels deep. Teams are implicit — no `TeamCreate`/`TeamDelete`. GATE sentinel tasks (standard `TaskCreate` dependencies) enforce wave ordering; cleanup is automatic at session end.
+**Core Architecture (DEFAULT: concurrent-Agent waves)**: `/team` decomposes the request into work items with maximum wave granularity (3-10 waves). For each wave K, the lead spawns ALL wave-K teammates as concurrent `Agent()` calls in one message, synchronously (`run_in_background: false`), so it receives every wave result together, validates GATE-K, then proceeds to wave K+1. Each teammate is a controller agent (e.g. `cagents:tech-lead`) that spawns its own execution agents and reviewer, nesting up to depth 3 by default. Teams are implicit. There is no `TeamCreate`/`TeamDelete`. GATE sentinel tasks (standard `TaskCreate` dependencies) enforce wave ordering; cleanup is automatic at session end.
 
 ## Quick Start
 
@@ -76,7 +76,7 @@ Since Claude Code v2.1.178, agent teams are implicit — the `TeamCreate`/`TeamD
 Every teammate is spawned as a controller agent and delegates from there:
 - The lead assigns a controller per work item during decomposition
 - Each teammate is spawned as `Agent({ subagent_type: "cagents:{controller_name}" })`
-- The controller spawns its own execution agents (e.g., tech-lead -> backend-developer, qa-tester) and a reviewer, nesting up to 5 levels deep
+- The controller spawns its own execution agents (e.g., tech-lead -> backend-developer, qa-tester) and a reviewer, nesting up to depth 3 by default
 - Teammates NEVER implement work directly -- they coordinate through execution agents
 - `/team` provides parallelism; controllers provide multi-agent orchestration per item
 - Teammates spawn execution agents directly rather than re-entering `/act`, avoiding a redundant enrichment pass
@@ -266,7 +266,7 @@ Controllers become team leads based on domain:
 The lead creates teammates based on the work items. Each teammate is a controller agent spawned via a concurrent `Agent()` call that:
 - Loads project context (CLAUDE.md, skills) automatically
 - Owns one or more work items for its wave
-- **Spawns its own execution agents and reviewer directly via the Agent tool** (nesting up to 5 levels deep)
+- **Spawns its own execution agents and reviewer directly via the Agent tool** (nesting up to depth 3 by default)
 - Teammates NEVER implement work directly -- they always delegate to execution agents
 - Returns results to the lead (synchronously, since `run_in_background: false`)
 

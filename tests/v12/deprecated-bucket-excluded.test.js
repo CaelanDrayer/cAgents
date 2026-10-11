@@ -11,8 +11,9 @@ const FIXTURE_SKILL = join(FIXTURE_DIR, 'SKILL.md');
  * REC-5: agents parked under `_deprecated/` are kept on disk for alias
  * resolution only and must never enter the live catalog.
  *
- * v12.68.0: the catalog is the flat agents/ directory, which Claude Code scans
- * NON-RECURSIVELY — so a `_deprecated/` agent is structurally undiscoverable.
+ * v12.68.0: the catalog is the flat agents/*.md set. Claude Code scans agents/
+ * recursively, but plugin.json `agents` lists only the top-level files, so a
+ * `_deprecated/` agent never registers.
  * What still needs pinning is that the repo's own tooling agrees: the flat
  * catalog excludes it, and validate-agents.sh's nested-layout guard does not
  * mistake a deliberately-deprecated agent for a mis-filed live one.

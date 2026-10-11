@@ -46,7 +46,7 @@ Agent tool. More waves give better quality gating.
 
 > Parallelism now comes from two sources. The first source is the concurrent
 > `Agent()` subagent calls in each wave. The second source is each wave
-> subagent, which recursively spawns its OWN subagents up to 5 levels deep.
+> subagent, which recursively spawns its OWN subagents up to depth 3 by default.
 >
 > A subagent that needs a different specialty spawns that specialist as its own
 > subagent. That move is downward nesting, and it replaces a request routed
@@ -109,9 +109,9 @@ Subagent (controller, e.g., tech-lead) -> Agent(cagents:backend-developer)
   -> PASS or REVISE (max 2 rounds)
 ```
 
-Wave subagents MAY also spawn deeper sub-agents inside the 5-level nesting
-budget. The skill loop is depth 0, and the 5 levels are the subagent generations
-beneath it. Do this when a work item genuinely needs it. The execution agent of
+Wave subagents MAY also spawn deeper sub-agents inside the depth-3 nesting
+budget. The skill loop is depth 0, the controller is depth 1, and the execution
+agent is depth 2. That leaves one more level at the CC 2.1.219 default. Do this when a work item genuinely needs it. The execution agent of
 a subagent can spawn its own helper sub-agent, and that chain continues up to
 the ceiling.
 
@@ -145,19 +145,21 @@ you spawn. It also applies to every agent that they spawn beneath them.
 ## Nesting-Ceiling Degradation: Agent Tool Absent Only at the Depth Budget (repositioned in v12.17.0)
 
 **Current model (CC ≥ 2.1.172).** Subagents spawn their own subagents up to
-**5 levels deep**, and the skill loop is depth 0. The `Agent` tool is present at
-every level from depth 1 through depth 5. Subagent controllers therefore spawn
+**depth 3 by default** (CC 2.1.219+; set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower
+it), and the skill loop is depth 0. The `Agent` tool is present at
+every level from depth 1 through depth 2. A depth-3 subagent is the last
+generation at the default setting. Subagent controllers therefore spawn
 execution agents and reviewers reliably. Delegation is the expected behavior at
 every level.
 
 **Graceful degradation is a DEFENSIVE FALLBACK**, and it is not the expected
 depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent.
-That happens at the real nesting **ceiling**, where a subagent at depth 5 cannot
-spawn a depth-6 child. It also happens if an older harness or a future harness
+That happens at the real nesting **ceiling**, where a subagent at depth 3 cannot
+spawn a depth-4 child. It also happens if an older harness or a future harness
 regresses the capability.
 
 Make sure the tool is absent before you degrade. On CC ≥ 2.1.172 the `Agent`
-tool is normally present at depths 1 through 4. The fallback applies to every
+tool is normally present at depths 1 and 2. The fallback applies to every
 spawning skill, and to every agent type. When `Agent` is verifiably absent,
 degrade to direct execution and self-validation. Do not fail the work item.
 
@@ -298,7 +300,7 @@ from an accidental change to a file outside its assigned module.
   spawn a fresh agent.
 - **No nested teams**: a teammate cannot manage its own named team. Only the
   lead spawns wave teammates. A teammate DOES keep the `Agent` tool, and it
-  spawns execution agents and reviewers to depth 5. That is normal delegation,
+  spawns execution agents and reviewers to depth 3. That is normal delegation,
   and it is not a nested team.
 - **One team per session**: the implicit team lives for one session. The cleanup
   is automatic at session end, and there is no `TeamDelete` call.
@@ -544,7 +546,7 @@ follow-up work item.
 > default subagent-wave model.
 >
 > A wave subagent that needs another specialty spawns that specialist as its OWN
-> downward sub-subagent, with depth-5 nesting. On the default path there is **no
+> downward sub-subagent, with depth-3 nesting. On the default path there is **no
 > peer_request, no sideways peer messaging, and no lead-as-router hop**. The
 > protocol below stays only for the experimental named-background-teammate path.
 

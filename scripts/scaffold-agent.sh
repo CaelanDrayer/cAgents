@@ -29,9 +29,10 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Title-case the agent name (replace hyphens with spaces, capitalize each word)
 AGENT_TITLE="$(echo "$AGENT_NAME" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2)); print}')"
 
-# v12.68.0: agent definitions are FLAT - agents/<name>.md - because Claude Code
-# discovers plugin agents with a non-recursive scan of agents/. Tier-3 resources
-# live in the sibling agents/<name>/resources/ directory.
+# Agent definitions are flat: agents/<name>.md. Claude Code scans a plugin
+# agents/ directory recursively, so plugin.json lists the agent files
+# explicitly. Tier-3 resources live in agents/<name>/resources/ and are not
+# registered.
 AGENT_FILE="$ROOT/agents/$AGENT_NAME.md"
 AGENT_DIR="$ROOT/agents/$AGENT_NAME"
 
@@ -76,4 +77,12 @@ echo "  2. Add capabilities to the metadata"
 echo "  3. Fill in the agent body content"
 echo "  4. Verify: bash scripts/ci/validate-agents.sh --file agents/$AGENT_NAME.md"
 echo ""
-echo "No registration step: the flat agents/ scan IS the registry."
+# Register the agent in the explicit plugin.json agents array (sorted).
+node -e '
+const fs = require("fs");
+const p = process.argv[1], entry = "./agents/" + process.argv[2] + ".md";
+const j = JSON.parse(fs.readFileSync(p, "utf8"));
+j.agents = [...new Set([...(j.agents || []), entry])].sort();
+fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
+' "$ROOT/.claude-plugin/plugin.json" "$AGENT_NAME"
+echo "Registered ./agents/$AGENT_NAME.md in .claude-plugin/plugin.json agents."

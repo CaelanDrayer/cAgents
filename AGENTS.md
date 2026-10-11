@@ -45,8 +45,10 @@ This file is a discoverability surface, not a behavioral contract.
 
 ## Conventions
 
-- All agents are flat files at `agents/<name>.md` (Claude Code scans `agents/`
-  non-recursively); the 9 builder-role archetypes live in `archetype:` frontmatter.
+- All agents are flat files at `agents/<name>.md`. Claude Code scans a plugin
+  `agents/` directory recursively, so `plugin.json` lists the 60 agent files
+  explicitly. Resource files under `agents/<name>/resources/` are therefore not
+  registered. The 9 builder-role archetypes live in `archetype:` frontmatter.
 - Skill discovery: `.claude/skills/<name>/SKILL.md` — these are the 4 user-facing entry points.
 - Plugin manifest: `.claude-plugin/plugin.json` — registers 60 agents + 4 skills + 24 registered hooks (32 .cjs files total).
 

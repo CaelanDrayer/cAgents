@@ -36,8 +36,9 @@ echo "name,domain,tier,model,description,capabilities,tools,related-agents,not-m
 
 AGENT_COUNT=0
 
-# v12.68.0: agent definitions are flat — agents/<name>.md (Claude Code discovers
-# plugin agents with a non-recursive scan of agents/). The `domain` CSV column is
+# v12.68.0: agent definitions are flat (agents/<name>.md). Claude Code scans
+# plugin agents/ recursively; plugin.json `agents` lists the top-level files,
+# so only those register. The `domain` CSV column is
 # filled from each agent's `archetype:` frontmatter, which replaced it in v11.1.0.
 {
   for SKILL_FILE in "${ROOT_DIR}"/agents/*.md; do

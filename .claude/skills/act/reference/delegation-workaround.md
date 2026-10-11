@@ -1,57 +1,54 @@
 # Controller Delegation: Task vs Agent Tool Naming
 
-## The Problem
+## Status: the rename is complete
 
-All cAgents documentation references a **"Agent tool"** for spawning subagents, but the actual Claude Code platform tool is called **"Agent"**. This mismatch is the root cause of controller delegation failures -- controllers are instructed to call a tool that does not exist under that name.
+The subagent-spawning tool in Claude Code is `Agent`, the canonical name. `Task` is its pre-2.1.63 name. Claude Code still accepts `Task(...)` as an alias of `Agent` in settings and agent definitions. cAgents now uses `Agent` everywhere:
 
-### What Exists at the Platform Level
+- `allowed-tools` and `tools` lists name `Agent`.
+- Hook matchers use `Agent`. A leftover legacy `Task` arm in a matcher is harmless.
+- Support agents block delegation with `disallowedTools: ["Agent"]`.
+
+Do not write new references to the `Task` alias. Use `Agent`.
+
+### Tools with similar names
 
 | Tool Name | Purpose | Spawns Subagents? |
 |-----------|---------|-------------------|
-| **Agent** | Spawn a new subagent with full context | **YES** |
-| TaskCreate | Create a task in a team's shared task list | No (task tracking) |
-| TaskUpdate | Update task status/ownership | No (task tracking) |
-| TaskList | List tasks in a team's task list | No (task tracking) |
+| **Agent** | Spawn a new subagent | **YES** |
+| TaskCreate | Create a task in the task list | No (task tracking) |
+| TaskUpdate | Update task status or owner | No (task tracking) |
+| TaskList | List tasks | No (task tracking) |
 | TaskGet | Read full task details | No (task tracking) |
 
-When a controller searches for the "Task" tool, it finds TaskCreate, TaskUpdate and TaskList. Those three are task-management tools, and not one of them spawns a subagent. This is why a controller fails to delegate.
-
-### Scope of the Mismatch
-
-- 50+ documentation references to "Agent tool" for spawning (should be "Agent tool")
-- All controller SKILL.md files declare `allowed-tools: Task` (should be `Agent`)
-- Hook matchers in settings.json target `"Task"` (should be `"Agent"`)
-- `subagent-alignment.md` documents `Agent({...})` API (should be `Agent({...})`)
+The `Task*` tools only track progress. None of them spawns a subagent. They are also off by default on Opus 4.8 and newer models (Claude Code 2.1.233). If they are absent, record progress in the session files and continue.
 
 ## Correct Subagent Spawning
-
-Use this tool call to spawn a subagent:
 
 ```javascript
 Agent({
   subagent_type: "cagents:backend-developer",
   description: "WI-1: Implement auth middleware",
-  prompt: "Implementation task from tech-lead:\n\nWork Item: WI-1\n..."
+  prompt: "Implementation task from tech-lead:\n\nWork Item: WI-1\n...",
+  run_in_background: false
 })
 ```
 
-These are the key parameters:
-- `subagent_type`: Use the `cagents:{agent-name}` format, for example `cagents:backend-developer`
-- `description`: A short summary. The task list UI shows this text.
-- `prompt`: The full instructions, the acceptance criteria, and the context
-- `run_in_background`: Set it to `true` to run the agents in parallel
-- `model`: An optional model override. The values are `sonnet`, `opus` and `haiku`.
+Key parameters:
 
-## Workaround: Delegation Plan Pattern
+- `subagent_type`: use the `cagents:{agent-name}` format.
+- `description`: a short summary. The task list UI shows this text.
+- `prompt`: the full instructions, the acceptance criteria, and the context.
+- `run_in_background`: set it to `false` for work you must collect in this turn. See `.claude/rules/core/delegation.md` § Synchronous Spawning.
+- `model`: an optional model override.
 
-The full rename is not complete yet. Until it is complete, a controller can use a **delegation plan** pattern. The controller writes a structured plan in that pattern. At level 0, /act reads the plan and executes it for the controller.
+## Fallback: Delegation Plan Pattern
 
-### How It Works
+Use this pattern only when a controller has no `Agent` tool. That happens at the nesting ceiling or on a regressed harness. Make sure the tool is absent first.
 
-1. The controller writes `workflow/delegation_plan.yaml` with the work items and the agent assignments
-2. The controller signals that it needs help with delegation, through the coordination_log status
-3. /act reads the delegation plan, and it spawns the agents with the correct `Agent` tool
-4. /act writes the results back to the session directory, and the controller reads them there
+1. The controller writes `workflow/delegation_plan.yaml` with the work items and the agent assignments.
+2. The controller sets its coordination_log status to show that it needs delegation help.
+3. /act reads the plan and spawns each agent with the `Agent` tool.
+4. /act writes the results to the session directory. The controller reads them there.
 
 ### delegation_plan.yaml Schema
 
@@ -94,35 +91,21 @@ delegation_requests:
     depends_on: [WI-1]
 ```
 
-### /act Execution of Delegation Plan
-
-When /act detects a `delegation_plan.yaml`:
+### /act Execution of a Delegation Plan
 
 ```javascript
-// For each delegation request (respecting depends_on order):
+// For each delegation request, in depends_on order:
 Agent({
   subagent_type: request.agent,        // e.g., "cagents:backend-developer"
   description: request.description,
   prompt: request.prompt,
-  run_in_background: true              // parallel when no dependencies
+  run_in_background: false             // collect each result before you yield
 })
 ```
 
-## Recommended Long-Term Fix
-
-**Option 1: Full rename of Task -> Agent across all documentation** is the correct permanent fix. It needs these five changes:
-
-1. All SKILL.md `allowed-tools`: `Task` -> `Agent`
-2. All SKILL.md body text and rules: "Agent tool" -> "Agent tool"
-3. `settings.json` PreToolUse matcher: `"Task"` -> `"Agent"`
-4. Hook code: `toolName !== 'Task'` -> `toolName !== 'Agent'`
-5. `disallowedTools: ["Task"]` -> `disallowedTools: ["Agent"]` on support agents
-
-The estimated scope is about 50 files and about 100 individual edits.
-
 ## Related
 
-- `delegation-patterns.md` -- Current delegation patterns (uses "Task" naming throughout)
-- `session-schema.md` -- Session YAML contract
-- `.claude/rules/core/subagent-alignment.md` -- Subagent alignment patterns (uses "Task" naming)
-- `.claude/rules/core/controllers.md` -- Controller coordination guidelines
+- `delegation-patterns.md`: current delegation patterns.
+- `session-schema.md`: the session YAML contract.
+- `.claude/rules/core/subagent-alignment.md`: subagent alignment patterns.
+- `.claude/rules/core/controllers.md`: controller coordination guidelines.

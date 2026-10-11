@@ -17,9 +17,9 @@ cAgents v12.2.0+ ships exactly 4 user-invocable skills: `designer`, `helper`, `a
 | `/designer` | `none` | `false` | Guided design exploration that produces implementation-ready documents through structured Q&A |
 | `/helper` | `none` | `false` | Explains cAgents commands and recommends the right one for your task |
 | `/act` | `none` | `true` | Executes any single-domain task through auto-routed controller and specialist agents; also handles review/optimize/full modes via the v12.1.2 keyword router (`act review …`, `act optimize …`, `act improve …`) |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; strategic mode (auto-enabled when `router.domain_count >= 2`, or via `--strategic`) handles the cross-domain C-suite work previously done by `/org` |
+| `/team` | `none` | `true` | Parallel multi-agent execution with wave-based quality gates; strategic mode (auto-enabled when `router.domain_count >= 2`, or via `--strategic`) handles the cross-domain C-suite work previously done by `/org` |
 
-`Context` values are the literal `metadata.context` frontmatter values: `none` runs the skill inline in the main conversation; `fork` spawns the skill in an isolated subagent context. `Agent` indicates whether the skill spawns subagents to do its work.
+`Context` shows how Claude Code runs the skill. All 4 skills run inline in the main conversation. The `/team` SKILL.md sets `metadata.context: "fork"`, but Claude Code does not act on keys under `metadata` (<https://code.claude.com/docs/en/skills>). Thus `/team` runs inline in the main session. `Agent` shows whether the skill spawns subagents to do its work.
 
 ---
 

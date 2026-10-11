@@ -286,8 +286,8 @@ describe('non-cagents subagent types are never gated', () => {
 
 describe('session-init-gate.cjs — Phase 2 registered-agent advisory (v12.62.2 regression)', () => {
   // v12.68.0: the catalog source moved from .claude-plugin/plugin.json's
-  // `agents` array to the flat agents/ directory (Claude Code discovers plugin
-  // agents with a non-recursive scan of agents/). The regression this block
+  // `agents` array to the flat agents/ directory. (v12.74.0: plugin.json lists
+  // the same files again, because Claude Code scans agents/ recursively.) The regression this block
   // pins is unchanged — only the thing that can go missing is now agents/.
   //
   // Root cause (v12.62.2): loadRegisteredAgents() returned an EMPTY Set — not a

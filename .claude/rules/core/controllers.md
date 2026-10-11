@@ -145,7 +145,7 @@ and you re-do the work yourself.
 Spawn UNNAMED with `run_in_background: false` for anything you must collect in-turn.
 Reserve a named teammate for the experimental resumable path, where you collect the
 result explicitly via `SendMessage`. Per-subagent visibility comes from the
-`TaskCreate` subject (§ MANDATORY: TaskCreate below), not from `name`. Name the
+`TaskCreate` subject (§ Task Tracking for Execution Agent Visibility below), not from `name`. Name the
 task, never the spawn. For the mechanism and the choose-which table, see
 @.claude/rules/core/delegation.md § Synchronous Spawning.
 
@@ -189,7 +189,7 @@ procedure, `available_skills.yaml` schema, and the planner contract.
 1. Controller receives objectives from plan.yaml
 2. Breaks into specific questions
 3. Identifies execution agents to delegate to
-4. Calls TaskCreate to show execution agents (MANDATORY)
+4. Records the execution agents (TaskCreate if available, else coordination_log.yaml)
 5. Delegates questions to execution agents
 6. Synthesizes answers into solution
 7. Creates implementation tasks
@@ -197,20 +197,18 @@ procedure, `available_skills.yaml` schema, and the planner contract.
 9. Writes coordination_log.yaml
 ```
 
-## MANDATORY: TaskCreate for Execution Agent Visibility
+## Task Tracking for Execution Agent Visibility
 
-Every controller MUST call TaskCreate once it has chosen its execution agents.
-TaskCreate is the main tool a controller uses to show progress to the user in an
-interactive Claude Code session. Its companions are TaskUpdate for a status change,
-TaskList for an inventory, and TaskGet for a detail read.
+When TaskCreate is available, every controller MUST call it once it has chosen its
+execution agents. TaskCreate is the main tool a controller uses to show progress to
+the user. Its companions are TaskUpdate for a status change, TaskList for an
+inventory, and TaskGet for a detail read.
 
-**Note on TodoWrite (SDK only)**: TodoWrite is the equivalent tool for
-non-interactive mode and for the Agent SDK. See docs.claude.com/docs/en/tools.md. An
-interactive Claude Code session is the primary cAgents runtime, and it MUST use
-TaskCreate, TaskUpdate, TaskList, and TaskGet instead. A sweep is removing the
-historical TodoWrite references from legacy SKILL.md prompt bodies. Read any
-reference that stays as an equivalent of TaskCreate, unless it carries the mark
-"(SDK only)".
+**When the task tools are absent**: The task tools are off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models (Claude Code 2.1.233).
+`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. If the tools are absent, record progress in
+`workflow/coordination_log.yaml` or `status.yaml` and continue. Never stop because a task tool is missing.
+
+**Legacy note**: the `TodoWrite` tool is gated with the task tools, so it is no fallback. Do not call it.
 
 **TaskCreate scope boundary**: /act owns the pipeline-level tasks at level 0, which
 track the pipeline agent that is running. Controllers do NOT create TaskCreate tasks
@@ -244,13 +242,12 @@ TaskUpdate({ taskId: "1", status: "in_progress" })
 TaskUpdate({ taskId: "1", status: "completed" })
 ```
 
-**SDK / non-interactive equivalent (TodoWrite):**
-```
-TodoWrite([
-  {"content": "[tech-lead > backend-developer] Implementing auth module\n  [backend-developer] Creating JWT middleware\n  [backend-developer] Writing unit tests (4 files)", "status": "in_progress", "id": "wi-1"},
-  {"content": "[tech-lead > frontend-developer] Building login UI\n  [frontend-developer] Creating login form component", "status": "pending", "id": "wi-2"},
-  {"content": "[tech-lead] Synthesizing solution", "status": "pending", "id": "synthesis"}
-])
+**File fallback when the task tools are absent** (in `workflow/coordination_log.yaml`):
+```yaml
+progress:
+  - {id: wi-1, subject: "[tech-lead > backend-developer] Implementing auth module", status: in_progress}
+  - {id: wi-2, subject: "[tech-lead > frontend-developer] Building login UI", status: pending}
+  - {id: synthesis, subject: "[tech-lead] Synthesizing solution", status: pending}
 ```
 
 See `controller-reference.md` for additional good/bad task-tracking examples.
@@ -481,15 +478,15 @@ guard_chain_result:
 ## Nesting Model and Graceful Degradation Under Nesting-Ceiling / Tool Absence (repositioned in v12.17.0)
 
 **Nesting model (v12.17.0+).** Claude Code 2.1.172 and later lets a subagent spawn
-its own subagents up to 5 levels deep. A controller or a subagent spawned at depth 1
+its own subagents up to depth 3 by default. A controller or a subagent spawned at depth 1
 **keeps the `Agent` tool** and can spawn execution agents. Those execution agents
-can spawn deeper sub-agents, inside the 5-level ceiling. Delegation is the expected
+can spawn deeper sub-agents, inside the depth-3 ceiling. Delegation is the expected
 behavior at every level. A controller normally still has `Agent` at depth 1, and it
 MUST delegate.
 
 **Graceful degradation is a defensive fallback**, not the expected depth-1 behavior.
 It triggers only when the `Agent` tool is genuinely absent. That happens at the real
-nesting ceiling, where a subagent at depth 5 cannot spawn a depth-6 child. It also
+nesting ceiling, where a subagent at depth 3 cannot spawn a depth-4 child. It also
 happens if an older harness or a future harness loses the capability.
 
 Before you report a failure for a missing `Agent` tool, make sure that the tool is

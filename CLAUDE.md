@@ -67,7 +67,7 @@ Total: 45 .md = 38 top-level across 6 categories + 2 READMEs (root + playbooks/)
 - **Total**: 60 agents across 9 builder-role archetypes (back-compat preserved via `scripts/migration/v12-aliases.yaml`)
 - **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
 
-**Canonical structure: 9 archetypes**, declared in each agent's `archetype:` frontmatter, NOT as directories. Agent files are flat at `agents/<name>.md`. Claude Code discovers plugin agents with a non-recursive scan of `agents/`, so the flat layout is mandatory. Per-archetype counts also appear in Quick Reference. The archetypes are Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
+**Canonical structure: 9 archetypes**, declared in each agent's `archetype:` frontmatter, NOT as directories. Agent files are flat at `agents/<name>.md`. Claude Code scans a plugin `agents/` directory recursively, so `.claude-plugin/plugin.json` lists the 60 agent files explicitly. Resource files under `agents/<name>/resources/` are therefore not registered. Per-archetype counts also appear in Quick Reference. The archetypes are Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
 
 **Domain overlay (legacy: routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files. They hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs were deleted: `engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`. Their router keywords and controller catalogs moved into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/`. They are not orphans.
 
@@ -175,7 +175,7 @@ User Request -> /act (state machine loop, reads pipeline_config.yaml)
   REVISE -> back to PLANNED (re-plan, max 3 cycles)
 ```
 
-**Subagent Architecture**: Agents delegate to specialists via the Agent tool. Pattern: "Use {subagent} to {task}". Up to 50 concurrent. See `docs/WORKFLOW_AGENT_INTERACTIONS.md`.
+**Subagent Architecture**: Agents delegate to specialists via the Agent tool. Pattern: "Use {subagent} to {task}". Up to 20 concurrent subagents by default (CC 2.1.217+; set `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` to change the cap). See `docs/WORKFLOW_AGENT_INTERACTIONS.md`.
 
 ## Task Completion Protocol
 
@@ -187,9 +187,11 @@ User Request -> /act (state machine loop, reads pipeline_config.yaml)
 
 ## CRITICAL: Task Lifecycle (Cleanup + Per-Subagent Visibility)
 
+**These rules apply when `TaskCreate` is available.** Claude Code 2.1.233 turns the task tools (`TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`) off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. When the tools are absent, track progress in the session files (`status.yaml`, `workflow/coordination_log.yaml`) and continue. Never stop or block because a task tool is missing.
+
 **Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops.** Stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create. Before you finish a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, and `/designer` MUST clean up all tasks at pipeline/session end.
 
-**Every background `Agent`/`Task` spawn MUST have a `TaskCreate` call BEFORE the spawn.** Create one task per spawn when `run_in_background: true`. Match the task subject to the agent's description. Mark the task `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry, and the parallel agents stay invisible. So `/act` and `/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
+**When `TaskCreate` is available, every background `Agent` spawn MUST have a `TaskCreate` call BEFORE the spawn.** Create one task per spawn when `run_in_background: true`. Match the task subject to the agent's description. Mark the task `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry, and the parallel agents stay invisible. So `/act` and `/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
 
 **Per-subagent visibility comes from the task subject, never from the Agent tool's `name`.** `name` implies background and cannot be combined with a blocking call. It silently overrides an explicit `run_in_background: false`. A caller that needed the result in-turn then yields holding nothing. So the two rules above are satisfiable together only if you name the TASK, not the SPAWN.
 
@@ -206,7 +208,7 @@ Choose by how you will collect it. Work you must collect this turn → spawn **u
 | Skill | Context | Agent | Description |
 |-------|---------|-------|-------------|
 | `/act` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `act context ...`, `--mode debug`; keyword router: `act improve|review|audit|optimize ...` triggers improve modes) |
-| `/team` | `fork` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests |
+| `/team` | `none` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests. Runs inline in the main session, because Claude Code does not read its `metadata.context: fork` |
 | `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
 | `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
 
@@ -232,19 +234,19 @@ cagents-memory/
 
 **Principles**: File-based, session-scoped, parallel-safe, pause/resume capable. See `docs/CONTEXT_MANAGEMENT.md`.
 
-**Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 5`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
+**Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 3`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
 
-**Subagent Nesting (CC 2.1.172+)**: Subagents retain the `Agent` tool. They CAN spawn their own subagents up to 5 levels deep (`max_nesting_depth: 5`). The skill loop is depth 0, and the 5 levels are the subagent generations beneath it. The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> ... up to 5 levels deep`.
+**Subagent Nesting (CC 2.1.172+; depth 3 by default since CC 2.1.219)**: Subagents retain the `Agent` tool. They CAN spawn their own subagents up to depth 3 by default (`max_nesting_depth: 3`). Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower the ceiling. The skill loop is depth 0. The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> one more level (depth 3)`. On CC 2.1.217 and 2.1.218 nesting is off by default.
 
 `/team` wave subagents reliably spawn execution agents and reviewers. They may also nest deeper within the budget. They spawn execution agents directly rather than re-entering the full `/act` pipeline. That choice is by design for cost and clarity, not a harness limit.
 
-Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback**. It covers the nesting ceiling and a regressed harness. A depth-5 subagent cannot spawn a depth-6 child. Agents check whether the `Agent` tool is actually present before they degrade to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
+Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback**. It covers the nesting ceiling and a regressed harness. A depth-3 subagent cannot spawn a depth-4 child at the default setting. Agents check whether the `Agent` tool is actually present before they degrade to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
 
 ## Creating Agents / Domains
 
 See `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md` for full agent authoring guidelines.
 
-**Quick steps**: Choose a tier and an archetype, plus a branch if the archetype is 3-level. Create `agents/{agent-name}.md` with YAML frontmatter. (`archetype:` and `branch:` are frontmatter fields, not directories.) Put any tier-3 playbooks in `agents/{agent-name}/resources/`. Reference them as `@{agent-name}/resources/<file>.md`. Test with `bash scripts/ci/validate-agents.sh`. There is no registration step: the flat `agents/` scan IS the registry.
+**Quick steps**: Choose a tier and an archetype, plus a branch if the archetype is 3-level. Create `agents/{agent-name}.md` with YAML frontmatter. (`archetype:` and `branch:` are frontmatter fields, not directories.) Put any tier-3 playbooks in `agents/{agent-name}/resources/`. Reference them as `@{agent-name}/resources/<file>.md`. Test with `bash scripts/ci/validate-agents.sh`. Add the agent as `./agents/{agent-name}.md` to the `agents` array in `.claude-plugin/plugin.json`. `tests/regressions/plugin-agents-explicit-list.test.js` enforces this.
 
 ## Hooks System
 
@@ -316,9 +318,9 @@ rather than hand-edit them. Everything else in this file that a session could
 reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9). The split is 44 routable + 16 core. 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
-**Models**: opusplan (controllers, Opus 4.8 planning + Sonnet 4.6 execution), opus (creative/high-reasoning agents, Opus 4.8), sonnet (execution, Sonnet 4.6). No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 2180+ Vitest tests across 245+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
-**Version**: 12.73.0
+**Models**: Each agent file records an intended model under `metadata.model` (disk-verified: 27 sonnet, 23 opusplan, 7 opus, 3 fable). These values are advisory. Claude Code does not read `metadata.*` or `allowed-tools` in agent frontmatter, and no agent declares a top-level `model:` or `tools:` key. Thus every cAgents subagent currently inherits the session model and all tools, unless the spawn passes a `model` parameter. Only the cAgents validators and hooks read the advisory values. No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
+**Tests**: `npm test` runs 2215+ Vitest tests across 250+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
+**Version**: 12.74.0
 
 ## Troubleshooting
 

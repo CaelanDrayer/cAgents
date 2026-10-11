@@ -28,14 +28,11 @@ After /act reports its results, the pipeline enters a listening state. Sometimes
    enough. The `coordination_log.yaml` or the `validation_report.yaml` that
    the follow-up produces is the canonical signal for the next stage.
 
-3. Update tasks (TaskUpdate) to show the follow-up:
+3. Show the follow-up in the progress tracking. If `TaskCreate` is available, create these tasks. If not, add the same entries to `status.yaml` and continue.
    ```
-   TodoWrite([
-     ...all_previous_completed...,
-     {"content": "[act] Follow-up #{N}: {type} -- \"{feedback_summary}\"\n[act > {controller}] Coordinating {type}\n  [{controller} > {executor}] {action_description}\n  [{controller}] {type} synthesized", "status": "in_progress", "id": "followup_{N}"},
-     {"content": "[act > validator] Re-validating", "status": "pending", "id": "revalidate_followup_{N}"},
-     {"content": "[act] Follow-up #{N} complete", "status": "pending", "id": "validated_followup_{N}"}
-   ])
+   TaskCreate(subject: "[act] Follow-up #{N}: {type} -- {feedback_summary}")
+   TaskCreate(subject: "[act > validator] Re-validating")
+   TaskCreate(subject: "[act] Follow-up #{N} complete")
    ```
 
 4. Resume the state machine loop from the re-entry point:

@@ -25,7 +25,6 @@ tools:
   - Glob
   - Write
   - Bash
-  - TodoWrite
 ---
 
 # {Agent Name}

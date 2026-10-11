@@ -25,7 +25,7 @@
 ---
 name: agent-name
 description: One-line description. Use when X.
-tools: Read, Grep, Glob, Write, Edit, Bash, TodoWrite
+tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---
 

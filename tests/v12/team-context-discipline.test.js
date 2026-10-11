@@ -122,9 +122,9 @@ describe('WI-7 (v12.1.0): /team lead-context-discipline contract', () => {
       expect(fs.existsSync(COORD_LOG_WRITER_SKILL)).toBe(true);
     });
 
-    // v12.68.0: registration IS the flat agent file — Claude Code discovers
-    // plugin agents with a non-recursive scan of agents/, so agents/<name>.md
-    // being on disk is exactly what makes the agent spawnable.
+    // v12.68.0: registration is the flat agent file. Claude Code scans plugin
+    // agents/ recursively; plugin.json `agents` lists the top-level
+    // agents/<name>.md files, and that entry is what makes the agent spawnable.
     it('cagents:wave-reviewer is registered (agents/wave-reviewer.md on disk)', () => {
       expect(fs.existsSync(WAVE_REVIEWER_SKILL)).toBe(true);
     });

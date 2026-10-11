@@ -81,8 +81,9 @@ gate_validation:
 
 ### Gate Validation Task (TaskCreate)
 
-When the team lead validates a gate, the lead MUST add a validation TaskCreate
-entry:
+When the team lead validates a gate and TaskCreate is available, the lead adds a
+validation TaskCreate entry. If it is not available, the lead records the same
+entry in the gate validation file and continues:
 
 ```
 TaskCreate({

@@ -3,9 +3,9 @@
  * plugin-validation failure (2026-09-04).
  *
  * Bug: agent definitions lived at agents/{archetype}/[{branch}/]{name}/SKILL.md
- *      and were registered via a 60-entry `agents` array in plugin.json.
- *      Claude Code discovers plugin agents with a NON-RECURSIVE scan of the
- *      plugin's agents/ directory, so every definition was invisible:
+ *      and were registered via a 60-entry `agents` array in plugin.json that
+ *      pointed at directories. The `agents` key accepts only .md files, so
+ *      every definition was invisible:
  *      `claude plugin details cagents` reported "Agents (0)" and the plugin
  *      validator reported "No agent files found in specified directories".
  *
@@ -17,9 +17,14 @@
  *          flat files is the only form that satisfies every version — and it
  *          is what every first-party Anthropic plugin does.
  *
- * Fix (v12.68.0): agents/<name>.md, resources at agents/<name>/resources/,
- *      no `agents` key in plugin.json. Verified with
- *      `claude plugin details` reporting Agents (60).
+ * Fix (v12.68.0): agents/<name>.md, resources at agents/<name>/resources/.
+ *      Verified with `claude plugin details` reporting Agents (60).
+ *
+ * Correction (v12.74.0): the plugin agents/ scan is RECURSIVE, so the nested
+ *      resource files registered as phantom agents. plugin.json now lists the
+ *      60 flat files in an explicit `agents` array of file paths. That array
+ *      replaces the default scan. tests/regressions/plugin-agents-explicit-list.test.js
+ *      pins the array to agents/*.md.
  *
  * Could have been caught by: this test.
  */
@@ -55,7 +60,7 @@ function frontmatterOf(file) {
   return m ? m[1] : '';
 }
 
-describe('flat agent discovery (Claude Code scans agents/ non-recursively)', () => {
+describe('flat agent discovery (plugin.json lists the flat agents/*.md files)', () => {
   it('ships agent definitions as top-level agents/*.md files', () => {
     expect(flatAgentFiles().length).toBeGreaterThan(0);
   });
@@ -68,13 +73,14 @@ describe('flat agent discovery (Claude Code scans agents/ non-recursively)', () 
     ).toEqual([]);
   });
 
-  it('plugin.json does not pin an `agents` array (discovery is the directory scan)', () => {
+  it('plugin.json lists exactly the flat agent files (the scan is recursive)', () => {
     const manifest = JSON.parse(fs.readFileSync(PLUGIN_JSON, 'utf8'));
+    const expected = flatAgentFiles().map((f) => `./agents/${f}`).sort();
     expect(
-      'agents' in manifest,
-      'plugin.json must omit `agents`: its accepted shape differs across Claude Code versions ' +
-        '(file paths vs directories), and the flat agents/ scan already registers every agent'
-    ).toBe(false);
+      [...(manifest.agents || [])].sort(),
+      'plugin.json `agents` must list each agents/<name>.md file path and nothing else. ' +
+        'Without it, Claude Code scans agents/ recursively and registers resource files as agents'
+    ).toEqual(expected);
   });
 
   it('every agent file declares a `name` matching its basename (discovery keys off the filename)', () => {

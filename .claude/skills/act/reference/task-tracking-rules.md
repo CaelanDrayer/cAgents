@@ -1,12 +1,12 @@
 # Task Tracking Rules and Validation Pattern
 
-How /act uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transition.
+How /act tracks progress at every state transition. Use TaskCreate/TaskUpdate when they are available. If not, use the session `status.yaml`.
 
 ## Core Rules
 
-1. **/act calls TaskCreate/TaskUpdate at every state transition** -- minimum once per state.
+1. **/act records progress at every state transition** -- minimum once per state. Use TaskCreate/TaskUpdate when available; otherwise update `status.yaml`.
 2. **Each task call happens BEFORE advancing to the next state.**
-3. **The controller also calls TaskCreate** when it identifies execution agents (progressive refinement).
+3. **The controller also records progress** when it identifies execution agents (progressive refinement). It uses TaskCreate when available, otherwise `workflow/coordination_log.yaml`.
 4. **No slash prefix on command names**: Use `[act]`, `[team]` -- not `[/act]`, `[/team]`. (Pre-v12.2.0 also `[org]`; v12.2.0 removed /org.)
 5. **[parent > child] on spawn, child-only for sub-tasks**: When spawning an agent, use `[act > orchestrator]`. For that agent's own sub-tasks, use just `[orchestrator]`.
 6. **2-space indent for children**: Indent each sub-task under its parent entry by 2 spaces.
@@ -16,41 +16,42 @@ How /act uses TaskCreate/TaskUpdate (or TodoWrite in SDK) at every state transit
 10. **On revision, add a revision entry** showing round number and what is being re-executed.
 11. **Never expose the internal names of the state machine** (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) as primary task subject content. Users see these entries in the UI, so each entry must describe real work.
 
-## TaskCreate vs TodoWrite
+## Tool Availability
 
-Per [docs.claude.com/docs/en/tools.md](https://docs.claude.com/docs/en/tools.md):
-- **Interactive Claude Code**: use `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`. cAgents primarily runs interactively, so TaskCreate is the mandatory primary call.
-- **Agent SDK / non-interactive**: `TodoWrite` is the equivalent fallback.
+- **Task tools present**: use `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate`. Create one task per entry in the lists below. Use the entry text as the subject and the description.
+- **Task tools absent**: Claude Code 2.1.233 turns the task tools off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. Without them, write the same entries under `progress:` in the session `status.yaml`, then continue.
+- **Never stop or block** because a task tool is missing.
+- The legacy `TodoWrite` tool is gated the same way, so it is no fallback. Do not call it.
 
-If you skip the task call, you break the workflow. The user then has zero visibility into what is happening.
+The lists below show the entries. Each entry has `content`, `status`, and `id`.
 
 ## Initial TaskCreate at Pipeline Start (v12.0.0, 5 states)
 
 ```
-TodoWrite([
+[
   {"content": "[act > orchestrator] Analyzing request & detecting domain\n  [orchestrator] Enriching context ({domain}, tier {N})\n  [act] Pre-flight validation: enriched_context.yaml schema valid, domain confirmed", "status": "in_progress", "id": "init"},
   {"content": "[act > planner] Planning objectives, decomposing work items, selecting controller\n  [planner] Controller selected: {controller_name}\n  [planner] {N} work items created ({N} parallel groups)\n  [act] Plan validation: objectives have success_criteria, controller assigned, all WIs have acceptance_criteria, DAG acyclic", "status": "pending", "id": "orchestrated"},
   {"content": "[act > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Synthesizing solution\n  [act] Coordination validation: all WIs completed with evidence, no stale in_progress items", "status": "pending", "id": "planned"},
   {"content": "[act > validator] Validating against {N} acceptance criteria\n  [act] Final validation: traceability 100%, evidence score >= 2.0, schema checks passed", "status": "pending", "id": "coordinated"},
   {"content": "[act] Pipeline complete -- all validation gates passed", "status": "pending", "id": "validated"}
-])
+]
 ```
 
 ## Tier 2 Fast Path Tasks (Adaptive Pipeline, v12.0.0)
 
 ```
-TodoWrite([
+[
   {"content": "[act] Context enriched inline ({domain}, tier 2 fast path)\n  [act] Pre-flight validation: enriched_context.yaml valid, domain confirmed", "status": "completed", "id": "init"},
   {"content": "[act > planner] Planning & decomposition (inline)\n  [planner] Controller: {controller_name}\n  [act] Plan validation: objectives have success_criteria, controller assigned, work items have criteria", "status": "in_progress", "id": "orchestrated"},
   {"content": "[act > {controller}] Coordinating implementation\n  [{controller} > {executor}] Implementing: {description}\n  [{controller}] Solution synthesized\n  [act] Coordination validation: all WIs completed with evidence, no stale items", "status": "pending", "id": "planned"},
   {"content": "[act > validator] Validating against acceptance criteria\n  [act] Final validation: traceability 100%, evidence score >= 2.0", "status": "pending", "id": "coordinated"},
   {"content": "[act] Pipeline complete -- all validation gates passed", "status": "pending", "id": "validated"}
-])
+]
 ```
 
 ## Validation Task Pattern (V10.23.0, v12.0.0)
 
-Every pipeline phase transition MUST include at least one validation TaskCreate entry. These entries confirm that the previous phase's outputs are valid before proceeding.
+Every pipeline phase transition MUST record at least one validation entry: a TaskCreate entry when the task tools are available, otherwise a `status.yaml` progress entry. These entries confirm that the previous phase's outputs are valid before proceeding.
 
 ### Required Validation Entries (v12.0.0)
 
@@ -66,30 +67,30 @@ Every pipeline phase transition MUST include at least one validation TaskCreate 
 ### Example: Full Pipeline with Validation Entries (v12.0.0)
 
 ```
-TodoWrite([
+[
   {"content": "[act > orchestrator] Context enrichment complete\n  [orchestrator] Domain: engineering, Tier: 3\n  [act] Pre-flight validation: enriched_context.yaml valid (3/3 fields)", "status": "completed", "id": "init"},
   {"content": "[act > planner] Plan + 12 work items complete\n  [planner] Controller: tech-lead, 5 objectives\n  [act] Plan validation: 5 objectives with criteria, controller assigned, 12/12 WIs have criteria, DAG valid", "status": "completed", "id": "orchestrated"},
   {"content": "[act > tech-lead] Coordination complete\n  [tech-lead] Pre-execution: 6/6 input checks passed\n  [tech-lead] Mid-execution: 4 checkpoints, 0 issues\n  [tech-lead] 12/12 WIs complete with evidence\n  [act] Coordination validation: evidence score 2.8/3.0, no stale items", "status": "completed", "id": "planned"},
   {"content": "[act > validator] Validation verdict: PASS\n  [validator] Phase 1-5: all passed\n  [validator] Phase 6 automated: 12/12 files verified\n  [validator] Phase 7 traceability: 100% coverage\n  [act] Final validation: overall score 0.97, PASS", "status": "completed", "id": "coordinated"},
   {"content": "[act] Pipeline complete -- all validation gates passed", "status": "completed", "id": "validated"}
-])
+]
 ```
 
 ## Revision Task Updates (v12.0.0)
 
 ```
-TodoWrite([
+[
   ...completed_states...,
   {"content": "[act] Revision {N}/3: Re-executing from {target_agent} due to validation feedback\n  [act] Revision trigger: {FAIL|REVISE}, feedback: {summary}\n  [act] Re-validation target: PLANNED with updated inputs", "status": "in_progress", "id": "revision"},
   ...remaining_states...
-])
+]
 ```
 
 Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route back to PLANNED.
 
 ## /act Owns All Pipeline Tasks
 
-**/act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way that task cleanup works in Step 4, because TaskUpdate only works on tasks that the same agent scope created.
+**When the task tools are available, /act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way that task cleanup works in Step 4, because TaskUpdate only works on tasks that the same agent scope created.
 
 **Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** A task that a subagent creates lives in the subagent's scope. /act cannot update that task, so Step 4 cleanup reports "Task not found" errors. Subagents may use TaskCreate for their OWN internal sub-spawns. Those tasks are scoped, and /act cleanup cannot see them.
 

@@ -75,8 +75,9 @@ Claude Code reads a top-level `model:` key in the frontmatter. No agent in the
 60-agent catalog declares one, so the loader gets no model value from a cAgents
 agent file.
 
-The `model` parameter of the Agent tool selects the model at spawn time. The
-agent that spawns passes that parameter. `model-routing-advisor.cjs` checks the
+The `model` parameter of the Agent tool selects the model at spawn time, and it
+does override the session model. That path still works. Only the frontmatter
+`metadata.model` value is advisory. The agent that spawns passes that parameter. `model-routing-advisor.cjs` checks the
 parameter against `metadata.tier` and prints an advisory warning when the two
 disagree. The hook never blocks a spawn.
 
@@ -397,7 +398,10 @@ With proper prompt structure:
 - 27 execution agents: `model: opus` (Claude Opus 5)
 - 3 controllers: `model: opusplan` (Opus planning mode)
 - Rationale: Creative work demands highest-quality reasoning
-- Team mode: Custom model frontmatter respected since Claude Code 2.1.47
+- Claude Code applies only a top-level `model:` key. cAgents agents record the
+  model under `metadata.model`, which Claude Code ignores. Thus these values are
+  advisory. Each subagent inherits the session model unless the spawn passes a
+  `model` parameter, which does override it.
 
 ## cAgents Model Selection Priority
 
@@ -406,7 +410,7 @@ Model selection follows this priority order (highest wins):
 1. **Claude Code env vars** (`ANTHROPIC_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL`)
 2. **Claude Code settings** (`model` in settings.json)
 3. **Project overrides** (`.cagents/model_routing.yaml`)
-4. **Agent frontmatter** (`model:` field in SKILL.md)
+4. **Agent frontmatter** (top-level `model:` field only; no cAgents agent declares one, so this step does not apply today)
 5. **Tier-based defaults** (tier 2-4 matrix)
 6. **Scenario detection** (think, background, longContext)
 7. **Default model** (sonnet)

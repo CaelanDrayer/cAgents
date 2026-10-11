@@ -125,9 +125,10 @@ const {
 let _registeredAgentsCache = null;
 function loadRegisteredAgents(rootDir) {
   if (_registeredAgentsCache !== null) return _registeredAgentsCache;
-  // v12.68.0: the catalog is the flat agents/ directory, not a manifest array.
-  // Claude Code discovers plugin agents with a non-recursive scan of agents/,
-  // so agents/<name>.md IS the registration — plugin.json no longer lists them.
+  // The catalog is the set of top-level agents/<name>.md files. Claude Code
+  // scans agents/ recursively, so plugin.json lists these same files in its
+  // `agents` array. tests/regressions/plugin-agents-explicit-list.test.js keeps
+  // the two sets equal, so the top-level listing is a safe source here.
   const agentsDir = path.join(rootDir, 'agents');
   let entries;
   try {
