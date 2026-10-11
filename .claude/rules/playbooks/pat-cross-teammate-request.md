@@ -33,7 +33,7 @@ allowed-tools: Read Write Edit Bash
 > `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. It is OBSOLETE under the DEFAULT
 > subagent execution model.** Its founding premise was this: "Claude Code forbids
 > nested teams, so a teammate needing help must route sideways through the lead".
-> That premise is no longer true. Since Claude Code 2.1.172, a subagent spawns its
+> That premise is no longer true. Since Claude Code 2.1.219, a subagent spawns its
 > own subagents up to depth 3 by default.
 >
 > **New canonical guidance under the default subagent model**: a wave subagent

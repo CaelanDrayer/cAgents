@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
 metadata:
   author: CaelanDrayer
-  version: "12.74.0"
+  version: "12.74.1"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
@@ -231,7 +231,7 @@ Read the 1-line confirmation only.
 4. All of the subagents within a wave run in parallel.
 5. Do the gate validation with `cagents:wave-reviewer`, and never inline the 7-check in the lead.
 6. Maximize the number of waves.
-7. Wave subagents ARE controller agents. They spawn execution agents directly with the Agent tool. They can also recursively spawn their own subagents, up to depth 3. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead. CC ≥ 2.1.172 retains the Agent tool up to depth 3 by default. Graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only. It applies when the Agent tool is verifiably absent at the nesting ceiling, or on a regressed harness.
+7. Wave subagents ARE controller agents. They spawn execution agents directly with the Agent tool. They can also recursively spawn their own subagents, up to depth 3. A subagent that needs another specialty spawns that specialist downward. It does not route the request sideways through the lead. CC ≥ 2.1.219 retains the Agent tool up to depth 3 by default (CC 2.1.217 and 2.1.218 turn nesting off by default). Graceful degradation per @.claude/rules/playbooks/pat-graceful-degradation-depth1.md is a fallback only. It applies when the Agent tool is verifiably absent at the nesting ceiling, or on a regressed harness.
 8. The lead does Wave 0 and the final wave.
 9. Never ask for permission between the waves.
 10. Never create tasks without also spawning the subagents.

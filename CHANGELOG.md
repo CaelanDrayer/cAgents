@@ -10,6 +10,21 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.74.1] - 2026-10-11
+
+### Fixed
+- Stale nesting claims are corrected in
+  `.claude/rules/playbooks/pat-graceful-degradation-depth1.md` and in other
+  live rules, skills, agents, and the `verify-completion.cjs` comment. The
+  claims were "depths 1-4", "up to 5 levels deep", and "default nesting on CC
+  2.1.172+". The correct model is a default depth of 3 since Claude Code
+  2.1.219. On Claude Code 2.1.217 and 2.1.218 nesting is off by default.
+- The `scripts/validate_agent.cjs` warning and the `scripts/package-plugin.sh`
+  comment no longer claim a non-recursive scan of `agents/`.
+- The regression test
+  `tests/regressions/cc-min-version-and-nesting-claims.test.js` has 5 more
+  guards against these stale claims.
+
 ## [12.74.0] - 2026-10-11
 
 ### Fixed

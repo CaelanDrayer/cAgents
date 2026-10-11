@@ -125,8 +125,9 @@ with zipfile.ZipFile(zip_path) as z:
         except (json.JSONDecodeError, KeyError) as e:
             errors.append("manifest is not valid JSON: %s" % e)
 
-    # 4. Payload is actually present. Agent files must be FLAT under agents/ —
-    #    Claude Code discovers them with a non-recursive scan (v12.68.0).
+    # 4. Payload is actually present. Agent files must be FLAT under agents/.
+    #    The plugin.json "agents" array lists flat agents/<name>.md files. Claude
+    #    Code's default scan is recursive, so nested files must not be agents.
     agents = [n for n in files if n.startswith("agents/") and n.count("/") == 1 and n.endswith(".md")]
     if len(agents) != expect_agents:
         errors.append("%d flat agents/*.md in archive, expected %d" % (len(agents), expect_agents))

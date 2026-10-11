@@ -101,7 +101,7 @@ Teammate 2 (tech-lead):
   -> PASS or REVISE (max 3 rounds)
 ```
 
-On Claude Code >= 2.1.172, subagents retain the `Agent` tool. They can spawn their own subagents up to depth 3 by default. Teammate controllers therefore spawn execution agents and reviewers reliably. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline.** This is a deliberate design choice for cost and clarity, not a harness limit. A controller teammate plus its own execution agents is the cheapest path to a reviewed result.
+On Claude Code >= 2.1.219, subagents retain the `Agent` tool. They can spawn their own subagents up to depth 3 by default. Teammate controllers therefore spawn execution agents and reviewers reliably. **Keep teammates spawning execution agents DIRECTLY rather than re-entering the full /act pipeline.** This is a deliberate design choice for cost and clarity, not a harness limit. A controller teammate plus its own execution agents is the cheapest path to a reviewed result.
 
 The `Agent` tool is verifiably absent in two cases. The first case is the actual nesting ceiling, where a subagent at depth 3 cannot spawn a depth-4 child. The second case is a regressed or older harness. In either case, the teammate controller degrades gracefully to direct execution + self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 

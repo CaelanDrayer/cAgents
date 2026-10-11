@@ -81,7 +81,8 @@ After the lead spawns the integration controller, the lead does these steps:
 4. Reads the 1-line PASS/FAIL/REVISE result of the validator
 5. Does NOT re-read the outputs of any wave directly
 
-On CC ≥ 2.1.172 the integration controller keeps the `Agent` tool at depth 1.
+On CC ≥ 2.1.219 the integration controller keeps the `Agent` tool at depth 1.
+On CC 2.1.217 and 2.1.218 nesting is off by default.
 It then delegates as usual. In rare cases the `Agent` tool is verifiably
 absent. The cause is the nesting ceiling, or a regressed or older harness.
 
