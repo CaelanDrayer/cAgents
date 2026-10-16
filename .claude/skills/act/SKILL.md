@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.74.1"
+  version: "12.76.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -128,7 +128,7 @@ Special flag handling:
 
 **ACTION 0**: Check `process.env.CAGENTS_SESSION_ID`. If set, use it verbatim as SESSION_ID. If SESSION_DIR exists, treat as RESUME. Otherwise auto-generate.
 
-**ACTION 1**: Generate SESSION_ID. Mkdir SESSION_DIR with the `workflow/` and `outputs/` subdirs. Write `instruction.yaml` and `status.yaml`. Self-register in `workflow/agent_tree.yaml` as the FIRST ENTRY of a top-level `agents:` LIST (`agents:` then `  - id: "pipeline"` … `depth: 0`).
+**ACTION 1**: Generate SESSION_ID. Mkdir SESSION_DIR with the `workflow/` and `outputs/` subdirs. Write `instruction.yaml` and `status.yaml`. Seed `workflow/agent_tree.yaml` with the depth-0 root entry as the FIRST ENTRY of a top-level `agents:` LIST (`agents:` then `  - id: "pipeline"` … `depth: 0`).
 
 The `agents:` key is MANDATORY and is the only shape any reader understands. Do NOT write a `root:`/`children:` tree. The Stop hook reads such a file as "no child agents spawned". The tracker hook now repairs the shape on the next spawn, but every spawn before that repair is lost from the audit trail. See @reference/agent-tracking.md for the exact block to write. (v12.6.0: `workflow/events/` is no longer created, because the primary output files are the canonical state-advancement signal.)
 

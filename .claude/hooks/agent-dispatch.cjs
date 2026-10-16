@@ -13,15 +13,17 @@
  * outweigh perf. The control flow below is the load-bearing contract:
  *
  *   ORDER (deny-first, short-circuit on first deny):
- *     1. session-init-gate     — SESSION-PRESENCE DENY GATE (FAIL-CLOSED)
+ *     1. session-init-gate     — SESSION-PRESENCE GATE, ADVISORY (FAIL-OPEN, HS-7)
  *     2. model-routing-advisor — ADVISORY                   (FAIL-OPEN)
  *
  *   - The FIRST deny wins and SHORT-CIRCUITS: the advisory gate is NOT consulted once
  *     session-init-gate denies. (Same contract as write-edit-dispatch.)
  *   - MOST-RESTRICTIVE: any sub-deny => the dispatcher denies.
- *   - FAIL-CLOSED for the session-presence gate on a LOGIC throw: the dispatcher
- *     DENIES (naming the gate + fail-closed). This is done with an explicit try/catch
- *     INSIDE this dispatchHandler.
+ *   - FAIL-OPEN + LOUD for the session-presence gate on a LOGIC throw (HS-7,
+ *     WI-19 F2): the dispatcher ALLOWS with one [FAIL-OPEN] systemMessage and one
+ *     stderr line, and records no denied spawn. This is done with an explicit
+ *     try/catch INSIDE this dispatchHandler. A fault outside that try/catch still
+ *     denies, because AgentDispatch is in FAIL_CLOSED_HOOKS (hook-utils.cjs).
  *   - FAIL-OPEN + LOUD on an I/O throw (RF-4, v12.70.0): EACCES / ENOENT / EIO /
  *     ENOTDIR / ELOOP mean the gate could not LOOK, which is not evidence that there
  *     is nothing to find. Those ALLOW the spawn and attach a permissionDecisionReason
@@ -166,13 +168,13 @@ function recordDeniedSpawn(input, reason) {
  * Build the dispatch handler with injectable sub-handlers (testability).
  *
  * @param {object} handlers
- * @param {function} handlers.sessionGate  — session-init-gate handler (DENY, fail-closed)
+ * @param {function} handlers.sessionGate  — session-init-gate handler (may deny; fails OPEN on throw)
  * @param {function} handlers.modelAdvisor — model-routing-advisor handler (ADVISORY, fail-open)
  * @returns {function(input): Promise<verdict>} dispatchHandler returning a verdict
  */
 function makeDispatchHandler({ sessionGate, modelAdvisor }) {
   return async function dispatchHandler(input) {
-    // ── Gate 1: session-init-gate — SESSION-PRESENCE DENY GATE (FIRST, FAIL-CLOSED) ──
+    // ── Gate 1: session-init-gate — SESSION-PRESENCE GATE (FIRST, FAILS OPEN ON THROW) ──
     let gateVerdict;
     try {
       gateVerdict = await sessionGate(input);
@@ -199,16 +201,17 @@ function makeDispatchHandler({ sessionGate, modelAdvisor }) {
           },
         };
       }
-      // FAIL-CLOSED: a genuine LOGIC throw in the session-presence gate must
-      // DENY, not continue. (Unchanged policy — only I/O is carved out above.)
-      console.error(`[AgentDispatch] session-init-gate FAILED CLOSED: ${err && err.message}`);
-      recordDeniedSpawn(input, `[FAIL-CLOSED] session-init-gate logic throw: ${err && err.message}`);
+      // F2 / HS-7: session-init-gate is ADVISORY (it has no deny return of its
+      // own), so a LOGIC throw fails OPEN and LOUD too. Denying here meant one
+      // gate bug blocked every Agent spawn. Nothing is denied, so no
+      // recordDeniedSpawn. Dispatcher faults OUTSIDE this try/catch still fail
+      // closed via FAIL_CLOSED_HOOKS ('AgentDispatch') in hook-utils.cjs.
+      const msg = err && err.message;
+      console.error(`[AgentDispatch] session-init-gate FAILED OPEN (logic throw): ${msg}`);
       return {
-        deny: true,
-        reason: `[FAIL-CLOSED] session-init-gate threw during evaluation ` +
-                `(${err && err.message}). Denying the Agent spawn to avoid spawning ` +
-                `into an unverified/absent session through a crashed presence gate. ` +
-                `This is a LOGIC fault, not an I/O fault — it is a bug in the hook.`
+        continue: true,
+        systemMessage: `[FAIL-OPEN] session-init-gate threw (${msg}); advisory gate skipped, ` +
+                       `Agent spawn allowed. This is a hook bug, please report it.`,
       };
     }
     // First deny wins + short-circuits: the advisory gate is NOT consulted.

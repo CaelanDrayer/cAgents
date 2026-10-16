@@ -219,7 +219,7 @@ When `/team` enters strategic mode, the lead MUST initialize the session directo
 2. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs ${SESSION_DIR}/domain_analyses ${SESSION_DIR}/objections`. From v12.6.0, do NOT create `workflow/events/`.
 3. Write `instruction.yaml`, with `session_type: team` and `strategic_mode: true`.
 4. Write `status.yaml` with `pipeline_state: INIT`.
-5. Write strategic-mode-lead self-registration to `workflow/agent_tree.yaml`.
+5. Seed `workflow/agent_tree.yaml` with the depth-0 strategic-mode lead entry in a top-level `agents:` list. After this, the hooks own the file.
 6. Seed TaskCreate entries using the strategic-mode wave names (see below).
 
 **CRITICAL: `{ISO_TIMESTAMP}` must be the REAL current time.** Use the timestamp from "Current timestamp" at the top of the SKILL.md file. As an alternative, run `date -u +%Y-%m-%dT%H:%M:%SZ` with Bash. NEVER fabricate a timestamp.
@@ -254,14 +254,12 @@ As the work progresses, call `TaskUpdate` with `in_progress`, and then with `com
 
 ## Completion
 
-### Finalize Strategic-Mode Lead in agent_tree.yaml
+### Strategic-Mode Lead Entry at Completion
 
-Update the strategic-mode lead entry to set:
-- `stopped_at: "{ISO_TIMESTAMP}"`
+Do not edit `agent_tree.yaml` to finalize the lead entry. The hooks close it: `repairSession` at Stop for a terminal session, and `team-stop.cjs` at SessionEnd. Write the completion summary to `status.yaml` instead:
 - `completion_summary: "Orchestrated {N} domains, {N} C-suite agents, strategic brief + execution"`
-- `duration_seconds: {computed from spawned_at to now}`
 
-Advance the `pipeline_state` in `status.yaml` to `complete`. Release v12.6.0 removed the `workflow/events/EVT-{N}.yaml` emission. Two artifacts are now the canonical completion signal. They are the `pipeline_state: complete` update in `status.yaml`, and the `integration_report.yaml` and `execution_summary.yaml` outputs.
+Advance the `pipeline_state` in `status.yaml` to `complete`. Release v12.6.0 removed the `workflow/events/EVT-{N}.yaml` emission. Three artifacts are now the canonical completion signal: the `pipeline_state: complete` value in `status.yaml`, `integration_report.yaml`, and `execution_summary.yaml`.
 
 ### Clean Up Tasks (MANDATORY — Hard Gate Before Stopping)
 

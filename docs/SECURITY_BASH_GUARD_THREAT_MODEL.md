@@ -96,8 +96,8 @@ calls, or to inspect the interior of scripts/Makefiles it merely invokes.
 **cAgents-runtime specifics that raise the stakes.**
 
 - **`bypassPermissions` controllers & infrastructure.** For these agents the HITL
-  `ask` verdict is moot — an `ask` **auto-resolves to allow**. The only real gate
-  is a `deny`. This is *the* reason true bypass classes must map to DENY, never
+  `ask` verdict is **not a guaranteed stop**. See the hook `ask` semantics note in
+  §5. The only gate that holds in every mode is a `deny`. This is *the* reason true bypass classes must map to DENY, never
   ASK (§5–§6).
 - **`dangerouslyDisableSandbox: true`** on the Bash tool removes OS-level
   sandboxing; the command runs with full operator authority. A denylist miss with
@@ -233,7 +233,8 @@ components:
 | provably destructive when canonicalized | `{ deny: true, reason }` | unconditionally blocked |
 
 **Reserve `ask` for genuine ambiguity only; send true bypass classes to `deny`.**
-An `ask` auto-resolves to *allow* under `bypassPermissions` / non-interactive runs.
+Do not trust an `ask` to stop a command in every permission mode. See the hook
+`ask` semantics note below.
 So canonicalized `rm -rf /` (A/B), a substitution whose inner verdict is `deny`
 (C), decode→interpreter (D), and destructive-argv Class E **must map to `deny`,
 never `ask`.** `ask` is correct only for genuinely-unknowable-but-commonly-benign
@@ -328,6 +329,22 @@ direction), never *under*-analyze. Verified by a dedicated
 destructive-before-comment / multi-line deny rows + mid-word/quoted-`#`
 literal-preservation rows).
 
+**Hook `ask` semantics (re-checked v12.76.0, WI-15 W6).** Earlier text in this
+file said that an `ask` auto-resolves to allow under `bypassPermissions` and in
+non-interactive runs. That claim had no source. The table below gives what is known.
+
+| Permission mode | What a PreToolUse hook `ask` does | Source |
+|---|---|---|
+| `default`, `acceptEdits` | The user sees a prompt. | Claude Code hooks reference |
+| `bypassPermissions` | Not documented. The WI-027 audit measured a median wait of 76 s on hook asks, so a human answered a prompt. One unofficial issue report (claudeissues #77212) says the `ask` is auto-approved. | Measurement; docs are silent |
+| `dontAsk` | `bash-validator.cjs` drops the `ask`. The allow and deny rules of the session then decide. | `bash-validator.cjs` (v12.72.2) |
+| headless `-p` | Nobody can answer, so the call is denied and the reason goes to the model. | Claude Code hooks reference |
+
+The rule in this model does not change. Treat an `ask` as a speed bump, not a
+stop. Send each proven bypass class to `deny`. Under `dontAsk`, a dropped `ask`
+runs only when an allow rule matches it. Keep the allow rules narrow for that
+reason (see WI-15 W2 in `.claude/settings.json`).
+
 ### 5.3 Fail-closed soft-fail — un-parseable input → `ask`, not hard `deny` (v12.62.1)
 
 A follow-up to §5.2, driven by a false-positive report: a legitimate
@@ -341,7 +358,7 @@ substitution`, and the fail-closed evaluator (§5 component 1) denied the entire
 benign command.
 
 **Design tension.** §5 is emphatic that un-tokenizable → `deny` (fail-closed) is
-deliberate, because an `ask` auto-resolves to *allow* under `bypassPermissions`.
+deliberate, because an `ask` is not a guaranteed stop under `bypassPermissions`.
 But §5 also reserves `ask` for "genuinely-unknowable-but-commonly-benign" cases —
 and an un-**parseable** command is exactly that: the evaluator can prove *neither*
 safety *nor* destruction. The resolution distinguishes **"I proved this is
@@ -449,6 +466,66 @@ allow rows, the two shell-heredoc **deny** rows that pin the no-bypass property,
 the computed-delimiter and herestring rows, and the constant-propagation
 allow/deny/still-ask rows).
 
+### 5.5 Rule changes in v12.76.0 (WI-6, WI-8, WI-15, WI-20, WI-21)
+
+Session `team_hook-session-fixes_261015_001` changed the evaluator in two ways.
+It cut false asks from a replay of 309 recorded asks, and it closed bypass
+shapes that an adversarial review found. A fresh independent reviewer checked
+each bypass fix. WI-20 passed in review round 4, and WI-21 passed in review
+round 6.
+
+**False-ask cuts (WI-6, WI-8).** Each change narrows an `ask` to an allow only
+when the evaluator can prove the command is safe.
+
+| Id | Change |
+|----|--------|
+| H1 | A power verb (`reboot`, `shutdown`, `halt`, `poweroff`) asks only in command position. The wrapper scan still finds it after `nohup`, `env`, `timeout`, `xargs`, `ssh`, and `bash -c`. |
+| H2 | A `$VAR` in command position with one literal assignment in the same command is resolved and judged. The value is word-split and quoted again, never parsed again, so `C='rm #'; $C -rf /etc` denies. |
+| H3 | A literal inline program that is a pipe consumer is data, unless it holds dynamic code (`exec`, `eval`, `spawn`, a non-literal `require(`, `importlib`, `pickle`, a decoder, and more). |
+| H4 | The soft-fail `ask` text names a heredoc terminator that ends the body early. The verdict does not change. |
+| H5 | `NAME=$(mktemp ...)` with one mention of `NAME` makes `rm -rf $NAME` a temp delete, so it allows. A writer builtin, `IFS`, or `PATH` in the command voids the map. |
+| H7 | `.env.example`, `.env.sample`, `.env.template`, `.env.dist`, and `.env.defaults` are not credential files. |
+| H8 | `DROP`, `TRUNCATE`, and `DELETE FROM` ask only when a database client is in the command. |
+
+**New asks and denies (WI-6, WI-8, WI-15, WI-20, WI-21).**
+
+| Id | Change |
+|----|--------|
+| R1 | `rm -rf /etc` inside `if`, `while`, `until`, `{ }`, or after `!` denies. Before, it allowed. |
+| K1, W1 | The force-push check reads the `git push` argv after the global options. `-f`, a `+refspec`, `--mirror`, `--delete`, `--prune`, an abbreviated long option, and a `-c` alias ask. |
+| W3 | History rewrites ask: `filter-branch`, `filter-repo`, `update-ref -d`, `reflog expire`, `prune`, and `gc --prune`. |
+| W4 | `find -delete` and `find -exec rm` ask unless every root is a temp path. |
+| W2 | The git discard forms ask: a `checkout` of a pathspec, `restore`, `switch --discard-changes`, `stash drop`, `stash clear`, `branch -D`, `worktree remove --force`, and `clean --force` without `-n`. `settings.json` no longer allows `git checkout:*`, `git stash:*`, or `git branch:*`. |
+| WI-8 REV2 | The wrapper scans share a budget of 400 steps. The command asks when the budget runs out. `'xargs '` repeated 3000 times took more than 60 s before the budget and about 200 ms after it. |
+| WI-20 F1 | A non-ASCII character or an escape in an inline program that a pipe feeds asks. |
+| WI-20 F2 | A nest deeper than the depth cap asks. |
+| WI-20 F3 | An opaque context, such as a `-c` payload or a process substitution, also gets a scan of its inner text. |
+| WI-20 F4 | A heredoc joins a `\`-newline before it looks for the terminator. |
+| WI-20 G10 | `kexec`, `runlevel0.target`, `runlevel6.target`, a `login1` reboot through `busctl`, and a write to `/proc/sysrq-trigger` ask. |
+| W21-1 | A git option that writes a file asks: `--output`, `format-patch -o`, `archive -o`, and `bundle create`. |
+| W21-2 | If `bash-guard-evaluator.cjs` fails to load, `bash-validator.cjs` denies every Bash call. |
+| W21-3 | A `cd` away from the project root before `git` or a test runner asks. So do `git -C <dir>` and `--git-dir`, and a hook cwd outside the root that is not a verified worktree of this project. |
+| W21-4 | An expanded word (a variable, a substitution, a brace, a tilde, a glob) in a git rule or a runner argument asks. A single double-quoted `-b` or `-m` value is exempt. |
+| W21 env | An env prefix such as `NODE_OPTIONS`, `npm_config_*`, `GIT_*`, `LD_*`, `PATH`, or `HOME` before a runner or `git` asks. |
+| A1 | The runner allow rules are exact: `npx vitest run --config tests/vitest.config.js`, `npm test`, and each `scripts/ci/` script. `runnerMessage()` asks for a `../` path, `--root`, `--dir`, `--prefix`, a setup file, a `--config` other than `tests/vitest.config.js`, a code-loading option, an npm option before `--`, a variable or substituted argument, an absolute path, and an unknown flag. |
+
+The CC 2.1.299 harness ignores `Write(...)` permission rules. `settings.json`
+now uses `Edit(/cagents-memory/**)`, `Edit(//etc/**)`, and `Edit(~/.ssh/**)`.
+
+**Accepted false asks.** More than 3 nested exec wrappers ask. A non-ASCII
+inline program in a pipe consumer asks, for example a `python3 -c` that prints box
+characters after a `|`.
+`git checkout -b "$NAME" "$BASE"` asks, because the start point is a variable.
+
+**Accepted LOW residuals (WI-21).** `checkout -B`, `switch -C`, `branch -M`,
+`checkout-index -f`, `read-tree --reset`, `merge --abort`, a bare
+`git checkout <name>`, and function or alias shadowing still allow.
+
+Tests: `tests/hooks/bash-guard-guardfall.test.js` (WI-6, WI-8, WI-15, and WI-20
+rows), `tests/hooks/bash-guard-wi21.test.js` (585 tests),
+`tests/hooks/bash-guard-heredoc.test.js`, and
+`tests/config/settings-memory-write-anchor.test.js`.
+
 ---
 
 ## 6. Test harness & CI gate (implemented)
@@ -499,7 +576,7 @@ These gaps remain open by construction; each is stated, not absorbed:
 3. **Runtime-constructed indirection.** `IFS=x; c=rmx-rfx/; eval $c`; `printf`-assembled
    command names; env var set in a prior statement; alias/function redefinition.
 4. **Command-position single-variable indirection under `bypassPermissions`.**
-   `$CMD file` is value-dependent → **ASK**, which auto-resolves to allow under
+   `$CMD file` is value-dependent → **ASK**, which is not a guaranteed stop under
    `bypassPermissions`. The *visibly-destructive-argv* case (`$CMD -rf /`) is DENY;
    the benign-looking-arg case is a **documented, accepted residual**, not overclaimed.
 5. **Not a sandbox.** It reasons about canonical argv; it does not execute, resolve
@@ -514,7 +591,9 @@ These gaps remain open by construction; each is stated, not absorbed:
    (a) un-parseable, (b) destructive only in a way the belt misses (e.g. a subpath
    `rm -rf /etc`, which the sound evaluator catches on parse but the belt does not),
    and (c) obfuscated into un-tokenizability, downgrades from `deny` to `ask` — which
-   **auto-resolves to allow under `bypassPermissions`**. This overlaps residuals #2
+   **is not a guaranteed stop under `bypassPermissions`** (see the hook `ask`
+   semantics note in §5). Interactive measurement shows that the `ask` blocks for a
+   human. The documentation does not promise it. This overlaps residuals #2
    (heredoc-built) and #3 (runtime-constructed indirection): all require the attacker
    to defeat the parser. Mitigated by §8's "no auto-yes on untrusted content" control
    (which makes the `ask` actually protective) and, for interactive runs, by the human
@@ -593,6 +672,34 @@ every protected-root variant (e.g. `/mnt`, `/media`, `/srv`); those remain
 open by the same "coverage honesty" note above — add a red fixture row, then
 an evaluator rule that greens it.
 
+### 7.2 Open single-call gaps after v12.76.0 (WI-20 G4 to G11)
+
+The WI-20 adversarial review found these shapes. They allowed at HEAD before
+the session too, so v12.76.0 did not make them worse. The verdicts below come
+from `bash-validator.cjs` on 2026-10-15, run from the project root.
+
+| Gap | Probe command | Verdict now | What a fix needs |
+|-----|---------------|-------------|------------------|
+| G4 | `echo /etc \| xargs rm -rf` | allow | Argument flow from the producer into `xargs`. `xargs -a <(echo /etc) rm -rf` is the same gap. |
+| G5 | `T=$(mktemp -d); rm -rf $T/../../etc` | allow | An `ask` when an `rm -r` target has a variable and a `..` part. |
+| G6 | `C=r; $C"m" -rf /etc` and `/bin/r[m] -rf /etc` | allow | An `ask` for a command word that joins a variable and a literal, or that holds `*?[`. |
+| G7 | `git send-pack --force origin main` | allow | `send-pack` in the force-push rule. `F=-f; git push origin main $F` now asks (W21-4). |
+| G9 | `cat .env*` and `cat .en[v]` | allow | An `ask` when a reader argument has a glob or a brace and its literal prefix matches a sensitive name. |
+| G11 | `psql -c "DROP/**/TABLE users"`, `psql -c "TRUNCATE users"`, and `redis-cli FLUSHALL` | allow | SQL comments between keywords, a bare `TRUNCATE`, and `FLUSHALL` or `FLUSHDB`. |
+
+G8 (global git options before `reset --hard` or `clean -f`) is closed.
+`git -C . reset --hard`, `git --no-pager reset --hard`, `git clean -d -f`, and
+`git reset HEAD~3 --hard` all ask now. G10 is closed, see §5.5.
+
+WI-8 also found shapes that stay open. A `git-push --force` binary call
+allows, and the evaluator does not read an alias in the repo `.git/config`. A
+`python3 - <<'EOF'` body is code that the evaluator does not read, so
+`shutil.rmtree('/etc')` in that body allows. `git $VAR push` now asks
+(W21-4).
+
+Treat each row as open. The bug-driven loop of §7 applies: add a red fixture
+row, then add an evaluator rule that makes it green.
+
 ---
 
 ## 8. Compensating controls — defense-in-depth alongside the shipped evaluator
@@ -601,14 +708,14 @@ The evaluator (§5) and CI gate (§6) have landed, closing the named §4 shapes 
 these controls are no longer a substitute for an unshipped guard. They remain
 recommended as **defense-in-depth alongside** the evaluator, because they
 mitigate the §7 residuals the agent-side guard cannot reach by construction
-(recipe interiors, cross-call payloads, `ask` auto-resolution under
+(recipe interiors, cross-call payloads, the undocumented `ask` handling under
 `bypassPermissions`). The GuardFall article's "what defenders can do today" maps
 to concrete cAgents actions:
 
 | Control | Action | Mitigates |
 |---|---|---|
 | **Scoped-`$HOME`** | Run agents with a disposable/scoped `HOME` (strip `~/.ssh`, `~/.aws`, `~/.config/gh` from view) | Credential exfil (§3.1) + `$HOME` destruction |
-| **No auto-yes on untrusted content** | Don't run `bypassPermissions` / `--dangerously-skip-permissions` on untrusted-PR or ingested-content workflows | The "ask auto-resolves to allow" hole — makes `ask` verdicts actually protective |
+| **No auto-yes on untrusted content** | Don't run `bypassPermissions` / `--dangerously-skip-permissions` on untrusted-PR or ingested-content workflows | The hole where an `ask` is not a guaranteed stop under `bypassPermissions`. This control makes `ask` verdicts protective |
 | **Sandbox on** | Don't set `dangerouslyDisableSandbox: true` for agents processing ingested content | Uncontained execution on a denylist miss |
 | **Treat repo recipes as untrusted** | Review `make`/`npm run`/script invocations from untrusted repos | The recipe-interior vector the evaluator can't see |
 

@@ -147,10 +147,10 @@ See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-s
 Pull the matching worked example when a design decision or review is non-obvious:
 
 - See @docs/example-store/ex-verification-intended-vs-implemented.md. Audit an implementation against its documented design intent, one boundary at a time.
+- See @docs/example-store/ex-intake-frontier-round-interview.md. Ask all unblocked questions in one round, each with a recommended answer. Stop when none remain.
 - See @docs/example-store/ex-intake-assumption-surfacing.md. State the design assumptions before you commit. Those assumptions cover the scope, the shape of the data, and the boundaries.
 - See @docs/example-store/ex-gates-fact-forcing-pre-hoc.md. Gather the facts about the callers and the schema before a design decision. This mirrors the read-before-decide rule.
 - See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each design checkpoint pre-flight, revision, escalation, or abort.
-- See @docs/example-store/ex-verification-evidence-first.md. Back each tradeoff claim with concrete evidence, and never with an assertion.
 
 ---
 

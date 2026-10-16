@@ -84,7 +84,6 @@ const fs = require('fs');
 const path = require('path');
 const {
   createHook,
-  findActiveSession,
   AGENT_MEMORY_DIR,
   PROJECT_ROOT,
   PLUGIN_ROOT,
@@ -92,9 +91,9 @@ const {
   safeRead,
   extractYamlValue,
   isTerminalState,
-  resolveOwnedSession,
-  getSessionOwner,
   claimSession,
+  resolveSession,
+  claimFromAnyWrite,
 } = require('./hook-utils.cjs');
 
 // --- metadata.requires removed (P2-10 v12.7.x) ---
@@ -108,47 +107,96 @@ const {
 // --- v12 alias lookup helpers (P0-2 v12.7.x) ---
 
 /**
- * Lazily load the set of registered agent leaf names from the plugin manifest.
+ * Load the set of registered agent leaf names from the plugin manifest.
  *
- * Returns Set<string> of bare agent names (e.g. 'tech-lead', 'planner') when the
- * manifest was found and parsed. Returns `null` — NOT an empty Set — when the
- * manifest could not be located at all (e.g. a /team worktree-isolated subagent
- * whose sparse checkout doesn't happen to include `.claude-plugin/`, or any other
- * environment where the plugin root differs from the manifest's actual location).
- * `null` is a distinct "cannot verify" signal from a legitimately-empty catalog:
- * callers MUST treat `null` as "skip the advisory" rather than "every name is
- * unregistered" — an absent source of truth is not evidence of non-membership.
- * See the "Phase 2 registered-agent advisory (v12.62.2 regression)" describe
- * block in tests/hooks/session-init-gate.test.js for the regression this
- * distinction fixes (root cause: v12.62.2).
+ * HS-8 (E11): the source of truth is the CURRENT `<rootDir>/.claude-plugin/
+ * plugin.json` `agents` array — the same list Claude Code registers from. The
+ * read is cached per (path, mtime), so an edited manifest is never served from
+ * a stale cache. When the manifest is absent or has no `agents` array (e.g. a
+ * /team worktree whose sparse checkout lacks `.claude-plugin/`), it falls back
+ * to the top-level `agents/<name>.md` listing, which
+ * tests/regressions/plugin-agents-explicit-list.test.js keeps equal to the
+ * manifest. Every read records WHICH file it used in `getRegistrySource()`,
+ * and the path is written to stderr and appended to any registry advisory, so
+ * a false "not a registered agent" can be traced to the copy that produced it.
+ *
+ * Returns Set<string> of bare agent names (e.g. 'tech-lead', 'planner'), or
+ * `null` — NOT an empty Set — when neither source could be read. `null` is a
+ * distinct "cannot verify" signal: callers MUST treat it as "skip the
+ * advisory" rather than "every name is unregistered" — an absent source of
+ * truth is not evidence of non-membership. See the "Phase 2 registered-agent
+ * advisory (v12.62.2 regression)" describe block in
+ * tests/hooks/session-init-gate.test.js (root cause: v12.62.2).
  */
-let _registeredAgentsCache = null;
-function loadRegisteredAgents(rootDir) {
-  if (_registeredAgentsCache !== null) return _registeredAgentsCache;
-  // The catalog is the set of top-level agents/<name>.md files. Claude Code
-  // scans agents/ recursively, so plugin.json lists these same files in its
-  // `agents` array. tests/regressions/plugin-agents-explicit-list.test.js keeps
-  // the two sets equal, so the top-level listing is a safe source here.
-  const agentsDir = path.join(rootDir, 'agents');
-  let entries;
-  try {
-    entries = fs.readdirSync(agentsDir, { withFileTypes: true });
-  } catch {
-    // Directory absent/unreadable — "cannot verify", NOT "nothing registered".
-    // Do NOT cache `null`: a later call in the same process (e.g. once the
-    // checkout completes) should re-check rather than being pinned to
-    // "unavailable" forever. In practice each hook invocation is a fresh
-    // process, so this only matters for in-process test harnesses.
-    return null;
-  }
+let _registeredAgentsCache = null; // { key, set, source }
+let _registrySource = null;        // { kind, path, count } of the last read
+function _manifestAgents(manifestPath) {
+  let doc;
+  try { doc = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch { return null; }
+  if (!doc || !Array.isArray(doc.agents)) return null;
   const set = new Set();
-  for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
-    const name = entry.name.slice(0, -'.md'.length);
+  for (const entry of doc.agents) {
+    if (typeof entry !== 'string') continue;
+    const base = path.basename(entry);
+    if (!base.endsWith('.md')) continue;
+    const name = base.slice(0, -'.md'.length);
     if (/^[a-zA-Z0-9_-]+$/.test(name)) set.add(name);
   }
-  _registeredAgentsCache = set;
   return set;
+}
+function loadRegisteredAgents(rootDir) {
+  const manifestPath = path.join(rootDir, '.claude-plugin', 'plugin.json');
+  let mtime = null;
+  try { mtime = fs.statSync(manifestPath).mtimeMs; } catch { /* absent */ }
+  const key = `${manifestPath}|${mtime}`;
+  if (_registeredAgentsCache && _registeredAgentsCache.key === key) {
+    _registrySource = _registeredAgentsCache.source;
+    return _registeredAgentsCache.set;
+  }
+
+  let set = mtime !== null ? _manifestAgents(manifestPath) : null;
+  // An empty manifest list cannot be the real catalog; treat it as unusable
+  // rather than flag every spawn as unregistered (review r1 LOW).
+  if (set && set.size === 0) set = null;
+  let source = set ? { kind: 'plugin.json', path: manifestPath, count: set.size } : null;
+
+  if (!set) {
+    const agentsDir = path.join(rootDir, 'agents');
+    let entries;
+    try {
+      entries = fs.readdirSync(agentsDir, { withFileTypes: true });
+    } catch {
+      // Both sources absent/unreadable — "cannot verify", NOT "nothing
+      // registered". Do NOT cache `null`: a later call in the same process
+      // (e.g. once the checkout completes) should re-check.
+      _registrySource = { kind: 'none', path: manifestPath, count: 0 };
+      console.error(`[SessionInitGate] agent registry unreadable (looked for ${manifestPath} and ${agentsDir}) — advisory skipped.`);
+      return null;
+    }
+    set = new Set();
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+      const name = entry.name.slice(0, -'.md'.length);
+      if (/^[a-zA-Z0-9_-]+$/.test(name)) set.add(name);
+    }
+    source = { kind: 'agents-dir', path: agentsDir, count: set.size };
+  }
+
+  _registrySource = source;
+  _registeredAgentsCache = { key, set, source };
+  console.error(`[SessionInitGate] agent registry read from ${source.path} (${source.kind}, ${source.count} agents).`);
+  return set;
+}
+
+/** HS-8: which file the last registry read used ({kind, path, count}) or null. */
+function getRegistrySource() {
+  return _registrySource;
+}
+
+/** HS-8: suffix naming the registry file, appended to every registry advisory. */
+function registrySuffix() {
+  const src = _registrySource;
+  return src ? ` (registry: ${src.path}, ${src.count} agents)` : '';
 }
 
 /**
@@ -270,7 +318,8 @@ function aliasLookup(subagentType, rootDir) {
   if (aliasHit) {
     const message =
       `cagents:${name} renamed in v12.x to cagents:${aliasHit.new}. ` +
-      `Spawn will be retried under new name (see scripts/migration/v12-aliases.yaml).`;
+      `Spawn will be retried under new name (see scripts/migration/v12-aliases.yaml).` +
+      registrySuffix();
     return { kind: 'alias', oldName: name, newName: aliasHit.new, message };
   }
 
@@ -279,10 +328,10 @@ function aliasLookup(subagentType, rootDir) {
   if (suggestion) {
     const message =
       `cagents:${name} is not a registered agent and not in v12-aliases.yaml. ` +
-      `Did you mean cagents:${suggestion}?`;
+      `Did you mean cagents:${suggestion}?` + registrySuffix();
     return { kind: 'suggest', oldName: name, suggestion, message };
   }
-  return { kind: 'unknown', oldName: name, message: `cagents:${name} is not a registered agent.` };
+  return { kind: 'unknown', oldName: name, message: `cagents:${name} is not a registered agent.` + registrySuffix() };
 }
 
 // ============================================================
@@ -541,13 +590,19 @@ function emitVerdict(notices, aliasReason) {
 
 // Pure handler (single source of truth). Exported so the agent-dispatch dispatcher
 // (agent-dispatch.cjs) can run this gate in-process FIRST. The dispatcher wraps this
-// call in its own try/catch; a genuine LOGIC throw still fails closed there, while an
-// I/O errno fails OPEN and loud (RF-4).
+// call in its own try/catch. A LOGIC throw fails OPEN with a [FAIL-OPEN]
+// systemMessage (HS-7, WI-19 F2), and an I/O errno fails OPEN and loud (RF-4).
 const handler = async (input) => {
   const toolName = input.tool_name || '';
 
   // Only inspect Agent tool calls (agent spawns)
   if (toolName !== 'Agent') return null;
+
+  // HS-1 claimFromAnyWrite: SubagentStart carries no prompt, so the explicit
+  // SESSION_DIR in the spawn prompt is captured HERE (PreToolUse) into the
+  // marker + map pointer. claimSession never takes a foreign-owned session.
+  // Fail-open.
+  try { claimFromAnyWrite(input); } catch { /* advisory */ }
 
   // ---- Phase 0 (RF-2): scope guard — only cagents:* spawns are ours ----
   // `Explore`, `general-purpose`, `Plan`, bare user-agent names, and payloads
@@ -587,13 +642,11 @@ const handler = async (input) => {
     // explicit hint) is a second try, and counts only when the session is
     // unclaimed or owned by this UUID. The newest-session fallback is gone: it
     // let transcript B's spawn be authorised by, and named after, A's session.
+    // HS-1: the shared resolveSession chain, purpose 'gate' (terminal sessions
+    // do not count): owned pointer/marker -> prompt SESSION_DIR -> pin / env ->
+    // null. A foreign-owned result is never returned.
     const uuid = input.session_id;
-    let sessionDir = resolveOwnedSession(uuid);
-    if (!sessionDir) {
-      const dir = findActiveSession(uuid);
-      const owner = dir ? getSessionOwner(dir) : null;
-      if (dir && (owner === null || owner === uuid)) sessionDir = dir;
-    }
+    const sessionDir = resolveSession(input, { purpose: 'gate' });
     if (sessionDir) {
       sessionPresent = true;
       // Seed ownership on a confident resolution. claimSession never
@@ -669,4 +722,6 @@ module.exports = {
   bootstrapWindowNotice,
   envFingerprint,
   CATALOG_SENTINEL,
+  loadRegisteredAgents,
+  getRegistrySource,
 };

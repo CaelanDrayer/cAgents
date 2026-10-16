@@ -40,7 +40,7 @@
 const path = require('path');
 const fs = require('fs');
 const {
-  createHook, findActiveSession, resolveOwnedSession, getSessionOwner, safeRead, PLUGIN_ROOT,
+  createHook, resolveSession, safeRead, PLUGIN_ROOT,
 } = require('./hook-utils.cjs');
 
 // Resolve enforcement mode: env var > settings.json > default 'block'.
@@ -549,14 +549,9 @@ function findActiveController(treeContent) {
  * @returns {string|null} Absolute session dir, or null.
  */
 function resolveGovernedSession(uuid) {
-  const owned = resolveOwnedSession(uuid);
-  if (owned) return owned;
-  const dir = findActiveSession(uuid);
-  if (!dir) return null;
-  const owner = getSessionOwner(dir);
-  if (owner === null || owner === uuid) return dir;
-  console.error(`[ControllerDelegationValidator] resolved session is owned by another transcript — no-op allow.`);
-  return null;
+  // HS-1: the shared resolveSession chain, purpose 'gate' (liveness-gated);
+  // a foreign-owned session is never returned.
+  return resolveSession({ session_id: uuid }, { purpose: 'gate', claimHint: false });
 }
 
 // Pure handler (single source of truth). Exported so the D1b Write|Edit dispatcher

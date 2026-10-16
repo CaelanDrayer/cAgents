@@ -72,3 +72,6 @@ See @market-research-analyst/resources/requirements.md for the playbook of the `
 ## Worked Examples
 
 - See @docs/example-store/ex-strategy-north-star-validator.md. First classify the business as Attention, Transaction, or Productivity. Then validate a north-star metric against the 7 criteria and against an "NSM is NOT" list.
+- See @docs/example-store/ex-review-adversarial-refutation.md. Try to refute each conclusion before you accept it, and record what survived.
+- See @docs/example-store/ex-intake-ambiguous-request-disambiguation.md. Map a vague request to named interpretations with distinct effort before you plan the work.
+- See @docs/example-store/ex-intake-frontier-round-interview.md. Ask all unblocked questions in one round, each with a recommended answer. Stop when none remain.

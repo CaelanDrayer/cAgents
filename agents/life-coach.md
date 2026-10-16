@@ -47,3 +47,9 @@ Select the mode that matches the request. Fallback: `coaching`.
 See @life-coach/resources/coaching.md for the full playbook of the `coaching` mode. It covers life coaching.
 See @life-coach/resources/career.md for the full playbook of the `career` mode. It covers career counseling.
 See @life-coach/resources/finance.md for the full playbook of the `finance` mode. It covers personal finance.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-intake-frontier-round-interview.md. Ask all unblocked questions in one round, each with a recommended answer. Stop when none remain.

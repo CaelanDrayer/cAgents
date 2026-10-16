@@ -11,10 +11,10 @@
  * event you most need to count was the one event nothing counted.
  *
  * `agent-dispatch.cjs` is the single chokepoint for every Agent-spawn deny
- * (session-init-gate's own deny branch was removed in RF-1; the dispatcher's
- * fail-CLOSED logic-throw branch remains, and `isDeny(gateVerdict)` still
- * catches any deny branch a future change reintroduces). The record is wired
- * at all three deny returns there.
+ * (session-init-gate's own deny branch was removed in RF-1, and the
+ * dispatcher's logic-throw branch now fails OPEN (F2 / HS-7), so it records
+ * nothing; `isDeny(gateVerdict)` still catches any deny branch a future change
+ * reintroduces). The record is wired at the deny returns there.
  *
  * THE INVARIANTS
  *   1. Every deny path writes a `spawn_failures:` record naming the attempted
@@ -128,7 +128,6 @@ afterEach(() => {
 
 describe('denied Agent spawns are recorded (WI-B6 integration)', () => {
   const DENY_PATHS = [
-    ['fail-CLOSED logic throw', LOGIC_THROW, /logic throw|cannot read properties/i],
     ['gate-returned deny', GATE_DENY, /GENUINE-ORPHAN/],
   ];
 
@@ -179,14 +178,30 @@ describe('denied Agent spawns are recorded (WI-B6 integration)', () => {
     chmodSync(join(blocked.sessionDir, 'workflow'), 0o000);
 
     const okVerdict = await factory(writable.root)
-      .makeDispatchHandler({ sessionGate: LOGIC_THROW, modelAdvisor: async () => null })(spawnInput());
+      .makeDispatchHandler({ sessionGate: GATE_DENY, modelAdvisor: async () => null })(spawnInput());
     const blockedVerdict = await factory(blocked.root)
-      .makeDispatchHandler({ sessionGate: LOGIC_THROW, modelAdvisor: async () => null })(spawnInput());
+      .makeDispatchHandler({ sessionGate: GATE_DENY, modelAdvisor: async () => null })(spawnInput());
 
     // Identical deny verdicts: recording succeeded in one case and could not in
     // the other, and the POLICY outcome is indistinguishable.
     expect(blockedVerdict.deny).toBe(true);
     expect(blockedVerdict.reason).toBe(okVerdict.reason);
+  });
+
+  // F2 / HS-7: a session-init-gate LOGIC throw now fails OPEN. Nothing was
+  // denied, so nothing may be recorded as a denial.
+  it('a session-init-gate logic throw ALLOWS and writes no spawn_failures record (F2)', async () => {
+    const proj = freshProject('logic-open');
+    const { makeDispatchHandler } = factory(proj.root);
+    const verdict = await makeDispatchHandler({ sessionGate: LOGIC_THROW, modelAdvisor: async () => null })(spawnInput());
+
+    expect(verdict.deny).toBeUndefined();
+    expect(verdict.continue).toBe(true);
+    expect(verdict.systemMessage).toMatch(/FAIL-OPEN.*session-init-gate threw/);
+    // SETTLE: same reasoning as the ALLOW-path test below.
+    await sleep(1500);
+    expect(readFileSync(proj.tree, 'utf8')).not.toMatch(/spawn_failures:/);
+    expect(existsSync(join(proj.root, 'cagents-memory', '_system', 'logs', 'agent_spawns.log'))).toBe(false);
   });
 
   it('the ALLOW path never invokes the recorder', async () => {

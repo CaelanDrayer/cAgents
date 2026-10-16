@@ -61,3 +61,4 @@ Pull these on demand during strategy work:
 
 - See @docs/example-store/ex-strategy-red-team-fails-if.md. First, steelman the load-bearing assumptions. Then attack them. Write each failure as a falsifiable "Fails if ___" statement. Add the cheapest test that you can run this week.
 - See @docs/example-store/ex-strategy-opportunity-score-formula.md. It gives the Opportunity Score, which is Importance x (1 - Satisfaction). Use that score to rank problems over features.
+- See @docs/example-store/ex-review-adversarial-refutation.md. Try to refute each conclusion before you accept it, and record what survived.

@@ -168,6 +168,9 @@ decision_log_check:
 
 - See @docs/example-store/ex-verification-mechanical-claim-check.md. Re-check each evidence claim with grep + fs + math. Gate on a computed pass rate: a pass rate below 0.8 with 2+ claims routes back.
 - See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each gate pre-flight, revision, escalation, or abort. Add revision stall-detection.
+- See @docs/example-store/ex-verification-coverage-ledger.md. Log each unread required input as a ledger event. Report an empty category as not covered, never as passed.
+- See @docs/example-store/ex-verification-measured-vs-inferred-ledger.md. Label each figure as measured or inferred, and never report an inferred figure as measured.
+- See @docs/example-store/ex-verification-verify-and-stop.md. Map each acceptance criterion to the smallest proof. Report pass, fail, unavailable, or blocked, then stop.
 
 ---
 

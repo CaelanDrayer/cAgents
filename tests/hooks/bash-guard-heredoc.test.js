@@ -139,3 +139,59 @@ describe('inline-assignment constant propagation for a recursive-force delete', 
     expect(verdict(RM_RF + '$(cat target.txt)')).toBe('ask');
   });
 });
+
+// WI-8 H4: quoted heredoc bodies (every delimiter quoting form) stay data. A
+// body line equal to the terminator ends the heredoc there, exactly as bash
+// does, so the lines after it are judged as shell and are not hidden.
+describe('WI-8 H4: quoted heredoc forms and early terminators', () => {
+  it.each([
+    ["<< 'EOF' with a space", "cat > f.md << 'EOF'\nit's a note\nEOF"],
+    ['<<"EOF" double-quoted delimiter', 'cat > f.md <<"EOF"\nit\'s a note\nEOF'],
+    ['<<\\EOF backslash delimiter', "cat > f.md <<\\EOF\nit's a note\nEOF"],
+    ['heredoc inside $() inside a quoted -m', 'git commit -m "$(cat <<\'EOF\'\nfix: it\'s done (really)\nEOF\n)" && git log -1'],
+    ['two heredocs on one line', "cat > a <<'A' && cat > b <<'B'\nit's a\nA\nit's b\nB"],
+    ['heredoc feeding a pipe', "cat <<'EOF' | tee f.md\nit's here\nEOF"],
+    ['backticks and $( ) as body text', "cat > f.md <<'EOF'\nWe don't run `this` or $(that)\nEOF"]
+  ])('allows: %s', (_label, cmd) => {
+    expect(verdict(cmd)).toBe('allow');
+  });
+
+  it('asks (fail-closed) when a body line equals the terminator and the rest does not parse', () => {
+    const cmd = "python3 - <<'EOF'\ns='''\ncat > x <<'EOF'\nit's\nEOF\n'''\nEOF";
+    const r = evaluate(cmd);
+    expect(r && r.deny === true && r.failClosed === true).toBe(true);
+  });
+
+  it('denies a destructive line that follows an early terminator', () => {
+    expect(verdict("cat > f <<'EOF'\nx\nEOF\n" + ETC_DELETE + '\nEOF')).toBe('deny');
+  });
+});
+
+// WI-8 H5: a variable assigned $(mktemp ...) is a fresh temp path.
+describe('WI-8 H5: mktemp-assigned variable as a recursive-delete target', () => {
+  it.each([
+    ['quoted target', 'T=$(mktemp -d); ' + RM_RF + '"$T"'],
+    ['unquoted target, literal-safe args', 'T=$(mktemp -d); cp a $T/; ' + RM_RF + '$T'],
+    ['backtick form', 'T=`mktemp -d`; ' + RM_RF + '"$T"'],
+    ['same && chain', 'cd /repo && T=$(mktemp -d) && ' + RM_RF + '"$T"'],
+    ['loop after the assignment', 'T=$(mktemp -d); for f in a b; do cp $f "$T"; done; ' + RM_RF + '"$T"']
+  ])('allows: %s', (_label, cmd) => {
+    expect(verdict(cmd)).toBe('allow');
+  });
+
+  it.each([
+    ['reassigned to a protected path', 'T=$(mktemp -d); T=/etc; ' + RM_RF + '$T', 'deny'],
+    ['assigned inside an if body', 'if x; then T=$(mktemp -d); fi; ' + RM_RF + '"$T"', 'ask'],
+    ['assignment skipped by ||', 'false || T=$(mktemp -d); ' + RM_RF + '"$T"', 'ask'],
+    ['source after the assignment', 'T=$(mktemp -d); source ./env.sh; ' + RM_RF + '"$T"', 'ask'],
+    ['read rebinds the name', 'T=$(mktemp -d); read T; ' + RM_RF + '"$T"', 'ask'],
+    ['second command in the substitution', 'T=$(mktemp -d; echo /x); ' + RM_RF + '"$T"', 'ask'],
+    ['suffix after the substitution', 'T=$(mktemp -d)/x; ' + RM_RF + '"$T"', 'ask'],
+    ['delete before the assignment', RM_RF + '"$T"; T=$(mktemp -d)', 'ask'],
+    ['unquoted target with a variable -p dir', 'T=$(mktemp -p $D); ' + RM_RF + '$T', 'ask'],
+    ['unquoted target with TMPDIR in the command', "TMPDIR='/a b' T=$(mktemp -d); " + RM_RF + '$T', 'ask'],
+    ['not mktemp', 'T=$(cat path); ' + RM_RF + '"$T"', 'ask']
+  ])('does not trust: %s', (_label, cmd, want) => {
+    expect(verdict(cmd)).toBe(want);
+  });
+});

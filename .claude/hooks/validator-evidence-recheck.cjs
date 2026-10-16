@@ -162,11 +162,17 @@ function _parseCriteriaResultsViaRegex(content) {
 // Run the recheck against a single entry. Returns { ok: bool, reason: string }.
 function recheckEntry(entry, projectRoot) {
   const { verification_method, evidence } = entry;
-  if (!verification_method || !evidence) {
+  // A3d: evidence present but no verification_method is a schema gap, not a
+  // failed check -- record it as unverifiable and do NOT downgrade the PASS.
+  // Missing evidence is still a failure.
+  if (!evidence) {
     return {
       ok: false,
-      reason: `Missing verification_method or evidence on criterion "${entry.criterion}"`,
+      reason: `Missing evidence on criterion "${entry.criterion}"`,
     };
+  }
+  if (!verification_method) {
+    return { ok: true, unverifiable: true, reason: `No verification_method on criterion "${entry.criterion}" (unverifiable, not downgraded)` };
   }
   if (verification_method === 'file_exists') {
     // Evidence is expected to be a relative or absolute file path.
@@ -648,10 +654,12 @@ const handler = async (input) => {
   if (toolName !== 'Write' && toolName !== 'Edit') return null;
   const filePath = (input.tool_input && input.tool_input.file_path) || '';
   if (!isValidationReport(filePath)) return null;
-  // Resolve absolute path.
+  // Resolve absolute path. HS-4 (d): relative paths resolve against the
+  // absolute PROJECT_ROOT, never input.cwd (cwd drifts when a Bash `cd` moved it,
+  // which produced false file_exists failures).
   const abs = path.isAbsolute(filePath)
     ? filePath
-    : path.join(input.cwd || PROJECT_ROOT, filePath);
+    : path.join(PROJECT_ROOT, filePath);
   if (!fs.existsSync(abs)) return null;
   let content;
   try {
@@ -659,7 +667,7 @@ const handler = async (input) => {
   } catch {
     return null;
   }
-  const projectRoot = input.cwd || PROJECT_ROOT;
+  const projectRoot = PROJECT_ROOT; // HS-4 (d): see the abs-path note above
 
   // ---- Existing PASS-bias evidence recheck (UNCHANGED behavior) ----
   // Only act on PASS verdicts — FAIL/REVISE already honest. Any cited evidence

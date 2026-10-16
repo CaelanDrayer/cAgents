@@ -1,6 +1,6 @@
 ---
 name: ex-intake-assumption-surfacing
-description: "Example: a before/after where an agent silently assumes scope/format/fields and proceeds, vs explicitly listing its assumptions (or asking) before writing code. Load when an execution agent or controller is about to start work on a request with unstated details."
+description: "Example: a before/after where an agent silently assumes scope, format, and fields and then proceeds, compared with an agent that lists its assumptions (or asks) before it writes code. Load when an execution agent or controller is about to start work on a request with unstated details."
 license: MIT
 compatibility: "Claude Code 2.x, cAgents 12.x"
 metadata:
@@ -8,6 +8,8 @@ metadata:
   category: intake
   source_repo: multica-ai/andrej-karpathy-skills
   source_url: "https://github.com/multica-ai/andrej-karpathy-skills"
+  source_commit: 2c606141936f1eeef17fa3043a72095b4765b9c2
+  reviewed: "2026-10-15"
   applies_to:
     - cagents:planner
     - cagents:backend-developer
@@ -19,42 +21,44 @@ metadata:
 # Example: Assumption-Surfacing Before Implementation
 
 ## Context
-cAgents controllers are told to "ask, don't assign", but there's no worked
-illustration of the specific failure it prevents: an agent silently assuming an
-unstated detail, then building on the guess. This is the "don't hide confusion —
-surface tradeoffs" discipline.
+cAgents tells controllers to "ask, don't assign". No worked example shows the
+failure that this rule prevents. An agent assumes an unstated detail in silence,
+and then builds on the guess. The discipline is: do not hide confusion, and show
+the tradeoffs.
 
 ## Example
 
 Request: "Add an endpoint to export users to a file."
 
-Bad — silent assumptions baked into code (each `?` was guessed, never stated):
+Bad. Silent assumptions are in the code. The agent guessed each `?` and stated none:
 
 ```python
-@app.get("/users/export")            # ? GET vs POST — guessed GET
+@app.get("/users/export")            # ? GET vs POST: guessed GET
 def export_users():
-    users = db.query(User).all()     # ? all users vs current-org only — guessed all
-    return csv_of(users)             # ? CSV vs JSON vs XLSX — guessed CSV
-                                     # ? which fields, incl. email/PII? — guessed all
+    users = db.query(User).all()     # ? all users vs current-org only: guessed all
+    return csv_of(users)             # ? CSV vs JSON vs XLSX: guessed CSV
+                                     # ? which fields, incl. email/PII? guessed all
 ```
 
-Good — surface the assumptions (or ask) before writing:
+Good. State the assumptions (or ask) before you write code:
 
 ```
-Before I build /users/export, here are my assumptions — correct any:
+Before I build /users/export, here are my assumptions. Correct any of them:
   1. Format: CSV (alternatives: JSON, XLSX)
   2. Scope: users in the caller's org only (not all users across tenants)
-  3. Fields: id, name, created_at — EXCLUDING email/phone (PII) unless you need them
+  3. Fields: id, name, created_at, EXCLUDING email/phone (PII) unless you need them
   4. Method: GET with a signed URL, or POST if the export is expensive
 Unless you say otherwise I'll proceed with 1-4 and note them in the work item.
 ```
 
-The rule: don't assume, and don't *hide* confusion — either ask, or state the
-assumption explicitly so a reviewer can catch a wrong one. Assumptions about a
-trust/PII boundary (item 3) especially must be surfaced, never silent.
+The rule: do not assume, and do not hide confusion. Ask, or state the assumption
+explicitly so that a reviewer can catch a wrong one. Always state an assumption
+about a trust boundary or about personal data (item 3). Never leave it silent.
 
 ## Why it matters
-A concrete template for the "state assumptions explicitly, or ask" behavior that
-complements evidence-first execution — and stops a PII/scope guess from silently
-shipping. Pairs with `ex-intake-ambiguous-request-disambiguation`. Distilled from
-multica-ai/andrej-karpathy-skills `EXAMPLES.md` (Hidden Assumptions).
+This is a concrete template for the "state assumptions explicitly, or ask"
+behavior. It adds to evidence-first execution, and it stops a guess about scope
+or personal data from shipping in silence. It pairs with
+`ex-intake-ambiguous-request-disambiguation`. Distilled from
+multica-ai/andrej-karpathy-skills `EXAMPLES.md` (Example 1, Hidden Assumptions)
+and `CLAUDE.md` section 1 (the "surface tradeoffs" principle).

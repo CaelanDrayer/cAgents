@@ -215,3 +215,4 @@ See @self-correct/resources/self-correct-patterns.md for correction strategies.
 ## Worked Examples
 
 - See @docs/example-store/ex-verification-feedback-loop-first-debugging.md. Establish a tight red-capable reproduction loop before you form a hypothesis. When a work item keeps failing, write a ranked list of hypotheses that you can falsify.
+- See @docs/example-store/ex-verification-loop-contract-three-exits.md. Give each loop a success exit, a failure exit, and a budget exit, plus guards against thrashing.

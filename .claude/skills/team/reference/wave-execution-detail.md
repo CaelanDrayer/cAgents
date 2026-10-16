@@ -103,7 +103,7 @@ Agent({
 })
 ```
 
-For the full spawn prompt template of a subagent, see `reference/teammate-spawning-template.md`. That template includes the self-registration block.
+For the full spawn prompt template of a subagent, see `reference/teammate-spawning-template.md`. That template includes the hook-owned agent-tree block.
 
 ### 5b-i. Report Cap — Why 12 Lines and 15 Words
 

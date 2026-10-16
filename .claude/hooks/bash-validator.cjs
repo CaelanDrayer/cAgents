@@ -20,7 +20,151 @@ const { createHook } = require('./hook-utils.cjs');
 // REC-08 (v12.50.0): `tokenize` is now imported too — the legacy obfuscation
 // belt uses it to confirm an obfuscation match reflects a REAL command-position
 // interpreter invocation, not the interpreter's name buried inside quoted data.
-const { evaluate, tokenize } = require('./bash-guard-evaluator.cjs');
+// WI-21 W21-2: a corrupted or overwritten evaluator must not disable the
+// guard. If the require throws, every command is denied (fail-closed). An
+// `ask` would be dropped under dontAsk, so this is a deny.
+let evaluate;
+let tokenize;
+let mentionsRunner;
+try {
+  ({ evaluate, tokenize, mentionsRunner } = require('./bash-guard-evaluator.cjs'));
+  if (typeof evaluate !== 'function' || typeof tokenize !== 'function') throw new Error('bad exports');
+} catch (e) {
+  // WI-21 round 2: name the file and line, so the reader can repair it. Bash is
+  // blocked until the module loads, so the fix goes through Edit.
+  let where = '';
+  try {
+    const lines = String((e && e.stack) || '').split('\n');
+    const hit = lines.find(l => /bash-guard-evaluator\.cjs:\d+/.test(l));
+    const m = hit && /(\S*bash-guard-evaluator\.cjs:\d+(?::\d+)?)/.exec(hit);
+    where = m ? m[1] : require('path').join(__dirname, 'bash-guard-evaluator.cjs');
+  } catch (e2) { where = 'bash-guard-evaluator.cjs'; }
+  const loadErr = ((e && e.message) || 'unknown') + ' at ' + where + '. Fix the file with Edit (Bash is blocked until it loads).';
+  console.error('[BashValidator] bash-guard-evaluator failed to load, fail-closed deny:', loadErr);
+  evaluate = () => ({ deny: true, reason: 'bash-guard-evaluator failed to load (fail-closed): ' + loadErr });
+  tokenize = () => { throw new Error('evaluator unavailable'); };
+  mentionsRunner = () => true;
+}
+if (typeof mentionsRunner !== 'function') mentionsRunner = () => true;
+
+// WI-21 W21-3: the session's Bash cwd persists between calls, so `cd` in one
+// call and `npm test` / `git status` in the next runs the package.json or .git
+// config of that directory. Write(cagents-memory/**) needs no prompt, so a cwd
+// inside cagents-memory/ that holds a planted repo marker asks for git and
+// test/CI runner commands.
+// WI-21 round 2 MF-1: git discovers a gitdir in the cwd AND every parent, and a
+// bare-format gitdir needs no `.git` at all: a directory holding HEAD +
+// objects/ + refs/ (or a `commondir` / `gitdir` file) is a repo, and its
+// config (core.fsmonitor, core.pager, hooks) runs code. So every directory from
+// the cwd up to, but not including, the project root is checked for gitdir
+// markers. The runner markers (package.json, scripts/, tests/ ...) are checked
+// only inside cagents-memory/, where planting needs no prompt.
+const GITDIR_MARKERS = ['.git', 'HEAD', 'commondir', 'gitdir'];
+const PLANT_MARKERS = ['package.json', '.npmrc', 'scripts', 'tests', 'node_modules', '.gitconfig',
+  'vitest.config.js', 'vitest.config.mjs', 'vitest.config.ts', 'vitest.config.cjs', 'vite.config.js', 'vite.config.mjs'];
+const PLANTED_CWD_MSG = (cwd, dir, what) => 'The working directory (' + cwd + ') sits under ' + dir + ', which holds ' + what +
+  '. git or the test/CI runner would load it, and its config can run code. Run the command from the project root, or confirm.';
+function realOr(p) {
+  const path = require('path');
+  try { return require('fs').realpathSync(p); } catch (e) { return path.resolve(p); }
+}
+// WI-21 round 3 (L-R2-4, MF-R2-1): a git worktree of THIS project is trusted.
+// Its root holds a `.git` FILE whose `gitdir:` resolves (realpath) to
+// <root>/.git/worktrees/<name>, and that admin dir's own `gitdir` file points
+// back at this `.git`. The admin dir lives under <root>/.git, which an agent
+// cannot write without a prompt, so a planted `.git` file cannot fake the
+// back-pointer. Returns true only for that exact shape.
+function isLegitWorktreeRoot(d, root) {
+  const path = require('path');
+  const fs = require('fs');
+  try {
+    const dotgit = path.join(d, '.git');
+    const st = fs.lstatSync(dotgit);
+    if (!st.isFile()) return false;
+    const m = /^gitdir:\s*(.+?)\s*$/m.exec(fs.readFileSync(dotgit, 'utf8'));
+    if (!m) return false;
+    const admin = realOr(path.resolve(d, m[1]));
+    const wtBase = path.join(root, '.git', 'worktrees') + path.sep;
+    if (!admin.startsWith(wtBase)) return false;
+    if (path.dirname(admin) + path.sep !== wtBase) return false;
+    const back = fs.readFileSync(path.join(admin, 'gitdir'), 'utf8').trim();
+    return realOr(path.dirname(path.resolve(admin, back))) === realOr(d);
+  } catch (e) { return false; }
+}
+// Gitdir markers other than a `.git` entry (a legit worktree root has a .git
+// file but none of these).
+function otherGitdirMarker(d) {
+  const path = require('path');
+  const fs = require('fs');
+  const has = (m) => fs.existsSync(path.join(d, m));
+  const g = GITDIR_MARKERS.filter(x => x !== '.git').find(has);
+  return g || (has('config') && has('objects') ? 'config + objects/' : null);
+}
+// WI-21 round 4 MF-R3-2: true when a path component is named cagents-memory.
+function hasMemoryComponent(p) {
+  return typeof p === 'string' && p.split(require('path').sep).includes('cagents-memory');
+}
+const OUTSIDE_ROOT_MSG = (cwd) => 'The working directory (' + cwd + ') is outside the project root and is not a git worktree of this project. ' +
+  'git or the test/CI runner would load the package.json, scripts/ or git config found there, and that config can run code. Run the command from the project root, or confirm.';
+function plantedCwdMessage(input, rawCommand) {
+  let cwd = null;
+  try {
+    const path = require('path');
+    const fs = require('fs');
+    const rootRaw = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, '..', '..');
+    cwd = input && typeof input.cwd === 'string' && input.cwd ? input.cwd : null;
+    if (!cwd || !rootRaw) return null;
+    const root = realOr(rootRaw);
+    const rc = realOr(cwd);
+    // Normal case: the cwd is the project root, whose own .git is trusted.
+    if (rc === root) return null;
+    if (!mentionsRunner(rawCommand)) return null;
+    const zone = path.join(root, 'cagents-memory');
+    if (!rc.startsWith(root + path.sep)) {
+      // WI-21 round 3 MF-R2-1: outside the project root (the scratchpad, /tmp)
+      // nothing is trusted. Allow only inside a legit worktree of this project,
+      // and only when no directory from the cwd up to that worktree root holds
+      // another gitdir marker.
+      for (let d = rc; ; d = path.dirname(d)) {
+        if (fs.existsSync(path.join(d, '.git'))) {
+          if (!isLegitWorktreeRoot(d, root) || otherGitdirMarker(d)) return OUTSIDE_ROOT_MSG(cwd);
+          // WI-21 round 4 MF-R3-2: a worktree whose path has a cagents-memory
+          // component sits where Write(cagents-memory/**) could plant files.
+          if (hasMemoryComponent(d)) return OUTSIDE_ROOT_MSG(cwd);
+          return null;
+        }
+        // Below the worktree root, a gitdir marker or a runner marker (a
+        // nested package.json, scripts/ ...) is a plant.
+        if (otherGitdirMarker(d) || PLANT_MARKERS.some(m => fs.existsSync(path.join(d, m)))) return OUTSIDE_ROOT_MSG(cwd);
+        if (path.dirname(d) === d) return OUTSIDE_ROOT_MSG(cwd);
+      }
+    }
+    for (let d = rc; d !== root && d.startsWith(root + path.sep); d = path.dirname(d)) {
+      const has = (m) => fs.existsSync(path.join(d, m));
+      // WI-21 round 4 MF-R3-2: Write(cagents-memory/**) resolves against the
+      // CURRENT cwd, so <root>/docs/cagents-memory/... or
+      // <root>/.claude/worktrees/<n>/cagents-memory/... can be planted without
+      // a prompt too. Any directory whose path below the root has a component
+      // named cagents-memory is in the plant zone.
+      const inZone = d === zone || d.startsWith(zone + path.sep) || hasMemoryComponent(path.relative(root, d));
+      const og = otherGitdirMarker(d);
+      if (og) return PLANTED_CWD_MSG(cwd, d, 'a git directory marker (' + og + ')');
+      // WI-21 round 3 L-R2-4: a legit worktree (e.g. .claude/worktrees/<name>)
+      // is not a plant. Never trusted inside cagents-memory/.
+      if (has('.git') && (inZone || !isLegitWorktreeRoot(d, root))) return PLANTED_CWD_MSG(cwd, d, 'a git directory marker (.git)');
+      if (inZone) {
+        const pm = PLANT_MARKERS.find(has);
+        if (pm) return PLANTED_CWD_MSG(cwd, d, pm);
+      }
+      if (path.dirname(d) === d) break;
+    }
+  } catch (e) {
+    // Fail closed: if the check itself breaks, a runner or git command asks.
+    try { if (mentionsRunner(rawCommand)) return 'The guard could not check the working directory (' + cwd + ') for a planted repo. Confirm the command.'; } catch (e2) { /* ignore */ }
+    return null;
+  }
+  return null;
+}
 
 // Simple string patterns (checked via includes). These are multi-char literal
 // shapes that only ever appear in the dangerous form — substring-matching them
@@ -127,17 +271,15 @@ const BLOCKED_REGEXES = [
 // Each pattern returns permissionDecision: 'ask' with a safe alternative suggestion.
 const HITL_PATTERNS = [
   // Git destructive operations (existing)
-  // `--force(?![\w-])` matches a bare --force only: --force-with-lease and
-  // --force-if-includes are the safe alternatives this message recommends.
-  { pattern: /git push.*--force(?![\w-])/, message: 'Force push may cause data loss. Consider using --force-with-lease for safer force pushes.' },
+  // K1/W1: force push is judged by the evaluator on the git push argv
+  // (gitHistoryMessage), which also covers -f, +refspec, --mirror and --delete.
+  // A raw `git push.*--force` regex here asked on data such as
+  // `grep "git push --force" log`, so it was removed.
   { pattern: /git reset --hard/, message: 'Hard reset discards uncommitted changes. Consider git stash to save changes first, or git reset --soft to keep changes staged.' },
   { pattern: /git clean -fdx/, message: 'Git clean -fdx removes untracked AND ignored files. Consider git clean -fd (without -x) to keep ignored files, or git clean -n to preview first.' },
   { pattern: /git clean -fd/, message: 'Git clean -fd deletes untracked files. Consider git clean -n to preview what would be deleted first.' },
 
   // SQL destructive operations
-  { pattern: /\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i, message: 'DROP TABLE/DATABASE permanently destroys data. Consider renaming the table first (ALTER TABLE ... RENAME), or use DROP ... IF EXISTS with a backup.' },
-  { pattern: /\bTRUNCATE\s+TABLE\b/i, message: 'TRUNCATE TABLE removes all rows irrecoverably. Consider DELETE FROM with a WHERE clause for selective removal, or create a backup first.' },
-  { pattern: /\bDELETE\s+FROM\b(?!\s.*\bWHERE\b)/is, message: 'DELETE FROM without WHERE clause removes all rows. Add a WHERE clause to target specific rows, or use TRUNCATE if you intend to remove everything.' },
 
   // Permission escalation
   { pattern: /\bchmod\s+777\b/, message: 'chmod 777 grants read/write/execute to everyone. Consider chmod 755 (owner rwx, others rx) or chmod 700 (owner-only) for better security.' },
@@ -151,9 +293,6 @@ const HITL_PATTERNS = [
   { pattern: /\bpkill\s+-9\b/, message: 'pkill -9 sends SIGKILL to matching processes without graceful shutdown. Consider pkill (SIGTERM) first, then pkill -9 only if needed.' },
 
   // System control
-  { pattern: /\b(shutdown|poweroff)\b/, message: 'This will shut down the system. Verify this is the intended target machine. Consider shutdown -c to cancel if triggered accidentally.' },
-  { pattern: /\breboot\b/, message: 'This will reboot the system. Verify this is the intended target machine and save all work first.' },
-  { pattern: /\bhalt\b/, message: 'halt stops the system immediately. Consider shutdown -h +1 to give users a 1-minute warning.' },
 
   // Network/firewall
   { pattern: /\biptables\s+-F\b/, message: 'iptables -F flushes all firewall rules, potentially exposing the system. Consider saving rules first with iptables-save, or flush only specific chains.' },
@@ -181,7 +320,6 @@ const HITL_PATTERNS = [
   // `$(...)` / `${...:-default}` parameter expansion used as an argument, nor a
   // variable consumed as an argument mid-command. Confirm the variable's
   // contents are trusted before running it as a command.
-  { pattern: /(^|[;|]|&&|\|\|)\s*["']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}?["']?(\s+\S|\s*$)/, message: 'A variable is being executed as a command (variable-indirection). The variable contents are not visible to static analysis and could expand to a destructive command. Verify the variable holds a trusted command, or inline the literal command instead.' },
 ];
 
 // REC-08 (v12.50.0) — command-position confirmation for the obfuscation-class belt.
@@ -298,6 +436,10 @@ async function validate(input) {
   // a confirmation `ask` at the tail. This keeps benign-but-unparseable commands
   // (multi-line commit messages, complex quoting) from being hard-denied while the
   // catastrophic floor is preserved. See docs/SECURITY_BASH_GUARD_THREAT_MODEL.md §5.3.
+  if (!evalVerdict) {
+    const pm = plantedCwdMessage(input, rawCommand);
+    if (pm) evalVerdict = { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: pm } };
+  }
   let evalFailClosed = false;
   if (evalVerdict && evalVerdict.deny) {
     if (evalVerdict.failClosed) {
@@ -324,7 +466,7 @@ async function validate(input) {
   // (evalFailClosed), the sound Stage-1 floor is UNAVAILABLE for it, so the belt is
   // the ONLY remaining catastrophic floor. Run the belt for such input even under
   // 'off' — otherwise an un-parseable `rm -rf /` / fork bomb would soft-fail to ask
-  // (→ auto-allow under bypassPermissions) with no floor at all. This is what makes
+  // (not a guaranteed stop under bypassPermissions) with no floor at all. This is what makes
   // the "catastrophic literals hard-denied in all modes" guarantee true.
   if (guardMode !== 'off' || evalFailClosed) {
     // Check for blocked string patterns (literal catastrophic shapes — always raw)
@@ -413,16 +555,29 @@ async function validate(input) {
   // Rather than hard-deny an un-analyzable-but-benign-looking command (the common
   // cause is an apostrophe or unbalanced quote inside a heredoc / $(...), e.g. a
   // multi-line git commit message), downgrade to a one-keystroke confirmation `ask`.
-  // Caveat (documented residual, threat-model §7.6): an `ask` auto-resolves to allow
-  // under bypassPermissions, so a command that is BOTH un-parseable AND destructive-
-  // in-a-way-only-the-evaluator-would-catch (a belt-missed subpath like rm -rf /etc,
-  // obfuscated into un-tokenizability) would auto-allow there. The catastrophic
-  // literals remain hard-denied by the belt in all modes.
+  // Caveat (documented residual, threat-model §7 item 6): the Claude Code docs do
+  // not say what a hook `ask` does under bypassPermissions. The WI-027 audit
+  // measured a median 76 s wait, so in practice a human answers the prompt, but the
+  // docs do not promise it. Under dontAsk this hook drops the ask (see below) and the
+  // allow and deny rules decide. A headless -p run denies an ask. So a command that is
+  // BOTH un-parseable AND destructive in a way only the evaluator would catch (a
+  // belt-missed subpath like rm -rf /etc, obfuscated into un-tokenizability) is not
+  // guaranteed to stop. The catastrophic literals remain hard-denied by the belt in
+  // all modes.
   if (evalFailClosed) {
-    const reason =
+    let reason =
       'The command safety guard could not fully parse this command (commonly an ' +
       'apostrophe or unbalanced quote inside a heredoc or $(...)). It did not match ' +
       'any known-destructive pattern. Confirm the command is safe before approving.';
+    // H4: quoted heredoc bodies are already skipped as data. The usual cause
+    // that remains is a body line equal to the terminator word (a nested
+    // `<<'EOF'` inside a Python string). Bash also ends the heredoc at that
+    // line and runs the rest as shell, so the ask stays. Name the cause.
+    const hd = heredocEarlyEnd(rawCommand);
+    if (hd) {
+      reason += ' A heredoc body line equals its terminator "' + hd + '", so bash ends the heredoc ' +
+        'there and runs the remaining lines as shell. Use a unique terminator word.';
+    }
     console.error(`[BashValidator] WARNING (fail-closed soft-fail → ask): ${evalVerdict.reason}`);
     return {
       hookSpecificOutput: {
@@ -433,6 +588,28 @@ async function validate(input) {
     };
   }
 
+  return null;
+}
+
+// H4: return W when a heredoc opened with terminator W has a body line that
+// opens a second heredoc with the same W before the first W line. Bash ends
+// the outer heredoc at that first W line. The test only shapes the message.
+// It never changes a verdict.
+function heredocEarlyEnd(cmd) {
+  const lines = String(cmd || '').split('\n');
+  const opener = /<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/g;
+  for (let i = 0; i < lines.length; i++) {
+    opener.lastIndex = 0;
+    let m;
+    while ((m = opener.exec(lines[i])) !== null) {
+      const word = m[2];
+      const reopen = new RegExp('<<-?\\s*([\'"]?)' + word + '\\1(?![A-Za-z0-9_])');
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].trim() === word) break;
+        if (reopen.test(lines[j])) return word;
+      }
+    }
+  }
   return null;
 }
 

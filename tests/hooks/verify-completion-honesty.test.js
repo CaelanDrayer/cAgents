@@ -32,8 +32,8 @@
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 import { spawnSync } from 'child_process';
 import {
   materializeInitZeroAgent,
@@ -41,6 +41,7 @@ import {
   materializeGenuineValidated,
   cleanup,
   hookEnv,
+  SESSIONS_DIR,
 } from './fixtures/safety-net/materialize.mjs';
 
 const PROJECT_ROOT = process.cwd();
@@ -70,7 +71,7 @@ function runStopHook(sid) {
   if (r.status === null) throw new Error(`runStopHook: hook killed (timeout/signal) for ${sid} — ${diag()}`);
   if (r.status !== 0) throw new Error(`runStopHook: hook exited non-zero for ${sid} — ${diag()}`);
   if (!r.stdout || !r.stdout.trim()) throw new Error(`runStopHook: empty stdout for ${sid} — ${diag()}`);
-  return { json: safeJson(r.stdout), status: r.status };
+  return { json: safeJson(r.stdout), status: r.status, stderr: r.stderr || '' };
 }
 
 /** spawnSync the SessionEnd hook (team-stop.cjs) over stdin. */
@@ -125,9 +126,9 @@ describe('verify-completion honesty — never launder to complete/PASS (REC-02/0
     const { sid, dir } = materializeCoordinatedStaleChild();
     dirs.push(dir);
     runStopHook(sid);
-    // autoResolveWarnings() creates the missing validation_report.yaml stub.
+    // WI-13b: autoResolveWarnings() was removed (WI-028/WI-12), so no stub is written; the honesty contract (never a fabricated PASS) now means no report at all.
     const report = readYaml(dir, 'workflow/validation_report.yaml');
-    expect(report).toMatch(/overall_status:\s*UNKNOWN/);
+    expect(report).toBe('');
     expect(report).not.toMatch(/overall_status:\s*PASS/);
   });
 
@@ -136,7 +137,8 @@ describe('verify-completion honesty — never launder to complete/PASS (REC-02/0
     dirs.push(dir);
     runStopHook(sid);
     const summary = readYaml(dir, 'workflow/execution_summary.yaml');
-    expect(summary).toMatch(/status:\s*"?incomplete"?/);
+    // WI-13b: no stub writer any more (WI-028/WI-12); repairSession R3 derives a summary only for a genuine PASS, so a non-genuine session gets none (never `completed`).
+    expect(summary).toBe('');
     expect(summary).not.toMatch(/status:\s*"?completed"?/);
   });
 
@@ -163,5 +165,38 @@ describe('verify-completion honesty — never launder to complete/PASS (REC-02/0
     expect(status).not.toMatch(/pipeline_state:\s*incomplete/);
     expect(report).toMatch(/overall_status:\s*PASS/);
     expect(report).toMatch(/generated_by:\s*cagents:validator/);
+  });
+
+  // WI-13b / HS-4: an idle /team lead between waves is not finished, so Stop must
+  // not force-terminal stamp it. Heartbeat is stale (2h) and the tree is empty so
+  // sessionActivelyWorking is false; only the idle-between-waves signal (fresh
+  // gate mtime) keeps it live. The no-gate twin is the stalled-session control.
+  function materializeIdleTeamLead({ withGate }) {
+    const sid = `team_idle-lead-${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const dir = join(SESSIONS_DIR, sid);
+    const put = (rel, body) => { mkdirSync(dirname(join(dir, rel)), { recursive: true }); writeFileSync(join(dir, rel), body); };
+    const hb = new Date(Date.now() - 2 * 3600e3).toISOString();
+    put('status.yaml', `session_id: ${sid}\npipeline_state: executing\nphase: executing\ncreated_at: "${hb}"\nlast_updated_at: "${hb}"\n`);
+    put('workflow/agent_tree.yaml', `schema_version: '1'\nroot:\n  agent: team\n  depth: 0\n  spawned_at: "${hb}"\n  stopped_at: null\nagents: []\n`);
+    put('workflow/work_meta.yaml', 'waves:\n  - wave: 0\n  - wave: 1\n  - wave: 2\n');
+    if (withGate) put('workflow/gate_validations/wave_0.yaml', 'wave: 0\noverall: PASS\n');
+    return { sid, dir };
+  }
+
+  it('Test F (WI-13b idle lead) — gate wave_0 PASS + later wave pending + activity < 24h is NOT stamped incomplete at Stop', () => {
+    const { sid, dir } = materializeIdleTeamLead({ withGate: true });
+    dirs.push(dir);
+    const { stderr } = runStopHook(sid);
+    const status = readYaml(dir, 'status.yaml');
+    expect(status).toMatch(/pipeline_state:\s*executing/);
+    expect(status).not.toMatch(/pipeline_state:\s*incomplete/);
+    expect(stderr).toMatch(/session is live at Stop.*\(signal: idle-between-waves\)/);
+  });
+
+  it('Test F2 (WI-13b control) — the same team session with no gate file IS stamped incomplete', () => {
+    const { sid, dir } = materializeIdleTeamLead({ withGate: false });
+    dirs.push(dir);
+    runStopHook(sid);
+    expect(readYaml(dir, 'status.yaml')).toMatch(/pipeline_state:\s*incomplete/);
   });
 });

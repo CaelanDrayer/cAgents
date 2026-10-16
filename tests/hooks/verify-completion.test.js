@@ -282,7 +282,7 @@ describe('verify-completion.cjs', () => {
         'plan_id: test\ntier: 3\ndomain: engineering\nmission: "Test team"\n');
       // No coordination_log yet — coordination is "incomplete" — but a wave teammate is running.
       writeFileSync(join(TEAM_SESSION_DIR, 'workflow', 'agent_tree.yaml'),
-        'root:\n  id: ' + TEAM_SESSION + '\n  stopped_at: null\nagents:\n  - id: teammate-tech-lead-1\n    depth: 1\n    stopped_at: null\n');
+        'root:\n  id: ' + TEAM_SESSION + '\n  stopped_at: null\nagents:\n  - id: teammate-tech-lead-1\n    depth: 1\n    spawned_at: "' + new Date().toISOString() + '"\n    stopped_at: null\n');
       const result = runHook({ session_id: TEAM_SESSION });
       // Running wave teammate => actively working => warn (continue) instead of block.
       expect(result.decision).not.toBe('block');
@@ -351,14 +351,10 @@ describe('verify-completion.cjs', () => {
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'plan.yaml'),
         'plan_id: test\ntier: 2\ndomain: engineering\nmission: "Test"\nobjectives:\n  - id: OBJ-1\n    description: "Test"\ncontroller_assignment:\n  primary: "cagents:tech-lead"\nsuccess_criteria:\n  - "Test"\n');
 
-      // No execution_summary.yaml — autoResolveWarnings should create it
+      // WI-13b: autoResolveWarnings was removed (WI-028/WI-12); a non-genuine session (no validator PASS) gets no stub, repairSession R3 derives one only for genuine PASS.
       const result = runHook({ session_id: TEST_SESSION });
-      expect(existsSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'))).toBe(true);
-      const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'), 'utf8');
-      expect(content).toContain('session_id:');
-      expect(content).toContain('final_state:');
-      expect(content).toContain('status:');
-      expect(content).toContain('verify-completion-hook-safety-net');
+      expect(result.continue).toBe(true);
+      expect(existsSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'))).toBe(false);
     });
 
     it('should auto-create validation_report.yaml when missing and session is terminal', () => {
@@ -372,12 +368,10 @@ describe('verify-completion.cjs', () => {
       // so it now carries overall_status: UNKNOWN (never a fabricated PASS). This
       // session has no real validation_report, so sessionGenuinelyValidated() is
       // false and the honest stub value is UNKNOWN.
+      // WI-13b: the stub writer is gone (WI-028/WI-12); the hook must never fabricate a validator verdict, so no validation_report.yaml appears at all.
       const result = runHook({ session_id: TEST_SESSION });
-      expect(existsSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'))).toBe(true);
-      const content = readFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'), 'utf8');
-      expect(content).toContain('overall_status: UNKNOWN');
-      expect(content).not.toContain('overall_status: PASS');
-      expect(content).toContain('verify-completion-hook-safety-net');
+      expect(result.continue).toBe(true);
+      expect(existsSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'))).toBe(false);
     });
 
     it('MUST NOT add self_validation placeholder to coordination_log.yaml when absent (P0-3)', () => {
@@ -522,8 +516,9 @@ describe('verify-completion.cjs', () => {
         'schema_version: "1"\ncontroller: cagents:tech-lead\nstatus: completed\nimplementation_tasks:\n  - task_id: WI-1\n    status: completed\n');
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'execution_summary.yaml'),
         'session_id: "' + TEST_SESSION + '"\nfinal_state: complete\nstatus: completed\ngenerated_by: verify-completion-hook-safety-net\ngenerated_at: "' + new Date().toISOString() + '"\n');
+      // WI-13b: FAIL (non-genuine) fixture, because a genuine PASS now lets repairSession R3 replace the legacy stub before check 7b runs.
       writeFileSync(join(TEST_SESSION_DIR, 'workflow', 'validation_report.yaml'),
-        'overall_status: PASS\nstatus: PASS\n');
+        'overall_status: FAIL\nstatus: FAIL\n');
 
       const result = runHook({ session_id: TEST_SESSION });
       // Should produce warnings (not block) -- the auto-generated warning is in completion_summary.yaml

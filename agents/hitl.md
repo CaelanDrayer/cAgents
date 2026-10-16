@@ -64,3 +64,9 @@ Patterns are domain-isolated to prevent cross-contamination:
 5. **Safe Defaults**: Non-destructive can auto-apply, destructive must abort
 
 See @hitl/resources/hitl-frameworks.md for escalation workflow and decision templates.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-security-public-artifact-data-hygiene.md. Keep secrets and real personal data out of every public output, and take no hard-to-reverse outward action.

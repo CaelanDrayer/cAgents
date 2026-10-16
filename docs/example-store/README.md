@@ -26,7 +26,33 @@ Naming: `ex-{category}-{slug}.md`, flat-with-prefix (mirrors `playbooks/pat-*`).
 Categories in use: `review`, `verification`, `minimalism`, `skill-authoring`,
 `intake`, `gates`, `strategy`, `structured-io`, `security`.
 
-## File schema (spec-compliant: exactly 6 top-level frontmatter keys)
+## Catalog at a glance
+
+The store holds 42 examples. `_index.yaml` lists each one, and
+`tests/v12/example-index-resolves.test.js` checks that the index and the
+files on disk match one to one.
+
+| Category | Count |
+|---|---:|
+| verification | 12 |
+| review | 5 |
+| skill-authoring | 5 |
+| gates | 4 |
+| security | 4 |
+| structured-io | 4 |
+| intake | 3 |
+| strategy | 3 |
+| minimalism | 2 |
+
+Source repos (13): `NousResearch/hermes-agent` (5), `NVIDIA/SkillSpector` (4),
+`multica-ai/andrej-karpathy-skills` (4), `phuryn/pm-skills` (4),
+`affaan-m/ECC` (3), `anthropics/skills` (3), `ayghri/i-have-adhd` (3),
+`f/prompts.chat` (3), `juliusbrussee/caveman` (3), `mattpocock/skills` (3),
+`vercel-labs/agent-skills` (3), `latent-spaces/brag` (2), `obra/superpowers` (2).
+
+Licenses: MIT (30), Apache-2.0 (10), CC0-1.0 (2).
+
+## File schema (spec-compliant: at most 6 top-level frontmatter keys)
 
 ```yaml
 ---
@@ -39,6 +65,8 @@ metadata:
   category: review                          # one of the categories above
   source_repo: obra/superpowers
   source_url: "https://github.com/obra/superpowers"
+  source_commit: <40-hex commit SHA>        # the upstream commit you read
+  reviewed: "2026-10-15"                    # last date checked against source
   applies_to:                               # real cagents agents/skills
     - cagents:reviewer
     - all-controllers
@@ -61,7 +89,8 @@ Keep the whole body ≤ ~150 lines so it fits Tier-3 progressive disclosure.
 ```
 
 Only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
-are permitted at the top level (Agent Skills 6-field cap). Everything else nests
+are permitted at the top level (Agent Skills 6-field cap). Most examples use the
+first five. Add `allowed-tools` only when the example prescribes tools. Everything else nests
 under `metadata`. This is the same rule `tests/v12/playbook-frontmatter-valid.test.js`
 enforces for playbooks.
 
@@ -72,7 +101,7 @@ enforces for playbooks.
 2. Create `ex-{category}-{slug}.md` with the 6-field frontmatter above.
 3. **Distill** the pattern into a ≤ ~150-line body (excerpt/template + why-it-matters).
    Do NOT paste whole files — the store ships in git.
-4. Pin provenance: fill `source_repo` + `source_url`.
+4. Pin provenance: fill `source_repo`, `source_url`, `source_commit`, and `reviewed`.
 5. Append a matching entry to `_index.yaml`.
 6. (Optional) Add a Tier-3 `@path` reference from the SKILL.md of every agent in
    `applies_to`, e.g. `See @docs/example-store/ex-review-distrust-self-report.md`.
@@ -90,8 +119,8 @@ enforces for playbooks.
 ## Provenance
 
 Every example attributes the external repo it was distilled from. Content is
-re-expressed for cAgents, not copied verbatim; the source repos are MIT/Apache-2.0
-except where noted. The `source_url` lets any example be re-verified against its
+re-expressed for cAgents, not copied verbatim. Each file's `license` field names
+the source repo's license (MIT, Apache-2.0, or CC0-1.0). The `source_url` lets any example be re-verified against its
 origin.
 
 ## A note on the word "examples"

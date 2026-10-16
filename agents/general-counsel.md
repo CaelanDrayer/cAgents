@@ -73,3 +73,11 @@ See @general-counsel/resources/corporate.md for the Corporate Counsel mode, whic
 See @general-counsel/resources/compliance.md for the Compliance Manager mode, which is `compliance`. It covers the compliance frameworks, the audits, and the risk scoring.
 See @general-counsel/resources/privacy.md for the Privacy Officer mode, which is `privacy`. It covers GDPR, CCPA, DPIAs, and breach response.
 See @general-counsel/resources/legal-ops.md for the Legal Operations Manager mode, which is `legal-ops`. It covers legal spend, legal technology, and process optimization.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-coverage-ledger.md. Log each unread required input as a ledger event. Report an empty category as not covered, never as passed.
+- See @docs/example-store/ex-verification-verify-and-stop.md. Map each acceptance criterion to the smallest proof. Report pass, fail, unavailable, or blocked, then stop.
+- See @docs/example-store/ex-security-public-artifact-data-hygiene.md. Keep secrets and real personal data out of every public output, and take no hard-to-reverse outward action.

@@ -71,3 +71,9 @@ See @social-scientist/resources/history.md for the history mode playbook.
 See @social-scientist/resources/linguistics.md for the linguistics mode playbook.
 See @social-scientist/resources/politics.md for the politics mode playbook.
 See @social-scientist/resources/psychology.md for the psychology mode playbook.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-preregistered-null-result.md. Write the hypotheses and the reporting rule before the run. Report a null result and its cost.

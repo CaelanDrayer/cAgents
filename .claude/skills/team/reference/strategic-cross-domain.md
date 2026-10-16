@@ -20,24 +20,16 @@ for domain in {domain_keys}:
 
 The **Agent tool** dispatches each independent domain. A `SubagentStart` hook sees those dispatches automatically. The **Skill tool** dispatches each dependent domain with `Skill(act, ...)`. Such a dispatch is a fork, and it is not a Task subagent. A `SubagentStart` hook therefore does not see it.
 
-Before each `Skill(act)` dispatch, write a manual `agent_tree.yaml` entry. The fork then appears in the agent hierarchy:
+Do not edit `agent_tree.yaml` by hand. The hooks own it: they derive it from the append-only `workflow/events.jsonl` and rewrite it atomically, so a hand-added row can break the tree and never gets a `stopped_at`. To make a fork visible, append one `spawn` event to `events.jsonl` before each `Skill(act)` dispatch, and one `stop` event with the same `agent_id` after it returns. The next hook write reconciles both into the tree:
 
-```yaml
-# Append to ${SESSION_DIR}/workflow/agent_tree.yaml before each Skill(act) dispatch:
-- id: "skill-fork-{domain_key}-{ISO_TIMESTAMP_COMPACT}"
-  type: "skill-fork"
-  cagents_type: "cagents:act"
-  short_role: "Domain dispatch ({domain_key})"
-  parent: "team-strategic-lead"
-  depth: 1
-  spawned_at: "{ISO_TIMESTAMP}"
-  stopped_at: null
-  domain_session: "{SESSION_ID}/{domain_key}"
-  role_description: "Dependent-domain /act dispatch for {domain_key}"
-  session: "{SESSION_ID}"
+```bash
+# Before each Skill(act) dispatch (one JSON object per line, append only):
+echo '{"ts":"{ISO_TIMESTAMP}","type":"spawn","agent_id":"skill-fork-{domain_key}-{ISO_TIMESTAMP_COMPACT}","agent_type":"skill-fork","parent":"team-strategic-lead","depth":1,"row":{"cagents_type":"cagents:act","short_role":"Domain dispatch ({domain_key})","domain_session":"{SESSION_ID}/{domain_key}"}}' >> "${SESSION_DIR}/workflow/events.jsonl"
+# After it returns:
+echo '{"ts":"{ISO_TIMESTAMP}","type":"stop","agent_id":"skill-fork-{domain_key}-{ISO_TIMESTAMP_COMPACT}"}' >> "${SESSION_DIR}/workflow/events.jsonl"
 ```
 
-Before each fork, set `CAGENTS_ACTIVE_SESSION` to the root of the team session. The hooks of the fork then resolve to the strategic session. After the fork returns, update `stopped_at` on the entry. After each dispatch returns, call `TaskList`. Mark the dispatch task of that domain `completed` at once. A task ID is most reliable directly after a Skill fork returns. The reason is that a later tool call can shift the namespace.
+Before each fork, set `CAGENTS_ACTIVE_SESSION` to the root of the team session. The hooks of the fork then resolve to the strategic session. After each dispatch returns, call `TaskList`. Mark the dispatch task of that domain `completed` at once. A task ID is most reliable directly after a Skill fork returns. The reason is that a later tool call can shift the namespace.
 
 ## Cross-Domain Handoffs
 

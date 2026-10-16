@@ -103,6 +103,15 @@ See @optimizer/resources/parallel-execution.md for parallel execution strategy.
 See @optimizer/resources/framework-patterns.md for framework-specific optimizations.
 See @optimizer/resources/quality-gates.md for validation and rollback.
 
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-blind-baseline-eval.md. Test an instruction change against a no-change baseline with a blind judge and a weighted rubric.
+- See @docs/example-store/ex-verification-measured-vs-inferred-ledger.md. Label each figure as measured or inferred, and never report an inferred figure as measured.
+- See @docs/example-store/ex-verification-preregistered-null-result.md. Write the hypotheses and the reporting rule before the run. Report a null result and its cost.
+- See @docs/example-store/ex-skill-authoring-override-precedence.md. Name the override conditions, and apply one tie-break: the harder constraint wins and the shape stays.
+
 ---
 
 **Detect. Measure. Plan. Execute Atomically. Validate. Learn.**

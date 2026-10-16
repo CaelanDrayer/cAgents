@@ -500,7 +500,7 @@ describe('spawn-block observability — every degrade reaches the model', () => 
         e.path = '/srv/x/cagents-memory/sessions';
         return e;
       }],
-      ['logic fault (fail-CLOSED)', () => new TypeError('cannot read properties of undefined')],
+      ['logic fault (fail-OPEN, F2)', () => new TypeError('cannot read properties of undefined')],
     ];
 
     it.each(THROWS)('%s produces a legible reason', async (label, makeErr) => {
@@ -514,21 +514,26 @@ describe('spawn-block observability — every degrade reaches the model', () => 
       expect(surfaced(verdict)).toMatch(/FAIL-OPEN|FAIL-CLOSED/);
     });
 
-    it('the fail-OPEN branch allows and the fail-CLOSED branch denies (policies did not collapse into one)', async () => {
+    // F2 / HS-7: session-init-gate is advisory, so BOTH throw shapes allow. They
+    // must still be told apart: the I/O reason names the errno, the logic reason
+    // says it is a hook bug.
+    it('both throw shapes allow, with distinguishable reasons (I/O vs logic)', async () => {
       const makeDispatchHandler = factory();
       const ioErr = THROWS[0][1]();
-      const open = await makeDispatchHandler({
+      const io = await makeDispatchHandler({
         sessionGate: async () => { throw ioErr; },
         modelAdvisor: async () => null,
       })(spawnInput());
-      const closed = await makeDispatchHandler({
+      const logic = await makeDispatchHandler({
         sessionGate: async () => { throw new TypeError('boom'); },
         modelAdvisor: async () => null,
       })(spawnInput());
 
-      expect(open.deny).toBeUndefined();
-      expect(closed.deny).toBe(true);
-      expect(surfaced(closed).length).toBeGreaterThan(0);
+      expect(io.deny).toBeUndefined();
+      expect(logic.deny).toBeUndefined();
+      expect(surfaced(io)).toMatch(/EACCES/);
+      expect(surfaced(logic)).toMatch(/hook bug/);
+      expect(surfaced(logic)).not.toMatch(/EACCES/);
     });
   });
 

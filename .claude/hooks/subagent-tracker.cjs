@@ -7,9 +7,11 @@
  * Also maintains a global agent audit log for cross-session visibility.
  *
  * Key improvements over V9.10:
- * - Fallback session discovery: scans for most-recently-modified session dir
- *   when findActiveSession() returns null (handles the race where status.yaml
- *   hasn't been written yet by the trigger agent)
+ * - Session discovery: hook-utils resolveSession (HS-1). Owned pointer or
+ *   marker, explicit prompt SESSION_DIR, explicit pin / env, else null. There
+ *   is no newest-session scan.
+ * - agent_tree.yaml is derived from the append-only workflow/events.jsonl and
+ *   written only through updateYamlLocked (HS-6). Agents never hand-edit it.
  * - Global audit log: writes to cagents-memory/_system/logs/agent_spawns.log
  *   so agent usage is always auditable even when session lookup fails
  * - Enhanced context injection: returns the cagents: agent namespace in
@@ -31,7 +33,7 @@ let yaml = null;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
 // Start and stop trackers share session discovery from hook-utils.cjs.
 // Neither guesses the newest session: no owned session means global log only.
-const { createHook, findActiveSession, resolveOwnedSession, getSessionOwner, claimSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, claimSession, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent, resolveSession, LOCK_SKIPPED, writeFileAtomic, updateYamlLocked, agentTreeHeader, reconcileTreeFromEvents, readSessionEvents, fallbackAgentId } = require('./hook-utils.cjs');
 
 /**
  * Append a line to the global agent spawns audit log.
@@ -199,9 +201,13 @@ function recordSpawnFailure(sessionDir, rec) {
           source: rec.source || 'subagent-tracker.cjs'
         });
       }
-      fs.writeFileSync(treeFile, yaml.dump(obj));
+      writeFileAtomic(treeFile, yaml.dump(obj));
       return true;
-    });
+    }, { onTimeout: 'skip', maxRetries: 50 });
+    if (wrote === LOCK_SKIPPED) {
+      console.error(`[SubagentTracker] agent_tree.yaml lock busy — spawn_failures record degraded to audit-log-only: ${attemptedType} — ${reason}`);
+      return false;
+    }
     if (wrote) {
       console.error(`[SubagentTracker] SPAWN ${String(status).toUpperCase()} recorded in agent_tree.yaml spawn_failures: ${attemptedType} — ${reason}`);
     }
@@ -241,7 +247,7 @@ if (failureFlagIdx !== -1) {
   let failDir = payload.session_dir || null;
   if (!failDir) {
     // No newest-session guess. An unresolved failure goes to the global log only.
-    try { failDir = findActiveSession(payload.session_id) || null; }
+    try { failDir = resolveSession(payload, { purpose: 'record', claimHint: false }) || null; }
     catch { failDir = null; }
   }
   const recorded = recordSpawnFailure(failDir, payload);
@@ -375,7 +381,9 @@ createHook('SubagentTracker', async (input) => {
   // agent_type is the agent name from Claude Code (e.g., "Explore", "Plan",
   // or custom agent names from .claude/agents/ or plugins)
   const subagentType = input.agent_type || 'unknown';
-  const agentId = input.agent_id || `agent_${Date.now()}`;
+  // HS-6: ONE fallback-id scheme (hook-utils fallbackAgentId: anon_<type>_<ts>_<pid>).
+  // The stop hook closes the oldest open anon_<type>_ row when agent_id is absent.
+  const agentId = input.agent_id || fallbackAgentId(subagentType);
   const now = new Date().toISOString();
 
   // Filter out test agents (test_* IDs) to prevent polluting real session agent trees
@@ -384,70 +392,14 @@ createHook('SubagentTracker', async (input) => {
     return null;
   }
 
-  // ---- Session resolution: evidence only (ENG-OBS-2, v12.70.0) ----
-  //
-  // Passes, strongest evidence first:
-  //   1. findActiveSession    — SDK-UUID map / env-var      (deterministic)
-  //   2. resolveOwnedSession  — pointer or session.sdk_id marker OWNERSHIP, terminal-agnostic (deterministic)
-  //   3. prompt hint          — explicit SESSION_DIR in the spawn prompt (explicit)
+  // ---- Session resolution: evidence only (HS-1) ----
+  // hook-utils resolveSession, purpose 'record' (terminal-agnostic): owned
+  // pointer/marker -> explicit prompt SESSION_DIR -> explicit pin / env -> null.
   // There is no newest-session guess. A spawn with no owned session goes to the
-  // global log only. A resolved session owned by another UUID is dropped below.
-  let sessionDir = findActiveSession(input.session_id);
-
-  // Pass 2: OWNERSHIP. The pointer map records which session a transcript UUID
-  // belongs to; `findActiveSession` discards that fact when the target's
-  // status.yaml happens to read terminal. For deciding WHERE TO FILE A RECORD,
-  // ownership is the right question and liveness is irrelevant — a pessimistic
-  // label (`incomplete` on a still-running session) must not divert this
-  // session's audit trail into a stranger's directory. See the
-  // `resolveSdkUuidOwner` JSDoc for why this is additive rather than a
-  // relaxation of the existing liveness gate. resolveOwnedSession also finds a
-  // session owned only by its session.sdk_id marker (no map pointer) and
-  // re-seeds the pointer: the marker alone is ownership.
-  if (!sessionDir) {
-    sessionDir = resolveOwnedSession(input.session_id, { includeTerminal: true });
-    if (sessionDir) {
-      console.error(`[SubagentTracker] resolved via OWNERSHIP (pointer or session.sdk_id marker): ${path.basename(sessionDir)}`);
-    }
-  }
-
-  // Pass 3: Prompt-based resolution. Task-spawned subagents carry SESSION_DIR or
-  // CAGENTS_SESSION_ID in their prompt. It exists because CAGENTS_ACTIVE_SESSION
-  // is not inherited by Task-spawned subprocesses. A hint naming a session owned
-  // by another UUID is ignored.
-  if (!sessionDir) {
-    const promptText = ((input.tool_input || {}).prompt || '');
-    const sessionMatch =
-      promptText.match(/SESSION[_ ]DIR[:=\s]+([^\s\n]+)/i) ||
-      promptText.match(/CAGENTS_SESSION_ID[:=\s]+([^\s\n]+)/i) ||
-      promptText.match(/SESSION[:=\s]+([^\s\n]*cagents-memory\/sessions\/[^\s\n]+)/i);
-    if (sessionMatch) {
-      const hint = sessionMatch[1].replace(/["']/g, '').trim();
-      // hint may be a full path (e.g. cagents-memory/sessions/team_foo_260317_001) or just a name
-      const sessionName = path.basename(hint);
-      const candidateDir = path.join(AGENT_MEMORY_DIR, 'sessions', sessionName);
-      const hintOwner = fs.existsSync(candidateDir) ? getSessionOwner(candidateDir) : null;
-      if (hintOwner && input.session_id && hintOwner !== input.session_id) {
-        // The hint names a session owned by another transcript. Never file into it.
-        console.error(`[SubagentTracker] Prompt hint names a foreign session; ignoring: ${sessionName}`);
-      } else if (fs.existsSync(candidateDir)) {
-        sessionDir = candidateDir;
-        console.error(`[SubagentTracker] Resolved session from prompt hint: ${sessionName}`);
-      } else {
-        console.error(`[SubagentTracker] Prompt hint session not found on disk: ${sessionName}`);
-      }
-    }
-  }
-
-  // No newest-session guess. A spawn with no owned session goes to the global
-  // log only. A resolved dir whose marker names another UUID is foreign; drop it.
-  if (sessionDir && input.session_id) {
-    const owner = getSessionOwner(sessionDir);
-    if (owner && owner !== input.session_id) {
-      console.error(`[SubagentTracker] resolved session is owned by another transcript; not filing: ${path.basename(sessionDir)}`);
-      sessionDir = null;
-    }
-  }
+  // global log only. A session owned by another UUID is never returned.
+  // SubagentStart carries no prompt; the spawn prompt's SESSION_DIR is claimed
+  // earlier, at PreToolUse Agent (session-init-gate claimFromAnyWrite).
+  const sessionDir = resolveSession(input, { purpose: 'record' });
 
   // C-03/C-04: Infer parent from session context instead of relying on input.parent_agent
   // Claude Code does NOT provide parent_agent in SubagentStart events, so we infer it
@@ -481,7 +433,7 @@ createHook('SubagentTracker', async (input) => {
     return {
       hookSpecificOutput: {
         hookEventName: 'SubagentStart',
-        additionalContext: `Agent spawned: ${subagentType} (id: ${agentId}). No active session found for tracking. IMPORTANT: When you are a cAgents agent spawned via Agent tool with subagent_type "cagents:{name}", please write your agent name to the session workflow/agent_tree.yaml if a session path is provided in your prompt.`
+        additionalContext: `Agent spawned: ${subagentType} (id: ${agentId}). No owned cAgents session resolved; the spawn is in _system/logs/agent_spawns.log. Do NOT edit workflow/agent_tree.yaml by hand (hooks own it).`
       }
     };
   }
@@ -560,155 +512,69 @@ createHook('SubagentTracker', async (input) => {
   // to the MODEL in additionalContext so a schema problem is never stderr-only.
   let schemaMigrationNote = null;
 
-  // Lock the tree file for the entire read-check-write cycle to prevent
-  // race conditions when multiple agents spawn concurrently (see PC-01 bug report).
-  const total = withFileLock(treeFile, () => {
-    const existingContent = safeRead(treeFile);
-    const isFreshFile = !existingContent;
-
-    // Parse existing file with js-yaml (REQ-002: YAML-aware dedup and append)
-    let parsedObj = { agents: [] };
-    if (!isFreshFile) {
-      try {
-        const parsed = yaml.load(existingContent);
-        if (parsed === null || parsed === undefined) {
-          // File exists but is empty — treat as fresh
-          parsedObj = { agents: [] };
-        } else if (typeof parsed !== 'object') {
-          // Scalar/array root — not a tree we can extend without destroying it.
-          console.error(`[SubagentTracker] agent_tree.yaml root is not a mapping — skipping append`);
-          schemaMigrationNote = 'agent_tree.yaml root is not a YAML mapping';
-          return -1;
-        } else {
-          // WI-B6: a tree with no top-level `agents:` key (the `root:`/`children:`
-          // init shape) used to bail here and SILENTLY drop every spawn for the
-          // rest of the session. Self-heal instead: add the missing `agents:` key,
-          // fold any `children:` in, and keep going. Fails OPEN (the spawn IS
-          // recorded) and LOUD (stderr + surfaced in additionalContext below).
-          schemaMigrationNote = migrateToCanonicalShape(parsed);
-          if (schemaMigrationNote) {
-            console.error(`[SubagentTracker] agent_tree.yaml was NOT in the canonical \`agents:\` shape — migrated in place (${schemaMigrationNote}). Every reader in verify-completion.cjs scans a top-level \`agents:\` list; the pre-migration shape recorded ZERO spawns and read as "no child agents spawned".`);
-          }
-          parsedObj = parsed;
-        }
-      } catch (parseErr) {
-        // Leave the malformed file BYTE-INTACT (never clobber another writer's
-        // data) but never let the dropped spawn go untraced — WI-B6.
-        console.error(`[SubagentTracker] Malformed agent_tree.yaml — skipping append: ${parseErr.message}`);
-        schemaMigrationNote = `agent_tree.yaml is malformed YAML (${parseErr.message})`;
-        return -1;
-      }
-    }
-
-    // Dedup check using parsed object (REQ-002: replace string.includes with parsed lookup)
-    if (parsedObj.agents.some(a => a.id === agentId)) {
-      console.error(`[SubagentTracker] Skipping duplicate entry for agent ${agentId}`);
-      return -1; // sentinel: skip
-    }
-
-    // Compute depth from parent's depth using parsed object (root = 0).
-    // WI-3 (run_improve-skills-hooks_260703_001): this branch was previously
-    // gated on the agents list being non-empty, so the FIRST entry appended to
-    // a fresh or empty tree always got depth 0 — even for sentinel parents.
-    // Downstream, verify-completion.cjs counts depth>=1 entries for the
-    // DELEGATION VIOLATION check, so such sessions could be spuriously flagged.
-    // Sentinel depths now apply regardless of list emptiness; a real parent ID
-    // that isn't found in the tree (including the empty-tree case) falls back
-    // to depth 1.
-    if (parentAgent && parentAgent !== 'root') {
-      // Map known sentinel parent values to fixed depths before tree lookup.
-      // inferParentAgent() returns these sentinels when no real agent ID is found:
-      //   'pipeline' -> depth 1 (enrichment agents are direct children of the pipeline)
-      //   'controller' -> depth 2 (execution agents spawned by a generic controller)
-      const SENTINEL_DEPTH_MAP = { pipeline: 1, controller: 2 };
-      if (SENTINEL_DEPTH_MAP.hasOwnProperty(parentAgent)) {
-        depth = SENTINEL_DEPTH_MAP[parentAgent];
-      } else {
-        const parentEntry = parsedObj.agents.find(a => a.id === parentAgent);
-        if (parentEntry && typeof parentEntry.depth === 'number') {
-          depth = parentEntry.depth + 1;
-        } else {
-          depth = 1; // Parent not in tree (empty tree or legacy entry without depth) — assume depth 1
-        }
-      }
-    }
-
-    // Build new agent entry as a JS object (REQ-002: object-based entry, not YAML string)
-    const entry = {
-      id: agentId,
-      type: subagentType,
-      parent: parentAgent,
-      depth,
-      spawned_at: now,
-      stopped_at: null,
-      session: path.basename(sessionDir)
-    };
-    if (cagentsType) {
-      entry.cagents_type = cagentsType;
-      entry.short_role = shortRole;
-    }
-
-    // Push new entry into parsed object and write full file back
-    parsedObj.agents.push(entry);
-
-    if (isFreshFile) {
-      // Write with header comment for fresh files
-      const headerComment = `# Agent Tree - cAgents Audit Trail\n# Session: ${path.basename(sessionDir)}\n# Generated by subagent-tracker.cjs hook\n# NOTE: 'type' reflects Claude Code's agent_type field. For cAgents plugin agents,\n# this may show as 'general-purpose' rather than the cagents:{name} namespace.\n# The 'cagents_type' field below (when present) captures the self-reported agent name.\n# See also: cagents-memory/_system/logs/agent_spawns.log for the global audit trail.\n\n`;
-      fs.writeFileSync(treeFile, headerComment + yaml.dump(parsedObj));
+  // HS-6: events.jsonl is the append-only source of truth; agent_tree.yaml is
+  // derived from it through updateYamlLocked (lock that SKIPS on timeout, never
+  // an unlocked write; tolerant parse with quarantine + rebuild; tmp+rename).
+  // Every locked write reconciles rows a lock-skipped writer left in events.
+  const hasSpawnEvent = () => readSessionEvents(sessionDir).some(e => e.type === 'spawn' && e.agent_id === agentId);
+  const writeSpawnEvent = () => {
+    const row = { id: agentId, type: subagentType, parent: parentAgent, depth, spawned_at: now, stopped_at: null,
+      session: path.basename(sessionDir) };
+    if (cagentsType) { row.cagents_type = cagentsType; row.short_role = shortRole; }
+    appendSessionEvent(sessionDir, { type: 'spawn', agent_id: agentId, agent_type: cagentsType || subagentType,
+      parent: parentAgent, depth, row });
+  };
+  const total = updateYamlLocked(treeFile, yaml, (parsedObj, ctx) => {
+    if (ctx.recovered) {
+      schemaMigrationNote = `agent_tree.yaml was unparseable and was rebuilt from events.jsonl (bad copy kept as ${ctx.recovered})`;
     } else {
-      // Write full file back using yaml.dump (drops original header comments, acceptable)
-      fs.writeFileSync(treeFile, yaml.dump(parsedObj));
+      const note = migrateToCanonicalShape(parsedObj);
+      if (note) {
+        schemaMigrationNote = note;
+        console.error(`[SubagentTracker] agent_tree.yaml was NOT in the canonical \`agents:\` shape — migrated in place (${note}).`);
+      }
     }
-
+    if (parsedObj.agents.some(a => a && a.id === agentId) || hasSpawnEvent()) {
+      console.error(`[SubagentTracker] Skipping duplicate entry for agent ${agentId}`);
+      reconcileTreeFromEvents(parsedObj, sessionDir);
+      return -1; // dedup (double registration): already recorded
+    }
+    // Depth from the parent (root = 0). Sentinel parents map to fixed depths
+    // even on an empty tree (WI-3); an unknown real parent falls back to 1.
+    if (parentAgent && parentAgent !== 'root') {
+      const SENTINEL_DEPTH_MAP = { pipeline: 1, controller: 2 };
+      if (SENTINEL_DEPTH_MAP.hasOwnProperty(parentAgent)) depth = SENTINEL_DEPTH_MAP[parentAgent];
+      else {
+        const parentEntry = parsedObj.agents.find(a => a && a.id === parentAgent);
+        depth = (parentEntry && typeof parentEntry.depth === 'number') ? parentEntry.depth + 1 : 1;
+      }
+    }
+    writeSpawnEvent();
+    reconcileTreeFromEvents(parsedObj, sessionDir); // adds this row + any row a skipped writer left
     return parsedObj.agents.length;
-  });
+  }, { header: agentTreeHeader(sessionDir) });
 
-  if (total === -1) {
-    // -1 covers dedup (benign — already recorded) AND the genuine skip paths
-    // (non-mapping root, malformed YAML). WI-B6: only a genuine skip earns a
-    // failure record; a dedup is not a lost spawn.
-    if (schemaMigrationNote) {
-      recordSpawnFailure(sessionDir, {
-        attempt_id: agentId,
-        attempted_type: cagentsType || subagentType,
-        status: 'untracked',
-        reason: schemaMigrationNote,
-        attempted_depth: depth,
-        source: 'subagent-tracker.cjs:tree-unusable'
-      });
-      return {
-        hookSpecificOutput: {
-          hookEventName: 'SubagentStart',
-          additionalContext: `WARNING (cAgents audit trail): this spawn (${subagentType}, id: ${agentId}) could NOT be recorded in workflow/agent_tree.yaml — ${schemaMigrationNote}. Every downstream reader counts spawns from a top-level \`agents:\` list, so this session will under-report delegation until the file is repaired. The attempt IS logged in cagents-memory/_system/logs/agent_spawns.log.`
-        }
-      };
+  if (total === LOCK_SKIPPED) {
+    // Lock busy past budget: record the spawn in events.jsonl only; the next
+    // locked writer reconciles it into agent_tree.yaml.
+    if (!hasSpawnEvent()) {
+      depth = parentAgent === 'controller' ? 2 : 1;
+      writeSpawnEvent();
     }
-    return null; // dedup: already recorded
+    console.error(`[SubagentTracker] agent_tree.yaml lock busy; spawn ${agentId} recorded in events.jsonl (reconciled on next write)`);
+    return null;
   }
-
-  // REC-16 (v12.51.0): structured per-session lifecycle event (fail-open,
-  // lock-protected, session-scoped — sessionDir was resolved via the
-  // deterministic chain above). One `spawn` line per newly-tracked agent.
-  appendSessionEvent(sessionDir, {
-    type: 'spawn',
-    agent_id: agentId,
-    agent_type: cagentsType || subagentType,
-    parent: parentAgent,
-    depth
-  });
+  if (total === -1) return null; // dedup: already recorded
+  if (schemaMigrationNote) console.error(`[SubagentTracker] ${schemaMigrationNote}`);
 
   console.error(`[SubagentTracker] Spawned ${subagentType} (id: ${agentId}, session: ${path.basename(sessionDir)})`);
 
-  // Return context injection with agent info (cagents_type is now auto-populated at spawn time via PC-01)
+  // Return context injection with agent info (cagents_type is auto-populated at spawn time via PC-01)
   const roleInfo = cagentsType ? ` (${shortRole})` : '';
-  // F-15: Only ask for self-registration when cagents_type was NOT already captured by the hook.
-  // When the hook already wrote cagents_type (from subagent_type param or description parsing),
-  // asking the agent to self-register causes duplicate cagents_type fields in agent_tree.yaml
-  // because the hook writes structured YAML but self-registration appends raw YAML lines.
-
-  const selfRegisterPrompt = cagentsType
-    ? '' // Already captured — do NOT ask for self-registration
-    : ` IMPORTANT: If you are a cAgents agent (spawned with subagent_type "cagents:{name}"), self-register by appending your cagents agent name to ${treeFile} using this format:\n    cagents_type: "cagents:{your-name}"\n    role_description: "{what you are doing}"\nAppend these two lines after the last spawned_at line for your agent_id "${agentId}". WARNING: First check if your entry already has a cagents_type field — if it does, do NOT add another one.`;
+  // HS-6: agents never hand-edit agent_tree.yaml (the old F-15 self-register
+  // prompt asked them to append raw YAML lines, which broke the tree). The hook
+  // owns the file; say so instead.
+  const selfRegisterPrompt = ' agent_tree.yaml is hook-owned: do not edit it by hand.';
   // WI-B6: a schema repair is reported to the MODEL, not just to stderr. A
   // silently-repaired instrument is still a silent instrument.
   const migrationNotice = schemaMigrationNote

@@ -185,13 +185,14 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // v12.34.0 added bash-guard-evaluator.cjs, a pure require'd library (3rd utility).
     // WO-03 surface (d) added role-manifest-injector.cjs (SubagentStart role-bundle
     // injection — the restoration half of the rules load cut). Net:
-    // 34 .cjs files = 26 unique registered + 5 dispatched sub-validators + 3 utilities
+    // WI-15 D1 deleted the no-op permission-handler.cjs (26 -> 25 registered).
+    // 33 .cjs files = 25 unique registered + 5 dispatched sub-validators + 3 utilities
     // (hook-utils.cjs, run-hook.cjs, bash-guard-evaluator.cjs).
-    expect(output, 'derive-only should print hook_files=34').toMatch(
-      /hook_files[=:]\s*34/
+    expect(output, 'derive-only should print hook_files=33').toMatch(
+      /hook_files[=:]\s*33/
     );
-    expect(output, 'derive-only should print registered_hooks=26').toMatch(
-      /registered_hooks[=:]\s*26/
+    expect(output, 'derive-only should print registered_hooks=25').toMatch(
+      /registered_hooks[=:]\s*25/
     );
   });
 });

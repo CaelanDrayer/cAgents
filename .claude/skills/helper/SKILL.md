@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
 metadata:
   author: CaelanDrayer
-  version: "12.74.1"
+  version: "12.76.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
@@ -387,3 +387,7 @@ The commands are designed to work with each other:
 ---
 
 **Help users find the right command. Explain clearly. Recommend confidently.**
+
+cAgents ships 60 agents across 9 builder-role archetypes.
+Historical: 240 -> 57 agents in v12.4.0.
+

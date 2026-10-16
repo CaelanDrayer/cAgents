@@ -48,6 +48,10 @@ function runHook(reportPath, tmpDir) {
     // silently yields {} (a misleading value that lets `.not.toMatch(/^recheck:/)`
     // on the unmodified report spuriously PASS). Raise the budget and FAIL LOUD.
     timeout: 60000,
+    // HS-4 (d), WI-10: the hook resolves relative evidence paths against the
+    // absolute PROJECT_ROOT (CLAUDE_PROJECT_DIR), no longer input.cwd. The
+    // fixture declares its project dir the way Claude Code does.
+    env: { ...process.env, CLAUDE_PROJECT_DIR: tmpDir },
   });
   // validator-evidence-recheck.cjs (PostToolUse via createHook) ALWAYS exits 0
   // with one JSON line on stdout, so any abnormal termination is a spawn misfire.

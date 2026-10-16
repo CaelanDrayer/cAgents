@@ -48,3 +48,9 @@ Fallback: cicd.
 See @devops-engineer/resources/cicd.md for the playbook of the `cicd` mode. It covers CI/CD, IaC, and container orchestration.
 See @devops-engineer/resources/coordinate.md for the playbook of the `coordinate` mode. It covers infrastructure coordination, the deployment strategies, and the monitoring setup.
 See @devops-engineer/resources/profile.md for the playbook of the `profile` mode. It covers performance profiling, bottleneck detection, and the optimization patterns.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-security-direct-prohibition-scope.md. Exempt a risky-pattern match only when a negation directly governs it. Unknown phrasing keeps the detection.

@@ -178,6 +178,12 @@ that mandate synchronous spawning point here.
 | A result you must collect in this turn (the default for all execution work) | UNNAMED, `run_in_background: false` | A `TaskCreate` whose subject matches the agent's `description` |
 | A genuinely resumable conversation you will collect later via `SendMessage` | A named teammate, which is background by definition | `TaskCreate` before the spawn, `TaskUpdate(status: completed)` when you collect it |
 
+**After a compaction, address a named teammate by its agent ID.** Since
+Claude Code 2.1.299, `SendMessage` finds a subagent by name after a CLI
+restart. A name given before the last compaction still needs the agent ID.
+Record the agent ID from the spawn result. Use that ID in `SendMessage`
+when the conversation has compacted since the spawn.
+
 `CLAUDE.md` § CRITICAL: Task Lifecycle requires a `TaskCreate` per background
 spawn so the user sees each subagent, when `TaskCreate` is available. When it is
 absent, record each spawn in the session files and continue. It does not ask you to pass `name` to the

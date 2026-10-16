@@ -70,3 +70,9 @@ Leads the financial strategy, manages the budgets and the forecasts, oversees th
 See @agents/leadership/resources/executive-playbook.md for the shared C-suite deliberation, strategic-brief, and escalation playbook.
 See @cfo/resources/financial-strategy.md for financial planning methodology.
 See @cfo/resources/reporting-kpis.md for metrics and reporting frameworks.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-measured-vs-inferred-ledger.md. Label each figure as measured or inferred, and never report an inferred figure as measured.

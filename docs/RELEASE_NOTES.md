@@ -1,10 +1,75 @@
 # cAgents Release Notes
 
-**Current Version**: 12.74.1
-**Release Date**: October 11, 2026
+**Current Version**: 12.76.0
+**Release Date**: October 16, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.76.0 - October 16, 2026 (hook and session-management fixes)
+
+This minor release fixes hook and session handling. The change ids are HS-1
+to HS-11, H1 to H8, K1, W1 to W6, A1, D1, F1 to F3, WI-20, and WI-21.
+
+Session resolution: one resolver, `resolveSession` in `hook-utils.cjs`, has
+no newest-mtime step (HS-1). Spawn and stop events go to
+`workflow/events.jsonl`, and `agent_tree.yaml` is derived from it (HS-6).
+`repairSession` repairs a session only from evidence (HS-10). An idle `/team`
+lead between waves keeps its session state at Stop and SessionEnd.
+
+Hook I/O: a hook gives its verdict when the payload is complete JSON and then
+exits (HS-3). Guard hooks deny a truncated payload and allow an empty one with
+one warning. `session-init-gate` fails open (HS-7, F2). The dedup marker lasts
+5 s and replays the first verdict (HS-2). Stop writes `VALIDATED` only with a
+real validator PASS (HS-4) and shows one warning line (HS-11). Stop no longer
+writes stub reports.
+
+Bash guard: fewer false asks (H1 to H8). A replay of 309 recorded asks gave
+239 allow and 70 ask. Force-push, history-rewrite, and git discard forms ask
+(K1, W1 to W4, W2). New rules for `git --output`, `cd` before `git`, and
+`rm -rf` inside compound statements (WI-20, WI-21). Settings use `Edit(...)`
+rules for `/cagents-memory/**`, `//etc/**`, and `~/.ssh/**`.
+
+Test isolation (HS-5): 4 hook tests no longer write to the real
+`cagents-memory/`, and a regression test guards it. Four write-then-exec paths
+through `cagents-memory/` are closed (WI-17).
+
+Removed: `permission-handler.cjs` and its test (D1). Hooks are now 33 files,
+25 hooks, and 17 events. Tests: 2440+ static tests across 270+ files.
+
+User action: restart Claude Code to load the v12.74.0 `run-hook.cjs`
+self-skip. Known gaps are listed in the threat model §7.2.
+
+## V12.75.0 - October 14, 2026 (example-store refresh)
+
+This minor release refreshes the example store. 15 new exemplars are added.
+8 come from 3 new repos: `ayghri/i-have-adhd`, `juliusbrussee/caveman`, and
+`latent-spaces/brag`. 7 come from 5 repos that the store already tracks. The
+store now has 42 exemplars in 9 categories from 13 tracked repos.
+`_index.yaml` is rebuilt from the exemplar frontmatter, and 28 agent files
+link to the new exemplars.
+
+21 existing exemplars are refreshed against their upstream repos. Each
+refreshed file records the upstream commit SHA in `metadata.source_commit`
+and a review date in `metadata.reviewed`. All 11 needs-update verdicts are
+resolved.
+
+License fields are corrected. The SkillSpector and `anthropics/skills`
+exemplars are Apache-2.0, and the `f/prompts.chat` structured-io exemplars are
+CC0-1.0. An MCP server example is removed from
+`ex-skill-authoring-progressive-disclosure`, per the Standalone Contract.
+`ex-intake-ambiguous-request-disambiguation` no longer lists the
+`cagents:designer` skill as an agent in `applies_to`.
+
+Three docs are corrected for Claude Code 2.1.299 and 2.1.268. Windows needs
+Git Bash for hooks. `SendMessage` needs the agent ID after a compaction. The
+task tools are an allowlist. Claude Code compatibility is audited through
+2.1.300.
+
+Tests: 3 more assertions in
+`tests/regressions/cc-min-version-and-nesting-claims.test.js`. Known issue,
+not fixed: a hook process does not exit when stdin stays open, so a 3 s hook
+timeout can deny a call under the Claude Code 2.1.299 fail-closed rule.
 
 ## V12.74.1 - October 11, 2026 (stale nesting-depth and agent-scan claims)
 
@@ -2519,5 +2584,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.74.1
+**Current Version**: 12.76.0
 **Release Date**: August 21, 2026

@@ -4,12 +4,12 @@ This is a high-level summary. The canonical per-hook detail (matchers, inputs, o
 
 ## Architecture
 
-CJS-only hooks built with the `createHook()` factory pattern. **34 `.cjs` files = 26 unique registered hooks across 18 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
+CJS-only hooks built with the `createHook()` factory pattern. **33 `.cjs` files = 25 unique registered hooks across 17 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
 
 Two consolidating dispatchers run the sub-validators in-process (one node cold-start instead of one per sub-validator):
 
 - **`write-edit-dispatch.cjs`** (PreToolUse[Write\|Edit]) — runs `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The two security/governance gates fail CLOSED.
-- **`agent-dispatch.cjs`** (PreToolUse[Agent]) — runs `session-init-gate.cjs` (session-presence DENY gate, fail-CLOSED) and `model-routing-advisor.cjs` (advisory, fail-OPEN).
+- **`agent-dispatch.cjs`** (PreToolUse[Agent]) — runs `session-init-gate.cjs` (session-presence gate) and `model-routing-advisor.cjs` (advisory). Both sub-validators fail OPEN. Since v12.76.0 (WI-19 F2) a crash inside `session-init-gate.cjs` allows the spawn with one `[FAIL-OPEN]` message. A fault in `agent-dispatch.cjs` itself still denies.
 
 ## Hook Registry (by event)
 
@@ -22,7 +22,6 @@ Two consolidating dispatchers run the sub-validators in-process (one node cold-s
 | PreToolUse[Write\|Edit] | write-edit-dispatch.cjs | Dispatches secret-detection + controller-delegation-validator + skill-size-monitor |
 | PreToolUse[Agent] | agent-dispatch.cjs | Dispatches session-init-gate + model-routing-advisor |
 | ConfigChange | config-change-logger.cjs | Log config changes |
-| PermissionRequest | permission-handler.cjs | Log permission requests for HITL audit |
 | PostToolUse[Write\|Edit] | post-write-validator.cjs, validator-evidence-recheck.cjs | Validate JSON/YAML syntax, re-verify cited evidence |
 | PostToolUse[Agent\|Task] | spawn-footprint.cjs | Record per-spawn token footprint (diagnostic only; never blocks) |
 | PostToolUseFailure | tool-failure-tracker.cjs | Track failures, detect patterns |

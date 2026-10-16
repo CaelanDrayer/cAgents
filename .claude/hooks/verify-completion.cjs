@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, resolveOwnedSession, getSessionOwner, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, resolveSession, getSessionOwner, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent, repairSession } = require('./hook-utils.cjs');
 
 // Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
 // Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
@@ -187,6 +187,19 @@ function staleChildThresholdMs() {
 }
 
 /**
+ * WI-17: is this `agents:` list entry the depth-0 ROOT row? /act ACTION 1 seeds
+ * the root as the first `agents:` entry (`id: pipeline`, `depth: 0`,
+ * `stopped_at: null` for the whole open session). It is the session itself, not
+ * a child, so the child counter and the running-child scan both skip it. The
+ * test is the same as the isRoot test of repairSession in hook-utils.cjs.
+ */
+function isRootRowBlock(block) {
+  return /^\s*depth:\s*["']?0["']?\s*$/m.test(block)
+    || /^\s*id:\s*["']?pipeline["']?\s*$/m.test(block)
+    || /^\s*type:\s*["']?[^"'\n]*-pipeline["']?\s*$/m.test(block);
+}
+
+/**
  * REC-04: count spawned child agents in an agent_tree.yaml. Mirrors the
  * delegation-violation counter (§3): depth>=1 entries first, `- id:` list
  * entries as the real-schema fallback. The top-level `root:` block is depth 0 /
@@ -198,8 +211,9 @@ function countChildAgents(agentTreeContent) {
   const depthMatches = agentTreeContent.match(/\bdepth:\s*([1-9]\d*)\b/g);
   let count = depthMatches ? depthMatches.length : 0;
   if (count === 0) {
-    const idMatches = agentTreeContent.match(/^\s*- id:/gm);
-    count = idMatches ? idMatches.length : 0;
+    // WI-17: skip a depth-0 root row in the `agents:` list (act ACTION 1 seed).
+    count = agentTreeContent.split(/^\s*-\s+/m).slice(1)
+      .filter(b => /^id:/.test(b) && !isRootRowBlock(b)).length;
   }
   // WI-B6: LAST-RESORT tolerance for a legacy non-canonical `children:` tree.
   // Tolerant, but never silent — a tree in this shape is a BLIND instrument
@@ -248,9 +262,9 @@ function agentTreeSchemaDiagnosis(agentTreeContent) {
 /**
  * REC-05: does the agent_tree's `agents:` child region contain a FRESH running
  * child? A `stopped_at: null` child counts only when its `spawned_at` is within
- * staleChildThresholdMs(). A child with NO / unparseable `spawned_at` is treated
- * as fresh (fail-toward-working — preserves the pre-REC-05 behavior for trees
- * that omit spawned_at, e.g. a legitimately mid-flight wave teammate). A
+ * staleChildThresholdMs(). A child with a missing or unparseable `spawned_at`
+ * is STALE (HS-6, WI-7): such a row, for example a hand-added one, used to
+ * count as running forever and hid a stall. Both quote styles parse. A
  * `stopped_at: null` child whose `spawned_at` is definitively old no longer
  * counts — closing the leaked-null hole that let a backgrounded-and-yielded
  * child mask a stall for hours.
@@ -263,14 +277,45 @@ function hasFreshRunningChild(childRegion) {
   const blocks = childRegion.split(/^\s*-\s+/m).slice(1);
   for (const block of blocks) {
     if (!/stopped_at:\s*null/.test(block)) continue; // already stopped — not running
-    const spawnMatch = block.match(/spawned_at:\s*"?([^"\n]+?)"?\s*$/m);
-    if (!spawnMatch) return true; // no parseable spawn time — preserve old behavior
+    if (isRootRowBlock(block)) continue; // WI-17: the session itself, not a child
+    // WI-7: js-yaml dumps ISO timestamps SINGLE-quoted ('2026-...Z'), so both
+    // quote styles are stripped. With only `"` stripped, every hook-written row
+    // was unparseable, and with HS-6 (unparseable = stale) no child would count.
+    const spawnMatch = block.match(/spawned_at:\s*["']?([^"'\n]+?)["']?\s*$/m);
+    if (!spawnMatch) continue; // WI-028 B2: no spawn time = stale, never 'running forever'
     const spawnMs = Date.parse(spawnMatch[1]);
-    if (Number.isNaN(spawnMs)) return true; // unparseable — preserve old behavior
+    if (Number.isNaN(spawnMs)) continue; // WI-028 B2: unparseable = stale
     if ((Date.now() - spawnMs) < staleMs) return true; // fresh running child
     // else: stale null-stop child — ignore, keep scanning for a fresher one
   }
   return false;
+}
+
+/**
+ * WI-13b: lazily load teamIdleBetweenWaves from team-stop.cjs (one copy of the
+ * WI-9 predicate). CAGENTS_DISPATCH_IMPORT must be set BEFORE the require, or
+ * team-stop registers its SessionEnd handler and reads stdin inside Stop. Any
+ * load failure returns null, so the caller falls back to sessionActivelyWorking
+ * alone (today's behavior).
+ * @returns {Function|null}
+ */
+let _teamIdleBetweenWaves; // undefined = not loaded yet; null = load failed
+function loadTeamIdleBetweenWaves() {
+  if (_teamIdleBetweenWaves !== undefined) return _teamIdleBetweenWaves;
+  const hadFlag = Object.prototype.hasOwnProperty.call(process.env, 'CAGENTS_DISPATCH_IMPORT');
+  const prior = process.env.CAGENTS_DISPATCH_IMPORT;
+  try {
+    process.env.CAGENTS_DISPATCH_IMPORT = '1';
+    const fn = require('./team-stop.cjs').teamIdleBetweenWaves;
+    _teamIdleBetweenWaves = typeof fn === 'function' ? fn : null;
+  } catch (e) {
+    console.error(`[VerifyCompletion] team-stop.cjs load failed (idle-between-waves check skipped): ${e.message}`);
+    _teamIdleBetweenWaves = null;
+  } finally {
+    if (hadFlag) process.env.CAGENTS_DISPATCH_IMPORT = prior;
+    else delete process.env.CAGENTS_DISPATCH_IMPORT;
+  }
+  return _teamIdleBetweenWaves;
 }
 
 function sessionActivelyWorking(sessionDir, statusContent) {
@@ -544,146 +589,6 @@ function applyValidatedToCompleteTransition(sessionDir) {
 }
 
 /**
- * Auto-resolve fixable warnings before verifyCompletion() scores them.
- *
- * Runs AFTER applyValidatedToCompleteTransition but BEFORE verifyCompletion.
- * Creates stub files for missing artifacts that would otherwise produce
- * warnings, but ONLY when the session is in a terminal state. This is a
- * safety net — the primary mechanism should be the pipeline writing these
- * files itself (see /act SKILL.md Step 4).
- *
- * NEVER auto-resolves:
- *   - Pending/in_progress work items (blocking issues)
- *   - Non-terminal pipeline state (blocking issues)
- *   - Delegation violations (protocol violation warnings)
- *   - Missing coordination_log.yaml (blocking when plan exists)
- *   - Sentinel gate fact-check failures (deliverable verification)
- */
-function autoResolveWarnings(sessionDir) {
-  const resolved = [];
-
-  const statusFile = path.join(sessionDir, 'status.yaml');
-  const statusContent = safeRead(statusFile);
-  if (!statusContent) return resolved;
-
-  const pipelineState = extractYamlValue(statusContent, 'pipeline_state');
-  const phase = extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase');
-  const currentState = pipelineState || phase;
-  if (!currentState) return resolved;
-
-  // Determine if session reached a state where validation artifacts are expected.
-  const statesExpectingValidation = ['COORDINATED', 'VALIDATED', 'COMPLETE', 'completed', 'complete', 'validating'];
-  const shouldHaveValidation = statesExpectingValidation.includes(currentState);
-
-  // Auto-resolve only when the session is TERMINAL or has reached a
-  // validation-expecting state (a stalled COORDINATED/VALIDATED run that Stop is
-  // finalizing). A genuinely early session (INIT/ORCHESTRATED/PLANNED) is left
-  // untouched so no stub is fabricated for it. (Before REC-02 the gate required a
-  // TERMINAL state, so a stalled COORDINATED session got NO honest stubs at all.)
-  if (!isTerminalState(currentState) && !shouldHaveValidation) return resolved;
-
-  // REC-02/06 honesty: a session is genuinely validated only when it carries a
-  // real (non-safety-net) PASS report — nothing this hook fabricates can satisfy
-  // it. The stubs below are therefore honest by construction: a genuine session
-  // already has its real report (so no stub is created), and every stub the safety
-  // net writes is for a NON-genuine session and MUST NOT claim PASS / completed.
-  const genuine = sessionGenuinelyValidated(sessionDir, statusContent);
-
-  const sessionId = path.basename(sessionDir);
-  const now = new Date().toISOString();
-
-  // 1. Auto-create missing execution_summary.yaml (resolves check 7)
-  const execSummaryFile = path.join(sessionDir, 'workflow', 'execution_summary.yaml');
-  if (shouldHaveValidation && !fs.existsSync(execSummaryFile)) {
-    try {
-      const domain = (() => {
-        const planContent = safeRead(path.join(sessionDir, 'workflow', 'plan.yaml'));
-        return planContent ? (extractYamlValue(planContent, 'domain') || 'unknown') : 'unknown';
-      })();
-      const stub = `# Auto-generated by autoResolveWarnings() safety net
-# The pipeline should write this file in Step 4 — this stub prevents a warning.
-session_id: "${sessionId}"
-final_state: "${currentState}"
-status: "${genuine ? 'completed' : 'incomplete'}"
-domain: "${domain}"
-generated_by: verify-completion-hook-safety-net
-generated_at: "${now}"
-`;
-      ensureDir(path.join(sessionDir, 'workflow'));
-      fs.writeFileSync(execSummaryFile, stub);
-      resolved.push('execution_summary.yaml');
-      console.error(`[AutoResolve] Created stub execution_summary.yaml for ${sessionId}`);
-    } catch (e) {
-      console.error(`[AutoResolve] Failed to create execution_summary.yaml: ${e.message}`);
-    }
-  }
-
-  // 2. Auto-create missing validation_report.yaml (resolves check 6)
-  const validationFile = path.join(sessionDir, 'workflow', 'validation_report.yaml');
-  if (shouldHaveValidation && !fs.existsSync(validationFile)) {
-    try {
-      // REC-02 honesty: a hook-created stub is NEVER a genuine validator verdict.
-      // The stub is only written when the real report is MISSING, so `genuine` is
-      // false here by construction — the classification is UNKNOWN, not a
-      // fabricated PASS. (Gated on `genuine` for symmetry with the exec-summary
-      // stub; it resolves to UNKNOWN whenever this stub is created.)
-      const stubStatus = genuine ? 'PASS' : 'UNKNOWN';
-      const stub = `# Auto-generated by autoResolveWarnings() safety net
-# The validator agent should write this file — this stub prevents a warning.
-overall_status: ${stubStatus}
-status: ${stubStatus}
-generated_by: verify-completion-hook-safety-net
-generated_at: "${now}"
-note: "Auto-generated stub — no validator agent ran for this session."
-`;
-      ensureDir(path.join(sessionDir, 'workflow'));
-      fs.writeFileSync(validationFile, stub);
-      resolved.push('validation_report.yaml');
-      console.error(`[AutoResolve] Created stub validation_report.yaml for ${sessionId}`);
-    } catch (e) {
-      console.error(`[AutoResolve] Failed to create validation_report.yaml: ${e.message}`);
-    }
-  }
-
-  // 3 + 4. P0-3 (v12.7.x): coordination_log.yaml is NO LONGER mutated by this hook.
-  //
-  // Prior to P0-3, this block auto-appended empty `self_validation:` and
-  // `validation_checkpoints:` placeholders to coordination_log.yaml whenever
-  // controllers had not produced them. That pattern created false claims —
-  // a stamped "Placeholder — controller did not record ..." entry looked like
-  // self-validation data but contained no actual evidence. Honest absence is
-  // strictly preferable to a stamped no-op.
-  //
-  // The hook MUST NOT write to coordination_log.yaml. Instead, emit a stderr
-  // warning naming the missing fields so the gap is visible to operators
-  // (the verifyCompletion checks below will also surface this in warnings).
-  //
-  // See `.claude/rules/core/resources/execution-self-validation.md` for the
-  // v12.0.0 "5 agent-self-reported checks (verifier hook deferred)" contract.
-  const coordLogFile = path.join(sessionDir, 'workflow', 'coordination_log.yaml');
-  const coordContent = safeRead(coordLogFile);
-  if (coordContent) {
-    const missingFields = [];
-    if (!coordContent.includes('self_validation')) missingFields.push('self_validation');
-    if (!coordContent.includes('pre_execution')) missingFields.push('validation_checkpoints.pre_execution');
-    if (!coordContent.includes('mid_execution')) missingFields.push('validation_checkpoints.mid_execution');
-    if (missingFields.length > 0) {
-      console.error(
-        '[verify-completion] coordination_log.yaml missing fields: ' +
-        missingFields.join(', ') +
-        '. Hook will not stamp placeholders (P0-3).'
-      );
-    }
-  }
-
-  if (resolved.length > 0) {
-    console.error(`[AutoResolve] Resolved ${resolved.length} warning source(s) for ${sessionId}: ${resolved.join(', ')}`);
-  }
-
-  return resolved;
-}
-
-/**
  * Team-artifact enforcement (Phase 10, A8-01).
  *
  * Fires ONLY for `team_*` sessions that reached TERMINAL SUCCESS — i.e.
@@ -800,7 +705,7 @@ function verifyCompletion(sessionDir) {
           } else {
             // Next-stage agent exists OR session actively working — pipeline is actively running
             console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' but actively running (last transition ${ageMin}min ago) — warning only`);
-            warnings.push(`Pipeline actively running in '${pipelineState}' state (last transition ${ageMin}min ago)`);
+            // WI-028 S1: a Stop while a background agent runs is a normal yield, not a warning.
           }
         } else {
           // No recent state transition. FIX 2 (OBJ-2, WI-6): block only when the session
@@ -810,7 +715,7 @@ function verifyCompletion(sessionDir) {
             issues.push(`Workflow stopping in '${pipelineState}' pipeline state (expected: COMPLETE or VALIDATED)`);
           } else {
             console.error(`[VerifyCompletion] Pipeline in '${pipelineState}' with no recent transition but actively working (running child agent or fresh heartbeat) — warning only`);
-            warnings.push(`Pipeline actively working in '${pipelineState}' state despite no recent state transition`);
+            // WI-028 S1: informational only (stderr above).
           }
         }
       } else if (!isTerminalState(pipelineState)) {
@@ -856,7 +761,8 @@ function verifyCompletion(sessionDir) {
         } else {
           issues.push(enrichMsg);
         }
-      } else if (normalizeTerminalState(phase) !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED') {
+      } else if (normalizeTerminalState(phase) !== 'complete' && phase !== 'validating' && phase !== 'TEAM_CREATED'
+        && !path.basename(sessionDir).startsWith('designer_')) { // WI-028 S2: /designer stops between questions by design
         // normalizeTerminalState folds completed/COMPLETE/FINALIZED -> complete;
         // validating + TEAM_CREATED stay explicit non-terminal "ok to stop" states.
         warnings.push(`Workflow stopping in '${phase}' phase (expected: complete/completed or validating)`);
@@ -1008,6 +914,22 @@ function verifyCompletion(sessionDir) {
       if (agentTreeContent) {
         const depth2Matches = agentTreeContent.match(/\bdepth:\s*([2-9]\d*)\b/g);
         executorCount = depth2Matches ? depth2Matches.length : 0;
+        // A3b: subagent-tracker often cannot attribute a parent and records
+        // controller-spawned executors at depth 1 (parent: pipeline). Depth is
+        // then not evidence of self-handling. Fall back to distinct agent TYPES:
+        // pipeline/review roles never count; the controller itself is one type,
+        // so >= 2 distinct remaining types means someone besides the controller
+        // was spawned.
+        if (executorCount === 0) {
+          const PIPELINE_ROLES = new Set(['orchestrator', 'planner', 'validator', 'router', 'trigger',
+            'execution-monitor', 'reviewer', 'wave-reviewer', 'coord-log-writer', 'task-state', 'hitl', 'self-correct', 'optimizer']);
+          const types = new Set();
+          for (const m of agentTreeContent.matchAll(/^\s+(?:-\s+)?type:\s*["']?([^\s"'\n]+)/gm)) {
+            const t = m[1].replace(/^cagents:/, '');
+            if (!PIPELINE_ROLES.has(t) && !/(^|-)pipeline$/.test(t) && t !== 'null') types.add(t); // WI-028: the depth-0 root row is not an agent
+          }
+          if (types.size >= 2) executorCount = types.size - 1;
+        }
       }
 
       if (executorCount === 0) {
@@ -1076,14 +998,15 @@ function verifyCompletion(sessionDir) {
             `Direct execution + self-validation per the nesting-ceiling fallback rule is acceptable here.`;
           console.error(`[VerifyCompletion] Graceful-degradation marker recognized for /team session: ${sessionName}`);
         } else {
-          message = `CONTROLLER SELF-HANDLING (protocol violation): Session '${sessionName}' has coordination_log with status: completed ` +
-            `but no execution agents were spawned (0 agents at depth >= 2 in agent_tree.yaml). ` +
-            `Controllers MUST delegate to execution agents via Agent tool — direct implementation is a protocol violation.` +
-            (hasSelfHandlingAdmission ? ' The coordination_log contains an explicit admission of self-handling.' : '');
+          message = `CONTROLLER SELF-HANDLING (protocol violation) in ${sessionName}: no execution agent recorded` +
+            (hasSelfHandlingAdmission ? ' (coordination_log admits it)' : '') +
+            `; re-run its work items via /act --resume ${sessionName}.`;
           console.error(`[VerifyCompletion] Controller self-handling detected: ${sessionName} completed coordination with 0 executors`);
         }
 
-        warnings.push(message);
+        // WI-028: the graceful-degradation variant says 'acceptable': stderr only.
+        if (isTeamSession && hasGracefulDegradationMarker) console.error(`[VerifyCompletion] ${message}`);
+        else warnings.push(message);
       }
     }
   }
@@ -1097,7 +1020,7 @@ function verifyCompletion(sessionDir) {
     const filesClaimed = [];
     const createdMatches = coordForSentinel.match(/files_created:\s*\n((?:\s+-\s+[^\n]+\n?)*)/g);
     const modifiedMatches = coordForSentinel.match(/files_modified:\s*\n((?:\s+-\s+[^\n]+\n?)*)/g);
-    const outputMatches = coordForSentinel.match(/output(?:_file|_path|s)?:\s*["']?([^\s"'\n]+)/g);
+    const outputMatches = coordForSentinel.match(/(?<![\w])output(?:_file|_path|s)?:\s*["']?([^\s"'\n]+)/g); // WI-028 S3: not guard_output:
 
     const extractPaths = (matches) => {
       if (!matches) return;
@@ -1117,9 +1040,20 @@ function verifyCompletion(sessionDir) {
     extractPaths(modifiedMatches);
     if (outputMatches) {
       for (const m of outputMatches) {
-        const p = m.replace(/output(?:_file|_path|s)?:\s*["']?/, '').trim();
+        const p = m.replace(/^output(?:_file|_path|s)?:\s*["']?/, '').trim();
         if (p) filesClaimed.push(p);
       }
+    }
+    // A3a: keep only path-shaped claims. `outputs: Test 3 passed`, `output: 8/8`,
+    // and a block scalar `outputs: |` were read as file paths. A claim counts
+    // only when it is a single token with a '/' or a file extension, and is not
+    // a fraction/ratio, YAML indicator, or URL.
+    const looksLikePath = (t) => /^[\w.~\/-]+$/.test(t)
+      && !/^\d+\/\d+$/.test(t)
+      && (t.includes('/') || /\.[A-Za-z0-9]{1,8}$/.test(t))
+      && !/^[|>]/.test(t);
+    for (let i = filesClaimed.length - 1; i >= 0; i--) {
+      if (!looksLikePath(filesClaimed[i])) filesClaimed.splice(i, 1);
     }
 
     // Verify claimed files exist
@@ -1139,7 +1073,7 @@ function verifyCompletion(sessionDir) {
     }
 
     if (missingFiles > 0) {
-      warnings.push(`Sentinel gate: ${missingFiles} claimed deliverable(s) not found on disk: ${missingList.join(', ')}${missingFiles > 5 ? '...' : ''}`);
+      warnings.push(`Sentinel gate: ${missingFiles} claimed file(s) missing (first: ${missingList[0]}); create them or correct files_created/output in coordination_log.yaml.`);
     }
   }
 
@@ -1163,6 +1097,10 @@ function verifyCompletion(sessionDir) {
     if (pendingCount > 0) issues.push(`${pendingCount} work item(s) still pending`);
     if (inProgressCount > 0) issues.push(`${inProgressCount} work item(s) still in progress`);
 
+    // WI-028 K1: items the controller never started are a real gap the pending/in_progress counts miss.
+    const notStarted = countPattern(coordContent, /status:\s*["']?not_started\b/g);
+    if (notStarted > 0) warnings.push(`${notStarted} work item(s) never started in ${path.basename(sessionDir)}; resume with /act --resume ${path.basename(sessionDir)} or list them under not_in_scope.`);
+
     const emptyEvidence = countPattern(coordContent, /evidence:\s*(?:\[\]|null|""|'')$/gm);
     if (emptyEvidence > 0) warnings.push(`${emptyEvidence} work item(s) missing completion evidence`);
   }
@@ -1177,12 +1115,15 @@ function verifyCompletion(sessionDir) {
   const currentPhase = statusContent
     ? (extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase') || extractYamlValue(statusContent, 'current_phase'))
     : null;
-  const shouldHaveValidation = currentPhase && statesExpectingValidation.includes(currentPhase);
+  // WI-028 S2: /designer never runs a validator and never writes execution_summary.
+  const shouldHaveValidation = currentPhase && statesExpectingValidation.includes(currentPhase)
+    && !path.basename(sessionDir).startsWith('designer_')
+    && !sessionActivelyWorking(sessionDir, statusContent); // WI-028 S8: the validator may still be running
   if (!valContent && shouldHaveValidation) {
-    warnings.push('Missing validation report');
+    warnings.push(`No validator verdict on disk for ${path.basename(sessionDir)}; run the validator or /act --resume ${path.basename(sessionDir)}.`);
   } else if (valContent) {
     const status = extractYamlValue(valContent, 'overall_status') || extractYamlValue(valContent, 'status');
-    if (status && status !== 'PASS') warnings.push(`Validation status: ${status} (expected: PASS)`);
+    if (status && status !== 'PASS' && status !== 'PARTIAL_PASS') warnings.push(`Validation status: ${status} for ${path.basename(sessionDir)}; fix the findings in workflow/validation_report.yaml, then /act --resume ${path.basename(sessionDir)}.`);
   }
 
   // 7. Check execution_summary.yaml exists and was written by /act (REQ-012)
@@ -1190,7 +1131,7 @@ function verifyCompletion(sessionDir) {
   const execSummaryPath = path.join(sessionDir, 'workflow', 'execution_summary.yaml');
   if (shouldHaveValidation) {
     if (!fs.existsSync(execSummaryPath)) {
-      warnings.push('Missing workflow/execution_summary.yaml (required at pipeline completion per /act Step 4)');
+      warnings.push(`No execution_summary.yaml for ${path.basename(sessionDir)} (/act Step 4 did not run); finish with /act --resume ${path.basename(sessionDir)}.`);
     } else {
       // 7b. Check if execution_summary was auto-generated by the hook safety net
       // rather than written by /act itself. An auto-generated stub means /act
@@ -1234,7 +1175,7 @@ function verifyCompletion(sessionDir) {
       const section = taskSections[i];
       // Only score completed items
       if (/status:\s*completed/i.test(section)) {
-        const evidenceMatch = section.match(/evidence:\s*(?:\|[\s\S]*?)(?=\n\s*\w+:|$)|evidence:\s*"([^"]*)"|evidence:\s*'([^']*)'|evidence:\s*([^\n]+)/);
+        const evidenceMatch = section.match(/evidence(?:_path)?:\s*(?:\|[\s\S]*?)(?=\n\s*\w+:|$)|evidence(?:_path)?:\s*"([^"]*)"|evidence(?:_path)?:\s*'([^']*)'|evidence(?:_path)?:\s*([^\n]+)/); // WI-028 S5
         evidenceBlocks.push(evidenceMatch ? (evidenceMatch[1] || evidenceMatch[2] || evidenceMatch[3] || evidenceMatch[0]) : '');
       }
     }
@@ -1285,8 +1226,10 @@ function verifyCompletion(sessionDir) {
     }
 
     // Count evidence entries in coordination_log.yaml
-    const evidenceEntries = coordLogContent.match(/evidence:/g);
-    const totalEvidence = evidenceEntries ? evidenceEntries.length : 0;
+    // WI-028 S5: controllers record evidence as evidence:, evidence_path:, or a reviewer PASS verdict.
+    const evidenceEntries = coordLogContent.match(/\bevidence(?:_path)?:/g);
+    const reviewPass = coordLogContent.match(/\breview(?:_result)?:\s*["'{]?\s*(?:verdict:\s*)?PASS\b/g);
+    const totalEvidence = Math.max(evidenceEntries ? evidenceEntries.length : 0, reviewPass ? reviewPass.length : 0);
 
     // Also count individual criterion-level evidence (MET/NOT MET/PARTIAL)
     const criterionResults = coordLogContent.match(/\b(?:MET|NOT MET|PARTIAL)\b/g);
@@ -1294,8 +1237,7 @@ function verifyCompletion(sessionDir) {
 
     if (totalCriteria > 0 && totalEvidence < totalCriteria) {
       const coverage = Math.round((totalEvidence / totalCriteria) * 100);
-      warnings.push(`Acceptance criteria coverage: ${totalEvidence}/${totalCriteria} work items have evidence (${coverage}%). ` +
-        `Every work item should have documented evidence of criteria being met.`);
+      warnings.push(`${totalCriteria - totalEvidence} of ${totalCriteria} work items have no evidence (${coverage}% covered); add evidence: lines to coordination_log.yaml.`);
     }
 
     if (totalCriterionItems > 0 && totalCriterionResults > 0 && totalCriterionResults < totalCriterionItems) {
@@ -1317,7 +1259,8 @@ function verifyCompletion(sessionDir) {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8');
       for (const field of check.required) {
-        if (!content.includes(field + ':')) {
+        const ALIASES = { mission: ['mission', 'request_summary', 'summary', 'objective'] }; // WI-028 S7
+        if (!(ALIASES[field] || [field]).some(k => new RegExp('^' + k + ':', 'm').test(content))) {
           warnings.push(`Schema: ${check.file} missing required field '${field}'`);
         }
       }
@@ -1337,11 +1280,11 @@ function verifyCompletion(sessionDir) {
   // Verify that pre-execution and mid-execution checkpoints were recorded
   totalChecks++;
   if (coordLogContent) {
-    if (!coordLogContent.includes('pre_execution')) {
-      warnings.push('No pre-execution validation checkpoint found. Controller may have skipped input validation.');
-    }
-    if (!coordLogContent.includes('mid_execution')) {
-      warnings.push('No mid-execution checkpoint found. Controller may have skipped progress validation.');
+    // WI-028 S6: controllers write validation_checkpoints as a list of gates, not
+    // pre_execution/mid_execution keys. Not actionable after the fact: stderr only.
+    if (!/^validation_checkpoints:/m.test(coordLogContent)
+        && !(coordLogContent.includes('pre_execution') && coordLogContent.includes('mid_execution'))) {
+      console.error('[VerifyCompletion] advisory: coordination_log has no validation_checkpoints');
     }
   }
 
@@ -1575,33 +1518,18 @@ createHook('VerifyCompletion', async (input) => {
   // a session owned by the payload transcript UUID. It never adopts the newest
   // session in the dir, because that can be another transcript's session.
   // No owned session => allow stop and write nothing.
-  let sessionDir = null;
+  // HS-1: the shared resolveSession chain, purpose 'record' (terminal-
+  // inclusive: by the time Stop fires the skill has usually written
+  // pipeline_state: complete, and the hook still finalizes it), no claim.
   const payloadId = input && input.session_id;
-  if (isSdkUuidShape(payloadId)) {
-    // Terminal-inclusive: by the time Stop fires the skill has usually
-    // written pipeline_state: complete, and the hook still finalizes it.
-    sessionDir = resolveOwnedSession(payloadId, { includeTerminal: true });
-    if (!sessionDir) {
-      console.error(`[VerifyCompletion] no session owned by transcript ${payloadId}; allowing stop`);
-    }
-  } else {
-    // Legacy non-UUID payload (a cAgents session_id name, or none).
-    sessionDir = findActiveSession(payloadId);
-    // Explicit-hint, terminal-inclusive resolution. findActiveSession returns
-    // null for a terminal session, so resolve the named dir directly.
-    if (!sessionDir && payloadId) {
-      const hintedDir = path.join(AGENT_MEMORY_DIR, 'sessions', payloadId);
-      if (payloadId === path.basename(payloadId) && fs.existsSync(hintedDir)) {
-        sessionDir = hintedDir;
-        console.error(`[VerifyCompletion] findActiveSession returned null (session terminal); resolving explicit session_id hint directly: ${path.basename(sessionDir)}`);
-      }
-    }
+  let sessionDir = resolveSession(input, { purpose: 'record', claimHint: false });
+  if (!sessionDir) {
+    console.error(`[VerifyCompletion] no session owned by or pinned for transcript ${payloadId || '(none)'}; allowing stop`);
+  } else if (!isSdkUuidShape(payloadId) && getSessionOwner(sessionDir)) {
     // A non-UUID payload names no transcript, so it cannot own a claimed
     // session. A session with an owner marker is foreign here: leave it alone.
-    if (sessionDir && getSessionOwner(sessionDir)) {
-      console.error(`[VerifyCompletion] session ${path.basename(sessionDir)} is owned by another transcript; allowing stop`);
-      sessionDir = null;
-    }
+    console.error(`[VerifyCompletion] session ${path.basename(sessionDir)} is owned by another transcript; allowing stop`);
+    sessionDir = null;
   }
   if (!sessionDir) return null;
 
@@ -1640,12 +1568,37 @@ createHook('VerifyCompletion', async (input) => {
   // This ensures the session is in a terminal state when checked.
   applyValidatedToCompleteTransition(sessionDir);
 
-  // Auto-resolve fixable warnings before scoring.
-  // Creates stub files for missing artifacts that would otherwise produce
-  // warnings. This is a safety net — /act Step 4 should write these files.
-  const autoResolved = autoResolveWarnings(sessionDir);
+  // A3c: a Stop on a LIVE session (fresh running child or fresh heartbeat with
+  // children) is an intermediate Stop, not the end of the session. Do not stamp
+  // a terminal state then: a terminal stamp makes every
+  // resolver (hook-utils _tryResolveCandidate) refuse the still-running session.
+  // WI-13b / HS-4: an idle /team lead between waves (latest gate passed, a later
+  // wave pending, activity < 24 h) is also not finished. The predicate lives in
+  // team-stop.cjs (single copy); see loadTeamIdleBetweenWaves.
+  const liveStatusRaw = safeRead(path.join(sessionDir, 'status.yaml'));
+  const activeAtStop = sessionActivelyWorking(sessionDir, liveStatusRaw);
+  const idleBetweenWavesFn = activeAtStop ? null : loadTeamIdleBetweenWaves();
+  const idleAtStop = !activeAtStop && !!(idleBetweenWavesFn && idleBetweenWavesFn(sessionDir, liveStatusRaw));
+  const liveAtStop = activeAtStop || idleAtStop;
+  if (liveAtStop) console.error(`[VerifyCompletion] session is live at Stop; skipping force-terminal stamp (signal: ${activeAtStop ? 'active-work' : 'idle-between-waves'}): ${path.basename(sessionDir)}`);
+  // WI-028 / HS-10: guarded, idempotent self-heal instead of stub files (see hook-utils
+  // repairSession). Stop mode is evidence-only (logged stop, root of a terminal session,
+  // genuinely validated summary), so it is safe while the session is live and never
+  // closes a row on age.
+  const autoResolved = repairSession(sessionDir, { mode: 'stop' });
+  const repairNeedsUser = autoResolved.filter(r => r.needs_user);
+  // P0-3 (kept from autoResolveWarnings): name missing coordination_log fields on stderr; never stamp placeholders.
+  {
+    const coordP03 = safeRead(path.join(sessionDir, 'workflow', 'coordination_log.yaml'));
+    if (coordP03) {
+      const missingFields = ['self_validation', 'pre_execution', 'mid_execution'].filter(k => !coordP03.includes(k))
+        .map(k => (k === 'self_validation' ? k : `validation_checkpoints.${k}`));
+      if (missingFields.length) console.error(`[verify-completion] coordination_log.yaml missing fields: ${missingFields.join(', ')}. Hook will not stamp placeholders (P0-3).`);
+    }
+  }
 
   const result = verifyCompletion(sessionDir);
+  for (const r of repairNeedsUser) result.warnings.push(r.message); // WI-028: unrepairable state, one line
 
   // Ensure pipeline_state is terminal so finalizeSessionLifecycle can run.
   // Many sessions (especially legacy org_* sessions) exit with pipeline_state still at "init"
@@ -1657,7 +1610,7 @@ createHook('VerifyCompletion', async (input) => {
       const curPipeline = extractYamlValue(statusRaw, 'pipeline_state');
       const curPhase = extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
       const curVal = curPipeline || curPhase;
-      if (!curVal || !isTerminalState(curVal)) {
+      if (!liveAtStop && (!curVal || !isTerminalState(curVal))) {
         // REC-02 honesty: a NON-terminal session at Stop is finalized to
         // `complete` ONLY when it is genuinely validated (a real, non-safety-net
         // PASS report + — for plan-bearing sessions — a completed
@@ -1995,6 +1948,8 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
   // Status: completed (no issues), failed (issues found), interrupted (other)
   ensureDir(sessionDir);
   const summaryFile = path.join(sessionDir, 'completion_summary.yaml');
+  // WI-028 emit-once: remember the previous Stop's warning block before overwriting it.
+  const prevWarningsBlock = ((safeRead(summaryFile) || '').split(/^warnings:/m)[1] || '').trim();
   const timestamp = new Date().toISOString();
   const completionStatus = result.issues.length === 0 ? 'completed' : 'failed';
   const content = `# Completion Summary
@@ -2050,10 +2005,16 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
   }
 
   if (result.warnings.length > 0) {
+    // WI-028 emit-once: the same warning set was already shown at an earlier Stop of this session.
+    const curWarningsBlock = result.warnings.map(w => `  - "${w}"`).join('\n').trim();
+    if (curWarningsBlock === prevWarningsBlock) {
+      console.error(`[VerifyCompletion] ${result.warnings.length} warning(s) unchanged since last Stop; not re-shown`);
+      return null;
+    }
     console.error(`[VerifyCompletion] WARNINGS: ${result.warnings.join('; ')}`);
     return {
       continue: true,
-      systemMessage: `cAgents workflow stopping with ${result.warnings.length} warning(s). See ${path.relative(PROJECT_ROOT, summaryFile)} for details.`
+      systemMessage: `cAgents warning: ${result.warnings[0]}${result.warnings.length > 1 ? ` (+${result.warnings.length - 1} more in ${path.relative(PROJECT_ROOT, summaryFile)})` : ''}`
     };
   }
 
@@ -2073,8 +2034,7 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
     'Also: call TaskList and mark all your in_progress/pending tasks as completed or deleted via TaskUpdate.'
   ].join('\n');
 
-  return {
-    continue: true,
-    systemMessage: fourQuestions
-  };
+  // WI-028 R-SELF: the self-check is addressed to the model, but systemMessage is shown to the user only.
+  void fourQuestions;
+  return null;
 });

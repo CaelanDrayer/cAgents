@@ -223,8 +223,8 @@ describe('strict session ownership (WI-1)', () => {
     expect(utils.findTeamSession({ session_id: UUID_A })).toBeNull();
     const own = makeSession(sessionsDir, 'team_mine_260927_001', { owner: UUID_A });
     expect(utils.findTeamSession({ session_id: UUID_A })).toBe(own);
-    // No hint: legacy newest-team behavior.
-    expect(utils.findTeamSession({})).toBe(join(sessionsDir, 'team_nobody_260927_003'));
+    // No hint and 3 live team sessions: HS-1 removed the newest-team guess.
+    expect(utils.findTeamSession({})).toBeNull();
   });
 
   it('findActiveSession env step skips a foreign-owned session when a UUID is known', () => {

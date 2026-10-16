@@ -167,11 +167,25 @@ describe('team-stop.cjs terminal-state liveness guard', () => {
 
   it('DOES stamp terminal state on a genuinely finished session', () => {
     // No running child and a stale heartbeat => teardown should finalize.
+    // HS-4 (e), WI-10: "genuinely finished" now also means every work item is
+    // completed AND a real validator PASS is on disk; only then does team-stop
+    // assert VALIDATED.
+    const { sessionId, dir } = makeTeamSession({ heartbeatAgeMs: 6 * 60 * 60 * 1000, runningChild: false });
+    writeFileSync(join(dir, 'team', 'task_list.yaml'), 'tasks:\n  - id: WI-1\n    status: completed\n');
+    writeFileSync(join(dir, 'workflow', 'validation_report.yaml'), 'classification: PASS\ngenerated_by: validator\n');
+    runHook(sessionId);
+    const status = readStatus(dir);
+    expect(status, 'a finished, validated session must still be finalized').toMatch(/^phase:\s*completed/m);
+    expect(status).toMatch(/^pipeline_state:\s*VALIDATED/m);
+  });
+
+  it('does NOT stamp VALIDATED on an abandoned session with no genuine validator PASS (HS-4 e)', () => {
     const { sessionId, dir } = makeTeamSession({ heartbeatAgeMs: 6 * 60 * 60 * 1000, runningChild: false });
     runHook(sessionId);
     const status = readStatus(dir);
-    expect(status, 'an abandoned session must still be finalized').toMatch(/^phase:\s*completed/m);
-    expect(status).toMatch(/^pipeline_state:\s*VALIDATED/m);
+    expect(status).toMatch(/^phase:\s*EXECUTING/m);
+    expect(status).toMatch(/^pipeline_state:\s*EXECUTING/m);
+    expect(status, 'placeholders are still filled').not.toMatch(/completed_at:\s*null/);
   });
 
   it('still fills completed_at/result placeholders on a live session', () => {

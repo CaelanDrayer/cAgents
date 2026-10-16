@@ -4,7 +4,7 @@ This schema reduces the token cost of each spawn prompt. The cost falls from abo
 
 ## The Problem (CI-3 from enriched_context)
 
-`teammate-spawning-template.md` is the prompt template that each `Agent()` call inlines. A run has 5 to 7 subagents in each wave, and it has 5 to 7 waves. The tool-call history of the lead therefore collects 25 to 49 large spawn prompts. Each prompt repeats the role boilerplate, the self-registration script, and the shared session paths. That bloat stays in the context of the lead for the entire run.
+`teammate-spawning-template.md` is the prompt template that each `Agent()` call inlines. A run has 5 to 7 subagents in each wave, and it has 5 to 7 waves. The tool-call history of the lead therefore collects 25 to 49 large spawn prompts. Each prompt repeats the role boilerplate, the agent-tree rules, and the shared session paths. That bloat stays in the context of the lead for the entire run.
 
 ## The Solution
 
@@ -52,8 +52,8 @@ Write the result to `${SESSION_DIR}/outputs/wave-{K}/task-{N}/self-validation.ya
 ## Tool Availability Note
 On CC ≥ 2.1.219 the Agent tool is normally present on your surface (subagents spawn subagents up to depth 3 by default), so delegate as usual. Only if the Agent tool is verifiably absent (at the nesting ceiling, or in a regressed or older harness), gracefully degrade to direct execution using Read/Write/Edit/Bash (see `.claude/rules/core/teams.md` § Nesting-Ceiling Degradation). Do NOT report BLOCKED for a missing Agent tool. Verify it is actually absent, then execute the work yourself and self-validate.
 
-## Self-Registration (agent tree)
-Append your entry to `${SESSION_DIR}/workflow/agent_tree.yaml` on start. See `.claude/skills/team/reference/teammate-spawning-template.md` § Self-Registration for the snippet.
+## Agent Tree (hook-owned)
+Do not edit `${SESSION_DIR}/workflow/agent_tree.yaml`. The hooks record your spawn and your stop in `workflow/events.jsonl`. They then update the tree through `updateYamlLocked`. The `SESSION_DIR` line in your prompt binds your spawns to this session.
 ```
 
 ## Short Spawn Prompt (per subagent)

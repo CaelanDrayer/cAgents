@@ -1,6 +1,6 @@
 # Subagent Spawning Template
 
-This file keeps the name `teammate-spawning-template.md` for back-compat with each @-reference. It gives the full spawn prompt template for a subagent. It also gives the self-registration block, and the details of the isolation worktree for /team.
+This file keeps the name `teammate-spawning-template.md` for back-compat with each @-reference. It gives the full spawn prompt template for a subagent. It also gives the hook-owned agent tree rule, and the details of the isolation worktree for /team.
 
 ## Spawn Mechanism: Concurrent Agent Waves (DEFAULT)
 
@@ -48,29 +48,13 @@ CRITICAL: You are a CONTROLLER agent. Your job is to coordinate execution, NOT i
 Spawn the execution agent below via Agent tool, then spawn a reviewer to validate.
 Direct implementation without delegating to execution agents is a violation of the team protocol.
 
-SELF-REGISTRATION (belt-and-suspenders agent tree tracking):
-Immediately after reading this prompt, write your own entry to {SESSION_DIR}/workflow/agent_tree.yaml
-using the Bash tool. This ensures you appear in the agent tree even if the SubagentStart hook
-failed to resolve the session. Use this YAML append command:
-   Bash: node -e \"
-     const fs=require('fs'),yaml=require('js-yaml'),path=require('path');
-     const treeFile='{SESSION_DIR}/workflow/agent_tree.yaml';
-     let obj={agents:[]};
-     try{obj=yaml.load(fs.readFileSync(treeFile,'utf8'))||{agents:[]}}catch(e){}
-     if(!Array.isArray(obj.agents))obj.agents=[];
-     const id='subagent-{K}-{N}-'+Date.now();
-     if(!obj.agents.some(a=>a.cagents_type==='cagents:{CONTROLLER_TYPE}'&&a.session==='{SESSION_ID}')){
-       obj.agents.push({id,type:'cagents:{CONTROLLER_TYPE}',parent:'lead',depth:1,
-         spawned_at:new Date().toISOString(),stopped_at:null,
-         cagents_type:'cagents:{CONTROLLER_TYPE}',short_role:'{CONTROLLER_TYPE}',
-         role_description:'Wave {K} subagent - TASK-{N}',session:'{SESSION_ID}'});
-       fs.writeFileSync(treeFile,yaml.dump(obj));
-     }\"
+AGENT TREE (hook-owned): Do NOT edit {SESSION_DIR}/workflow/agent_tree.yaml by hand.
+The hooks derive it from the append-only workflow/events.jsonl and rewrite it atomically.
+The SESSION_DIR line in your prompt already binds your spawns to this session.
 
 INSTRUCTIONS:
 1. Read outputs from previous waves if your work item depends on them
-2. Write your self-registration entry to {SESSION_DIR}/workflow/agent_tree.yaml (see above)
-3. Spawn the execution agent to implement the work item:
+2. Spawn the execution agent to implement the work item:
    Agent({
      subagent_type: 'cagents:{agent_from_work_items}',
      description: 'Implement TASK-{N}: {short_description}',
@@ -79,10 +63,9 @@ INSTRUCTIONS:
 SESSION_DIR: {SESSION_DIR}
 SESSION_ID: {SESSION_ID}
 
-SELF-REGISTRATION: After starting work, append your own entry to {SESSION_DIR}/workflow/agent_tree.yaml so the SubagentStart hook can resolve you even when CAGENTS_ACTIVE_SESSION is not inherited.
-Use: node -e \"const fs=require(\\\"fs\\\"),yaml=require(\\\"js-yaml\\\");const f=\\\"{SESSION_DIR}/workflow/agent_tree.yaml\\\";let o={agents:[]};try{o=yaml.load(fs.readFileSync(f,\\\"utf8\\\"))||{agents:[]}}catch(e){}if(!Array.isArray(o.agents))o.agents=[];const id=\\\"exec-{N}-\\\"+Date.now();if(!o.agents.some(a=>a.id===id)){o.agents.push({id,type:\\\"cagents:{agent_from_work_items}\\\",parent:\\\"subagent-{K}-{N}\\\",depth:2,spawned_at:new Date().toISOString(),stopped_at:null,cagents_type:\\\"cagents:{agent_from_work_items}\\\",short_role:\\\"{agent_from_work_items}\\\",role_description:\\\"Execute TASK-{N}\\\",session:\\\"{SESSION_ID}\\\"});fs.writeFileSync(f,yaml.dump(o))}\"'
+Do NOT edit {SESSION_DIR}/workflow/agent_tree.yaml by hand; the hooks own it.'
    })
-4. After execution agent returns, spawn a reviewer to validate:
+3. After execution agent returns, spawn a reviewer to validate:
    Agent({
      subagent_type: 'cagents:reviewer',
      description: 'Review TASK-{N}',
@@ -91,8 +74,8 @@ Use: node -e \"const fs=require(\\\"fs\\\"),yaml=require(\\\"js-yaml\\\");const 
 SESSION_DIR: {SESSION_DIR}
 SESSION_ID: {SESSION_ID}'
    })
-5. If REVISE: re-spawn execution agent with feedback (max 3 rounds)
-6. Write outputs to {SESSION_DIR}/outputs/task-{N}/
+4. If REVISE: re-spawn execution agent with feedback (max 3 rounds)
+5. Write outputs to {SESSION_DIR}/outputs/task-{N}/
 7. If issues arise: flag to lead via SendMessage but continue working
 8. On completion:
    TaskUpdate({ taskId: '{task_id}', status: 'completed' })

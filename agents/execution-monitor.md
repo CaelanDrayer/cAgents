@@ -116,3 +116,6 @@ See @execution-monitor/resources/executor-patterns.md for the monitoring pattern
 
 - See @docs/example-store/ex-gates-context-budget-tiers.md. It shifts the monitoring read-depth across the peak, good, degrading, and poor bands. It also checkpoints before a forced compaction.
 - See @docs/example-store/ex-gates-deterministic-candidate-selection.md. Bind each spawn to named files. Record what you deliberately skipped.
+- See @docs/example-store/ex-verification-completed-is-not-done.md. Treat a 'completed' status as a claim. Check the outputs before you call the work done.
+- See @docs/example-store/ex-verification-loop-contract-three-exits.md. Give each loop a success exit, a failure exit, and a budget exit, plus guards against thrashing.
+- See @docs/example-store/ex-structured-io-terse-return-grammar.md. Use a fixed reply grammar: one row per hit, a zero-hit sentinel, a totals line, and canned refusals.

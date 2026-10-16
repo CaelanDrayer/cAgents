@@ -113,3 +113,9 @@ If any source file is missing or malformed:
 - Reply: `coordination_log: {N} WIs mapped, status: partial (missing {sources})`
 
 Never silently emit a coordination_log with omitted WIs. Always account for every WI in `work_items.yaml`, even if as `status: failed, reason: source-unavailable`.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-structured-io-pre-send-shape-check.md. Make five cuts before you send a report or a reply. The first and last lines must stand alone.

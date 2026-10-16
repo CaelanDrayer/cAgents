@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 metadata:
   author: CaelanDrayer
-  version: "12.74.1"
+  version: "12.76.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
@@ -103,7 +103,7 @@ If the user gives `--iterate <session_id>`, load the completed design from the e
 4. Compose: SESSION_ID="designer_{slug}_{YYMMDD}_{NNN}"
 5. SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 6. mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs" "${SESSION_DIR}/question_prep"
-7. Write self-registration to `${SESSION_DIR}/workflow/agent_tree.yaml` (designer at depth 0).
+7. Seed `${SESSION_DIR}/workflow/agent_tree.yaml` with the depth-0 designer entry in a top-level `agents:` list. After this, the hooks own the file.
 ```
 
 Write `instruction.yaml` with these fields: session_id, session_type: designer, command, request, created_at, flags, parent_session_id, and working_directory.

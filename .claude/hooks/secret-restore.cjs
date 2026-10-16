@@ -28,8 +28,10 @@
  */
 
 const fs = require('fs');
+const os = require('os');
+const crypto = require('crypto');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, ensureDir } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, PROJECT_ROOT, ensureDir } = require('./hook-utils.cjs');
 
 function getSessionIdForRestore(input) {
   // Deterministic chain per .claude/rules/core/hooks.md Concurrency Contract:
@@ -87,6 +89,177 @@ function parseManifest(manifestPath) {
   return { sessionId, entries };
 }
 
+// WI-17 (write-then-exec): the backup dir sits under cagents-memory/, and a
+// permission rule lets an agent write there with no prompt. A planted manifest
+// plus a planted .orig would make this Stop hook write any content to any
+// path, a hook file included, outside the permission system. A restore target
+// is accepted only when the manifest entries can be true:
+//   - each placeholder is BLOCK_<8 hex> and its hash field equals the hex;
+//   - the target is a regular file (not a symlink) that holds a placeholder
+//     recorded for it, which is what sanitize mode left on disk;
+//   - the .orig backup is a regular file (not a symlink).
+// A file holds a BLOCK_<hex> placeholder only after sanitize mode wrote it,
+// so a planted manifest cannot name a hook, a settings file or a dotfile.
+const PLACEHOLDER_RE = /^BLOCK_([0-9a-f]{8})$/;
+
+// WI-17 round 2 (F3): "the target holds a BLOCK_<hex> placeholder" is not
+// proof that sanitize wrote it. Any file that records agent-chosen text can
+// hold one: a commit message lands in .git/logs/HEAD and .git/COMMIT_EDITMSG.
+// So a restore target must also sit in an allowed place:
+//   - its resolved path (parent symlinks followed) is under the project root
+//     or the OS temp dir;
+//   - no path segment is a VCS, tool-config, hook or dependency directory;
+//   - its basename is not a shell rc / settings / hooks / package file.
+// The write itself goes through one fd opened with O_NOFOLLOW, and the fd's
+// dev/ino must equal the lstat taken at check time. That closes the race in
+// which the checked file is swapped for a symlink (or another file) between
+// the check and the write. A file with more than one hard link is refused,
+// since a write to it would also change a file outside the allowed places.
+const PROTECTED_SEGMENTS = new Set([
+  '.git', '.hg', '.svn', '.claude', '.claude-plugin', '.husky', '.github',
+  '.gitlab', '.vscode', '.idea', 'node_modules', '.ssh', '.gnupg', '.config',
+  '.local', '.cache',
+]);
+const PROTECTED_BASENAME_RE = /^(?:settings(?:\.[\w-]+)?\.json|hooks\.json|plugin\.json|marketplace\.json|package(?:-lock)?\.json|\.(?:bash(?:rc|_profile|_login|_logout)|profile|zshrc|zprofile|zshenv|zlogin|envrc|npmrc|yarnrc(?:\.yml)?|gitconfig|gitattributes|gitmodules|mcp\.json)|Makefile|CLAUDE\.md)$/;
+
+function realOrNull(p) {
+  try { return fs.realpathSync(p); } catch { return null; }
+}
+
+// Returns { reason } on refusal, else { real } (the resolved target path).
+function restorePathCheck(filePath) {
+  if (typeof filePath !== 'string' || !path.isAbsolute(filePath)) return { reason: 'target path is not absolute' };
+  const dir = realOrNull(path.dirname(filePath));
+  if (!dir) return { reason: 'target directory does not resolve' };
+  const base = path.basename(filePath);
+  const real = path.join(dir, base);
+  const roots = [realOrNull(PROJECT_ROOT), realOrNull(os.tmpdir())].filter(Boolean);
+  const root = roots.find(r => real.startsWith(r.endsWith(path.sep) ? r : r + path.sep));
+  if (!root) return { reason: 'target is outside the project root' };
+  const segs = path.relative(root, real).split(path.sep);
+  if (segs.slice(0, -1).some(seg => PROTECTED_SEGMENTS.has(seg))) return { reason: 'target is under a protected directory' };
+  if (PROTECTED_BASENAME_RE.test(base)) return { reason: 'target is a protected config file' };
+  return { real };
+}
+
+// Returns { reason } on refusal, else { real, st } for the bound write.
+function restoreTargetCheck(filePath, entries) {
+  const mine = entries.filter(e => e.file_path === filePath);
+  for (const e of mine) {
+    const m = PLACEHOLDER_RE.exec(e.placeholder || '');
+    if (!m) return { reason: 'placeholder is not BLOCK_<8 hex>' };
+    if (e.hash && e.hash !== m[1]) return { reason: 'hash does not match the placeholder' };
+  }
+  const pc = restorePathCheck(filePath);
+  if (pc.reason) return pc;
+  let st;
+  try { st = fs.lstatSync(pc.real); } catch { return { reason: 'target does not exist' }; }
+  try { if (fs.lstatSync(filePath).isSymbolicLink()) return { reason: 'target is not a regular file' }; } catch { return { reason: 'target does not exist' }; }
+  if (!st.isFile()) return { reason: 'target is not a regular file' };
+  if (st.nlink > 1) return { reason: 'target has more than one hard link' };
+  let current;
+  try { current = readNoFollow(pc.real, st); } catch (e) { return { reason: `target is not readable (${e.code || e.message})` }; }
+  // Overlapping findings can nest one placeholder inside another, so the final
+  // file can hold only some of them. One recorded placeholder is enough.
+  if (!mine.some(e => current.includes(e.placeholder))) return { reason: 'target does not hold a recorded placeholder' };
+  return { real: pc.real, st };
+}
+
+// WI-17 round 3 (F3): the place checks above say WHERE restore may write,
+// not WHAT. A planted manifest plus a planted .orig could still overwrite a
+// file that already holds BLOCK_<hex> (the repo ships test files that do)
+// with any content, and an allow-listed test runner would then execute it.
+// So the .orig must be exactly what sanitize mode replaced: the current
+// target content with each BLOCK_<hex> placeholder put back as a substring s
+// where
+//   (a) sha256(s).hex.slice(0, 8) equals the placeholder hex, which is how
+//       secret-detection.cjs sanitizeContent() derives it; and
+//   (b) s is a plain secret token (SECRET_TOKEN_RE: no quote, whitespace,
+//       paren, semicolon, backtick, `$`, brace or angle bracket).
+// A placeholder may also stand for itself (a file that carried a literal
+// BLOCK_<hex> before sanitize). Anything else is refused.
+const SECRET_TOKEN_CHAR_RE = /[A-Za-z0-9_\-+\/=.:@%~]/;
+const SECRET_TOKEN_MIN = 8;
+const SECRET_TOKEN_MAX = 512;
+const MAX_PLACEHOLDERS = 256;
+const MATCH_STEP_BUDGET = 262144; // 2^18 matcher steps; not a token budget
+
+function sha8(s) {
+  return crypto.createHash('sha256').update(s).digest('hex').slice(0, 8);
+}
+
+// True when `orig` equals `current` with each BLOCK_<hex> put back as above.
+function origMatchesSanitized(current, orig) {
+  if (typeof current !== 'string' || typeof orig !== 'string') return false;
+  const parts = current.split(/(BLOCK_[0-9a-f]{8})/);
+  if ((parts.length - 1) / 2 > MAX_PLACEHOLDERS) return false;
+  let steps = 0;
+  const memo = new Set();
+  function at(pi, oi) {
+    if (++steps > MATCH_STEP_BUDGET) return false;
+    if (pi === parts.length) return oi === orig.length;
+    const key = pi + ':' + oi;
+    if (memo.has(key)) return false;
+    memo.add(key);
+    const part = parts[pi];
+    if (pi % 2 === 0) {
+      return orig.startsWith(part, oi) && at(pi + 1, oi + part.length);
+    }
+    const hex = part.slice(6);
+    if (orig.startsWith(part, oi) && at(pi + 1, oi + part.length)) return true;
+    let end = oi;
+    const limit = Math.min(orig.length, oi + SECRET_TOKEN_MAX);
+    while (end < limit && SECRET_TOKEN_CHAR_RE.test(orig[end])) {
+      end++;
+      if (end - oi >= SECRET_TOKEN_MIN && sha8(orig.slice(oi, end)) === hex && at(pi + 1, end)) return true;
+    }
+    return false;
+  }
+  return at(0, 0);
+}
+
+// Back-compat name used by older callers/tests: reason string or null.
+function restoreTargetRejection(filePath, entries) {
+  const r = restoreTargetCheck(filePath, entries);
+  return r.reason || null;
+}
+
+function sameInode(a, b) {
+  return a.dev === b.dev && a.ino === b.ino;
+}
+
+// Read a regular file through one O_NOFOLLOW fd. When `expect` is given, the
+// fd must be that inode.
+function readNoFollow(p, expect) {
+  const fd = fs.openSync(p, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+  try {
+    const fst = fs.fstatSync(fd);
+    if (!fst.isFile()) throw Object.assign(new Error('not a regular file'), { code: 'ENOTREG' });
+    if (expect && !sameInode(fst, expect)) throw Object.assign(new Error('file changed since check'), { code: 'ECHANGED' });
+    return fs.readFileSync(fd, 'utf8');
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+// Overwrite the checked target through one O_NOFOLLOW fd bound to the inode
+// that was checked. No O_CREAT: the file must still exist.
+function writeBound(real, expect, content) {
+  const fd = fs.openSync(real, fs.constants.O_WRONLY | fs.constants.O_NOFOLLOW);
+  try {
+    const fst = fs.fstatSync(fd);
+    if (!fst.isFile() || !sameInode(fst, expect) || fst.nlink > 1) {
+      throw Object.assign(new Error('target changed between check and write'), { code: 'ECHANGED' });
+    }
+    fs.ftruncateSync(fd, 0);
+    const buf = Buffer.from(content, 'utf8');
+    let off = 0;
+    while (off < buf.length) off += fs.writeSync(fd, buf, off, buf.length - off, off);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function logRestoreEvent(logEntry) {
   try {
     const logDir = ensureDir(path.join(AGENT_MEMORY_DIR, '_system', 'logs'));
@@ -98,7 +271,7 @@ function logRestoreEvent(logEntry) {
   }
 }
 
-createHook('SecretRestore', async (input) => {
+async function restoreHandler(input) {
   const sessionId = getSessionIdForRestore(input);
   if (!sessionId) {
     // No session context — nothing to restore.
@@ -144,9 +317,19 @@ createHook('SecretRestore', async (input) => {
   // restore. Since each Write/Edit produces one .orig, and the manifest
   // entries reference the same file_path, we restore each file_path once.
   const filePathsToRestore = [...new Set(entries.map(e => e.file_path))];
+  // .orig files recorded for a refused target are kept for manual recovery.
+  const keepOrigs = new Set();
 
   for (const filePath of filePathsToRestore) {
     let candidateOrig = null;
+
+    const check = restoreTargetCheck(filePath, entries);
+    if (check.reason) {
+      failed.push({ file_path: filePath, reason: `refused: ${check.reason}` });
+      console.error(`[SecretRestore] refused restore of ${filePath}: ${check.reason}`);
+      for (const e of entries) if (e.file_path === filePath && e.orig) keepOrigs.add(path.basename(e.orig));
+      continue;
+    }
 
     // P5.5: deterministic pairing. Prefer the .orig filename this file_path
     // recorded in the manifest (`orig` field). This fixes the content-swap bug
@@ -184,10 +367,24 @@ createHook('SecretRestore', async (input) => {
     }
 
     try {
-      const origContent = fs.readFileSync(candidateOrig, 'utf8');
-      const targetDir = path.dirname(filePath);
-      if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-      fs.writeFileSync(filePath, origContent);
+      const ost = fs.lstatSync(candidateOrig);
+      if (!ost.isFile()) {
+        failed.push({ file_path: filePath, reason: 'refused: .orig backup is not a regular file' });
+        continue;
+      }
+      const origContent = readNoFollow(candidateOrig, ost);
+      // F3 round 3: the .orig must be the sanitized target with only secret
+      // tokens put back. Re-read the target through the bound fd so the
+      // compared content is the content about to be overwritten.
+      const current = readNoFollow(check.real, check.st);
+      if (!origMatchesSanitized(current, origContent)) {
+        failed.push({ file_path: filePath, reason: 'refused: .orig is not the target with secret tokens restored' });
+        console.error(`[SecretRestore] refused restore of ${filePath}: .orig is not the target with secret tokens restored`);
+        keepOrigs.add(path.basename(candidateOrig));
+        continue;
+      }
+      // F3: one fd, O_NOFOLLOW, bound to the inode checked above.
+      writeBound(check.real, check.st, origContent);
       restored.push({ file_path: filePath, orig: candidateOrig });
       // Remove the .orig file we just consumed so a second sanitize on the
       // same file_path doesn't restore the wrong version.
@@ -202,10 +399,16 @@ createHook('SecretRestore', async (input) => {
 
   // Clean up: remove any remaining .orig files + manifest.
   for (const origFile of backedUpFiles) {
+    if (keepOrigs.has(origFile)) continue;
     try { fs.unlinkSync(path.join(backupDir, origFile)); } catch { /* best-effort */ }
   }
+  // The manifest goes either way. Stop fires at each turn end, so a kept
+  // manifest would refuse again each time. The log names each kept .orig.
   try { fs.unlinkSync(manifestPath); } catch { /* best-effort */ }
-  try { fs.rmdirSync(backupDir); } catch { /* best-effort */ }
+  try { fs.rmdirSync(backupDir); } catch { /* best-effort: a kept .orig leaves it non-empty */ }
+  if (keepOrigs.size > 0) {
+    console.error(`[SecretRestore] kept ${keepOrigs.size} .orig backup(s) of refused target(s) in ${backupDir} for manual recovery.`);
+  }
 
   logRestoreEvent({
     timestamp: new Date().toISOString(),
@@ -223,4 +426,9 @@ createHook('SecretRestore', async (input) => {
   }
 
   return null;
-});
+}
+
+// CAGENTS_DISPATCH_IMPORT: a test imports the helpers without the Stop run.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) createHook('SecretRestore', restoreHandler);
+
+module.exports = { restoreHandler, origMatchesSanitized, restorePathCheck, restoreTargetCheck, restoreTargetRejection, writeBound, readNoFollow };

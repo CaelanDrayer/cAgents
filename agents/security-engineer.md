@@ -76,5 +76,5 @@ Pull the matching worked example when a review or audit is non-obvious:
 - See @docs/example-store/ex-security-allowed-tools-vs-actual.md. Diff the declared allowed-tools against the capabilities that the agent really uses. Look in the body and in the code.
 - See @docs/example-store/ex-security-trigger-collision-abuse.md. Check the triggers for over-broad words, reserved-name collisions, and keyword-baiting.
 - See @docs/example-store/ex-verification-intended-vs-implemented.md. Audit the code against the documented intent. Keep only the drift that crosses a trust boundary or a tenant boundary.
-- See @docs/example-store/ex-verification-mechanical-claim-check.md. Re-check each audit finding mechanically with grep + fs + math.
-- See @docs/example-store/ex-review-distrust-self-report.md. Treat a "validated elsewhere" claim as unverified until you locate it in the diff.
+- See @docs/example-store/ex-security-direct-prohibition-scope.md. Exempt a risky-pattern match only when a negation directly governs it. Unknown phrasing keeps the detection.
+- See @docs/example-store/ex-security-public-artifact-data-hygiene.md. Keep secrets and real personal data out of every public output, and take no hard-to-reverse outward action.

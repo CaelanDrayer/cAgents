@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 import { existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -7,10 +7,15 @@ import { execSync, spawnSync } from 'child_process';
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const HOOK_PATH = join(HOOKS_DIR, 'subagent-tracker.cjs');
 
+// HS-5: runHook spawns get CLAUDE_PROJECT_DIR=<mkdtemp project>, so the hook
+// never appends to the real repo _system/logs/agent_spawns.log.
+const RUNHOOK_PROJ = mkdtempSync(join(tmpdir(), 'cagents-tracker-'));
+afterAll(() => rmSync(RUNHOOK_PROJ, { recursive: true, force: true }));
+
 function runHook(input) {
   const result = execSync(
     `printf '%s' '${JSON.stringify(input).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
-    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] }
+    { encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, CLAUDE_PROJECT_DIR: RUNHOOK_PROJ } }
   );
   return JSON.parse(result.trim());
 }
@@ -93,9 +98,16 @@ describe('subagent-tracker.cjs', () => {
       // Strict ownership (WI-3): the newest-session guess is removed by design.
       // The tracker files a spawn only in a session owned by the payload UUID,
       // and drops a resolved dir whose marker names another transcript.
+      // HS-1 (WI-7): the ownership check moved into the shared resolveSession
+      // chain in hook-utils.cjs, so the tracker calls that, and hook-utils does
+      // the foreign-owner drop.
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
       expect(hookContent).not.toContain('findMostRecentSessionDir');
-      expect(hookContent).toContain('getSessionOwner');
+      expect(hookContent).toContain('resolveSession(input');
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      const fn = utils.slice(utils.indexOf('function resolveSession('), utils.indexOf('function readSessionEvents('));
+      expect(fn).toContain('getSessionOwner(dir)');
+      expect(fn).not.toMatch(/mtime|findMostRecentSessionDir/);
     });
 
     it('hook-utils routes terminal-state checks through isTerminalState()', () => {
@@ -174,30 +186,35 @@ describe('subagent-tracker.cjs', () => {
       }
     });
 
-    it('should skip append and log error for malformed agent_tree.yaml', () => {
-      // Content-based check: verify the hook source handles yaml.load() parse errors
+    it('should quarantine a malformed agent_tree.yaml and rebuild it from events.jsonl', () => {
+      // HS-6 (WI-7): a malformed tree used to make the tracker skip the append
+      // (and every later spawn). It is now quarantined to .corrupt-<ts> and
+      // rebuilt from events.jsonl. Behavioral proof: agent-tree-concurrent-burst.test.js.
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('Malformed agent_tree.yaml \u2014 skipping append');
-      expect(hookContent).toContain('parseErr.message');
-      // Hook must still return continue:true — verified by the factory try/catch
-      expect(hookContent).toContain('yaml.load(existingContent)');
+      expect(hookContent).toContain('updateYamlLocked(treeFile, yaml');
+      expect(hookContent).toContain('ctx.recovered');
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      expect(utils).toContain('.corrupt-${Date.now()}');
+      expect(utils).toContain('yamlLib.load(content)');
     });
 
     it('should detect duplicate via parsed object lookup not string match', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
       // Dedup now uses parsedObj.agents.some() instead of string.includes()
-      expect(hookContent).toContain('parsedObj.agents.some(a => a.id === agentId)');
+      // WI-7: `a &&` guards a null row from a hand-edited tree.
+      expect(hookContent).toContain('parsedObj.agents.some(a => a && a.id === agentId)');
       // The old string-based dedup must NOT be present
       expect(hookContent).not.toContain('existingContent.includes(`id: "');
     });
 
     it('should initialize fresh file with valid agents array', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      // Fresh file path initializes parsedObj with empty agents array
-      expect(hookContent).toContain('agents: []');
-      // And writes with header comment
-      expect(hookContent).toContain('headerComment');
-      expect(hookContent).toContain('isFreshFile');
+      // HS-6 (WI-7): a missing/empty tree loads as { agents: [] } in the shared
+      // tolerant loader, and every write carries the hook-owned header.
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      expect(utils).toContain('agents: []');
+      expect(hookContent).toContain('header: agentTreeHeader(sessionDir)');
+      expect(utils).toContain('Do not hand-edit. Hooks rewrite this file atomically.');
     });
 
     it('should require js-yaml module', () => {
@@ -206,8 +223,12 @@ describe('subagent-tracker.cjs', () => {
     });
 
     it('should use yaml.dump for writing entries', () => {
-      const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('yaml.dump(parsedObj)');
+      // HS-6 (WI-7): the dump happens in the shared updateYamlLocked, written
+      // with tmp+rename (writeFileAtomic), never a bare writeFileSync.
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      const fn = utils.slice(utils.indexOf('function updateYamlLocked('), utils.indexOf('function agentTreeHeader('));
+      expect(fn).toContain('writeFileAtomic(filePath, header + yamlLib.dump(obj))');
+      expect(fn).toContain("onTimeout: 'skip'");
     });
 
     // WI-B6: this used to assert the hook logs "missing agents: key \u2014 skipping
@@ -454,7 +475,7 @@ describe('subagent-tracker.cjs', () => {
       // to the depth=1 fallback — which would be WRONG for 'controller' (should be 2).
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
       const mapIndex = hookContent.indexOf('SENTINEL_DEPTH_MAP.hasOwnProperty');
-      const findIndex = hookContent.indexOf('parsedObj.agents.find(a => a.id === parentAgent)');
+      const findIndex = hookContent.indexOf('parsedObj.agents.find(a => a && a.id === parentAgent)');
       expect(mapIndex).toBeGreaterThan(-1);
       expect(findIndex).toBeGreaterThan(-1);
       // SENTINEL_DEPTH_MAP check MUST come before the find() call
@@ -505,20 +526,22 @@ describe('subagent-tracker.cjs', () => {
     const path = require('path');
     const fs = require('fs');
 
-    it('hook source contains Pass 3 prompt-based resolution code', () => {
-      const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      // The third resolution pass must exist
-      expect(hookContent).toContain('Pass 3');
-      expect(hookContent).toContain('tool_input');
-      expect(hookContent).toContain('SESSION[_ ]DIR');
-      expect(hookContent).toContain('CAGENTS_SESSION_ID');
-      expect(hookContent).toContain('Resolved session from prompt hint');
-      expect(hookContent).toContain('Prompt hint session not found on disk');
+    it('prompt-based resolution lives in the shared resolveSession chain', () => {
+      // HS-1 (WI-7): the tracker's own Pass 3 moved into hook-utils
+      // (sessionFromPromptHint, step 2 of resolveSession).
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      expect(utils).toContain('SESSION[_ ]DIR');
+      expect(utils).toContain('CAGENTS_SESSION_ID');
+      expect(utils).toContain('Resolved session from prompt hint');
+      expect(utils).toContain('Prompt hint session not found on disk');
+      const fn = utils.slice(utils.indexOf('function resolveSession('), utils.indexOf('function readSessionEvents('));
+      expect(fn).toContain('sessionFromPromptHint(((input && input.tool_input) || {}).prompt');
     });
 
-    it('hook uses fs.existsSync to verify candidate dir before using prompt hint', () => {
-      const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('fs.existsSync(candidateDir)');
+    it('the prompt hint is verified on disk before use', () => {
+      const utils = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
+      const fn = utils.slice(utils.indexOf('function sessionFromPromptHint('), utils.indexOf('function sessionDirsWrittenByBash('));
+      expect(fn).toContain('fs.existsSync(abs)');
     });
 
     it('resolves session from SESSION_DIR in prompt — behavioral test using isolated temp dir', () => {

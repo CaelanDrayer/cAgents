@@ -1,6 +1,6 @@
 ---
 name: ex-minimalism-surgical-diff-vs-refactor
-description: "Example: a minimal bug-fix diff vs a drive-by refactor that 'improves' unrelated code — the scope-discipline rule that every changed line must trace directly to an acceptance criterion. Load when reviewing a diff for scope creep or fixing a narrowly-scoped bug."
+description: "Example: a minimal bug-fix diff vs a drive-by refactor that 'improves' unrelated code. The scope rule: every changed line must trace directly to an acceptance criterion. Load when you review a diff for scope creep or fix a narrow bug."
 license: MIT
 compatibility: "Claude Code 2.x, cAgents 12.x"
 metadata:
@@ -8,6 +8,8 @@ metadata:
   category: minimalism
   source_repo: multica-ai/andrej-karpathy-skills
   source_url: "https://github.com/multica-ai/andrej-karpathy-skills"
+  source_commit: 2c606141936f1eeef17fa3043a72095b4765b9c2
+  reviewed: "2026-10-15"
   applies_to:
     - cagents:backend-developer
     - cagents:reviewer
@@ -19,13 +21,13 @@ metadata:
 # Example: Surgical Diff vs Drive-By Refactor
 
 ## Context
-cAgents' Stage-1 spec-compliance review implicitly checks scope, but nothing
-illustrates the specific failure of touching code *beyond* the acceptance criteria.
+cAgents' Stage-1 spec-compliance review checks scope implicitly. No example
+shows the failure where an agent changes code beyond the acceptance criteria.
 The work item: "WI-3: fix off-by-one so the last page of results is not dropped."
 
 ## Example
 
-Before — the fix, plus unrequested "improvements" (scope creep):
+Before. The fix, plus "improvements" that nobody asked for (scope creep):
 
 ```diff
  def paginate(items, page, size):
@@ -43,10 +45,11 @@ Before — the fix, plus unrequested "improvements" (scope creep):
 +    ...
 ```
 
-**Problems:** the type check, the rename, and `paginate_v2` trace to no acceptance
-criterion. They enlarge the blast radius and the review surface for a one-line bug.
+**Problems:** the type check, the rename, and `paginate_v2` trace to no
+acceptance criterion. They make the blast radius and the review surface larger
+for a one-line bug.
 
-After — surgical: only the lines the criterion requires:
+After. Surgical: only the lines that the criterion needs.
 
 ```diff
  def paginate(items, page, size):
@@ -55,12 +58,13 @@ After — surgical: only the lines the criterion requires:
      return items[page * size:end]
 ```
 
-Test: **every changed line should trace directly to the user's request.** If a line
-doesn't map to an acceptance criterion, it does not belong in this diff — file it as a
+Test: **every changed line must trace directly to the request.** If a line does
+not map to an acceptance criterion, it does not belong in this diff. Put it in a
 separate work item.
 
 ## Why it matters
-A worked counterexample for a "scope-creep" finding category in Stage-2 review and for
-`code-reviewer`/`qa-lead` training: flag diff lines that don't trace to a criterion.
-Distilled from multica-ai/andrej-karpathy-skills `EXAMPLES.md` (Drive-by Refactoring /
-Style Drift).
+This is a worked counterexample for a "scope creep" finding category in Stage-2
+review, and for `reviewer` and `qa-lead` training. Flag each diff line that does
+not trace to a criterion. Distilled from multica-ai/andrej-karpathy-skills
+`EXAMPLES.md` (section 3, Drive-by Refactoring and Style Drift). The trace test
+comes from `CLAUDE.md` section 3.

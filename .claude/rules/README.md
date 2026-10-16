@@ -114,7 +114,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 2. **core/controller-reference.md**: the detailed controller schemas and protocols.
 3. **core/delegation.md**: the aggressive-delegation rules. `/act`, `/team`, and `/designer` never do direct work.
 4. **core/execution.md**: the execution agent patterns.
-5. **core/hooks.md**: the hook system (18 event types, 34 .cjs files, 26 unique registered hooks + 5 dispatched sub-validators).
+5. **core/hooks.md**: the hook system (17 event types, 33 .cjs files, 25 unique registered hooks + 5 dispatched sub-validators).
 6. **core/orchestration.md**: the workflow phases (routing → planning → coordinating → executing → validating).
 7. **core/orchestration-reference.md**: the detailed orchestration schemas.
 8. **core/progressive-disclosure.md**: the three-tier SKILL.md loading pattern.
@@ -191,7 +191,7 @@ Removed/folded skills (do not appear as current):
 
 ## Hook System Snapshot
 
-`core/hooks.md` is the canonical source. Summary: `.claude/settings.json` registers 18 distinct hook event types. `.claude/hooks/` holds 34 `.cjs` files: 26 unique registered hooks + 5 dispatched sub-validators + `hook-utils.cjs` + `run-hook.cjs` launcher + `bash-guard-evaluator.cjs` library. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the 5 dispatched sub-validators. All hooks use the `createHook()` factory. Some events are not currently used by cAgents, such as `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, and `ElicitationResult`. They remain available for user-defined hooks.
+`core/hooks.md` is the canonical source. Summary: `.claude/settings.json` registers 17 distinct hook event types. `.claude/hooks/` holds 33 `.cjs` files: 25 unique registered hooks + 5 dispatched sub-validators + `hook-utils.cjs` + `run-hook.cjs` launcher + `bash-guard-evaluator.cjs` library. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the 5 dispatched sub-validators. All hooks use the `createHook()` factory. Some events are not currently used by cAgents, such as `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`, `FileChanged`, `Elicitation`, and `ElicitationResult`. They remain available for user-defined hooks.
 
 ## Infrastructure References
 

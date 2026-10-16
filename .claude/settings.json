@@ -1,5 +1,5 @@
 {
-  "$comment": "Hook configuration - cAgents V12.74.1 - Progressive pipeline (3 paths), agent chaining, structured error format, prompt-router (UserPromptSubmit delegation + natural-language routing consolidation, P1-7), agent-dispatch (PreToolUse[Agent] consolidating dispatcher: session-init-gate + model-routing-advisor, A2-12), /goal evaluator logger (V11.3.0), ConfigChange logger (v12.7.0 LP-17), spawn-footprint (PostToolUse[Agent] diagnostic token-footprint recorder, WO-01 — never blocks), role-manifest-injector (SubagentStart per-role rules pointer index + memory-layout stanza, WO-03 — additive, fail-open, never blocks). 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators (write-edit-dispatch.cjs runs secret-detection + controller-delegation-validator + skill-size-monitor; agent-dispatch.cjs runs session-init-gate + model-routing-advisor in-process; v12.19.0 WI-5 / A2-12) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library (GuardFall evaluator require'd by bash-validator.cjs, v12.34.0) across 18 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
+  "$comment": "Hook configuration - cAgents V12.76.0 - Progressive pipeline (3 paths), agent chaining, structured error format, prompt-router (UserPromptSubmit delegation + natural-language routing consolidation, P1-7), agent-dispatch (PreToolUse[Agent] consolidating dispatcher: session-init-gate + model-routing-advisor, A2-12), /goal evaluator logger (V11.3.0), ConfigChange logger (v12.7.0 LP-17), spawn-footprint (PostToolUse[Agent] diagnostic token-footprint recorder, WO-01 — never blocks), role-manifest-injector (SubagentStart per-role rules pointer index + memory-layout stanza, WO-03 — additive, fail-open, never blocks). 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (write-edit-dispatch.cjs runs secret-detection + controller-delegation-validator + skill-size-monitor; agent-dispatch.cjs runs session-init-gate + model-routing-advisor in-process; v12.19.0 WI-5 / A2-12) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library (GuardFall evaluator require'd by bash-validator.cjs, v12.34.0) across 17 event types. Resilient path resolution: uses bash -c with fallback chain (CLAUDE_PLUGIN_ROOT -> CLAUDE_PROJECT_DIR -> pwd).",
   "displayOrigin": "cAgents",
   "trustProjectMdFiles": true,
   "teammateMode": "in-process",
@@ -16,7 +16,7 @@
     ]
   },
   "env": {
-    "CAGENTS_VERSION": "12.74.1",
+    "CAGENTS_VERSION": "12.76.0",
     "CAGENTS_DELEGATION_ENFORCEMENT": "block",
     "CAGENTS_BASH_GUARD": "block",
     "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1"
@@ -34,21 +34,37 @@
       "Bash(git commit:*)",
       "Bash(git push)",
       "Bash(git branch)",
-      "Bash(git branch:*)",
-      "Bash(git checkout:*)",
+      "Bash(git branch --list:*)",
+      "Bash(git branch --show-current)",
+      "Bash(git checkout -b:*)",
+      "Bash(git checkout main)",
       "Bash(git merge:*)",
-      "Bash(git stash:*)",
+      "Bash(git stash list)",
+      "Bash(git stash push:*)",
       "Bash(git rev-parse:*)",
       "Bash(git ls-files:*)",
       "Bash(git check-ignore:*)",
-      "Write(cagents-memory/**)"
+      "Bash(npx vitest run --config tests/vitest.config.js:*)",
+      "Bash(npm test)",
+      "Bash(npm test --:*)",
+      "Bash(bash scripts/ci/cagents-ci.sh:*)",
+      "Bash(bash scripts/ci/run-evals.sh:*)",
+      "Bash(bash scripts/ci/validate-agents.sh:*)",
+      "Bash(bash scripts/ci/validate-counts.sh:*)",
+      "Bash(bash scripts/ci/validate-ste100.sh:*)",
+      "Bash(bash scripts/ci/validate-versions.sh:*)",
+      "Bash(node scripts/ci/check-skill-session-paths.cjs:*)",
+      "Bash(node scripts/ci/run-advisory.cjs:*)",
+      "Bash(node scripts/ci/validate-planner-output.cjs:*)",
+      "Bash(node scripts/ci/validate-terminal-states.cjs:*)",
+      "Edit(/cagents-memory/**)"
     ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(sudo *)",
-      "Write(/etc/**)",
-      "Write(~/.ssh/**)"
+      "Edit(//etc/**)",
+      "Edit(~/.ssh/**)"
     ]
   },
   "hooks": {
@@ -158,7 +174,7 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" agent-dispatch'",
-            "timeout": 3
+            "timeout": 5
           }
         ]
       }
@@ -170,6 +186,16 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" spawn-footprint'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" post-write-validator'",
             "timeout": 5
           }
         ]
@@ -218,18 +244,6 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" team-task-complete'",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" permission-handler'",
-            "statusMessage": "Checking permissions...",
             "timeout": 5
           }
         ]

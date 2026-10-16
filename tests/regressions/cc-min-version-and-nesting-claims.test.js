@@ -204,3 +204,40 @@ describe('F4.nesting_depth: no live doc claims a depth-5 default', () => {
     expect(offenders, `Default nesting tied to 2.1.172:\n${offenders.join('\n')}`).toEqual([]);
   });
 });
+
+// WI-019 (CC 2.1.296 -> 2.1.300 audit): three doc claims follow the CC
+// changelog. 2.1.299 made a PreToolUse/PermissionRequest hook with no `shell`
+// block the call when Git for Windows is missing. 2.1.299 also kept the rule
+// that a teammate name given before the last compaction needs the agent ID.
+// 2.1.268 made the task tools an allowlist (Claude 3.x, Opus 4.0-4.7,
+// Sonnet 4.0-4.6, Haiku 4.5). Each assertion fails on the pre-fix tree.
+describe('CC 2.1.300 audit: changelog-driven doc claims', () => {
+  it('README and hooks.md state that Windows needs Git for Windows (CC 2.1.299)', () => {
+    for (const rel of ['README.md', '.claude/rules/core/hooks.md']) {
+      const text = joinedText(read(rel));
+      expect(text, `${rel} must name Git for Windows`).toMatch(/Git for Windows/);
+      expect(text, `${rel} must cite CC 2.1.299 for the fail-closed hook change`).toMatch(/2\.1\.299[^.]*shell/);
+    }
+    // Every hook registration still runs through bash with no shell field,
+    // which is why the Windows requirement holds.
+    const hooks = JSON.parse(read('.claude/hooks.json'));
+    const cmds = Object.values(hooks.hooks).flat().flatMap((g) => g.hooks);
+    expect(cmds.length).toBeGreaterThan(0);
+    expect(cmds.every((h) => h.shell === undefined && /^bash -c /.test(h.command))).toBe(true);
+  });
+
+  it('delegation.md and teams.md tell you to use the agent ID after a compaction (CC 2.1.299)', () => {
+    for (const rel of ['.claude/rules/core/delegation.md', '.claude/rules/core/teams.md']) {
+      const text = joinedText(read(rel));
+      expect(text, `${rel} must state the compaction caveat`).toMatch(/compaction[^.]*agent ID/i);
+      expect(text, `${rel} must cite CC 2.1.299`).toContain('2.1.299');
+    }
+  });
+
+  it('CLAUDE.md cites the CC 2.1.268 task-tool allowlist next to 2.1.233', () => {
+    const text = joinedText(read('CLAUDE.md'));
+    expect(text).toContain('2.1.233');
+    expect(text).toMatch(/2\.1\.268[^.]*allowlist/);
+    expect(text).toMatch(/Opus 4\.0-4\.7, Sonnet 4\.0-4\.6, and Haiku 4\.5/);
+  });
+});

@@ -94,9 +94,10 @@ describe('PHASE-N1 (V11.1.13): verify-completion.cjs graceful-degradation downgr
     try {
       runHook({ session_id: sessionId }, sessionDir);
       const summary = readSummary(sessionDir);
-      // The downgraded warning should appear (acceptable in /team mode)
-      expect(summary).toContain('CONTROLLER SELF-HANDLED VIA GRACEFUL DEGRADATION');
-      expect(summary).toContain('acceptable in /team mode');
+      // HS-11, WI-10: the downgraded variant says "acceptable", so it is no
+      // longer a user-facing warning: it goes to stderr only and is absent from
+      // completion_summary.yaml's warnings.
+      expect(summary).not.toContain('CONTROLLER SELF-HANDLED VIA GRACEFUL DEGRADATION');
       // The protocol-violation phrasing must NOT appear for the same warning
       expect(summary).not.toContain('CONTROLLER SELF-HANDLING (protocol violation)');
     } finally {
