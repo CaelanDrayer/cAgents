@@ -120,14 +120,20 @@ describe('HS-4 (c) no force-terminal stamp or stub writes on a live session', ()
     expect(stateOf(dir)).toBe('coordinated');
     expect(fs.existsSync(path.join(dir, 'workflow', 'validation_report.yaml'))).toBe(false);
     expect(fs.existsSync(path.join(dir, 'workflow', 'execution_summary.yaml'))).toBe(false);
-    expect(r.err).toMatch(/session is live at Stop; skipping force-terminal stamp \(signal: active-work\)/);
+    // v12.77.0 follow-up FU-6: a fresh running child now trips the early pause
+    // gate, which returns before any write (no completion_summary either).
+    expect(r.err).toMatch(/session paused at Stop \(fresh running child\); allowing stop, no writes/);
+    expect(fs.existsSync(path.join(dir, 'completion_summary.yaml'))).toBe(false);
   });
 
-  it('A3c-TP: a stalled INIT session (0 agents, stale heartbeat) is still stamped incomplete', () => {
+  it('A3c-TP: a stalled INIT session (0 agents, stale heartbeat) keeps its state and records the stop (FU-8)', () => {
     const proj = mkProj(); const sid = 'act_a3c-tp_261015_001';
     const dir = mkSession(proj, sid, { 'status.yaml': status('init', 3600e3), 'workflow/agent_tree.yaml': 'agents: []\n' });
     stop(proj, sid);
-    expect(stateOf(dir)).toBe('incomplete');
+    // v12.77.0 follow-up FU-8: no `incomplete` overwrite; the stop is recorded instead.
+    expect(stateOf(dir)).toBe('init');
+    expect(fs.readFileSync(path.join(dir, 'status.yaml'), 'utf8')).toMatch(/^last_stop_observed_at:/m);
+    expect(fs.readFileSync(path.join(dir, 'completion_summary.yaml'), 'utf8')).toMatch(/^status: (incomplete|failed)/m);
   });
 });
 

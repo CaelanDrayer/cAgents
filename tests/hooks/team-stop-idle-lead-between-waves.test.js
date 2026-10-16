@@ -203,6 +203,13 @@ function runStop(sid, env) {
 const read = (dir, rel) => { try { return readFileSync(join(dir, rel), 'utf8'); } catch { return ''; } };
 const pipelineState = (dir) => (read(dir, 'status.yaml').match(/^pipeline_state:\s*(\S+)/m) || [])[1];
 const summaryPath = (dir) => join(dir, 'workflow', 'execution_summary.yaml');
+// v12.77.0 follow-up FU-8: Stop no longer stamps a non-live, non-terminal
+// session `incomplete`. It leaves pipeline_state as it is and records the stop
+// in last_stop_observed_at. That field is now the "not live at Stop" signal.
+const expectStopRecorded = (dir) => {
+  expect(read(dir, 'status.yaml')).toMatch(/^last_stop_observed_at:/m);
+  expect(pipelineState(dir)).not.toBe('incomplete');
+};
 
 /** SessionEnd assertions for an idle-between-waves lead (T1 / T7 / T8). */
 function expectPausedAtSessionEnd(dir, res) {
@@ -240,17 +247,18 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     const { stderr } = runStop(sid);
     expect(pipelineState(dir)).toBe('EXECUTING');
     expect(read(dir, 'status.yaml')).not.toMatch(/pipeline_state:\s*incomplete/);
+    expect(read(dir, 'status.yaml')).not.toMatch(/^last_stop_observed_at:/m); // FU-8: live, nothing recorded
     expect(stderr).toMatch(STOP_IDLE_SIGNAL);
     expect(existsSync(summaryPath(dir))).toBe(false);
   }, TEST_TIMEOUT_MS);
 
-  it('T1s-control (RED proof) Stop: the identical fixture without gate files IS stamped incomplete', () => {
+  it('T1s-control (RED proof) Stop: the identical fixture without gate files records the stop (FU-8, state unchanged)', () => {
     // Same shape as T1s minus the gate evidence. The only thing that separates it
     // from T1s is the idle-between-waves signal, so without that signal T1s would
-    // observe `incomplete` and fail.
+    // observe last_stop_observed_at and fail.
     const { sid, dir } = makeSession({ gates: null });
     const { stderr } = runStop(sid);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
     expect(stderr).not.toMatch(STOP_IDLE_SIGNAL);
   }, TEST_TIMEOUT_MS);
 
@@ -263,16 +271,16 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
   }, TEST_TIMEOUT_MS);
 
   // ---------------------------------------------------------------- T2 (negative)
-  it('T2 stalled new team_ session (INIT, 0 children, fresh heartbeat, no gates): Stop stamps incomplete, then SessionEnd summary is incomplete', () => {
+  it('T2 stalled new team_ session (INIT, 0 children, fresh heartbeat, no gates): Stop records the stop (FU-8), then SessionEnd summary is incomplete', () => {
     const { sid, dir } = makeSession({ state: 'INIT', gates: null, meta: false, children: 'none', activityAgeMs: 0 });
     const { stderr } = runStop(sid);
-    // THE stalled-session negative: the incomplete stamp MUST still happen.
-    expect(pipelineState(dir)).toBe('incomplete');
+    // THE stalled-session negative: the stop observation MUST still be recorded.
+    expectStopRecorded(dir);
     expect(stderr).not.toMatch(STOP_IDLE_SIGNAL);
     const res = runSessionEnd(sid);
     expect(res.msg).not.toContain('paused between waves');
     expect(read(dir, 'workflow/execution_summary.yaml')).toMatch(/^status:\s*incomplete$/m);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
   }, TEST_TIMEOUT_MS);
 
   it('T2 SessionEnd alone on the stalled session: summary status incomplete, not paused', () => {
@@ -315,7 +323,7 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     expect(read(dir, 'status.yaml')).not.toMatch(/^completed_at:\s*null$/m);
   }, TEST_TIMEOUT_MS);
 
-  it('T4 abandoned lead at Stop (no last_updated_at; gate mtime 25h): Stop stamps incomplete', () => {
+  it('T4 abandoned lead at Stop (no last_updated_at; gate mtime 25h): Stop records the stop (FU-8)', () => {
     // last_updated_at is omitted on purpose: with a 25h-old heartbeat Stop's
     // pre-existing 24h staleness skip returns before any stamp (pinned by T4c),
     // so the predicate is never reached. Without the field the only activity
@@ -323,7 +331,7 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     // This shape matches the live session in design fact F4 (no last_updated_at).
     const { sid, dir } = makeSession({ activityAgeMs: 25 * HOUR, heartbeat: false });
     const { stderr } = runStop(sid);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
     expect(stderr).not.toMatch(STOP_IDLE_SIGNAL);
   }, TEST_TIMEOUT_MS);
 
@@ -364,10 +372,10 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     expectNotPausedAtSessionEnd(dir, res);
   }, TEST_TIMEOUT_MS);
 
-  it('T6 latest gate FAIL at Stop: stamps incomplete', () => {
+  it('T6 latest gate FAIL at Stop: records the stop (FU-8)', () => {
     const { sid, dir } = makeSession({ gates: { wave_0: 'PASS', wave_1: 'FAIL' } });
     const { stderr } = runStop(sid);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
     expect(stderr).not.toMatch(STOP_IDLE_SIGNAL);
   }, TEST_TIMEOUT_MS);
 
@@ -407,7 +415,7 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     expectNotPausedAtSessionEnd(a.dir, runSessionEnd(a.sid, env));
     const b = makeSession();
     runStop(b.sid, env);
-    expect(pipelineState(b.dir)).toBe('incomplete');
+    expectStopRecorded(b.dir);
   }, TEST_TIMEOUT_MS);
 
   // ---------------------------------------------------------------- T9 (replaced)
@@ -441,7 +449,7 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     setMtime(join(dir, 'status.yaml'), 0);
     setMtime(join(dir, 'workflow', 'agent_tree.yaml'), 0);
     runStop(sid);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
   }, TEST_TIMEOUT_MS);
 
   // ---------------------------------------------------------------- non-team guard
@@ -449,6 +457,6 @@ describe('HS-4 idle lead between waves vs stalled session (WI-9 matrix, WI-14)',
     const { sid, dir } = makeSession({ prefix: 'act' });
     const { stderr } = runStop(sid);
     expect(stderr).not.toMatch(STOP_IDLE_SIGNAL);
-    expect(pipelineState(dir)).toBe('incomplete');
+    expectStopRecorded(dir);
   }, TEST_TIMEOUT_MS);
 });

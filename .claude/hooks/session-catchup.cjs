@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession, repairSession } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession, repairSession, readSessionState } = require('./hook-utils.cjs');
 
 /**
  * Liveness check (WI-4, session run_concurrent-session-hooks_260602_001):
@@ -171,7 +171,7 @@ function findIncompleteSessions() {
       continue;
     }
 
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+    const phase = readSessionState(content); // review r1 #4: handover-aware (designer handover_to is closed)
     if (isTerminalState(phase)) continue;
 
     const instructionFile = path.join(sessionDir, 'instruction.yaml');
@@ -242,6 +242,31 @@ function findIncompleteSessions() {
   return incomplete;
 }
 
+const WORKTREE_HINT = 'Advisory: .claude/worktrees/ is not git-ignored in this project. Add `.claude/worktrees/` and `cagents-memory/` to your .gitignore so agent worktrees and runtime state stay out of commits (see README Installation).';
+
+// Returns the advisory line, or null. Dedup: the marker file holds the last
+// session_id the hint was shown for, so it shows once per session.
+function worktreeIgnoreHint(input) {
+  const projectDir = process.env.CLAUDE_PROJECT_DIR || path.dirname(AGENT_MEMORY_DIR);
+  if (!fs.existsSync(path.join(projectDir, '.claude', 'worktrees'))) return null;
+  const sessionKey = String((input && input.session_id) || 'unknown');
+  const markerFile = path.join(AGENT_MEMORY_DIR, '_system', '.worktree-hint-session');
+  try {
+    if (fs.readFileSync(markerFile, 'utf8').trim() === sessionKey) return null;
+  } catch { /* no marker yet */ }
+  const { spawnSync } = require('child_process');
+  const r = spawnSync('git', ['check-ignore', '-q', '.claude/worktrees'], {
+    cwd: projectDir, timeout: 2000, stdio: 'ignore', windowsHide: true
+  });
+  // Exit 0 = ignored, 1 = not ignored, 128 = not a repo; error = git missing/timeout.
+  if (r.error || r.status !== 1) return null;
+  try {
+    ensureDir(path.dirname(markerFile));
+    fs.writeFileSync(markerFile, sessionKey);
+  } catch { /* best effort */ }
+  return WORKTREE_HINT;
+}
+
 createHook('SessionCatchup', async (input) => {
   // v12.6.0: external-UI issue-id injection block removed.
   // Sessions are now internal-only; no external visualizer injects issue IDs.
@@ -253,7 +278,7 @@ createHook('SessionCatchup', async (input) => {
   // skill set is /act, /team, /designer, /helper — the guidance below must
   // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
   // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
-  let cagentsContext = 'cAgents V12.76.1 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. workflow/agent_tree.yaml is hook-owned: the SubagentStart and SubagentStop hooks record every spawn and stop, so agents do not self-register. Only the skill that creates a session writes the file, once, to seed the depth-0 root entry. IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.77.0 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. workflow/agent_tree.yaml is hook-owned: the SubagentStart and SubagentStop hooks record every spawn and stop, so agents do not self-register. Only the skill that creates a session writes the file, once, to seed the depth-0 root entry. IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0; path corrected in WI-5, session
   // run_improve-skills-hooks_260703_001): the CANONICAL product-context
@@ -311,6 +336,14 @@ createHook('SessionCatchup', async (input) => {
       }
     }
   } catch { /* context check is best-effort */ }
+
+  // FU-10 (v12.77.0): one advisory line per session when <project>/.claude/worktrees
+  // exists but git does not ignore it. Read-only: never edits the user's .gitignore.
+  // Fails silent when git is missing, the dir is not a repo, or git times out.
+  try {
+    const hint = worktreeIgnoreHint(input);
+    if (hint) cagentsContext += ' ' + hint;
+  } catch { /* best effort */ }
 
   // Update check (non-blocking, best-effort)
   try {

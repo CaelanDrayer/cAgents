@@ -1,10 +1,68 @@
 # cAgents Release Notes
 
-**Current Version**: 12.76.1
+**Current Version**: 12.77.0
 **Release Date**: October 16, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.77.0 - October 16, 2026 (bash guard opt-out and Stop-hook fixes)
+
+This minor release fixes false asks from a field report, adds an opt-out for
+the bash guard, and hardens the guard. The change ids are FU-1 to FU-13.
+
+Bash guard false asks: a `$VAR` script path (FU-1), a `cd` into the own
+session tree (FU-2), and a `PATH` prepend of a real SDK dir (FU-3) no longer
+ask. FU-3 includes a multi-assignment `export`.
+
+Opt-out: set `CAGENTS_BASH_GUARD=off|warn`, or the settings key
+`cagents.bash_guard`. The env var wins, and an unknown value gives `block`.
+Every ask names the opt-out. Under `off`, every deny stays a deny, except the
+legacy obfuscation-class belt denies (for example `python3 -c os.system`),
+which `off` skips. A parse-failure ask, a loader env var ask, and a Bash write
+to `.claude/settings*.json` or `.claude/hooks/` still ask. See
+`docs/HOOK_OPT_OUTS.md`.
+
+Security (FU-12): `bash -c "$(echo rm) -rf /etc"` now denies. This gap was
+open at HEAD. A `cd` into a `/tmp` subdir plus a script asks. The `PATH`
+prepend check uses the realpath, and a write into the prepended dir in the
+same command asks. A win32 env-root allowlist is added. A Bash write to
+`.claude/settings*.json` or `.claude/hooks/` asks in every mode.
+
+Four bypasses that were open before 12.77.0 are closed. An `env -S` or
+`--split-string` payload is evaluated as a nested command, so
+`env -S 'rm -rf ~'` is no longer allowed. A command word that a variable
+builds after `xargs` is judged. `sh -c "$(curl ...)"` denies, the same as
+`curl | sh`. An upload of a relative secret file, as in `curl -F f=@.env`,
+denies.
+
+Stop hook: a live child, a `paused_at` or `paused_reason`, or a
+`signals/PAUSE` file is a legitimate pause, with no block and no writes. A
+stale `paused_at` is ignored after a RESUME or newer activity. The stub never
+claims `completed` or `passed` for a non-terminal state. `pipeline_state` is
+never overwritten. An idle non-terminal session blocks one time, then warns.
+
+BEHAVIOUR CHANGE: an abandoned session stays non-terminal. It does not become
+`incomplete`. `findActiveSession` uses a session idle for more than 24 h only
+as a fallback.
+
+Other: the status hooks accept `phase:`, `pipeline_state:`, and
+`current_phase:`. The designer to act handover writes `handover_to` and
+`handover_from`, and closes the designer session. The README has a
+`.gitignore` hint for `.claude/worktrees/` and `cagents-memory/`, and
+SessionStart shows it one time. `pat-concurrent-session-hooks.md` has a new
+section, "Writing commands that pass the bash guard".
+
+User action: if you disabled the safety hooks, re-enable `write-edit-dispatch`
+first: it carries secret detection. No change was needed to it. To undo a
+local hook disable: delete the marked line in `run-hook.cjs` and restore
+`hooks.json` from the `.bak`, or update the plugin. Then use
+`CAGENTS_BASH_GUARD=warn|off` instead of disabling hooks.
+
+Known residuals: a Stop right after a stale background child finishes still
+blocks one time. The Write and Edit tools can still change
+`.claude/settings.local.json` (`cagents.bash_guard`). The env var wins over
+the settings key. Tests: 2530+ static tests across 280+ files.
 
 ## V12.76.1 - October 16, 2026 (bash guard: local shell script false ask)
 
@@ -2592,5 +2650,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.76.1
+**Current Version**: 12.77.0
 **Release Date**: August 21, 2026

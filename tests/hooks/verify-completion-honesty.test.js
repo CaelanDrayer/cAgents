@@ -116,10 +116,13 @@ describe('verify-completion honesty — never launder to complete/PASS (REC-02/0
     dirs.push(dir);
     runStopHook(sid);
     const status = readYaml(dir, 'status.yaml');
-    // Pre-REC-02: force-terminal patch stamps `complete` (issues.length === 0).
-    // Post-REC-02: sessionGenuinelyValidated() false -> `incomplete`.
-    expect(status).toMatch(/pipeline_state:\s*incomplete/);
+    // v12.77.0 follow-up FU-8: the Stop hook no longer overwrites pipeline_state
+    // (it used to stamp `incomplete`). The state stays INIT, the stop is recorded
+    // in last_stop_observed_at, and it is never laundered to `complete`.
+    expect(status).toMatch(/pipeline_state:\s*INIT/);
+    expect(status).toMatch(/last_stop_observed_at:/);
     expect(status).not.toMatch(/pipeline_state:\s*complete\b/);
+    expect(readYaml(dir, 'completion_summary.yaml')).not.toMatch(/^status:\s*completed/m);
   });
 
   it('Test B (REC-02 stub report) — a non-genuine COORDINATED session gets an UNKNOWN validation stub, not PASS', () => {
@@ -193,10 +196,57 @@ describe('verify-completion honesty — never launder to complete/PASS (REC-02/0
     expect(stderr).toMatch(/session is live at Stop.*\(signal: idle-between-waves\)/);
   });
 
-  it('Test F2 (WI-13b control) — the same team session with no gate file IS stamped incomplete', () => {
+  it('Test F2 (WI-13b control) — the same team session with no gate file is NOT live: its stop is recorded (FU-8: state unchanged)', () => {
     const { sid, dir } = materializeIdleTeamLead({ withGate: false });
     dirs.push(dir);
     runStopHook(sid);
-    expect(readYaml(dir, 'status.yaml')).toMatch(/pipeline_state:\s*incomplete/);
+    // v12.77.0 follow-up FU-8: no `incomplete` stamp any more. The non-live
+    // control is told apart from Test F by the recorded stop observation.
+    const status = readYaml(dir, 'status.yaml');
+    expect(status).toMatch(/pipeline_state:\s*executing/);
+    expect(status).toMatch(/last_stop_observed_at:/);
+  });
+});
+
+// v12.77.0 follow-up FU-7: the completion_summary stub never claims completion
+// for a non-terminal state. Each fixture has zero issues (fresh heartbeat, one
+// stopped child, no running child, so the FU-6 pause gate does not fire).
+describe('verify-completion FU-7: completion_summary honesty for non-terminal states', () => {
+  const dirs = [];
+  afterEach(() => cleanup(dirs));
+
+  function materializeZeroIssue(state) {
+    const sid = `act_fu7-${state.toLowerCase()}-${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const dir = join(SESSIONS_DIR, sid);
+    const put = (rel, body) => { mkdirSync(dirname(join(dir, rel)), { recursive: true }); writeFileSync(join(dir, rel), body); };
+    const now = new Date().toISOString();
+    const old = new Date(Date.now() - 5 * 60e3).toISOString();
+    put('status.yaml', `session_id: ${sid}\npipeline_state: ${state}\nstarted_at: "${old}"\nlast_updated_at: "${now}"\nstate_history:\n  - state: ${state}\n    entered_at: "${old}"\n`);
+    put('workflow/agent_tree.yaml', `agents:\n  - id: c1\n    type: cagents:orchestrator\n    parent: pipeline\n    depth: 1\n    spawned_at: '${old}'\n    stopped_at: '${now}'\n`);
+    return { sid, dir };
+  }
+
+  for (const state of ['INIT', 'ORCHESTRATED', 'PLANNED', 'COORDINATED']) {
+    it(`${state} with zero issues: status != completed, passed: false, pipeline_state_at_stop: ${state}`, () => {
+      const { sid, dir } = materializeZeroIssue(state);
+      dirs.push(dir);
+      runStopHook(sid);
+      const cs = readYaml(dir, 'completion_summary.yaml');
+      expect(cs).toMatch(/issues_count: 0/); // the fixture really has zero issues
+      expect(cs).not.toMatch(/^status:\s*completed/m);
+      expect(cs).toMatch(/^status:\s*incomplete/m);
+      expect(cs).toMatch(/passed: false/);
+      expect(cs).toMatch(new RegExp(`^pipeline_state_at_stop: ${state}$`, 'm'));
+    });
+  }
+
+  it('VALIDATED + real validator PASS still yields status: completed, passed: true', () => {
+    const { sid, dir } = materializeGenuineValidated();
+    dirs.push(dir);
+    runStopHook(sid);
+    const cs = readYaml(dir, 'completion_summary.yaml');
+    expect(cs).toMatch(/^status:\s*completed/m);
+    expect(cs).toMatch(/passed: true/);
+    expect(cs).not.toMatch(/pipeline_state_at_stop:/);
   });
 });

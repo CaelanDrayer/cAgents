@@ -265,7 +265,9 @@ describe('verify-completion.cjs agent_tree.yaml real-schema regexes (WI-1)', () 
       realTree(`act_ats-outcome_${TS}`, [
         { id: 'cccc000000000001', type: 'cagents:orchestrator', depth: 1, stopped: TX_RECENT, role: 'Workflow phase conductor' },
         { id: 'cccc000000000002', type: 'cagents:planner', depth: 1, stopped: TX_RECENT, role: 'Decomposition + objectives' },
-        { id: 'cccc000000000003', type: 'cagents:tech-lead', depth: 1, stopped: null, role: 'Controller coordinating work items' },
+        // v12.77.0 follow-up FU-6: stopped, not running. A fresh running child
+        // now trips the early pause gate, which writes no outcome JSONL.
+        { id: 'cccc000000000003', type: 'cagents:tech-lead', depth: 1, stopped: TX_RECENT, role: 'Controller coordinating work items' },
       ])
     );
     runHook(sid);

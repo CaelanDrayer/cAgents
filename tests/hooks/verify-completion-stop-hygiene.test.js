@@ -284,3 +284,47 @@ describe('verify-completion Stop hygiene (HS-11): emit-once tracks the warning S
     expect(r3.warnings.join('\n')).toMatch(/1 work item\(s\) never started/);
   });
 });
+
+// v12.77.0 follow-up FU-8: the Stop hook never overwrites pipeline_state or
+// phase of a non-terminal session. It records the stop in last_stop_observed_at.
+describe('verify-completion FU-8: Stop never overwrites a non-terminal pipeline_state/phase', () => {
+  const valueOf = (dir, key) => (fs.readFileSync(path.join(dir, 'status.yaml'), 'utf8').match(new RegExp(`^${key}: (.*)$`, 'm')) || [])[1];
+  const cases = [['pipeline_state', 'ORCHESTRATING'], ['pipeline_state', 'ORCHESTRATED'], ['pipeline_state', 'PLANNED'], ['phase', 'planning']];
+  for (const [key, val] of cases) {
+    for (const live of [true, false]) {
+      it(`${key}: ${val} ${live ? 'with' : 'without'} a live child: value byte-identical after Stop`, () => {
+        const s = mkSession(`act_fu8-${val.toLowerCase()}-${live ? 'live' : 'idle'}_261016_001`, {
+          'status.yaml': statusY(val, { entered: 40 * 60e3, hb: 2 * 3600e3, key }),
+          'workflow/plan.yaml': planMission, 'workflow/work_items.yaml': workItems(2),
+          'workflow/agent_tree.yaml': tree(row('o1', 'orchestrator', 1, { ago: 3600e3 }), ...(live ? [row('t1', 'tech-lead', 1, { ago: 60e3, running: true })] : [])),
+        });
+        stop(s);
+        expect(valueOf(s.dir, key)).toBe(val);
+        if (!live) expect(valueOf(s.dir, 'last_stop_observed_at')).toMatch(/^"\d{4}-\d\d-\d\dT/);
+        else expect(valueOf(s.dir, 'last_stop_observed_at')).toBeUndefined(); // FU-6: zero writes while live
+      });
+    }
+  }
+
+  it('a second idle Stop updates last_stop_observed_at in place (one line, state unchanged)', () => {
+    const s = mkSession('act_fu8-twice_261016_001', {
+      'status.yaml': statusY('PLANNED', { entered: 40 * 60e3, hb: 2 * 3600e3 }),
+      'workflow/agent_tree.yaml': tree(row('o1', 'orchestrator', 1, { ago: 3600e3 })),
+    });
+    stop(s); stop(s);
+    const st = fs.readFileSync(path.join(s.dir, 'status.yaml'), 'utf8');
+    expect(st.match(/^last_stop_observed_at:/gm)).toHaveLength(1);
+    expect(stateOf(s.dir)).toBe('PLANNED');
+  });
+
+  it('VALIDATED with a genuine validator PASS still becomes complete', () => {
+    const s = mkSession('act_fu8-validated_261016_001', {
+      'status.yaml': statusY('VALIDATED', { entered: 60e3, hb: 2 * 3600e3 }),
+      'workflow/validation_report.yaml': valPass,
+      'workflow/agent_tree.yaml': tree(row('v1', 'validator', 1, { ago: 120e3 })),
+    });
+    stop(s);
+    expect(stateOf(s.dir)).toBe('complete');
+    expect(fs.readFileSync(path.join(s.dir, 'completion_summary.yaml'), 'utf8')).toMatch(/^status: completed/m);
+  });
+});

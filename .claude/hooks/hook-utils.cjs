@@ -302,6 +302,31 @@ function statusPhase(content) {
 }
 
 /**
+ * FU-9 (D1, v12.77.0) — the liveness reader every status consumer should use.
+ * Returns statusPhase(content) (pipeline_state || phase || current_phase),
+ * folded through normalizeTerminalState(), so /designer's `phase:` shape and
+ * the pipeline's `pipeline_state:` shape read the same way.
+ *
+ * Handover tolerance: a /designer session that /act took over carries
+ * `handover_to: <act session id>`. If the skill wrote `handover_to` but not
+ * (yet) `phase: complete`, the session is still read as `complete`, so the
+ * handed-over designer dir never lingers as a live/stale sibling. Either field
+ * alone is enough to close it.
+ *
+ * @param {string|null} content - status.yaml / session.yaml body, or null.
+ * @returns {string|null} normalized state, or null when no state key exists.
+ */
+function readSessionState(content) {
+  if (!content) return null;
+  const raw = statusPhase(content);
+  if (raw && isTerminalState(raw)) return normalizeTerminalState(raw);
+  // Review r1 #3: `handover_to: null` / `~` / empty is ABSENT, not a handover.
+  const handover = extractYamlValue(content, 'handover_to');
+  if (handover && !/^(null|~|""|'')$/i.test(String(handover).trim())) return 'complete';
+  return raw ? normalizeTerminalState(raw) : null;
+}
+
+/**
  * Count regex pattern matches in content.
  */
 function countPattern(content, pattern) {
@@ -355,9 +380,7 @@ function sessionGenuinelyValidated(sessionDir, statusContent) {
     if (!status) return false;
 
     // (1) SUCCESS terminal (VALIDATED / complete / …) — never a stall label.
-    const state = extractYamlValue(status, 'pipeline_state')
-      || extractYamlValue(status, 'phase')
-      || extractYamlValue(status, 'current_phase');
+    const state = readSessionState(status);
     if (!isSuccessTerminalState(state)) return false;
 
     // (2) A REAL, non-safety-net PASS/PARTIAL_PASS validation_report.
@@ -477,7 +500,7 @@ function _tryResolveCandidate(sessionsDir, candidate) {
     // Race window: dir exists but no status yet — trust the explicit hint.
     return dir;
   }
-  const phase = statusPhase(content); // shared precedence — see statusPhase() JSDoc
+  const phase = readSessionState(content); // shared precedence — see statusPhase() JSDoc
   if (phase && isTerminalState(phase)) {
     return null; // Terminal — refuse to resolve.
   }
@@ -1008,6 +1031,11 @@ function findActiveSession(hintOrOptions) {
     });
 
   // First pass: look for sessions with status.yaml (or session.yaml fallback) in a non-terminal phase
+  // Review r1 #7: a non-terminal sibling idle > 24 h (no last_updated_at /
+  // state_history / started_at newer than that) is held back as a fallback, so
+  // a brand-new session still in its no-status.yaml grace window wins over it.
+  const staleCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  let staleFallback = null;
   for (const session of sessions) {
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
     let content = safeRead(statusFile);
@@ -1017,11 +1045,13 @@ function findActiveSession(hintOrOptions) {
     }
     if (!content) continue;
 
-    const phase = statusPhase(content); // HS-1: one phase reader (pipeline_state first), as the JSDoc promises
+    const phase = readSessionState(content); // HS-1: one phase reader (pipeline_state first), as the JSDoc promises
     if (phase && !isTerminalState(phase)) {
       // Strict ownership: with a UUID, only an owned session qualifies.
       if (!_ownershipQualifies(path.join(sessionsDir, session), ownerUuid)) continue;
       const result = path.join(sessionsDir, session);
+      const actMs = _statusActivityMs(content);
+      if (actMs && actMs < staleCutoff) { if (!staleFallback) staleFallback = result; continue; }
       _cachedActiveSessions.set(cacheKey, result);
       return result;
     }
@@ -1056,6 +1086,11 @@ function findActiveSession(hintOrOptions) {
     } catch { /* skip */ }
   }
 
+  if (staleFallback) {
+    _cachedActiveSessions.set(cacheKey, staleFallback);
+    return staleFallback;
+  }
+
   // (A2-05, v12.x) The legacy "third pass: scan org_* session subdirectories for
   // nested team/domain sessions" was removed. `/org` was removed in v12.2.0 (folded
   // into `/team` strategic mode), so no new session is ever created with an `org_`
@@ -1065,6 +1100,22 @@ function findActiveSession(hintOrOptions) {
 
   _cachedActiveSessions.set(cacheKey, null);
   return null;
+}
+
+/**
+ * Review r1 #7: newest activity timestamp (ms) parsed from a status.yaml body —
+ * last_updated_at, heartbeat fields, state_history entered_at / transitioned_at,
+ * started_at. 0 when none parse (caller then treats the session as not stale).
+ */
+function _statusActivityMs(content) {
+  let max = 0;
+  const re = /^\s*-?\s*(last_updated_at|updated_at|heartbeat_at|last_heartbeat|entered_at|transitioned_at|started_at|created_at):\s*["']?([^"'\n]+?)["']?\s*$/gm;
+  let m;
+  while ((m = re.exec(content || '')) !== null) {
+    const t = Date.parse(m[2]);
+    if (!Number.isNaN(t) && t > max) max = t;
+  }
+  return max;
 }
 
 /**
@@ -1196,7 +1247,7 @@ function findTeamSession(input = {}) {
     const content = safeRead(statusFile);
     if (!content) continue;
 
-    const phase = statusPhase(content);
+    const phase = readSessionState(content);
     if (phase && !isTerminalState(phase)) {
       if (ownerUuid) return path.join(sessionsDir, session); // owned: newest owned wins
       live.push(session);
@@ -1255,7 +1306,7 @@ function findMostRecentSessionDir(options) {
           if (statusContent && !includeTerminal) {
             // ENG-OBS-2: was a POSITIONAL+UNANCHORED regex that disagreed with
             // _tryResolveCandidate and let a stale session pass as non-terminal.
-            const phase = statusPhase(statusContent);
+            const phase = readSessionState(statusContent);
             if (phase && isTerminalState(phase)) {
               continue; // Skip finished sessions
             }
@@ -1290,7 +1341,7 @@ function findMostRecentSessionDir(options) {
                 const statusContent = safeRead(path.join(nestedPath, 'status.yaml'));
                 if (statusContent) {
                   // ENG-OBS-2: same shared precedence as the flat scan above.
-                  const phase = statusPhase(statusContent);
+                  const phase = readSessionState(statusContent);
                   if (phase && isTerminalState(phase)) continue;
                 }
               }
@@ -2451,8 +2502,7 @@ function repairSession(sessionDir, opts = {}) {
     const statusFile = path.join(sessionDir, 'status.yaml');
     const statusContent = safeRead(statusFile);
     if (!statusContent) return repairs;
-    const state = extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase')
-      || extractYamlValue(statusContent, 'current_phase');
+    const state = readSessionState(statusContent);
     const terminal = !!state && isTerminalState(state);
     const idleMs = now - sessionLastActivityMs(sessionDir, statusContent);
 
@@ -2559,6 +2609,7 @@ module.exports = {
   readStdin,
   safeRead,
   extractYamlValue,
+  readSessionState, // FU-9: normalized, handover-aware liveness reader
   statusPhase, // ENG-OBS-2: shared phase-precedence reader (exported for the regression test)
   resolveSdkUuidOwner, // ENG-OBS-2: ownership (terminal-agnostic) vs. resolveSdkUuidToSession's liveness gate
   countPattern,

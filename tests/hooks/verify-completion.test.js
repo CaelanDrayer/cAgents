@@ -287,11 +287,10 @@ describe('verify-completion.cjs', () => {
       // Running wave teammate => actively working => warn (continue) instead of block.
       expect(result.decision).not.toBe('block');
       expect(result.continue).toBe(true);
-      // Prove the downgrade fired (not a silent no-op): the enrichment-incomplete warning
-      // is recorded, and it uses the coordination-evidence framing, never a TeamCreate call.
-      const summary = readFileSync(join(TEAM_SESSION_DIR, 'completion_summary.yaml'), 'utf8');
-      expect(summary).toMatch(/coordination is incomplete/i);
-      expect(summary).not.toContain('TeamCreate');
+      // v12.77.0 follow-up FU-6: a fresh running child in a non-terminal session
+      // is a pause. The early pause gate allows the stop and writes nothing, so
+      // no completion_summary.yaml exists (it used to hold the downgraded warning).
+      expect(existsSync(join(TEAM_SESSION_DIR, 'completion_summary.yaml'))).toBe(false);
     });
 
     it('never blocks a non-team session with a TeamCreate instruction (teams are implicit)', () => {

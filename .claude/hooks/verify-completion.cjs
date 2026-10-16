@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, resolveSession, getSessionOwner, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent, repairSession } = require('./hook-utils.cjs');
+const { createHook, resolveSession, getSessionOwner, readSessionState, TERMINAL_STATES, isTerminalState, normalizeTerminalState, isSuccessTerminalState, sessionGenuinelyValidated, extractYamlValue, safeRead, countPattern, ensureDir, PROJECT_ROOT, AGENT_MEMORY_DIR, withFileLock, appendSessionEvent, repairSession } = require('./hook-utils.cjs');
 
 // Guarded js-yaml require — used ONLY by the advisory self-validation recheck (C1).
 // Mirrors the team-stop.cjs pattern: a missing js-yaml degrades the recheck to a
@@ -289,6 +289,66 @@ function hasFreshRunningChild(childRegion) {
     // else: stale null-stop child — ignore, keep scanning for a fresher one
   }
   return false;
+}
+
+/** Review r1: a YAML scalar that is present and not null / ~ / empty. */
+function isSetYamlValue(v) {
+  return !!v && !/^(null|~|""|'')$/i.test(String(v).trim());
+}
+
+/**
+ * Review r1: newest activity timestamp in status.yaml (ms, 0 when none):
+ * last_updated_at, heartbeat fields, and state_history entered_at /
+ * transitioned_at entries. Hook-written observation fields are not activity.
+ */
+function latestActivityMs(statusContent) {
+  let max = 0;
+  const re = /^\s*-?\s*(last_updated_at|updated_at|heartbeat_at|last_heartbeat|entered_at|transitioned_at):\s*["']?([^"'\n]+?)["']?\s*$/gm;
+  let m;
+  while ((m = re.exec(statusContent || '')) !== null) {
+    const t = Date.parse(m[2]);
+    if (!Number.isNaN(t) && t > max) max = t;
+  }
+  return max;
+}
+
+/**
+ * v12.77.0 follow-up FU-6: is this Stop a legitimate PAUSE of a non-terminal
+ * session? Read-only. Returns a short reason string, or null.
+ *
+ * Signals (any one): a fresh running child in agent_tree.yaml (stopped_at null,
+ * spawned within CAGENTS_STALE_CHILD_MS), status.yaml `paused_at` /
+ * `paused_reason` set to a non-null value, or a `<session>/signals/PAUSE` file.
+ * VALIDATED is excluded: that Stop must still run the VALIDATED->complete
+ * transition. Terminal states are excluded: they are finalized as before.
+ */
+function pauseSignalAtStop(sessionDir, statusContent) {
+  try {
+    const state = readSessionState(statusContent);
+    if (state && (isTerminalState(state) || /^validated$/i.test(state))) return null;
+    // Review r1 #2: a leftover paused_at must not disable Stop checks forever.
+    // The marker is stale once signals/RESUME exists, or once the session moved
+    // on after it (last_updated_at or a newer state_history entry).
+    const pausedAt = extractYamlValue(statusContent, 'paused_at');
+    const pausedMs = isSetYamlValue(pausedAt) ? Date.parse(String(pausedAt).trim()) : NaN;
+    const pauseStale = fs.existsSync(path.join(sessionDir, 'signals', 'RESUME'))
+      || (!Number.isNaN(pausedMs) && latestActivityMs(statusContent) > pausedMs);
+    if (!pauseStale) {
+      for (const key of ['paused_at', 'paused_reason']) {
+        if (isSetYamlValue(extractYamlValue(statusContent, key))) return `status.yaml ${key}`;
+      }
+    }
+    if (fs.existsSync(path.join(sessionDir, 'signals', 'PAUSE'))) return 'signals/PAUSE';
+    const tree = safeRead(path.join(sessionDir, 'workflow', 'agent_tree.yaml'));
+    if (tree) {
+      let parts = tree.split(/^agents:/m);
+      if (parts.length === 1) parts = tree.split(/^children:/m);
+      if (parts.length > 1 && hasFreshRunningChild(parts[1])) return 'fresh running child';
+    }
+  } catch (e) {
+    console.error(`[VerifyCompletion] pause check error (treating as no pause): ${e.message}`);
+  }
+  return null;
 }
 
 /**
@@ -1563,6 +1623,16 @@ createHook('VerifyCompletion', async (input) => {
     return null;
   }
 
+  // v12.77.0 follow-up FU-6: early pause gate, BEFORE any write (status patch,
+  // completion_summary, learnings, session_outcomes JSONL, events, agent_tree).
+  // A non-terminal session with a fresh running child or an explicit pause
+  // marker is paused, not finished: allow the stop and touch nothing.
+  const pauseReason = pauseSignalAtStop(sessionDir, statusContent);
+  if (pauseReason) {
+    console.error(`[VerifyCompletion] session paused at Stop (${pauseReason}); allowing stop, no writes: ${path.basename(sessionDir)}`);
+    return null;
+  }
+
   // VALIDATED→complete safety net: if the session is in VALIDATED state,
   // transition it to 'complete' before running verification checks.
   // This ensures the session is in a terminal state when checked.
@@ -1600,39 +1670,48 @@ createHook('VerifyCompletion', async (input) => {
   const result = verifyCompletion(sessionDir);
   for (const r of repairNeedsUser) result.warnings.push(r.message); // WI-028: unrepairable state, one line
 
-  // Ensure pipeline_state is terminal so finalizeSessionLifecycle can run.
-  // Many sessions (especially legacy org_* sessions) exit with pipeline_state still at "init"
-  // because the agent didn't update status.yaml before stopping.
+  // Review r1 #1 (FU-8 repeat guard): the previous Stop already observed this
+  // SAME non-terminal state and nothing moved since (no newer last_updated_at /
+  // heartbeat / state_history entry). An idle session waiting on the user must
+  // not block on every Stop: downgrade issues to one non-blocking warning.
+  if (!liveAtStop && result.issues.length > 0) {
+    const s = safeRead(path.join(sessionDir, 'status.yaml')) || '';
+    const cur = extractYamlValue(s, 'pipeline_state') || extractYamlValue(s, 'phase') || extractYamlValue(s, 'current_phase') || 'unknown';
+    const prevObsMs = Date.parse(String(extractYamlValue(s, 'last_stop_observed_at') || '').trim());
+    const prevNote = String(extractYamlValue(s, 'stop_state_note') || '');
+    if (!isTerminalState(cur) && !Number.isNaN(prevObsMs) && prevNote.startsWith(`stopped in ${cur};`)
+        && latestActivityMs(s) <= prevObsMs) {
+      console.error(`[VerifyCompletion] repeat Stop in unchanged '${cur}'; downgrading ${result.issues.length} issue(s) to a warning`);
+      result.warnings.unshift(`Session still in '${cur}' with no change since the last Stop (already reported): ${result.issues.join('; ')}`);
+      result.issues = [];
+    }
+  }
+
+  // v12.77.0 follow-up FU-8: the Stop hook NEVER overwrites pipeline_state or
+  // phase of a non-terminal session. A Stop is an observation, not a state
+  // transition: the old force-'incomplete' stamp destroyed the real state
+  // (ORCHESTRATED/PLANNED) of a pipeline that was only yielding. Record the
+  // observation in separate fields instead. VALIDATED->complete is unchanged
+  // (applyValidatedToCompleteTransition above).
   try {
     const statusFile2 = path.join(sessionDir, 'status.yaml');
     const statusRaw = safeRead(statusFile2);
     if (statusRaw) {
-      const curPipeline = extractYamlValue(statusRaw, 'pipeline_state');
-      const curPhase = extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
-      const curVal = curPipeline || curPhase;
+      const curVal = extractYamlValue(statusRaw, 'pipeline_state')
+        || extractYamlValue(statusRaw, 'phase') || extractYamlValue(statusRaw, 'current_phase');
       if (!liveAtStop && (!curVal || !isTerminalState(curVal))) {
-        // REC-02 honesty: a NON-terminal session at Stop is finalized to
-        // `complete` ONLY when it is genuinely validated (a real, non-safety-net
-        // PASS report + — for plan-bearing sessions — a completed
-        // coordination_log). Otherwise it is `incomplete` — NEVER laundered to
-        // `complete`/`failed` by a zero-issues count. Genuinely-validated
-        // sessions never reach here: applyValidatedToCompleteTransition() has
-        // already stamped them `complete` (a terminal state), so the
-        // `!isTerminalState(curVal)` guard above skips them.
-        const finalState = sessionGenuinelyValidated(sessionDir, statusRaw) ? 'complete' : 'incomplete';
-        const field = curPipeline !== undefined ? 'pipeline_state' : (curPhase !== undefined ? 'phase' : 'pipeline_state');
-        const patched = statusRaw.replace(
-          new RegExp(`(${field}:\\s*)\\S+`),
-          `$1${finalState}`
-        );
-        if (patched !== statusRaw) {
-          fs.writeFileSync(statusFile2, patched);
-          console.error(`[VerifyCompletion] Updated ${field} to "${finalState}" in status.yaml`);
+        const note = { last_stop_observed_at: `"${new Date().toISOString()}"`, stop_state_note: `"stopped in ${curVal || 'unknown'}; not terminal, state left unchanged"` };
+        let patched = statusRaw;
+        for (const [k, v] of Object.entries(note)) {
+          const re = new RegExp(`^${k}:.*$`, 'm');
+          patched = re.test(patched) ? patched.replace(re, `${k}: ${v}`) : `${patched.replace(/\n?$/, '\n')}${k}: ${v}\n`;
         }
+        if (patched !== statusRaw) fs.writeFileSync(statusFile2, patched);
+        console.error(`[VerifyCompletion] Stop observed in non-terminal '${curVal || 'unknown'}'; recorded last_stop_observed_at, state unchanged`);
       }
     }
   } catch (e) {
-    console.error(`[VerifyCompletion] Error updating pipeline_state: ${e.message}`);
+    console.error(`[VerifyCompletion] Error recording stop observation: ${e.message}`);
   }
 
   // Finalize agent lifecycle data (stopped_at, duration_ms) for terminal sessions
@@ -1951,14 +2030,23 @@ ${result.warnings.length > 0 ? `  warning_types:\n${result.warnings.map(w => `  
   // WI-028 emit-once: remember the previous Stop's warning block before overwriting it.
   const prevWarningsBlock = ((safeRead(summaryFile) || '').split(/^warnings:/m)[1] || '').trim();
   const timestamp = new Date().toISOString();
-  const completionStatus = result.issues.length === 0 ? 'completed' : 'failed';
+  // v12.77.0 follow-up FU-7: `completed` / `passed: true` ONLY for a terminal,
+  // genuinely-validated session. Zero issues on a mid-flight session is not a
+  // completion. Anything else is `incomplete` (or `failed` when issues exist)
+  // and carries the state that the Stop saw.
+  const stateAtStop = (() => {
+    const s = safeRead(statusFile) || '';
+    return extractYamlValue(s, 'pipeline_state') || extractYamlValue(s, 'phase') || extractYamlValue(s, 'current_phase') || 'unknown';
+  })();
+  const honestPass = result.issues.length === 0 && genuinelyValidated && isTerminalState(stateAtStop);
+  const completionStatus = result.issues.length > 0 ? 'failed' : (honestPass ? 'completed' : 'incomplete');
   const content = `# Completion Summary
 generated_at: "${timestamp}"
 verified_by: verify-completion-hook
 status: ${completionStatus}
-
+${honestPass ? '' : `pipeline_state_at_stop: ${stateAtStop}\n`}
 verification_result:
-  passed: ${result.issues.length === 0}
+  passed: ${honestPass}
   issues_count: ${result.issues.length}
   warnings_count: ${result.warnings.length}
 
@@ -1973,9 +2061,8 @@ ${result.warnings.length > 0 ? `warnings:\n${result.warnings.map(w => `  - "${w}
   // max_cycles (pipeline_config.yaml revision.max_cycles, default 3), the
   // pipeline has exhausted its revision budget. Blocking the session here would
   // force /act to route back to PLANNED and re-plan AGAIN — the "re-plan forever"
-  // defect. Instead FINALIZE honestly: the force-terminal patch above has already
-  // stamped a non-genuine session `incomplete` (never a fabricated PASS/complete —
-  // respecting the REC-02 honesty gate), so allow the stop and surface a
+  // defect. Instead FINALIZE honestly: completion_summary says `failed` (never a
+  // fabricated PASS/complete; FU-8 leaves pipeline_state as it is), so allow the stop and surface a
   // user-facing escalation (pipeline_config.yaml revision.escalation: user_hitl).
   // A genuinely-validated session never reaches the cap carrying issues (it
   // PASSED and produced 0 issues), so this override only fires on a real

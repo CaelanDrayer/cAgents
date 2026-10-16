@@ -26,8 +26,9 @@ const { createHook } = require('./hook-utils.cjs');
 let evaluate;
 let tokenize;
 let mentionsRunner;
+let nonWaivableAskReason;
 try {
-  ({ evaluate, tokenize, mentionsRunner } = require('./bash-guard-evaluator.cjs'));
+  ({ evaluate, tokenize, mentionsRunner, nonWaivableAskReason } = require('./bash-guard-evaluator.cjs'));
   if (typeof evaluate !== 'function' || typeof tokenize !== 'function') throw new Error('bad exports');
 } catch (e) {
   // WI-21 round 2: name the file and line, so the reader can repair it. Bash is
@@ -396,9 +397,43 @@ function standaloneCommandWords(rawCommand, _depth) {
 // evaluator (Stage 1) STAY hard-deny); 'off' = skip the legacy deny belt entirely
 // (the sound evaluator still runs, so the guard is never fully disarmed). Any
 // unrecognized value fails CLOSED to 'block'.
+// FU-4 (v12.77.0): the settings key cagents.bash_guard sets the mode too
+// (`{"cagents": {"bash_guard": "off"}}` in .claude/settings.local.json or
+// .claude/settings.json of the project, then the plugin settings.json). The
+// env var wins. An unknown value in either place fails closed to 'block'.
+const GUARD_MODES = new Set(['block', 'warn', 'off']);
+function guardModeOf(v) {
+  const raw = String(v).toLowerCase().trim();
+  return GUARD_MODES.has(raw) ? raw : 'block';
+}
+function settingsGuardMode() {
+  const path = require('path');
+  const fs = require('fs');
+  const files = [];
+  if (process.env.CLAUDE_PROJECT_DIR) {
+    files.push(path.join(process.env.CLAUDE_PROJECT_DIR, '.claude', 'settings.local.json'));
+    files.push(path.join(process.env.CLAUDE_PROJECT_DIR, '.claude', 'settings.json'));
+  }
+  files.push(path.join(__dirname, '..', 'settings.json'));
+  for (const f of files) {
+    let j;
+    try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { continue; }
+    const v = j && j.cagents && typeof j.cagents === 'object' && j.cagents.bash_guard !== undefined
+      ? j.cagents.bash_guard : (j ? j['cagents.bash_guard'] : undefined);
+    if (v !== undefined && v !== null) return guardModeOf(v);
+  }
+  return null;
+}
 function resolveGuardMode() {
-  const raw = (process.env.CAGENTS_BASH_GUARD || 'block').toLowerCase().trim();
-  return (raw === 'warn' || raw === 'off') ? raw : 'block';
+  const env = process.env.CAGENTS_BASH_GUARD;
+  if (env !== undefined && String(env).trim() !== '') return guardModeOf(env);
+  return settingsGuardMode() || 'block';
+}
+// FU-4 (v12.77.0): every ask names the opt-out.
+const OPT_OUT_SUFFIX = 'Opt out: set CAGENTS_BASH_GUARD=off (asks) or =warn; see docs/HOOK_OPT_OUTS.md';
+function withOptOut(reason) {
+  const r = String(reason || 'requires confirmation');
+  return r.includes('CAGENTS_BASH_GUARD=off') ? r : r.replace(/\s*$/, '') + ' ' + OPT_OUT_SUFFIX;
 }
 
 async function validate(input) {
@@ -468,7 +503,14 @@ async function validate(input) {
   // 'off' — otherwise an un-parseable `rm -rf /` / fork bomb would soft-fail to ask
   // (not a guaranteed stop under bypassPermissions) with no floor at all. This is what makes
   // the "catastrophic literals hard-denied in all modes" guarantee true.
-  if (guardMode !== 'off' || evalFailClosed) {
+  // FU-12 (v12.77.0): 'off' still runs the literal-shape belt (BLOCKED_STRINGS
+  // and every BLOCKED_REGEXES entry with no `obf`: mkfs, sudo, doas, pkexec,
+  // su, crontab, rm -rf / and ~, curl/wget/nc/socat exfil). The evaluator
+  // does not deny every one of them (`rm -r /` with no -f allows there), so a
+  // skipped belt turned a deny into an allow. Only the obfuscation-class
+  // entries (`obf`) relax under 'off'.
+  const beltOff = guardMode === 'off' && !evalFailClosed;
+  {
     // Check for blocked string patterns (literal catastrophic shapes — always raw)
     for (const pattern of BLOCKED_STRINGS) {
       if (command.includes(pattern)) {
@@ -485,6 +527,7 @@ async function validate(input) {
     // the raw string exactly as before.
     let cmdWords; // lazily tokenized once, only if an obf pattern matches
     for (const { pattern, label, obf } of BLOCKED_REGEXES) {
+      if (beltOff && obf) continue;
       if (!pattern.test(command)) continue;
 
       if (obf) {
@@ -580,6 +623,7 @@ async function validate(input) {
     }
     console.error(`[BashValidator] WARNING (fail-closed soft-fail → ask): ${evalVerdict.reason}`);
     return {
+      keepAskWhenOff: true,
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'ask',
@@ -622,11 +666,36 @@ function isAskVerdict(verdict) {
 // subagents), so a hook `ask` just fails the tool call. Drop the ask and let
 // the session's permission policy (allow/deny rules) decide. Deny verdicts
 // are unaffected — the catastrophic floor holds in every mode.
-createHook('BashValidator', async (input) => {
+//
+// FU-4 (v12.77.0): CAGENTS_BASH_GUARD=off turns an ask into an allow and
+// writes one stderr line. A deny stays a deny in every mode. The one ask that
+// 'off' keeps is the fail-closed soft-fail: the evaluator could not parse the
+// command, so the sound floor did not judge it. Every ask that remains names
+// the opt-out.
+async function decide(input) {
   const verdict = await validate(input);
-  if (input.permission_mode === 'dontAsk' && isAskVerdict(verdict)) {
-    console.error(`[BashValidator] dontAsk mode — deferring to permission policy: ${verdict.hookSpecificOutput.permissionDecisionReason}`);
+  if (!isAskVerdict(verdict)) return verdict;
+  const reason = verdict.hookSpecificOutput.permissionDecisionReason;
+  if (input.permission_mode === 'dontAsk') {
+    console.error(`[BashValidator] dontAsk mode — deferring to permission policy: ${reason}`);
     return null;
   }
-  return verdict;
-});
+  if (!verdict.keepAskWhenOff && resolveGuardMode() === 'off') {
+    // FU-12 (v12.77.0): a loader or shell-init setting (LD_PRELOAD, BASH_ENV,
+    // NODE_OPTIONS ...) and a write to the guard's own config stay asks.
+    let keep = null;
+    try { keep = typeof nonWaivableAskReason === 'function' ? nonWaivableAskReason((input.tool_input || {}).command) : null; }
+    catch (e) { keep = 'guard could not classify the ask (fail-closed)'; }
+    if (!keep) {
+      console.error(`[BashValidator] CAGENTS_BASH_GUARD=off: allowed a command that would ask: ${reason}`);
+      return null;
+    }
+    console.error(`[BashValidator] CAGENTS_BASH_GUARD=off: kept a non-waivable ask: ${keep}`);
+    return { hookSpecificOutput: Object.assign({}, verdict.hookSpecificOutput, { permissionDecisionReason: keep + ' (' + reason + ')' }) };
+  }
+  return {
+    hookSpecificOutput: Object.assign({}, verdict.hookSpecificOutput, { permissionDecisionReason: withOptOut(reason) })
+  };
+}
+
+createHook('BashValidator', decide);
