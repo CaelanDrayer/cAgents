@@ -40,7 +40,7 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, resolveSession, isOwnedBy, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated, statusPhase, isTerminalState } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, resolveSession, isOwnedBy, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated, readSessionState, isTerminalState } = require('./hook-utils.cjs');
 
 // Defensive: REC-01 terminal-state normalizer (v12.46.0). Guarded in the same
 // try/catch style as the js-yaml require above so an older hook-utils.cjs without
@@ -154,7 +154,7 @@ function teamIdleBetweenWaves(sessionDir, statusContent, nowMs = Date.now()) {
     if (!sessionDir || !path.basename(sessionDir).startsWith('team_')) return false;
 
     // 2. not terminal
-    const phase = statusPhase(statusContent);
+    const phase = readSessionState(statusContent); // review r1 #4: handover-aware reader
     if (!phase || isTerminalState(phase)) return false;
 
     // 3. latest recorded gate passed. Files: wave_<int>[suffix].yaml (wave_5b

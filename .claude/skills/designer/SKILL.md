@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 metadata:
   author: CaelanDrayer
-  version: "12.76.1"
+  version: "12.77.0"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
@@ -223,6 +223,8 @@ The user explicitly chooses a build option, an export option, or a save-and-stop
 ## Build Integration
 
 When the user selects a build option, invoke the matching skill with the Skill tool. Use `act` or `team` with `args: "implement design from ${session_id}"`. For the cross-domain strategic-mode build path, append `--strategic` to the `team` args. The legacy `/org` skill was removed in v12.2.0, and `/team` strategic mode absorbed it.
+
+`/act` closes this session when it starts. It writes `handover_to: <act id>` and `phase: complete` into this `status.yaml`, and `handover_from` into its own `instruction.yaml`. Do not close the session by hand.
 
 When the user selects "Refine specific area", ask which phase or which topic with AskUserQuestion. Then jump back to that phase, and keep the existing context.
 

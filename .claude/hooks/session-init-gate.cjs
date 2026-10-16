@@ -89,7 +89,7 @@ const {
   PLUGIN_ROOT,
   SESSION_PREFIXES,
   safeRead,
-  extractYamlValue,
+  readSessionState,
   isTerminalState,
   claimSession,
   resolveSession,
@@ -438,9 +438,7 @@ function classifySessionAbsence() {
     const content = safeRead(path.join(sessionsDir, s, 'status.yaml'))
       || safeRead(path.join(sessionsDir, s, 'session.yaml'));
     if (!content) continue;
-    const st = extractYamlValue(content, 'pipeline_state')
-      || extractYamlValue(content, 'phase')
-      || extractYamlValue(content, 'current_phase');
+    const st = readSessionState(content); // FU-9: phase:/pipeline_state:/handover_to tolerant
     if (st && isTerminalState(st)) {
       terminal += 1;
       states.push(`${s}=${st}`);

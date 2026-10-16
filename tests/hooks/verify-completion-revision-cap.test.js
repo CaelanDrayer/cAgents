@@ -184,7 +184,10 @@ describe('verify-completion.cjs revision-cycle cap (REC-11)', () => {
     const { sid, dir } = makeStalledSession('honesty', 3);
     runHook(sid);
     const status = readStatus(dir);
-    expect(status).toMatch(/pipeline_state:\s*incomplete/);
+    // v12.77.0 follow-up FU-8: pipeline_state is no longer overwritten to
+    // `incomplete`; it stays COORDINATED and the summary says `failed`.
+    expect(status).toMatch(/pipeline_state:\s*COORDINATED/);
+    expect(readFileSync(join(dir, 'completion_summary.yaml'), 'utf8')).toMatch(/^status:\s*failed/m);
     expect(status).not.toMatch(/pipeline_state:\s*complete\b/);
     expect(status).not.toMatch(/pipeline_state:\s*VALIDATED/);
   });

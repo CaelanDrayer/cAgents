@@ -109,6 +109,8 @@ Keep a question prompt **under 300 tokens**. Include only three things: the
 question, where to look, and what to report. Do NOT include the contents of the
 plan, of the decomposition, or of the instruction.
 
+When the executor will run shell commands, add a one-line note pointing to `.claude/rules/playbooks/pat-concurrent-session-hooks.md` § Writing commands that pass the bash guard.
+
 Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them.
 
 ## CRITICAL: Synchronous Spawning (never background-and-yield)

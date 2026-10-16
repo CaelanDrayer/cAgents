@@ -1555,7 +1555,72 @@ function wordsOfToken(t) {
 // shell still counts when it reads code from -c, -s, stdin or an rc option,
 // when the script word has an expansion, or when it names scripts/ or a `..`.
 const SHELL_SCRIPT_OPT_RE = /^[-+][euvxn]+$/;
-function localShellScriptWords(argv) {
+// FU-1 (v12.77.0): NAME -> { value, idx } for a variable that holds a literal
+// absolute path at every later `$NAME` (`W=/abs/dir; bash $W/tap.sh`). The
+// rules copy buildLiteralAssignMap (S2a), with one change: export, declare,
+// typeset, local and readonly do not void the map when each word they bind
+// starts with a literal name (`export A=x PATH="...:$PATH"`). bareMentions
+// still drops a name that such a word rebinds. Any doubt gives no entry, and
+// the script word then counts as unknown (a runner).
+const SCRIPT_VAR_SETTERS = new Set(['export', 'declare', 'typeset', 'local', 'readonly']);
+const ABS_LITERAL_PATH_RE = /^(\/[^\s*?[\]{}~$`'"\\]*|[A-Za-z]:[\\/][^\s*?[\]{}~$`'"]*)$/;
+function scriptVarMap(segments, raw) {
+  const out = new Map();
+  raw = String(raw || '');
+  if (/(?<![A-Za-z0-9_])IFS(?![A-Za-z0-9_])/.test(raw)) return out;
+  const cand = new Map();
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    if (seg.op === '(' || seg.op === ')') return new Map();
+    if (!seg.argv.length) continue;
+    const a0 = seg.argv[0];
+    if (a0.varCount === 0 && a0.substCount === 0 && COMPOUND_WORDS.has(a0.canon)) return new Map();
+    const cp = commandPosition(seg.argv);
+    if (cp.length && (cp[0].varCount || cp[0].substCount)) return new Map();
+    const c0 = cp.length ? basename(cp[0].canon) : '';
+    if (SCRIPT_VAR_SETTERS.has(c0)) {
+      if (!cp.slice(1).every(t => /^(-[A-Za-z]+$|[A-Za-z_][A-Za-z0-9_]*(\+?=|$))/.test(String(t.raw || '')))) return new Map();
+    } else if (VAR_WRITER_CMDS.has(c0)) return new Map();
+    if (c0 === 'printf' && cp.some(t => t.canon === '-v' || /^-v./.test(t.canon))) return new Map();
+    const allAssign = seg.argv.every(t => t.litLen > 0 && t.varCount === 0 && t.substCount === 0 && INLINE_ASSIGN_RE.test(t.canon));
+    if (!allAssign) continue;
+    const prevOp = i > 0 ? segments[i - 1].op : null;
+    const unconditional = (prevOp === null || prevOp === ';') && seg.op !== '|' && seg.op !== '&';
+    for (const t of seg.argv) {
+      const m = INLINE_ASSIGN_RE.exec(t.canon);
+      if (cand.has(m[1]) || !unconditional || !ABS_LITERAL_PATH_RE.test(m[2])) { cand.set(m[1], null); continue; }
+      cand.set(m[1], { value: m[2], idx: i });
+    }
+  }
+  for (const [name, entry] of cand) {
+    if (entry && bareMentions(raw, name) === 1) out.set(name, entry);
+  }
+  return out;
+}
+// Stores the map on each segment, so segRunnerWords can read it. A segment
+// that a payload re-tokenized has no map, so its `$W/x.sh` stays unknown.
+function annotateScriptVars(segments, raw) {
+  let map;
+  try { map = scriptVarMap(segments, raw); } catch (e) { map = new Map(); }
+  segments.forEach((seg, i) => { seg.scriptVars = { map, idx: i }; });
+}
+// The resolved path of a script word `$W/x.sh`, `"$W/x.sh"`, `"$W"/x.sh` or
+// `${W}/x.sh`, or null. W must be in the segment's map, assigned in an earlier
+// segment, and the rest of the word must be plain text.
+function resolveScriptVarWord(sc, seg) {
+  const ctx = seg && seg.scriptVars;
+  if (!ctx || !sc || sc.substCount || sc.varCount !== 1) return null;
+  const raw = String(sc.raw || '');
+  const m = /^("?)\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))/.exec(raw);
+  if (!m) return null;
+  const name = m[2] || m[3];
+  const rest = raw.slice(m[0].length);
+  if (/[$`'\\{}~*?[\]]/.test(rest)) return null;
+  const entry = ctx.map.get(name);
+  if (!entry || entry.idx >= ctx.idx) return null;
+  return entry.value + sc.canon;
+}
+function localShellScriptWords(argv, seg) {
   let k = argv.length - skipLeadKeywords(argv).length;
   while (k < argv.length - 1 && argv[k].litLen > 0 && !wordHasExpansion(argv[k]) && ENV_ASSIGN_RE.test(argv[k].canon)) k++;
   const sh = argv[k];
@@ -1564,8 +1629,9 @@ function localShellScriptWords(argv) {
   while (i < argv.length && !wordHasExpansion(argv[i]) && SHELL_SCRIPT_OPT_RE.test(argv[i].canon)) i++;
   if (i < argv.length && !wordHasExpansion(argv[i]) && argv[i].canon === '--') i++;
   const sc = argv[i];
-  if (!sc || wordHasExpansion(sc)) return null;
-  const v = sc.canon;
+  if (!sc) return null;
+  const v = wordHasExpansion(sc) ? resolveScriptVarWord(sc, seg) : sc.canon;
+  if (v === null) return null;
   // A glob character (* ? [) can match scripts/, so it fails closed, even when
   // it is quoted. The scripts/ match ignores case for case-insensitive disks.
   if (/[*?[]/.test(String(sc.raw || '') + v)) return null;
@@ -1574,7 +1640,7 @@ function localShellScriptWords(argv) {
   return new Set([k, i]);
 }
 function segRunnerWords(seg, strictShell) {
-  const skip = strictShell ? null : localShellScriptWords(seg.argv);
+  const skip = strictShell ? null : localShellScriptWords(seg.argv, seg);
   return seg.argv.some((t, i) => !(skip && skip.has(i)) && wordsOfToken(t).some(w => RUNNER_WORDS.has(w)));
 }
 function segMentionsRunner(seg) { return segRunnerWords(seg, false); }
@@ -1598,12 +1664,96 @@ function envChdirTarget(argv) {
   }
   return undefined;
 }
+// FU-2 (v12.77.0): a world-writable directory (/tmp, /var/tmp, /dev/shm, or
+// any directory with the o+w bit). Another user can plant a script there, so
+// a cd into it keeps a local `bash x.sh` asking. Never throws.
+const WORLD_WRITABLE_DIRS = new Set(['/tmp', '/var/tmp', '/dev/shm']);
+// FU-12 (v12.77.0): the whole temp tree counts, not only its root
+// (`cd /tmp/build`), after symlinks resolve (`cd ~/link-to-tmp`). A directory
+// that another non-root user owns counts too. A path that does not exist yet
+// is judged by its nearest existing parent.
+const TEMP_TREE_RE = /^\/(tmp|var\/tmp|dev\/shm)(\/|$)/;
+function realOrNearest(p) {
+  const fs = require('fs');
+  const path = require('path');
+  let cur = path.resolve(p);
+  let tail = '';
+  for (let n = 0; n < 64; n++) {
+    try { return path.join(fs.realpathSync(cur), tail); } catch (e) { /* walk up */ }
+    const up = path.dirname(cur);
+    if (up === cur) return path.resolve(p);
+    tail = path.join(path.basename(cur), tail);
+    cur = up;
+  }
+  return path.resolve(p);
+}
+function isWorldWritableDir(p) {
+  const v = String(p || '').replace(/\/+$/, '') || '/';
+  if (WORLD_WRITABLE_DIRS.has(v) || TEMP_TREE_RE.test(v)) return true;
+  if (!/^\//.test(v)) return false;
+  const r = realOrNearest(v);
+  if (TEMP_TREE_RE.test(r)) return true;
+  try {
+    const os = require('os');
+    const td = require('fs').realpathSync(os.tmpdir());
+    if (td !== '/' && (r === td || r.startsWith(td + '/'))) return true;
+  } catch (e) { /* no tmpdir */ }
+  try {
+    const st = require('fs').statSync(r);
+    if (st.mode & 0o002) return true;
+    const uid = typeof process.getuid === 'function' ? process.getuid() : -1;
+    if (uid >= 0 && st.uid !== uid && st.uid !== 0) return true;
+  } catch (e) { /* missing: judged by the parent above */ }
+  return false;
+}
+// A cd target word as a path, or null: a literal, ~ or ~/x, $HOME/x, or a
+// variable that the FU-1 map resolves to a literal absolute path.
+function cdTargetPath(t, seg, reassigned) {
+  if (!t) return null;
+  if (!t.varCount && !t.substCount) {
+    const v = t.canon;
+    if (/^~(\/|$)/.test(String(t.raw || '')) && process.env.HOME) return process.env.HOME + v.replace(/^~/, '');
+    return /^\//.test(v) ? v : null;
+  }
+  if (t.substCount || t.varCount !== 1) return null;
+  const raw = String(t.raw || '');
+  const m = /^("?)\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))([^$`'\\{}*?[\]~"]*)\1$/.exec(raw);
+  if (!m) return null;
+  const name = m[2] || m[3];
+  if (reassigned && reassigned.has(name) && !(seg && seg.scriptVars && seg.scriptVars.map.has(name))) return null;
+  if (name === 'HOME' && process.env.HOME) return process.env.HOME + m[4];
+  const r = resolveScriptVarWord({ raw: m[1] ? raw.slice(1, -1) : raw, canon: m[4], varCount: 1, substCount: 0 }, seg);
+  return r;
+}
+function isTempCdTarget(t, reassigned, seg) {
+  if (!t) return false;
+  if (isPlainVarWord(t, 'TMPDIR', reassigned)) return true;
+  if (t.varCount === 1 && !t.substCount && /^"?\$(\{TMPDIR\}|TMPDIR)(?![A-Za-z0-9_])/.test(String(t.raw || ''))) return true;
+  const p = cdTargetPath(t, seg, reassigned);
+  return p !== null && isWorldWritableDir(p);
+}
+// After a cd into a temp dir, `./x.sh`, `source x.sh` and `. x.sh` run a file
+// that another user can plant there.
+function runsRelativeFile(seg) {
+  const cp = commandPosition(seg.argv);
+  if (!cp.length) return false;
+  const w = cp[0];
+  if (w.varCount || w.substCount) return false;
+  const c0 = basename(w.canon);
+  if (c0 === 'source' || c0 === '.') {
+    const a = cp[1];
+    return !!a && (a.varCount || a.substCount || !/^\//.test(a.canon));
+  }
+  return w.canon.includes('/') && !/^\//.test(w.canon) && !/^~/.test(String(w.raw || ''));
+}
 function cwdShiftMessage(segments, depth, reassigned) {
   if ((depth || 0) > MAX_SHELL_C_DEPTH) return null;
   reassigned = reassignedNames(segments, new Set(reassigned || []));
   let shifted = false;
+  let tmpShift = false;
   for (const seg of segments) {
     if (shifted && segMentionsRunner(seg)) return CWD_MSG;
+    if (tmpShift && (segMentionsRunnerStrict(seg) || runsRelativeFile(seg))) return CWD_MSG;
     const et = envChdirTarget(seg.argv);
     if (et !== undefined && !isProjectRootWord(et, reassigned) && !isSameDirWord(et, reassigned) && segMentionsRunner(seg)) return CWD_MSG;
     const r = commandPosition(seg.argv);
@@ -1637,6 +1787,11 @@ function cwdShiftMessage(segments, depth, reassigned) {
     if (CD_CMDS.has(c0)) {
       const target = r.slice(1).find(t => t.varCount || t.substCount || !/^-/.test(t.canon) || t.canon === '-');
       if (!(c0 !== 'popd' && isSameDirWord(target, reassigned))) shifted = c0 === 'popd' || !target || !isProjectRootWord(target, reassigned);
+      // A relative cd (or a variable) after a cd into a temp dir can stay in it.
+      if (c0 !== 'popd') {
+        const rel = !!target && (target.varCount || target.substCount || !/^[\/~]|^[A-Za-z]:/.test(target.canon));
+        tmpShift = isTempCdTarget(target, reassigned, seg) || (tmpShift && rel);
+      }
     }
   }
   return null;
@@ -1655,9 +1810,130 @@ const EXPORT_CMDS = new Set(['export', 'declare', 'typeset', 'local', 'readonly'
 const INDIRECT_SETTER_CMDS = new Set(['read', 'printf', 'mapfile', 'readarray', 'getopts']);
 const ENV_ASSIGN_RE = /^([A-Za-z_][A-Za-z0-9_]*)\+?=([\s\S]*)$/;
 const ENV_SOURCE_MSG = 'This command sources a shell file (source / .) or splits an env -S string before git or a test/CI runner. The file can set NODE_OPTIONS, GIT_* or PATH. Confirm the file is trusted.';
+// FU-3 (v12.77.0): a PATH assignment that only prepends existing directories
+// (`PATH="$LOCALAPPDATA/Android/Sdk/platform-tools:$PATH"`) does not count as
+// a dangerous setting. Each prepended entry must be a literal absolute path,
+// or $LOCALAPPDATA, $HOME or $ANDROID_HOME (set in the hook env, not set in
+// the command) plus a literal suffix. `.`, an empty entry, a glob, a `..` and
+// a quote other than one outer "..." fail. The directory must exist and must
+// not be the cwd or inside the project root. No other user may write into it:
+// the directory is owned by this user or root and is not world-writable, and
+// each parent is not world-writable unless it is sticky. A dir in /tmp,
+// /var/tmp or /dev/shm always fails.
+function isSafePathDir(dir) {
+  const fs = require('fs');
+  const path = require('path');
+  let st;
+  try { st = fs.statSync(dir); } catch (e) { return false; }
+  if (!st.isDirectory()) return false;
+  // FU-12 (v12.77.0): judge the real path too, so a symlink ($HOME/l ->
+  // /tmp/x) cannot carry a temp dir past the checks below.
+  const lexical = path.resolve(dir);
+  let r;
+  try { r = fs.realpathSync(dir); } catch (e) { return false; }
+  const strip = (x) => x.length > 1 ? x.replace(/[\\/]+$/, '') : x;
+  const inside = (a, b) => a === b || a.startsWith(b + path.sep);
+  let cwdReal = path.resolve(process.cwd());
+  try { cwdReal = fs.realpathSync(cwdReal); } catch (e) { /* keep */ }
+  for (const p of [lexical, r]) {
+    if (strip(p) === strip(path.resolve(process.cwd())) || strip(p) === strip(cwdReal)) return false;
+    // The shared temp trees: any user can make a dir name there first.
+    if (/^\/(tmp|var\/tmp|dev\/shm)(\/|$)/.test(p)) return false;
+    for (const root of projectRoots()) if (root && inside(strip(p), strip(path.resolve(root)))) return false;
+  }
+  if (process.platform === 'win32') {
+    // FU-12: Windows has no POSIX owner bits here, and any local user can
+    // make a folder at a drive root (C:\x). Pass only a dir under a per-user
+    // root or a system root that needs admin rights to write.
+    const roots = [process.env.LOCALAPPDATA, process.env.USERPROFILE, process.env.APPDATA,
+      process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.SystemRoot]
+      .filter(Boolean).map(x => strip(path.resolve(x)).toLowerCase());
+    const lr = strip(r).toLowerCase();
+    return roots.some(root => inside(lr, root));
+  }
+  const uid = typeof process.getuid === 'function' ? process.getuid() : -1;
+  if ((st.mode & 0o002) || (st.uid !== uid && st.uid !== 0)) return false;
+  for (let d = path.dirname(r); ; d = path.dirname(d)) {
+    let ps;
+    try { ps = fs.statSync(d); } catch (e) { return false; }
+    if ((ps.mode & 0o002) && !(ps.mode & 0o1000)) return false;
+    if (path.dirname(d) === d) break;
+  }
+  return true;
+}
+const PATH_ROOT_VARS = new Set(['LOCALAPPDATA', 'HOME', 'ANDROID_HOME']);
+function isSafePathPrepend(t, reassigned) {
+  if (!t || t.substCount) return false;
+  const m = /^PATH=([\s\S]*)$/.exec(String(t.raw || ''));
+  if (!m) return false;
+  let v = m[1];
+  if (/^"[^"]*"$/.test(v)) v = v.slice(1, -1);
+  if (/["'`\\\s]/.test(v) || v.includes('$(')) return false;
+  const parts = v.split(':');
+  if (parts.length < 2 || !/^\$(\{PATH\}|PATH)$/.test(parts[parts.length - 1])) return false;
+  for (const e of parts.slice(0, -1)) {
+    if (!e || /[*?[\]{}~]/.test(e) || /(^|\/)\.\.?(\/|$)/.test(e)) return false;
+    let dir;
+    const vm = /^\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))(\/[^$]*)?$/.exec(e);
+    if (vm) {
+      const n = vm[1] || vm[2];
+      if (!PATH_ROOT_VARS.has(n) || (reassigned && reassigned.has(n)) || !process.env[n]) return false;
+      dir = process.env[n] + (vm[3] || '');
+    } else if (e.includes('$') || !/^\//.test(e)) {
+      return false;
+    } else {
+      dir = e;
+    }
+    if (!isSafePathDir(dir)) return false;
+  }
+  return true;
+}
+// FU-12 (v12.77.0): a command that also writes files can plant a binary in
+// the prepended dir before the runner reads PATH (`cp x ~/bin/git; PATH=
+// ~/bin:$PATH git status`). Any file write in the same command voids the
+// PATH exemption: an output redirect to a file, or a command word that writes.
+const PATH_WRITER_CMDS = new Set(['cp', 'mv', 'ln', 'install', 'tee', 'rsync', 'tar', 'unzip', 'gunzip',
+  'curl', 'wget', 'mkdir', 'touch', 'chmod', 'chown', 'dd', 'truncate', 'sed', 'perl', 'patch', 'git',
+  'node', 'nodejs', 'python', 'python2', 'python3', 'ruby', 'php', 'scp', 'sftp', 'ditto', 'cpio',
+  'bash', 'sh', 'zsh', 'dash', 'eval', 'source', '.', 'xargs', 'find', 'awk', 'gawk', 'npm', 'npx',
+  'yarn', 'pnpm', 'pip', 'pip3', 'make', 'gcc', 'cc', 'go', 'cargo', 'printf', 'echo', 'cat']);
+function commandWritesFiles(segments) {
+  for (const seg of segments) {
+    for (const r of seg.redirects || []) {
+      if (!/>/.test(r.op) || r.op === '>&' && /^\d+$|^-$/.test(String(r.target && r.target.canon))) continue;
+      const tg = r.target;
+      // /dev/null, and a plain file name in the cwd (never a safe PATH dir).
+      if (tg && !tg.varCount && !tg.substCount && (tg.canon === '/dev/null' || /^[^\/\\~]+$/.test(tg.canon) && !/^\.\.?$/.test(tg.canon))) continue;
+      return true;
+    }
+    let cp = commandPosition(seg.argv);
+    while (cp.length && /^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(String(cp[0].raw || ''))) cp = commandPosition(cp.slice(1));
+    if (!cp.length) continue;
+    if (cp[0].varCount || cp[0].substCount) return true;
+    if (PATH_WRITER_CMDS.has(basename(cp[0].canon))) return 'cmd:' + basename(cp[0].canon);
+    if (seg.argv.some(t => (t.substInners || []).length)) return true;
+  }
+  return false;
+}
 function envPrefixMessage(segments, depth) {
   if ((depth || 0) > MAX_SHELL_C_DEPTH) return null;
   const names = [];
+  const reassigned = reassignedNames(segments);
+  // The runner itself (git, npm, bash ...) is a writer word, so judge the
+  // other segments: a write in the runner's own segment runs after PATH is set,
+  // and the runner is already the thing the PATH entry feeds.
+  const writerSegs = segments.filter((s) => {
+    const w = commandWritesFiles([s]);
+    if (w !== true && typeof w !== 'string') return false;
+    if (w === true) return true;
+    const c = w.slice(4);
+    // A runner word (git, npm, bash x.sh ...) is the PATH consumer, not a
+    // planting step. A shell that reads code from -c or stdin still counts.
+    if (!RUNNER_WORDS.has(c)) return true;
+    if (SHELL_INTERPRETERS_EVAL.has(c)) return !localShellScriptWords(s.argv, s);
+    return false;
+  });
+  const safePath = (n, t) => n === 'PATH' && writerSegs.length === 0 && isSafePathPrepend(t, reassigned);
   // WI-21 round 6: names set by an assignment-only segment (`A="$(git ...)"`).
   // A substitution in that segment runs before the assignment, so only a
   // runner in ANOTHER segment can see the value.
@@ -1673,7 +1949,7 @@ function envPrefixMessage(segments, depth) {
     while (k < a.length) {
       const t = a[k];
       const m = ENV_ASSIGN_RE.exec(t.canon);
-      if (m && t.litLen > 0) { if (bare) bareNames.push({ n: m[1], seg }); else names.push(m[1]); k++; continue; }
+      if (m && t.litLen > 0) { if (safePath(m[1], t)) { k++; continue; } if (bare) bareNames.push({ n: m[1], seg }); else names.push(m[1]); k++; continue; }
       const b = t.varCount || t.substCount ? '' : basename(t.canon);
       if (b === 'source' || b === '.') { sourced = true; sourceSegs.add(seg); break; }
       if (b === 'eval') {
@@ -1694,7 +1970,7 @@ function envPrefixMessage(segments, depth) {
         while (k < a.length) {
           const v = a[k].canon;
           const mm = ENV_ASSIGN_RE.exec(v);
-          if (mm) { names.push(mm[1]); k++; continue; }
+          if (mm) { if (!safePath(mm[1], a[k])) names.push(mm[1]); k++; continue; }
           if (isEnv && (v === '-u' || v === '--unset')) { if (a[k + 1]) names.push(a[k + 1].canon); k += 2; continue; }
           if (isEnv && /^--unset=/.test(v)) { names.push(v.slice(8)); k++; continue; }
           if (isEnv && /^-u./.test(v)) { names.push(v.slice(2)); k++; continue; }
@@ -1870,9 +2146,16 @@ function checkVariableExpansion(segments, depth, raw) {
     }
     const argv = commandPosition(seg.argv);
     if (!argv.length) continue;
-    const ft = argv[0];
+    let ft = argv[0];
+    let rest = argv.slice(1);
+    // R-77.5 (v12.77.0): a variable command word after xargs / parallel
+    // (`C=rm; xargs $C -rf <<< /etc`) is judged like the command word, with
+    // the known stdin words appended.
+    if (!ft.varCount && !ft.substCount && STDIN_ARGV_CMDS.has(basename(ft.canon))) {
+      const w = xargsWrappedCommand(argv);
+      if (w.length && isPureVar(w[0])) { ft = w[0]; rest = w.slice(1).concat(xargsStdinWords(segments, seg)); }
+    }
     if (isPureVar(ft)) {
-      const rest = argv.slice(1);
       if (isVisiblyDestructiveArgv(rest)) {
         return D('variable in command position with a destructive argv (canonicalizes to a destructive command)');
       }
@@ -2773,6 +3056,269 @@ function braceVerdict(argv, depth) {
   return null;
 }
 
+// FU-12 (v12.77.0): the guard's own config. FU-4 lets the settings key
+// cagents.bash_guard turn asks off, and a write to a hook file can remove the
+// deny floor. A Bash command that can write .claude/settings*.json,
+// .claude/hooks.json or a file under .claude/hooks/ asks, in every mode.
+const GUARD_CFG_RE = /\.claude[\\/]+(settings(\.local)?\.json|hooks\.json|hooks[\\/])/;
+const GUARD_CFG_MSG = 'This command can change the bash guard configuration (.claude/settings*.json, .claude/hooks.json or .claude/hooks/). CAGENTS_BASH_GUARD=off does not waive this ask. Edit the file with the Edit tool, or confirm the change.';
+const CFG_READ_CMDS = new Set(['cat', 'head', 'tail', 'grep', 'egrep', 'fgrep', 'rg', 'ls', 'wc', 'stat', 'file',
+  'diff', 'jq', 'less', 'more', 'md5sum', 'sha1sum', 'sha256sum', 'echo', 'test', '[', 'realpath', 'readlink',
+  'dirname', 'basename', 'cmp', 'od', 'xxd', 'hexdump', 'awk', 'sed', 'node', 'nodejs', 'git', 'npx', 'npm', 'yq']);
+const CFG_GIT_WRITE = new Set(['checkout', 'restore', 'reset', 'stash', 'apply', 'am', 'mv', 'rm', 'pull', 'merge', 'rebase', 'cherry-pick', 'revert', 'switch', 'clean']);
+function tokenMentionsCfg(t) {
+  return GUARD_CFG_RE.test(String(t.raw || '')) || GUARD_CFG_RE.test(String(t.canon || '')) ||
+    (t.substInners || []).some(x => GUARD_CFG_RE.test(String(x)));
+}
+function guardConfigWriteMessage(segments, raw) {
+  if (!GUARD_CFG_RE.test(String(raw || ''))) return null;
+  for (const seg of segments) {
+    for (const r of seg.redirects || []) {
+      if (!/>/.test(r.op) || !r.target) continue;
+      if (tokenMentionsCfg(r.target)) return GUARD_CFG_MSG;
+    }
+    if (!seg.argv.some(tokenMentionsCfg)) continue;
+    const cp = commandPosition(seg.argv);
+    if (!cp.length || cp[0].varCount || cp[0].substCount) return GUARD_CFG_MSG;
+    const c0 = basename(cp[0].canon);
+    if (!CFG_READ_CMDS.has(c0)) return GUARD_CFG_MSG;
+    const args = cp.slice(1).map(t => String(t.canon));
+    if (c0 === 'sed' && args.some(a => /^-[A-Za-z]*i/.test(a) || /^--in-place/.test(a))) return GUARD_CFG_MSG;
+    if ((c0 === 'awk') && args.some(a => /inplace/.test(a))) return GUARD_CFG_MSG;
+    if ((c0 === 'node' || c0 === 'nodejs') && args.some(a => /^(-e|-p|--eval|--print|-r|--require|--import|--input-type)/.test(a))) return GUARD_CFG_MSG;
+    if (c0 === 'yq' && args.some(a => /^(-i|--inplace)/.test(a))) return GUARD_CFG_MSG;
+    if (c0 === 'git') { const sub = args.find(a => !/^-/.test(a)); if (!sub || CFG_GIT_WRITE.has(sub)) return GUARD_CFG_MSG; }
+    if ((c0 === 'npm' || c0 === 'npx') && !args.includes('vitest') && args[0] !== 'test') return GUARD_CFG_MSG;
+  }
+  return null;
+}
+// FU-12 (v12.77.0): a loader or shell-init setting injects code into every
+// binary or shell that the command starts. An ask that such a setting raises
+// stays an ask under CAGENTS_BASH_GUARD=off. NODE_OPTIONS made only of the
+// listed resource and diagnostic flags is waivable.
+const LOADER_ASSIGN_RE = /(?<![A-Za-z0-9_])(LD_[A-Z_]+|DYLD_[A-Z_]+|BASH_ENV|BASH_FUNC_[A-Za-z0-9_%]+|SHELLOPTS|BASHOPTS|PS4|NODE_OPTIONS)\+?=("[^"]*"|'[^']*'|[^\s;&|]*)/g;
+const SAFE_NODE_OPT_RE = /^--(max-old-space-size|max-semi-space-size|stack-size|no-warnings|trace-warnings|enable-source-maps|unhandled-rejections|dns-result-order|no-deprecation|trace-deprecation|max-http-header-size)(=[A-Za-z0-9_.-]+)?$/;
+function loaderEnvMessage(raw) {
+  raw = String(raw || '');
+  let m;
+  LOADER_ASSIGN_RE.lastIndex = 0;
+  while ((m = LOADER_ASSIGN_RE.exec(raw)) !== null) {
+    if (m[1] === 'NODE_OPTIONS') {
+      const v = m[2].replace(/^(["'])([\s\S]*)\1$/, '$2');
+      if (!/[$`\\]/.test(v) && v.trim() !== '' && v.trim().split(/\s+/).every(x => SAFE_NODE_OPT_RE.test(x))) continue;
+    }
+    return 'The command sets ' + m[1] + ', which loads code into the programs it starts. CAGENTS_BASH_GUARD=off does not waive this ask.';
+  }
+  return null;
+}
+// FU-12 (v12.77.0): the reason an ask must stay an ask under
+// CAGENTS_BASH_GUARD=off, or null. The validator calls it only for a command
+// that already asks, so a match in data only keeps an ask. Never throws.
+function nonWaivableAskReason(command) {
+  try {
+    const raw = String(command || '');
+    const lm = loaderEnvMessage(raw);
+    if (lm) return lm;
+    if (!GUARD_CFG_RE.test(raw)) return null;
+    let segs;
+    try { segs = tokenize(raw).segments; } catch (e) { return GUARD_CFG_MSG; }
+    return guardConfigWriteMessage(segs, raw);
+  } catch (e) { return 'guard could not classify the ask (fail-closed)'; }
+}
+// FU-12 (v12.77.0): the shell source of a payload word that is one "..."
+// string, with the outer quote level removed and each $VAR / $(...) kept as
+// text. Returns null for any other word shape (mixed quotes, an unquoted part).
+function dqPayloadSource(t) {
+  const raw = String((t && t.raw) || '');
+  if (!/^"[\s\S]*"$/.test(raw) || raw.length < 2) return null;
+  const body = raw.slice(1, -1);
+  let out = '';
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (ch === '\\' && i + 1 < body.length && /["\\$`\n]/.test(body[i + 1])) {
+      if (body[i + 1] !== '\n') out += body[i + 1];
+      i++;
+      continue;
+    }
+    if (ch === '"') return null;
+    out += ch;
+  }
+  return out;
+}
+// NAME -> literal for each prefix assignment in a segment before `seg`. The
+// last one wins. Only used to make a payload verdict stricter, never to allow.
+function looseLiteralsBefore(segments, seg) {
+  const m = new Map();
+  for (const s of segments) {
+    if (s === seg) break;
+    for (const t of s.argv) {
+      const a = (t.litLen > 0 && !t.varCount && !t.substCount) && INLINE_ASSIGN_RE.exec(t.canon);
+      if (!a) break;
+      m.set(a[1], a[2]);
+    }
+  }
+  return m;
+}
+function spliceLiterals(src, map) {
+  if (!map.size) return src;
+  return src.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g,
+    (all, a, b) => (map.has(a || b) ? map.get(a || b) : all));
+}
+// R-77.5 (v12.77.0): true when the text runs curl or wget in command position,
+// directly or inside a nested $(...) / `...`. Bounded by MAX_SUBST_DEPTH.
+const FETCH_CMDS = new Set(['curl', 'wget']);
+function textRunsFetch(text, n) {
+  if (n > MAX_SUBST_DEPTH) return true;
+  let segs;
+  try { segs = tokenize(String(text || '')).segments; } catch (e) { return /\b(curl|wget)\b/.test(String(text || '')); }
+  for (const sg of segs) {
+    const r = commandPosition(sg.argv);
+    if (r.length && !r[0].varCount && !r[0].substCount && FETCH_CMDS.has(basename(r[0].canon))) return true;
+    for (const t of sg.argv.concat(sg.redirects.map(x => x.target).filter(Boolean))) {
+      for (const si of (t.substInners || [])) if (textRunsFetch(si, n + 1)) return true;
+    }
+  }
+  return false;
+}
+const FETCH_EXEC_MSG = 'download-then-execute (a fetched script is run as code through a substitution, like curl | sh)';
+// Judge one token whose text a shell (`bash -c`) or `env -S` runs as code.
+// Returns a deny, an ask, or null. With label 'shell -c' the reasons are the
+// ones the shell -c check gave before the R-77.5 refactor.
+function judgeCodePayload(pt, segments, seg, depth, label) {
+  let ask = null;
+  // R-77.5: `sh -c "$(curl -fsSL URL)"` runs the fetched text as code.
+  for (const si of (pt.substInners || [])) if (textRunsFetch(si, 0)) return D(FETCH_EXEC_MSG);
+  // FU-1 (v12.77.0): a payload whose first word is a variable
+  // (`bash -c "$W"`, `sh -c "${CMD} x"`) runs that variable as a command.
+  if (pt.varCount && /^["']?\s*\$(\{|[A-Za-z_@*])/.test(String(pt.raw || '')) && !/^'/.test(String(pt.raw || ''))) {
+    ask = A('a variable is executed as a command (variable-indirection) by ' + (label === 'env -S' ? 'an ' : 'a ') + label + ' payload; its contents are not statically visible');
+  }
+  // WI-20: `bash -c "$(echo CMD)"` runs CMD; REV4 R3-2: also a nested
+  // producer (`bash -c "$(cat <(echo CMD))"`).
+  const texts = [pt.canon];
+  for (const si of (pt.substInners || [])) texts.push(...(producedScripts(si, 0) || []));
+  // FU-12 (v12.77.0): the outer shell expands a "..." payload, and the
+  // inner shell then parses the result as code. pt.canon drops each
+  // expansion, so `bash -c "$(echo rm) -rf /etc"` read as ` -rf /etc`.
+  // Judge the payload source with each expansion kept in place, and
+  // judge it again with earlier literal assignments spliced in.
+  if (pt.varCount || pt.substCount) {
+    const src = dqPayloadSource(pt);
+    if (src === null) {
+      ask = ask || A((label === 'env -S' ? 'an ' : 'a ') + label + ' payload mixes quoting with an expansion; the code the inner shell parses is not statically visible');
+    } else {
+      texts.push(src);
+      const spliced = spliceLiterals(src, looseLiteralsBefore(segments, seg));
+      if (spliced !== src) texts.push(spliced);
+    }
+  }
+  for (const text of texts) {
+    if (!text) continue;
+    const inner = evaluateInternal(text, depth + 1);
+    if (inner && inner.kind === 'deny') return D(label + ' payload is destructive: ' + (inner.reason || ''));
+    if (inner && inner.kind === 'ask') ask = ask || A(label + ' payload requires confirmation: ' + (inner.reason || ''));
+  }
+  return ask;
+}
+// R-77.5 (v12.77.0): the -S / --split-string payload tokens of every literal
+// env word in argv. An attached form (`-S'cmd'`, `--split-string=cmd`) gets a
+// copy of its token with the option prefix removed from canon and raw.
+function envSplitPayloads(argv) {
+  const out = [];
+  const strip = (t, n) => Object.assign({}, t, {
+    canon: t.canon.slice(n),
+    raw: String(t.raw || '').startsWith(t.canon.slice(0, n)) ? String(t.raw).slice(n) : String(t.raw || '')
+  });
+  for (let i = 0; i < argv.length; i++) {
+    const e = argv[i];
+    if (e.varCount || e.substCount || basename(e.canon) !== 'env') continue;
+    for (let k = i + 1; k < argv.length; k++) {
+      const t = argv[k], v = t.canon;
+      if (ENV_ASSIGN_RE.test(v) && t.litLen > 0) continue;
+      if (v === '-u' || v === '--unset' || v === '-C' || v === '--chdir' || v === '-a' || v === '--argv0') { k++; continue; }
+      if (v === '-S' || v === '--split-string') { if (argv[k + 1]) out.push(argv[k + 1]); break; }
+      if (/^--split-string=/.test(v)) { out.push(strip(t, 15)); break; }
+      // A short-option cluster that holds S (`-S'cmd'`, `-iS cmd`, `-vS'cmd'`).
+      const m = /^-([iv0]*)S/.exec(v);
+      if (m && !/^--/.test(v)) {
+        const n = m[0].length;
+        if (v.length > n) out.push(strip(t, n));
+        else if (argv[k + 1]) out.push(argv[k + 1]);
+        break;
+      }
+      if (/^-/.test(v) && v !== '-') continue;
+      break;
+    }
+  }
+  return out;
+}
+// R-77.5 (v12.77.0): the command an xargs / parallel argv runs, past its own
+// options. The words read from stdin are appended to it at run time.
+const XARGS_VALUE_OPTS = new Set(['-a', '--arg-file', '-d', '--delimiter', '-E', '-e', '-I', '-L', '-l', '-n',
+  '--max-args', '-P', '--max-procs', '-s', '--max-chars', '--process-slot-var', '-j', '--jobs', '-S', '--sshlogin']);
+function xargsWrappedCommand(argv) {
+  let k = 1;
+  while (k < argv.length) {
+    const v = argv[k].canon;
+    if (argv[k].varCount || argv[k].substCount) break;
+    if (v === '--') { k++; break; }
+    if (XARGS_VALUE_OPTS.has(v)) { k += 2; continue; }
+    if (/^-/.test(v) && v !== '-') { k++; continue; }
+    break;
+  }
+  return resolveEffectiveCommand(argv.slice(k));
+}
+// The literal words a herestring or an echo/printf pipe producer gives to the
+// stdin of seg, as plain literal tokens. Unknown input gives no words.
+function xargsStdinWords(segments, seg) {
+  let text = '';
+  for (const r of seg.redirects) if (r.op === '<<<' && r.target && !r.target.varCount && !r.target.substCount) text += ' ' + r.target.canon;
+  const si = segments.indexOf(seg);
+  const prev = si > 0 && segments[si - 1].op === '|' ? segments[si - 1] : null;
+  const w = prev ? echoWordsOfSeg(prev) : null;
+  if (w !== null) text += ' ' + w;
+  return text.split(/\s+/).filter(Boolean).map(x => ({ canon: x, raw: x, litLen: x.length, varCount: 0, substCount: 0 }));
+}
+// R-77.5 (v12.77.0): the files a curl / wget argv uploads (-F name=@f,
+// -F name=<f, -d @f, --data-binary @f, --data-urlencode name@f, -T f,
+// --upload-file f, wget --post-file=f / --body-file=f).
+const CURL_FORM_OPTS = new Set(['-F', '--form']);
+const CURL_DATA_OPTS = new Set(['-d', '--data', '--data-binary', '--data-ascii', '--data-urlencode', '--json']);
+const CURL_UPLOAD_OPTS = new Set(['-T', '--upload-file']);
+function uploadedFiles(r) {
+  const out = [];
+  const c0 = r.length ? basename(r[0].canon) : '';
+  const formFile = (val) => { const m = /^[^=]*=[@<]([^;]+)/.exec(val); if (m) out.push(m[1]); };
+  const dataFile = (val) => { const m = /^(?:[^@=]*)@([\s\S]+)$/.exec(val); if (m && m[1] !== '-') out.push(m[1]); };
+  for (let k = 1; k < r.length; k++) {
+    const v = r[k].canon, nx = r[k + 1] ? r[k + 1].canon : '';
+    if (c0 === 'curl') {
+      if (CURL_FORM_OPTS.has(v)) { formFile(nx); k++; continue; }
+      if (CURL_DATA_OPTS.has(v)) { dataFile(nx); k++; continue; }
+      if (CURL_UPLOAD_OPTS.has(v)) { if (nx) out.push(nx); k++; continue; }
+      let m;
+      if ((m = /^--(form|data|data-binary|data-ascii|data-urlencode|json|upload-file)=([\s\S]*)$/.exec(v))) {
+        if (m[1] === 'form') formFile(m[2]); else if (m[1] === 'upload-file') out.push(m[2]); else dataFile(m[2]);
+        continue;
+      }
+      if ((m = /^-F([\s\S]+)$/.exec(v))) { formFile(m[1]); continue; }
+      if ((m = /^-d([\s\S]+)$/.exec(v))) { dataFile(m[1]); continue; }
+      if ((m = /^-T([\s\S]+)$/.exec(v))) { out.push(m[1]); continue; }
+    } else if (c0 === 'wget') {
+      let m;
+      if ((m = /^--(post-file|body-file)=([\s\S]+)$/.exec(v))) { out.push(m[2]); continue; }
+      if (v === '--post-file' || v === '--body-file') { if (nx) out.push(nx); k++; continue; }
+    }
+  }
+  return out;
+}
+// A secret file by name, in a relative or an absolute form.
+function isSecretUploadFile(p) {
+  const s = String(p || '').replace(/^~\//, '/~/');
+  if (isSensitivePath(s)) return true;
+  if (/(^|\/)id_(rsa|dsa|ecdsa|ed25519)[^\/]*$/.test(s) && !/\.pub$/.test(s)) return true;
+  return /(^|\/)(\.npmrc|\.pypirc|\.netrc|\.git-credentials|credentials(\.json)?)$/.test(s);
+}
 function checkDisabledList(segments, canon, depth, command) {
   let shellCAsk = null;
   let sysrqAsk = null;
@@ -2843,15 +3389,34 @@ function checkDisabledList(segments, canon, depth, command) {
       if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth < MAX_SHELL_C_DEPTH) {
         const sc = shellCPayload(rrest);
         for (const pt of (sc ? sc.tokens : [])) {
-          // WI-20: `bash -c "$(echo CMD)"` runs CMD; REV4 R3-2: also a nested
-          // producer (`bash -c "$(cat <(echo CMD))"`).
-          const texts = [pt.canon];
-          for (const si of (pt.substInners || [])) texts.push(...(producedScripts(si, 0) || []));
-          for (const text of texts) {
-            if (!text) continue;
-            const inner = evaluateInternal(text, depth + 1);
-            if (inner && inner.kind === 'deny') return D('shell -c payload is destructive: ' + (inner.reason || ''));
-            if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('shell -c payload requires confirmation: ' + (inner.reason || ''));
+          const v = judgeCodePayload(pt, segments, seg, depth, 'shell -c');
+          if (v && v.kind === 'deny') return v;
+          if (v) shellCAsk = shellCAsk || v;
+        }
+      }
+
+      // R-77.5 (v12.77.0): `env -S 'CMD ARGS'` / `env --split-string=...` runs
+      // its payload as a command line, so the payload is judged as a nested
+      // command exactly like a shell -c payload (`env -S 'rm -rf /etc'` was
+      // allowed). Every literal env word in the segment is read, so a wrapper
+      // in front of env (`timeout 5 env -S ...`) does not hide it.
+      for (const pt of envSplitPayloads(seg.argv)) {
+        if (depth >= MAX_SHELL_C_DEPTH) { shellCAsk = shellCAsk || A('env -S payload nesting is too deep for the guard to analyze. Confirm the command is safe.'); break; }
+        const v = judgeCodePayload(pt, segments, seg, depth, 'env -S');
+        if (v && v.kind === 'deny') return v;
+        if (v) shellCAsk = shellCAsk || v;
+      }
+
+      // R-77.5 (v12.77.0): xargs / parallel append the words they read from
+      // stdin to the command they wrap. A literal herestring or echo/printf
+      // producer is known text, so `xargs rm -rf <<< /etc` and
+      // `echo /etc | xargs rm -rf` are judged with those words appended.
+      if (STDIN_ARGV_CMDS.has(rcmd)) {
+        const w = xargsWrappedCommand(resolved);
+        if (w.length && !w[0].varCount && !w[0].substCount && isDestructiveFileCmd(basename(w[0].canon))) {
+          const full = w.concat(xargsStdinWords(segments, seg));
+          if (hasRecursiveForce(full) && full.slice(1).some(t => t.litLen > 0 && isDangerousPath(t.canon))) {
+            return D('xargs/parallel feeds a protected path to a recursive/forced delete');
           }
         }
       }
@@ -2868,6 +3433,16 @@ function checkDisabledList(segments, canon, depth, command) {
       const stdinScript = SHELL_INTERPRETERS_EVAL.has(rcmd) ||
         ((rcmd === 'source' || rcmd === '.') && rrest.some(t => /^\/(dev\/stdin|dev\/fd\/0|proc\/self\/fd\/0)$/.test(t.canon)));
       if (stdinScript && depth < MAX_SHELL_C_DEPTH) {
+        // R-77.5 (v12.77.0): `bash <<< "$(curl URL)"` and an unquoted heredoc
+        // body with $(curl URL) run the fetched text as the script.
+        for (const r of seg.redirects) {
+          if (r.op !== '<<<' || !r.target) continue;
+          for (const si of (r.target.substInners || [])) if (textRunsFetch(si, 0)) return D(FETCH_EXEC_MSG);
+        }
+        for (const hd of (seg.heredocs || [])) {
+          if (hd.quoted) continue;
+          for (const si of substInnersOf(hd.body)) if (textRunsFetch(si, 0)) return D(FETCH_EXEC_MSG);
+        }
         const scripts = (seg.heredocs || []).map(hd => hd.body)
           .concat(seg.redirects.filter(r => r.op === '<<<' && r.target).map(r => r.target.canon));
         for (const body of scripts) {
@@ -3003,6 +3578,13 @@ function checkDisabledList(segments, canon, depth, command) {
       return false;
     });
     if (sensitiveRef && egress) return D('reading a sensitive file with a network egress sink in the same command (exfiltration)');
+    // R-77.5 (v12.77.0): a curl / wget upload of a secret file named by a
+    // relative path (`curl -F f=@.env URL`) denies like the absolute form.
+    for (const seg of segments) {
+      const r = commandPosition(seg.argv);
+      if (!r.length || r[0].varCount || r[0].substCount || !FETCH_CMDS.has(basename(r[0].canon))) continue;
+      if (uploadedFiles(r).some(isSecretUploadFile)) return D('uploading a secret file with curl/wget (exfiltration)');
+    }
 
     for (let i = 0; i < segments.length - 1; i++) {
       if (segments[i].op !== '|') continue;
@@ -3042,7 +3624,9 @@ function checkDisabledList(segments, canon, depth, command) {
   // K1/W1/W3: force push, mirror/delete push and history rewrites, read from
   // the git segment's argv (data that only mentions them does not ask).
   { const gm = gitHistoryMessage(segments, command); if (gm) return A(gm); }
+  { const gc = guardConfigWriteMessage(segments, command); if (gc) return A(gc); }
   { const rm = runnerMessage(segments); if (rm) return A(rm); }
+  annotateScriptVars(segments, command);
   { const cm = cwdShiftMessage(segments, 0); if (cm) return A(cm); }
   { const em = envPrefixMessage(segments); if (em) return A(em); }
   { const xm = xargsRunnerMessage(segments); if (xm) return A(xm); }
@@ -3145,7 +3729,11 @@ function evaluate(command) {
 // WI-21 W21-3: true when any segment names git or a test/CI runner. The hook
 // uses it for a persisted working directory (input.cwd). Never throws.
 function mentionsRunner(command) {
-  try { return tokenize(String(command || '')).segments.some(segMentionsRunner); } catch (e) { return true; }
+  try {
+    const segments = tokenize(String(command || '')).segments;
+    annotateScriptVars(segments, command);
+    return segments.some(segMentionsRunner);
+  } catch (e) { return true; }
 }
 
-module.exports = { evaluate, tokenize, mentionsRunner };
+module.exports = { evaluate, tokenize, mentionsRunner, nonWaivableAskReason };

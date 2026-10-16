@@ -243,6 +243,19 @@ skip is unchanged.
 - `tests/v12/concurrent-sessions-no-crosswrite.test.js` — end-to-end
   two-session cross-write check.
 
+## Writing commands that pass the bash guard
+
+`bash-validator.cjs` asks when it cannot tell what a command runs or where. These shapes pass with no ask:
+
+- Call a script by absolute path: `bash /home/u/proj/tools/run.sh --fast`.
+- Change directory in a subshell, then run a local script: `(cd /home/u/proj/web && bash ./build.sh)`.
+  A `cd` followed by git or a runner still asks. Use `npm --prefix /home/u/proj/web test` instead.
+- Assign a literal path, then run a script under it: `W=/home/u/proj/w; bash $W/tap.sh 1 2`.
+- Prepend a real, existing dir outside /tmp to PATH: `PATH=/usr/local/bin:$PATH npm test`.
+- Never put `eval` or a variable such as `$CMD` in command-word position. `eval` denies; `$CMD --fast` asks.
+
+If a needed command still asks, opt out rather than disable the hook: set `CAGENTS_BASH_GUARD=off` (asks become allows) or `=warn`. See `docs/HOOK_OPT_OUTS.md`.
+
 ## See also
 
 - `.claude/rules/memory/agent-memory.md` § Session Discovery Internals.

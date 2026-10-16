@@ -33,7 +33,7 @@ const CHECKLIST_MD = path.join(
   '.claude/rules/core/resources/controller-validation-checklist.md'
 );
 
-const CONTROLLERS_MD_LINE = 589;
+const CONTROLLERS_MD_LINE = 591;
 const CHECKLIST_MD_LINE = 147;
 
 const CLAUSE_ANCHOR = 'after every 3 completed work items';

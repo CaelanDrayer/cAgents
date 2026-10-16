@@ -10,6 +10,82 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.77.0] - 2026-10-16
+
+Field-report fixes for false asks in the bash guard, a new guard opt-out, the
+FU-12 security hardening, and Stop-hook fixes in `verify-completion.cjs`. The
+change ids are FU-1 to FU-13.
+
+### Added
+- A new opt-out for the bash guard: `CAGENTS_BASH_GUARD=off|warn`, or the
+  settings key `cagents.bash_guard`. The env var wins over the settings key.
+  An unknown value gives `block`. Every ask names the opt-out.
+- Under `off`, these stay on. Every deny stays a deny, except the legacy
+  obfuscation-class belt denies, which `off` skips. A parse-failure ask, a
+  loader env var ask, and a Bash write to `.claude/settings*.json` or
+  `.claude/hooks/` still ask.
+- `docs/HOOK_OPT_OUTS.md` lists every switch that relaxes or tunes a guard
+  hook.
+- A README hint to add `.claude/worktrees/` and `cagents-memory/` to
+  `.gitignore`, and a one-time SessionStart advisory for the same hint.
+- Spawn guidance: "Writing commands that pass the bash guard" in
+  `.claude/rules/playbooks/pat-concurrent-session-hooks.md`.
+
+### Fixed
+- FU-1: a script path in a `$VAR` no longer asks.
+- FU-2: a `cd` into the own session tree no longer asks.
+- FU-3: a `PATH` prepend of a real SDK dir no longer asks. This includes a
+  multi-assignment `export`.
+- `verify-completion.cjs`: a live child, `paused_at` or `paused_reason` in
+  `status.yaml`, or a `signals/PAUSE` file is a legitimate pause. Stop then
+  does not block and writes nothing. A stale `paused_at` is ignored after a
+  RESUME or after newer activity.
+- `verify-completion.cjs`: the `completion_summary` stub never claims
+  `completed` or `passed` for a non-terminal state. The hook never overwrites
+  `pipeline_state`. It writes `last_stop_observed_at` and `stop_state_note`
+  instead. An idle non-terminal session blocks one time, then warns.
+- The status hooks accept `phase:`, `pipeline_state:`, and `current_phase:`
+  through `readSessionState`.
+- The designer to act handover writes `handover_to` and `handover_from`, and
+  closes the designer session.
+
+### Security
+- FU-12: `bash -c "$(echo rm) -rf /etc"` now denies. This gap was open at
+  HEAD.
+- FU-12: a `cd` into a `/tmp` subdir followed by a script asks.
+- FU-12: the `PATH` prepend check resolves the realpath of the dir.
+- FU-12: a write into the prepended dir in the same command asks.
+- FU-12: a win32 env-root allowlist.
+- FU-12: a Bash write to `.claude/settings*.json` or `.claude/hooks/` asks in
+  every mode.
+- FU-12: under `off`, the legacy belt still runs, except its
+  obfuscation-class entries.
+- Four bypasses that were open before 12.77.0 are closed:
+  - An `env -S` or `env --split-string` payload is evaluated as a nested
+    command. Before the fix, `env -S 'rm -rf ~'` was allowed.
+  - A command word that a variable builds after `xargs` is now judged.
+  - `sh -c "$(curl ...)"` now denies, the same as `curl | sh`.
+  - An upload of a relative secret file, as in `curl -F f=@.env`, now
+    denies.
+
+### Changed
+- BEHAVIOUR CHANGE: an abandoned session stays non-terminal. It does not
+  become `incomplete`. `findActiveSession` uses a non-terminal session that has
+  been idle for more than 24 h only as a fallback.
+
+### Notes
+- If you disabled the safety hooks, re-enable `write-edit-dispatch` first: it
+  carries secret detection. No change was needed to it.
+- To undo a local hook disable: delete the marked line in `run-hook.cjs` and
+  restore `hooks.json` from the `.bak`, or update the plugin. Then use
+  `CAGENTS_BASH_GUARD=warn|off` instead of disabling hooks.
+- Known residual: a Stop right after a stale background child finishes still
+  blocks one time.
+- Known residual: the Write and Edit tools can still change
+  `.claude/settings.local.json` (`cagents.bash_guard`). The env var wins over
+  the settings key.
+- Tests: 2530+ static tests across 280+ files.
+
 ## [12.76.1] - 2026-10-16
 
 ### Fixed
