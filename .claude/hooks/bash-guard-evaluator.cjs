@@ -1098,11 +1098,26 @@ function scanSegments(segments, fn) {
 const GIT_OUTPUT_MSG = 'This git option writes its output to a file (--output, -o, --output-directory, bundle create). It can overwrite any file, a hook included. Redirect to a file under cagents-memory/ or /tmp instead, and confirm the target.';
 const GIT_LOCATION_MSG = 'git -C / --git-dir / --work-tree / --exec-path points git at another repo or helper set. Its config (core.fsmonitor, core.pager, hooks) can run code. Confirm the directory is trusted.';
 // The project root, as a literal path or as $CLAUDE_PROJECT_DIR.
+// A Windows drive path (C:\\x, c:/x, or the Git Bash form /c/x) in one form:
+// '/' separators, lower case (drive paths compare case-insensitively), no
+// trailing '/'. Returns null for any other path. The /c/x form is converted
+// only on win32 or for a word, never for a POSIX root, so a Linux root such as
+// /c/proj never matches the relative word C:/proj.
+function drivePathForm(p, allowMsys) {
+  let v = String(p || '');
+  if (allowMsys && /^\/[A-Za-z](\/|$)/.test(v)) v = v[1] + ':' + v.slice(2);
+  if (!/^[A-Za-z]:([\\/]|$)/.test(v)) return null;
+  return v.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+}
 function projectRoots() {
   const roots = new Set();
-  const norm = (p) => String(p || '').replace(/\/+$/, '');
-  if (process.env.CLAUDE_PROJECT_DIR) roots.add(norm(process.env.CLAUDE_PROJECT_DIR));
-  try { roots.add(norm(require('path').resolve(__dirname, '..', '..'))); } catch (e) { /* no root */ }
+  const add = (p) => {
+    const v = String(p || '');
+    const d = drivePathForm(v, process.platform === 'win32');
+    roots.add(d !== null ? d : v.replace(/\/+$/, ''));
+  };
+  if (process.env.CLAUDE_PROJECT_DIR) add(process.env.CLAUDE_PROJECT_DIR);
+  try { add(require('path').resolve(__dirname, '..', '..')); } catch (e) { /* no root */ }
   roots.delete('');
   return roots;
 }
@@ -1142,7 +1157,12 @@ function isProjectRootWord(t, reassigned) {
   if (isPlainVarWord(t, 'CLAUDE_PROJECT_DIR', reassigned)) return true;
   if (t.substCount || t.varCount) return false;
   const v = t.canon.replace(/\/+$/, '');
-  return v !== '' && projectRoots().has(v);
+  if (v === '') return false;
+  const roots = projectRoots();
+  if (roots.has(v)) return true;
+  // A drive root (C:\\x, C:/x, /c/x) matches only a drive-form root.
+  const d = drivePathForm(t.canon, true);
+  return d !== null && /^[a-z]:/.test(d) && roots.has(d);
 }
 // A directory word that names the current directory: ., ./, $PWD, $(pwd).
 function isSameDirWord(t, reassigned) {
@@ -1528,9 +1548,37 @@ function wordsOfToken(t) {
   for (const x of texts) for (const w of String(x).split(/[\s;&|()<>`'"{}]+/)) if (w) out.push(basename(w));
   return out;
 }
-function segMentionsRunner(seg) {
-  return seg.argv.some(t => wordsOfToken(t).some(w => RUNNER_WORDS.has(w)));
+// A shell that runs a local script file (`bash tap.sh 1 2`, `sh -x ./ui.sh`)
+// is not a runner: the CWD and ENV rules guard allowlisted commands that trust
+// the cwd (scripts/ci/*, npm, git), and a local script is not one of them.
+// Returns the argv indexes of the shell word and the script word, or null. The
+// shell still counts when it reads code from -c, -s, stdin or an rc option,
+// when the script word has an expansion, or when it names scripts/ or a `..`.
+const SHELL_SCRIPT_OPT_RE = /^[-+][euvxn]+$/;
+function localShellScriptWords(argv) {
+  let k = argv.length - skipLeadKeywords(argv).length;
+  while (k < argv.length - 1 && argv[k].litLen > 0 && !wordHasExpansion(argv[k]) && ENV_ASSIGN_RE.test(argv[k].canon)) k++;
+  const sh = argv[k];
+  if (!sh || wordHasExpansion(sh) || !SHELL_INTERPRETERS_EVAL.has(basename(sh.canon))) return null;
+  let i = k + 1;
+  while (i < argv.length && !wordHasExpansion(argv[i]) && SHELL_SCRIPT_OPT_RE.test(argv[i].canon)) i++;
+  if (i < argv.length && !wordHasExpansion(argv[i]) && argv[i].canon === '--') i++;
+  const sc = argv[i];
+  if (!sc || wordHasExpansion(sc)) return null;
+  const v = sc.canon;
+  if (v === '' || /^[-+]/.test(v) || /(^|[\/\\])scripts[\/\\]/.test(v) || /(^|[\/\\])\.\.([\/\\]|$)/.test(v)) return null;
+  if (RUNNER_WORDS.has(basename(v))) return null;
+  return new Set([k, i]);
 }
+function segRunnerWords(seg, strictShell) {
+  const skip = strictShell ? null : localShellScriptWords(seg.argv);
+  return seg.argv.some((t, i) => !(skip && skip.has(i)) && wordsOfToken(t).some(w => RUNNER_WORDS.has(w)));
+}
+function segMentionsRunner(seg) { return segRunnerWords(seg, false); }
+// BASH_ENV, ENV, SHELLOPTS, BASHOPTS and PS4 inject code into every shell, so
+// with one of them set a local `bash tap.sh` counts as a runner too.
+const SHELL_INJECT_ENV_RE = /^(BASH_ENV|ENV|SHELLOPTS|BASHOPTS|PS4)$/;
+function segMentionsRunnerStrict(seg) { return segRunnerWords(seg, true); }
 function envChdirTarget(argv) {
   // `env -C dir cmd` / `env --chdir=dir cmd`: returns the dir token (or a
   // pseudo token for the combined form), or undefined when there is none.
@@ -1672,9 +1720,11 @@ function envPrefixMessage(segments, depth) {
   // A sourced file affects the segments after it, so the runner word must be
   // in another segment (`source <(kubectl completion bash)` alone is not one).
   if (sourced && segments.some(sg => !sourceSegs.has(sg) && segMentionsRunner(sg))) return ENV_SOURCE_MSG;
-  if (bareNames.some(b => DANGER_ENV_RE.test(b.n) && segments.some(sg => sg !== b.seg && segMentionsRunner(sg)))) return ENV_MSG;
-  if (!names.some(n => DANGER_ENV_RE.test(n))) return null;
-  return segments.some(segMentionsRunner) ? ENV_MSG : null;
+  const runs = (n) => SHELL_INJECT_ENV_RE.test(n) ? segMentionsRunnerStrict : segMentionsRunner;
+  if (bareNames.some(b => DANGER_ENV_RE.test(b.n) && segments.some(sg => sg !== b.seg && runs(b.n)(sg)))) return ENV_MSG;
+  const hit = names.filter(n => DANGER_ENV_RE.test(n));
+  if (!hit.length) return null;
+  return segments.some(hit.some(n => SHELL_INJECT_ENV_RE.test(n)) ? segMentionsRunnerStrict : segMentionsRunner) ? ENV_MSG : null;
 }
 // WI-21 round 2 L-1: xargs / parallel append words read from stdin to the
 // command they wrap, so `echo --reporter=./x.mjs | xargs npm test --` hides the

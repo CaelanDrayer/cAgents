@@ -10,6 +10,21 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.76.1] - 2026-10-16
+
+### Fixed
+- The bash guard no longer asks for a `cd` or a `PATH` export before a shell
+  that runs a literal local script, as in `cd <dir>; bash tap.sh`. In
+  `bash-guard-evaluator.cjs`, `segMentionsRunner` skips the shell word and the
+  script word. The shell still counts as a runner with `-c`, `-s`, stdin, an
+  rc option, an expanded word, a `scripts/` path, or a `..` path.
+  `BASH_ENV`, `ENV`, `SHELLOPTS`, `BASHOPTS`, and `PS4` still ask.
+- `projectRoots` and `isProjectRootWord` match a Windows drive root in its
+  `C:/x`, `C:\x`, and `/c/x` forms, case-insensitively. A POSIX root never
+  matches a drive-form word.
+- The regression test `tests/hooks/bash-guard-shell-script-fp.test.js` has 46
+  tests. 16 of them fail before the fix.
+
 ## [12.76.0] - 2026-10-16
 
 Hook and session-management fixes from session

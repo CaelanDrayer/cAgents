@@ -508,6 +508,7 @@ when the evaluator can prove the command is safe.
 | W21-4 | An expanded word (a variable, a substitution, a brace, a tilde, a glob) in a git rule or a runner argument asks. A single double-quoted `-b` or `-m` value is exempt. |
 | W21 env | An env prefix such as `NODE_OPTIONS`, `npm_config_*`, `GIT_*`, `LD_*`, `PATH`, or `HOME` before a runner or `git` asks. |
 | A1 | The runner allow rules are exact: `npx vitest run --config tests/vitest.config.js`, `npm test`, and each `scripts/ci/` script. `runnerMessage()` asks for a `../` path, `--root`, `--dir`, `--prefix`, a setup file, a `--config` other than `tests/vitest.config.js`, a code-loading option, an npm option before `--`, a variable or substituted argument, an absolute path, and an unknown flag. |
+| v12.76.1 | A shell that runs a literal local script (`bash tap.sh`, `sh -x ./ui.sh`) is not a runner for W21-3 and W21 env. The shell still counts with `-c`, `-s`, stdin, an rc option, an expanded word, a `scripts/` path, or a `..` path. `BASH_ENV`, `ENV`, `SHELLOPTS`, `BASHOPTS`, and `PS4` still ask. The project root also matches as `C:/x`, `C:\x`, or `/c/x`. Residual: a planted `tap.sh`, or a planted `bash` in a prepended `PATH` dir, in the `cd` target is the call of the user and of the Claude Code permission rules. |
 
 The CC 2.1.299 harness ignores `Write(...)` permission rules. `settings.json`
 now uses `Edit(/cagents-memory/**)`, `Edit(//etc/**)`, and `Edit(~/.ssh/**)`.
