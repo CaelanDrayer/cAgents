@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.76.0
+# Version: 12.76.1
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes

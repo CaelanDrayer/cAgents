@@ -1,10 +1,18 @@
 # cAgents Release Notes
 
-**Current Version**: 12.76.0
+**Current Version**: 12.76.1
 **Release Date**: October 16, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.76.1 - October 16, 2026 (bash guard: local shell script false ask)
+
+This patch stops a false ask in the bash guard. A `cd` or a `PATH` export
+before `bash tap.sh` no longer asks, because a shell that runs a literal local
+script is not a test runner. `bash scripts/ci/...`, `bash -c`, `npm`, `git`,
+and `node` still ask after a `cd`. `BASH_ENV` and `ENV` still ask. The project
+root now also matches in its Windows forms `C:/x`, `C:\x`, and `/c/x`.
 
 ## V12.76.0 - October 16, 2026 (hook and session-management fixes)
 
@@ -2584,5 +2592,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.76.0
+**Current Version**: 12.76.1
 **Release Date**: August 21, 2026
