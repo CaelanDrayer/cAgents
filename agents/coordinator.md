@@ -178,3 +178,9 @@ status: completed
 - **Professional referral**: Recommend a licensed professional when the topic goes beyond general guidance.
 - **Inclusive**: Think about diverse populations, contexts, and individual circumstances.
 - **Empathetic**: A sensitive topic, such as health or a personal struggle, needs compassion and care.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-loop-contract-three-exits.md. Give each loop a success exit, a failure exit, and a budget exit, plus guards against thrashing.

@@ -187,7 +187,7 @@ User Request -> /act (state machine loop, reads pipeline_config.yaml)
 
 ## CRITICAL: Task Lifecycle (Cleanup + Per-Subagent Visibility)
 
-**These rules apply when `TaskCreate` is available.** Claude Code 2.1.233 turns the task tools (`TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`) off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on. When the tools are absent, track progress in the session files (`status.yaml`, `workflow/coordination_log.yaml`) and continue. Never stop or block because a task tool is missing.
+**These rules apply when `TaskCreate` is available.** Claude Code 2.1.233 turns the task tools (`TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`) off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. Since Claude Code 2.1.268 the tools are an allowlist: they are offered only on Claude 3.x, Opus 4.0-4.7, Sonnet 4.0-4.6, and Haiku 4.5. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on for every other model. When the tools are absent, track progress in the session files (`status.yaml`, `workflow/coordination_log.yaml`) and continue. Never stop or block because a task tool is missing.
 
 **Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops.** Stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create. Before you finish a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, and `/designer` MUST clean up all tasks at pipeline/session end.
 
@@ -250,7 +250,7 @@ See `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md` f
 
 ## Hooks System
 
-**Architecture**: CJS-only hooks with `createHook()` factory. 34 .cjs files = 26 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs). See `.claude/rules/core/hooks.md` for full documentation.
+**Architecture**: CJS-only hooks with `createHook()` factory. 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (Write|Edit: secret-detection, controller-delegation-validator, skill-size-monitor via `write-edit-dispatch.cjs`; Agent: session-init-gate, model-routing-advisor via `agent-dispatch.cjs`) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs (GuardFall evaluator library require'd by bash-validator.cjs). See `.claude/rules/core/hooks.md` for full documentation.
 
 ## Standalone Contract (V11.2.0+)
 
@@ -319,8 +319,8 @@ reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9). The split is 44 routable + 16 core. 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: Each agent file records an intended model under `metadata.model` (disk-verified: 27 sonnet, 23 opusplan, 7 opus, 3 fable). These values are advisory. Claude Code does not read `metadata.*` or `allowed-tools` in agent frontmatter, and no agent declares a top-level `model:` or `tools:` key. Thus every cAgents subagent currently inherits the session model and all tools, unless the spawn passes a `model` parameter. Only the cAgents validators and hooks read the advisory values. No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 2215+ Vitest tests across 250+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
-**Version**: 12.74.1
+**Tests**: `npm test` runs 2440+ Vitest tests across 270+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
+**Version**: 12.76.0
 
 ## Troubleshooting
 

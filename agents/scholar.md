@@ -93,3 +93,10 @@ See @scholar/resources/science-coord.md for the science-coord mode full playbook
 ## Final AI-Detection Gate
 
 Run `cagents:ai-writing-editor` (mode=both) before you return any deliverable. A deliverable is any academic prose, any literature review, or any written research output. That run is the final AI-detection gate. The tells in `.claude/rules/quality/anti-slop.md` are the reference list.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-review-adversarial-refutation.md. Try to refute each conclusion before you accept it, and record what survived.
+- See @docs/example-store/ex-verification-preregistered-null-result.md. Write the hypotheses and the reporting rule before the run. Report a null result and its cost.

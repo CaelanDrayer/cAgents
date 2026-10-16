@@ -29,7 +29,7 @@ The complete behavioral contract for /designer. See @reference/rules.md for the 
 ## Session Rules
 
 19. Initialize the session directory and `status.yaml` BEFORE any analysis or questions
-20. Self-register the designer in `agent_tree.yaml` at session init
+20. Seed the depth-0 designer entry in `agent_tree.yaml` at session init. Do not edit the file after that; the hooks own it
 21. Use the `phase` field (not `pipeline_state`) in `status.yaml`
 22. Write `phase: completed` to `status.yaml` before final task cleanup. Do this ONLY after the user explicitly chooses to build, export, or stop. Never mark the session complete on your own initiative while the user can still refine
 23. Call `TaskList` and mark all tasks `completed` or `deleted` before ending the session

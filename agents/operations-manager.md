@@ -78,3 +78,11 @@ If no explicit `mode` is passed and the keywords are ambiguous, default to `oper
 As a controller, delegate ALL work to the execution agents via the Agent tool. Never implement the work directly.
 
 See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-completed-is-not-done.md. Treat a 'completed' status as a claim. Check the outputs before you call the work done.
+- See @docs/example-store/ex-verification-loop-contract-three-exits.md. Give each loop a success exit, a failure exit, and a budget exit, plus guards against thrashing.
+- See @docs/example-store/ex-verification-verify-and-stop.md. Map each acceptance criterion to the smallest proof. Report pass, fail, unavailable, or blocked, then stop.

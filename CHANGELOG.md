@@ -10,6 +10,212 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.76.0] - 2026-10-16
+
+Hook and session-management fixes from session
+`team_hook-session-fixes_261015_001`. The change ids are HS-1 to HS-11, H1 to
+H8, K1, W1 to W6, A1, D1, and the security findings F1 to F3, WI-20, and WI-21.
+
+### Added
+- HS-1: `resolveSession(input, { purpose })` in `hook-utils.cjs` is one session
+  resolver. The chain is ownership, then a prompt hint, then a pin or
+  `CAGENTS_ACTIVE_SESSION`, then `null`. It has no newest-mtime step. Two live
+  sessions with no owner give `null`. 7 hooks use it.
+- HS-1: `claimFromAnyWrite` claims a session from a Bash command that writes
+  `status.yaml` or `instruction.yaml`. A new `PostToolUse` entry with
+  `matcher: "Bash"` runs `post-write-validator.cjs`.
+- HS-6: the trackers append spawn and stop events to `workflow/events.jsonl`.
+  `agent_tree.yaml` is now a view that hooks derive from it. A malformed tree is
+  moved to a quarantine file and rebuilt. Agents no longer self-register.
+- HS-10: `repairSession` in `hook-utils.cjs`. Stop mode (R1, R2, R3) repairs
+  only from evidence. The SessionStart sweep also closes rows of a session that
+  has been idle for 24 h. Each repair appends to `workflow/repairs.jsonl`. No
+  repair changes a verdict.
+- WI-13, WI-13b: idle `/team` lead exemption. `teamIdleBetweenWaves` in
+  `team-stop.cjs` finds a lead between waves from a passing gate and a pending
+  later wave. SessionEnd and Stop then leave the session state alone.
+  `CAGENTS_IDLE_LEAD_MAX_MS` (default 24 h) limits the exemption.
+- HS-8: `session-init-gate.cjs` reads the agent registry from
+  `.claude-plugin/plugin.json` first, and from `agents/` as the fallback. Each
+  advisory names the registry path.
+- WI-21: `git --output`, `format-patch -o`, `archive -o`, and `bundle create`
+  ask. A `cd` away from the project root before `git` or a test runner asks. A
+  hook cwd outside the root that is not a verified worktree asks.
+- A1: exact allow rules for `npx vitest run --config tests/vitest.config.js`,
+  `npm test`, and each `scripts/ci/` script.
+- New tests: `hook-stdin-truncated-payload`, `hook-dedup-ttl-backstop`,
+  `resolve-session-chain`, `agent-tree-concurrent-burst`,
+  `stop-path-correctness`, `verify-completion-stop-hygiene`, `repair-session`,
+  `team-stop-idle-lead-between-waves`, `session-init-gate-registry-path`,
+  `validate-agents-hook-count-derived`, `bash-guard-wi21` (585 tests),
+  `settings-allowlist-wi15`, `settings-memory-write-anchor`, and
+  `hook-tests-no-real-memory-pollution`.
+
+### Changed
+- HS-3 and H6 (WI-2): a hook gives its verdict as soon as the payload is a complete
+  JSON object. It then releases stdin and exits. A 1.5 s backstop timer stops a
+  process that another handle keeps alive. H6 (destroy stdin when the fallback
+  timer fires) is part of this change.
+- HS-3, W5, F1: a guard hook (`BashValidator`, `WriteEditDispatch`,
+  `AgentDispatch`) denies a truncated payload. It allows an empty payload with
+  one `[FAIL-OPEN]` systemMessage, at EOF too. A stdin `error` follows the same
+  rule.
+- HS-7, F2: `session-init-gate` is advisory and fails open. A logic throw in it
+  allows the spawn with one `[FAIL-OPEN]` message. `AgentDispatch` still denies
+  on its own faults.
+- F3: the `PreToolUse[Agent]` timeout went from 3 s to 5 s.
+- HS-2 (WI-4): the dedup marker lasts 5 s, and a duplicate run replays the
+  first verdict. Identical payloads with no `tool_use_id` inside 5 s count as
+  one event.
+- HS-4 (WI-10): `team-stop.cjs` writes `VALIDATED` only with a genuine
+  validator PASS on disk. A live session gets no force-terminal stamp at Stop.
+  Relative evidence paths resolve against `PROJECT_ROOT`.
+- HS-11 (WI-10): Stop shows one warning line and does not repeat an identical
+  warning set. The PRE, MID, and SELF-CHECK blocks moved to stderr or were
+  removed. SessionEnd shows one summary line.
+- HS-9 (WI-11): `validate-agents.sh` reads the hook count from the
+  `settings.json` `$comment`. It checks name parity with `.claude/hooks.json`.
+- H1, H2, H3, H4, H5, H7, H8 (WI-6, WI-8): fewer false asks from the bash guard.
+  Power verbs ask only in command position. A literal `$VAR` command is
+  resolved. A literal inline program in a pipe is data. A `mktemp` variable is
+  a temp path. The soft-fail ask text names a heredoc terminator that ends the
+  body early (H4, message only). `.env.example` and similar files are not credentials. SQL
+  keywords ask only with a database client. A replay of 309 recorded asks went
+  to 239 allow and 70 ask, with 0 deny.
+- K1, W1, W3, W4 (WI-8): the force-push check reads the `git push` argv. `-f`,
+  `+refspec`, `--mirror`, `--delete`, history rewrites, and `find -delete` on a
+  non-temp root ask.
+- W2 (WI-15): the git discard forms ask. `settings.json` no longer allows
+  `git checkout:*`, `git stash:*`, or `git branch:*`.
+- WI-21: `settings.json` and `settings.full.json` use `Edit(...)` rules for
+  `/cagents-memory/**`, `//etc/**`, and `~/.ssh/**`. CC 2.1.299 ignores
+  `Write(...)` rules.
+- W6 (WI-15): the threat model no longer says that an `ask` auto-resolves to
+  allow under `bypassPermissions`. It says the `ask` is not a guaranteed stop.
+
+### Fixed
+- R1 (WI-6): `rm -rf /etc` inside `if`, `while`, `until`, `{ }`, or after `!`
+  now denies. It allowed before.
+- WI-20: bypass shapes N1 to N7 and G1 to G3, G10, and G12. Non-ASCII inline
+  programs ask, opaque contexts get an inner-text scan, a deep nest asks, and
+  `kexec` and `/proc/sysrq-trigger` ask.
+- WI-8 REV2: a 400-step scan budget stops a wrapper-chain timeout. `'xargs '`
+  3000 times went from more than 60 s to about 200 ms.
+- W21-2: `bash-validator.cjs` denies every Bash call if the evaluator fails to
+  load.
+- HS-5 (WI-5): 4 hook tests no longer write to the real `cagents-memory/`. A
+  new regression test guards it.
+- HS-10 (WI-12): Stop no longer writes stub `validation_report.yaml` or stub
+  `execution_summary.yaml` files. `autoResolveWarnings` was removed.
+- WI-7: the `spawned_at` single-quote parse in `verify-completion.cjs`. A tree
+  row with no `spawned_at` now counts as stale.
+- WI-16: the Stop stderr line no longer says "stub writes". It now reads
+  `session is live at Stop; skipping force-terminal stamp (signal: ...)`.
+
+- WI-17: a fresh depth-0 root row in `agent_tree.yaml` no longer counts as a
+  running child at Stop (`isRootRowBlock` in `verify-completion.cjs`).
+- WI-17: four write-then-exec paths through `cagents-memory/` are closed. A
+  planted `secret-restore` manifest is refused, `scripts/knowledge/_test-stub.cjs`
+  (which required a file from `cagents-memory/`) is deleted, `session-catchup`
+  update-line injection is closed, and bash-guard brace expansion is checked.
+- WI-17: `repair-session.test.js` no longer uses a stale pre-v12 agent name.
+  `validate-counts.sh` reports 0 mismatches (the Writer count in
+  `_MODE_REGISTRY.md` and the agent count in `helper/SKILL.md` are fixed).
+- Q-009: the CLAUDE.md test count is re-derived to 2440+ tests across 270+
+  files.
+
+### Removed
+- D1 (WI-15): `permission-handler.cjs` and its test. The hook returned `null` in
+  every branch. Hook counts went from 34 files, 26 hooks, and 18 events to 33,
+  25, and 17.
+
+### Docs
+- `.claude/rules/core/hooks.md`: the session-init-gate fail-open text (F6),
+  the payload policy, the dedup backstop, the resolver, `events.jsonl`, the
+  Stop-path rules, and the derived hook count.
+- `.claude/rules/core/resources/hook-catalog.md`: a new Cross-Cutting
+  Contracts section, and updates to SessionStart, SessionEnd, the bash guard,
+  the Agent dispatcher, Stop, the trackers, and the evidence recheck.
+- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md`: new §5.5 (the v12.76.0 rule
+  changes) and new §7.2 (open gaps G4 to G11 with probe verdicts).
+
+### Known gaps
+- Bash guard, still allowed: `echo /etc | xargs rm -rf`,
+  `rm -rf $T/../../etc` (G5), a command name built from parts, `git send-pack
+  --force`, `cat .env*`, an SQL comment between keywords, a bare `TRUNCATE`,
+  and `redis-cli FLUSHALL`. See the threat model §7.2.
+- Accepted LOW residuals: `checkout -B`, `switch -C`, `branch -M`,
+  `merge --abort`, and alias or function shadowing.
+- User action: restart Claude Code to load the v12.74.0 `run-hook.cjs`
+  self-skip.
+
+## [12.75.0] - 2026-10-14
+
+### Added
+- 15 new exemplars in `docs/example-store/`. 8 come from 3 new repos:
+  - `ayghri/i-have-adhd`: `ex-skill-authoring-override-precedence`,
+    `ex-structured-io-pre-send-shape-check`, and
+    `ex-verification-blind-baseline-eval`.
+  - `juliusbrussee/caveman`: `ex-verification-measured-vs-inferred-ledger`,
+    `ex-structured-io-terse-return-grammar`, and
+    `ex-verification-verify-and-stop`.
+  - `latent-spaces/brag`: `ex-verification-assert-vs-say-grounding` and
+    `ex-security-public-artifact-data-hygiene`.
+- 7 come from 5 repos that the store already tracks:
+  - `affaan-m/ECC`: `ex-verification-preregistered-null-result`.
+  - `f/prompts.chat`: `ex-verification-loop-contract-three-exits`.
+  - `mattpocock/skills`: `ex-intake-frontier-round-interview`.
+  - `NVIDIA/SkillSpector`: `ex-verification-coverage-ledger` and
+    `ex-security-direct-prohibition-scope`.
+  - `NousResearch/hermes-agent`: `ex-verification-completed-is-not-done`
+    and `ex-review-adversarial-refutation`.
+- `docs/example-store/README.md` has a new "Catalog at a glance" section. The
+  store has 42 exemplars in 9 categories from 13 tracked repos.
+- 28 agent files have "Worked Examples" links to the new exemplars. Each agent
+  has 5 links or fewer.
+- `tests/regressions/cc-min-version-and-nesting-claims.test.js` has 3 more
+  assertions for the Claude Code 2.1.300 audit.
+
+### Changed
+- 21 existing exemplars are refreshed against their upstream repos. Each
+  refreshed file has `metadata.source_commit` (the upstream commit SHA) and
+  `metadata.reviewed`. All 11 needs-update verdicts are resolved. For example,
+  `ex-gates-fact-forcing-pre-hoc` now gives the measured result (benefit not
+  established, p=0.210), and `ex-review-safe-careful-risky` now has four
+  reviewers.
+- `docs/example-store/_index.yaml` is rebuilt from the exemplar frontmatter.
+  It has 42 entries, and `catalog_version` is 1.1.
+- Claude Code compatibility is audited through 2.1.300.
+
+### Fixed
+- License fields are corrected. The 2 `NVIDIA/SkillSpector` exemplars and the
+  3 `anthropics/skills` exemplars change from MIT to Apache-2.0. The 2
+  `f/prompts.chat` structured-io exemplars change from MIT to CC0-1.0.
+- `ex-skill-authoring-progressive-disclosure` no longer has an MCP server
+  example. The example broke Standalone Contract rule 4.
+  `ex-security-allowed-tools-vs-actual` no longer has the literal `mcp__*`
+  token.
+- `ex-intake-ambiguous-request-disambiguation` had `cagents:designer` in
+  `applies_to`. `designer` is a skill, not an agent. The value is now
+  `cagents:market-research-analyst`.
+- `docs/example-store/README.md` now says "at most 6 top-level keys", not
+  "exactly 6". It states that `allowed-tools` is optional.
+- Three docs are corrected for Claude Code 2.1.299 and 2.1.268:
+  - `README.md` and `.claude/rules/core/hooks.md`: Windows needs Git for
+    Windows (Git Bash). Since Claude Code 2.1.299, a PreToolUse hook with no
+    `shell` blocks the call when Git Bash is missing.
+  - `.claude/rules/core/delegation.md` and `.claude/rules/core/teams.md`:
+    after a compaction, `SendMessage` needs the agent ID, not the name.
+  - `CLAUDE.md` Task Lifecycle: since Claude Code 2.1.268 the task tools
+    are an allowlist.
+
+### Known issue (not fixed)
+- A hook process does not exit when stdin stays open. `readStdin` in
+  `.claude/hooks/hook-utils.cjs` gives its answer at 2 s, but the process
+  stays alive. Under the Claude Code 2.1.299 fail-closed rule, the 3 s
+  timeout of `agent-dispatch` and `prompt-router` can then deny the call.
+  Normal runs take less than 0.7 s.
+
 ## [12.74.1] - 2026-10-11
 
 ### Fixed

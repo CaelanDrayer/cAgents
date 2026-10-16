@@ -56,7 +56,7 @@ function isSensitivePath(p) {
   if (!p) return false;
   const s = String(p);
   // dotenv files: .env, .env.local, config/.env
-  if (/(^|\/)\.env(\.[\w-]+)?$/.test(s)) return true;
+  if (/(^|\/)\.env(\.[\w-]+)?$/.test(s) && !/\.(example|sample|template|dist|defaults)$/.test(s)) return true;
   // PEM material
   if (/\.pem$/.test(s)) return true;
   // private SSH key basenames (NOT *.pub public keys)
@@ -117,7 +117,7 @@ function basename(v) {
 // anchored on purpose so the existing REC-08/REC-09 belt-only env/backtick
 // warn->ask / off->allow downgrade semantics are untouched.
 const WRAPPER_CMDS = new Set([
-  'env', 'nice', 'ionice', 'nohup', 'setsid', 'stdbuf', 'timeout', 'time', 'command', 'exec'
+  'env', 'nice', 'ionice', 'nohup', 'setsid', 'stdbuf', 'timeout', 'time', 'command', 'exec', 'builtin'
 ]);
 // Short/long options that consume a SEPARATE next token as their value (for
 // the wrappers above). Options not listed are assumed value-less, or to carry
@@ -128,7 +128,9 @@ const WRAPPER_VALUE_OPTS = {
   nice: new Set(['-n', '--adjustment']),
   ionice: new Set(['-c', '--class', '-n', '--classdata', '-p', '--pid']),
   stdbuf: new Set(['-i', '--input', '-o', '--output', '-e', '--error']),
-  timeout: new Set(['-s', '--signal', '-k', '--kill-after'])
+  timeout: new Set(['-s', '--signal', '-k', '--kill-after']),
+  // H1/REV1: `exec -a NAME cmd` - NAME is argv[0] for cmd, not the command.
+  exec: new Set(['-a'])
 };
 
 function resolveEffectiveCommand(argv) {
@@ -236,15 +238,20 @@ function decodeAnsiC(s) {
 // str.length when the heredoc is unterminated and so runs to EOF). Shared shape
 // with tokenize()'s consumeHeredocs: the terminator must stand alone on its
 // line, and `<<-` additionally strips leading TABS.
+function oddTrailingBackslash(line) {
+  const m = /\\+$/.exec(line);
+  return !!m && m[0].length % 2 === 1;
+}
 function skipHeredocFrom(str, k) {
   let strip = false;
   if (str[k] === '-') { strip = true; k++; }
   while (k < str.length && (str[k] === ' ' || str[k] === '\t')) k++;
-  let delim = '', q = null;
+  let delim = '', q = null, quoted = false;
   while (k < str.length) {
     const c = str[k];
     if (q) { if (c === q) { q = null; k++; continue; } delim += c; k++; continue; }
-    if (c === "'" || c === '"') { q = c; k++; continue; }
+    if (c === "'" || c === '"') { q = c; quoted = true; k++; continue; }
+    if (c === '\\') quoted = true;
     if (c === '$' || c === '`') return -1;          // computed delimiter -> unknowable
     if (/[\s;|&()<>]/.test(c)) break;
     delim += c; k++;
@@ -258,6 +265,15 @@ function skipHeredocFrom(str, k) {
     if (le < 0) le = str.length;
     let line = str.slice(p, le);
     if (line.endsWith('\r')) line = line.slice(0, -1);
+    // WI-20 F4: an unquoted heredoc joins `\<newline>` before the terminator
+    // compare, as bash does (`E\` + `OF` ends the body).
+    while (!quoted && oddTrailingBackslash(line) && le < str.length) {
+      let le2 = str.indexOf('\n', le + 1);
+      if (le2 < 0) le2 = str.length;
+      let nxt = str.slice(le + 1, le2);
+      if (nxt.endsWith('\r')) nxt = nxt.slice(0, -1);
+      line = line.slice(0, -1) + nxt; le = le2;
+    }
     const cand = strip ? line.replace(/^\t+/, '') : line;
     if (cand === delim) return le;                  // index of the terminator's newline
     if (le >= str.length) break;
@@ -300,6 +316,28 @@ function extractParen(str, i) {
   throw new Error('unbalanced command substitution');
 }
 
+// WI-20 G3: the $(...) and `...` inners of text that bash expands without
+// tokenizing it as shell words (an unquoted heredoc body, a ${...} operand).
+// An unbalanced inner is returned as the rest of the text, so it is still judged.
+function substInnersOf(text) {
+  const out = [];
+  for (let j = 0; j < text.length; j++) {
+    const ch = text[j];
+    if (ch === '\\') { j++; continue; }
+    if (ch === '$' && text[j + 1] === '(') {
+      try { const r = extractParen(text, j + 1); out.push(r.inner); j = r.end - 1; }
+      catch (e) { out.push(text.slice(j + 2)); break; }
+      continue;
+    }
+    if (ch === '`') {
+      let k = j + 1, buf = '';
+      while (k < text.length && text[k] !== '`') { if (text[k] === '\\') { buf += text[k + 1] || ''; k += 2; continue; } buf += text[k]; k++; }
+      out.push(buf); j = k;
+    }
+  }
+  return out;
+}
+
 // Handle a `$` at position i. ctx.appendLit/addVar/addSubst/splitField mutate
 // the current token. inDouble => we are inside a double-quoted context.
 // Returns the index to resume scanning at.
@@ -324,6 +362,9 @@ function readDollar(str, i, ctx, inDouble) {
     const name = nameMatch ? nameMatch[1] : '';
     if (!inDouble && /^IFS$/.test(buf)) ctx.splitField();
     else ctx.addVar(name);
+    // WI-20 G3/N2: `${x:-$(cmd)}` runs cmd. Record the inner substitutions so
+    // checkCommandSubstitution judges them.
+    if (/\$\(|`/.test(buf)) for (const inner of substInnersOf(buf)) ctx.addSubst(inner, true);
     return j;
   }
   if (n === "'" && !inDouble) {           // $'...' ANSI-C quoting
@@ -372,10 +413,15 @@ function tokenize(command) {
   const heredocQueue = [];          // heredocs declared on the current line, in bash's read order
 
   function freshToken() { return { canon: '', litLen: 0, varCount: 0, substCount: 0, substInners: [], varNames: [] }; }
-  function ensureToken() { if (!curToken) curToken = freshToken(); }
+  // start/end: the token's span in `str` (H2/REV1 rebuilds the command string
+  // with a resolved `$NAME` spliced in at exactly this span).
+  function ensureToken() { if (!curToken) { curToken = freshToken(); curToken.start = i; } }
   function endToken() {
     if (!curToken) return;
     const t = curToken;
+    t.end = i;
+    // WI-21 round 2: the token's source text, for quote-shape checks.
+    if (Number.isInteger(t.start)) t.raw = str.slice(t.start, i);
     curToken = null;
     if (pendingRedirect) {
       // The word after << is the terminator. Queue it (with the segment index it
@@ -384,7 +430,9 @@ function tokenize(command) {
       // where the body ends, so the old fail-closed behaviour is kept.
       if (pendingRedirect === '<<') {
         if (t.varCount === 0 && t.substCount === 0) {
-          heredocQueue.push({ delim: t.canon, strip: pendingHeredocStrip, ownerIdx: segments.length });
+          const rawDelim = Number.isInteger(t.start) ? str.slice(t.start, i) : '';
+          heredocQueue.push({ delim: t.canon, strip: pendingHeredocStrip, ownerIdx: segments.length,
+            quoted: /['"\\]/.test(rawDelim) });
         }
         pendingHeredocStrip = false;
       }
@@ -427,11 +475,20 @@ function tokenize(command) {
         if (lineEnd < 0) lineEnd = len;
         let line = str.slice(q, lineEnd);
         if (line.endsWith('\r')) line = line.slice(0, -1);
+        // WI-20 F4: unquoted heredoc -> join `\<newline>` before the compare
+        // (bash does), so a forged terminator cannot hide the next lines.
+        while (!hd.quoted && oddTrailingBackslash(line) && lineEnd < len) {
+          let le2 = str.indexOf('\n', lineEnd + 1);
+          if (le2 < 0) le2 = len;
+          let nxt = str.slice(lineEnd + 1, le2);
+          if (nxt.endsWith('\r')) nxt = nxt.slice(0, -1);
+          line = line.slice(0, -1) + nxt; lineEnd = le2;
+        }
         const cand = hd.strip ? line.replace(/^\t+/, '') : line;
         if (cand === hd.delim) { bodyEnd = q; after = Math.min(lineEnd + 1, len); break; }
         q = lineEnd + 1;
       }
-      if (owner) (owner.heredocs || (owner.heredocs = [])).push({ delim: hd.delim, body: str.slice(bodyStart, bodyEnd) });
+      if (owner) (owner.heredocs || (owner.heredocs = [])).push({ delim: hd.delim, body: str.slice(bodyStart, bodyEnd), quoted: !!hd.quoted });
       p = after;
     }
     return p;
@@ -440,7 +497,8 @@ function tokenize(command) {
   const ctx = {
     appendLit(s) { ensureToken(); curToken.canon += s; curToken.litLen += s.length; },
     addVar(name) { ensureToken(); curToken.varCount++; curToken.varNames.push(name || ''); },
-    addSubst(inner) { ensureToken(); curToken.substCount++; curToken.substInners.push(inner); },
+    addSubst(inner, param) { ensureToken(); curToken.substCount++; curToken.substInners.push(inner);
+      if (param) (curToken.paramInners || (curToken.paramInners = [])).push(inner); },
     splitField() { curIfsSplit = true; endToken(); }
   };
 
@@ -555,6 +613,16 @@ function tokenize(command) {
     }
     if (c === '(' || c === ')') { endSegment(c); i++; continue; }
 
+    // WI-20 G3/N2: process substitution `<(cmd)` / `>(cmd)` runs cmd and is a
+    // filename word. Record it as a substitution so its inner is judged.
+    if ((c === '<' || c === '>') && str[i + 1] === '(') {
+      endToken();
+      ensureToken();
+      const { inner, end } = extractParen(str, i + 1);
+      ctx.addSubst(inner);
+      curToken.procSubst = true;
+      i = end; continue;
+    }
     // redirects
     if (c === '>') {
       endToken();
@@ -631,60 +699,1349 @@ function isForkBomb(raw) {
 // literal it was assigned in the SAME command string (see checkVariableExpansion).
 const INLINE_ASSIGN_RE = /^([A-Za-z_][A-Za-z0-9_]*)=([\s\S]*)$/;
 
-function checkVariableExpansion(segments) {
-  let ask = null;
-  // NAME -> literal value, accumulated in command order. Only FULLY literal
-  // values are recorded (varCount/substCount === 0): a value that itself
-  // expands is not statically known and is deliberately left unresolved.
-  const assign = new Map();
+// Words that can open a segment in front of the real command (`then rm ...`,
+// `do $C`, `{ reboot; }`, `! cmd`). commandPosition() skips them so a command
+// inside if/while/for bodies and brace groups is judged like a top-level one.
+// R1: `if`/`while`/`until`/`(` added so `if rm -rf /etc; then` and
+// `while rm ...; do` are judged too. skipLeadKeywords() drops ONLY those words
+// (no wrapper/assignment resolution), for the argv[0]-anchored checks that must
+// keep their raw-wrapper semantics; commandPosition() also resolves wrappers.
+// WI-20 G3: `coproc cmd`, `coproc NAME { cmd; }` and `function NAME { cmd; }`
+// run cmd, so their lead words are skipped too.
+const LEAD_KEYWORDS = new Set(['if', 'while', 'until', 'do', 'then', 'else', 'elif', '{', '(', '!', 'time', 'coproc']);
+function skipLeadKeywords(argv) {
+  let k = 0;
+  while (k < argv.length - 1 && argv[k].varCount === 0 && argv[k].substCount === 0 &&
+         (LEAD_KEYWORDS.has(argv[k].canon) || argv[k].canon === 'function')) {
+    const w = argv[k].canon;
+    if ((w === 'function' || w === 'coproc') && k + 3 < argv.length && argv[k + 2].canon === '{') { k += 3; continue; }
+    if (w === 'function') break;
+    k++;
+    // H1/REV2: the `time` keyword takes -p (and --) before the command.
+    if (argv[k - 1].canon === 'time') while (k < argv.length - 1 && (argv[k].canon === '-p' || argv[k].canon === '--')) k++;
+  }
+  return k ? argv.slice(k) : argv;
+}
+function commandPosition(argv) {
+  return resolveEffectiveCommand(skipLeadKeywords(argv));
+}
+
+// H2/S2a: compound-command words and variable-writing builtins. When any of
+// them is present the command string can rebind a variable in a way a plain
+// left-to-right scan cannot follow (loop variables, conditional bodies, read,
+// eval, source, declare/export with a computed value ...), so no assignment is
+// trusted as a literal.
+const COMPOUND_WORDS = new Set(['if', 'then', 'else', 'elif', 'fi', 'while', 'until', 'do', 'done', 'for',
+  'case', 'esac', 'select', 'function', 'coproc', '{', '}', '[[', ']]']);
+// WI-8 REV1: wait -p NAME writes a variable too.
+const VAR_WRITER_CMDS = new Set(['eval', 'source', '.', 'read', 'mapfile', 'readarray', 'declare', 'typeset',
+  'local', 'export', 'readonly', 'let', 'getopts', 'unset', 'builtin', 'enable', 'alias', 'wait']);
+
+// Count the places NAME appears in the raw command OTHER than as a plain
+// `$NAME` / `${NAME}` read. The single literal assignment is one such place;
+// any second one (`read NAME`, `for NAME in`, `NAME+=x`, `${NAME:=x}`,
+// `((NAME++))`, `N=NAME; read $N`, a heredoc body ...) is a possible rebind.
+function bareMentions(raw, name) {
+  const stripped = raw.replace(new RegExp('\\$\\{' + name + '\\}|\\$' + name + '(?![A-Za-z0-9_])', 'g'), '');
+  const m = stripped.match(new RegExp('(?<![A-Za-z0-9_])' + name + '(?![A-Za-z0-9_])', 'g'));
+  return m ? m.length : 0;
+}
+
+// S2a: NAME -> { value, idx } for variables whose value at every later
+// `$NAME` is PROVABLY the literal assigned once, unconditionally, in the
+// current shell. Anything that could rebind, unset or scope the variable
+// (a second mention, a subshell/function/compound command, a writer builtin,
+// a pipeline/background/conditional assignment, a glob in the command word, IFS
+// changes) drops the entry, and the caller falls back to `ask`.
+function buildLiteralAssignMap(segments, raw) {
+  const out = new Map();
+  if (/(?<![A-Za-z0-9_])IFS(?![A-Za-z0-9_])/.test(raw)) return out;
+  const cand = new Map();
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    if (seg.op === '(' || seg.op === ')') return new Map();
+    if (!seg.argv.length) continue;
+    const a0 = seg.argv[0];
+    if (a0.varCount === 0 && a0.substCount === 0 && COMPOUND_WORDS.has(a0.canon)) return new Map();
+    // The writer check reads the COMMAND word only (past keywords, wrappers and
+    // prefix assignments): `.` or `read` as a plain argument (`grep x .`) is data.
+    const cp = commandPosition(seg.argv);
+    const c0 = cp.length && cp[0].varCount === 0 && cp[0].substCount === 0 ? basename(cp[0].canon) : '';
+    if (VAR_WRITER_CMDS.has(c0)) return new Map();
+    if (c0 === 'printf' && cp.some(t => t.canon === '-v' || /^-v./.test(t.canon))) return new Map();
+    const allAssign = seg.argv.every(t => t.litLen > 0 && t.varCount === 0 && t.substCount === 0 && INLINE_ASSIGN_RE.test(t.canon));
+    if (!allAssign) continue;
+    const prevOp = i > 0 ? segments[i - 1].op : null;
+    const unconditional = (prevOp === null || prevOp === ';') && seg.op !== '|' && seg.op !== '&';
+    for (const t of seg.argv) {
+      const m = INLINE_ASSIGN_RE.exec(t.canon);
+      // A glob in the FIRST word would pick the command name from the file list.
+      // A glob in a later word is an argument, judged as a literal like any
+      // typed argument.
+      const firstWord = m[2].trim().split(/[ \t\n]+/)[0] || '';
+      if (cand.has(m[1]) || !unconditional || /[*?[]/.test(firstWord)) { cand.set(m[1], null); continue; }
+      cand.set(m[1], { value: m[2], idx: i });
+    }
+  }
+  for (const [name, entry] of cand) {
+    if (entry && bareMentions(raw, name) === 1) out.set(name, entry);
+  }
+  return out;
+}
+
+// H5: a variable assigned `$(mktemp ...)` holds a path that mktemp just made.
+// It is a temp path, so `T=$(mktemp -d); rm -rf "$T"` does not ask. The rules:
+//  - The token is exactly NAME=$(mktemp ARGS) or NAME=`mktemp ARGS`. ARGS hold
+//    no substitution, redirect, pipe or second command.
+//  - NAME has one mention in the raw command (bareMentions), so no second
+//    assignment, read, loop variable or ${NAME:=x} can rebind it.
+//  - The assignment comes before the first compound word, subshell or function
+//    in the string, so it cannot sit in a conditional body.
+//  - The assignment is not in a pipe or in the background. After `&&` it
+//    counts only for commands that the same `&&` chain guards.
+//  - A writer builtin (eval, source, read, declare, export ...) anywhere voids
+//    the map, because it can rebind NAME where the scan cannot see.
+//  - IFS anywhere voids the map.
+// An unquoted $NAME is word-split and globbed. It is trusted only when the
+// mktemp args are literal path-safe words, the command does not mention
+// TMPDIR, and the hook's own TMPDIR is path-safe. Otherwise only "$NAME"
+// counts. A mktemp failure gives an empty value: `rm -rf "$T"` and
+// `rm -rf $T` with an empty T delete nothing. A target with a suffix
+// (`$T/x`, `$T/*`) is not a pure variable and is not covered here.
+const PATH_SAFE_RE = /^[A-Za-z0-9._\/=:@%+-]+$/;
+function mktempInner(inner) {
+  let segs;
+  try { segs = tokenize(String(inner || '')).segments; } catch (e) { return null; }
+  if (segs.length !== 1) return null;
+  const s = segs[0];
+  if (s.op || s.redirects.length || !s.argv.length) return null;
+  const a0 = s.argv[0];
+  if (a0.varCount || a0.substCount || !/^(\/usr)?(\/bin\/)?mktemp$/.test(a0.canon)) return null;
+  let safe = true;
+  for (const t of s.argv.slice(1)) {
+    if (t.substCount) return null;
+    // WI-8 REV2: only the options that make mktemp print a path. --version,
+    // --help or an unknown option print text that is not a path.
+    if (/^-/.test(t.canon) && !/^-[dqutp]+$/.test(t.canon) &&
+        !/^--(directory|dry-run|quiet|tmpdir(=.*)?|suffix(=.*)?)$/.test(t.canon)) return null;
+    if (t.varCount || t.litLen === 0 || !PATH_SAFE_RE.test(t.canon)) safe = false;
+  }
+  return { argsSafe: safe };
+}
+function buildTempAssignMap(segments, raw) {
+  const out = new Map();
+  const src = String(raw || '');
+  if (/(?<![A-Za-z0-9_])IFS(?![A-Za-z0-9_])/.test(src)) return out;
+  const envTmp = process.env.TMPDIR;
+  const envSafe = envTmp === undefined || envTmp === '' || PATH_SAFE_RE.test(envTmp);
+  const tmpdirMentioned = /(?<![A-Za-z0-9_])TMPDIR(?![A-Za-z0-9_])/.test(src);
+  // WI-8 REV1: a PATH change can make `mktemp` a different program.
+  if (/(?<![A-Za-z0-9_])PATH(?![A-Za-z0-9_])/.test(src)) return out;
+  const cand = new Map();
+  let open = true;
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    if (seg.op === '(' || seg.op === ')') open = false;
+    if (!seg.argv.length) continue;
+    const a0 = seg.argv[0];
+    if (a0.varCount === 0 && a0.substCount === 0 && COMPOUND_WORDS.has(a0.canon)) open = false;
+    const cp = commandPosition(seg.argv);
+    const c0 = cp.length && cp[0].varCount === 0 && cp[0].substCount === 0 ? basename(cp[0].canon) : '';
+    if (VAR_WRITER_CMDS.has(c0)) return new Map();
+    if (c0 === 'printf' && cp.some(t => t.canon === '-v' || /^-v./.test(t.canon))) return new Map();
+    if (!open) continue;
+    const allAssign = seg.argv.every(t => t.litLen > 0 && t.varCount === 0 && INLINE_ASSIGN_RE.test(t.canon));
+    if (!allAssign) continue;
+    const prevOp = i > 0 ? segments[i - 1].op : null;
+    const pipedOrBg = seg.op === '|' || seg.op === '&';
+    for (const t of seg.argv) {
+      const m = INLINE_ASSIGN_RE.exec(t.canon);
+      const name = m[1];
+      if (cand.has(name)) { cand.set(name, null); continue; }
+      const isMk = t.substCount === 1 && m[2] === '' && t.litLen === name.length + 1;
+      const info = isMk ? mktempInner(t.substInners[0]) : null;
+      if (!info || pipedOrBg || !(prevOp === null || prevOp === ';' || prevOp === '&&')) { cand.set(name, null); continue; }
+      cand.set(name, { idx: i, chained: prevOp === '&&', unquotedSafe: info.argsSafe && envSafe && !tmpdirMentioned });
+    }
+  }
+  for (const [name, entry] of cand) {
+    if (entry && bareMentions(src, name) === 1) out.set(name, entry);
+  }
+  return out;
+}
+// The temp entry covers segment si when the assignment ran before it on every
+// path: an unconditional assignment, or an `&&` chain with no other operator
+// between the assignment and segment si.
+function tempCovers(entry, si, segments) {
+  if (!entry || entry.idx >= si) return false;
+  if (!entry.chained) return true;
+  for (let k = entry.idx; k < si; k++) if (segments[k].op !== '&&') return false;
+  return true;
+}
+// True when token t is a pure $NAME / ${NAME} read whose name is a temp path
+// at segment si, quoted or (when safe) unquoted.
+function isTempVarToken(t, si, segments, temp, raw) {
+  if (!isPureVar(t)) return false;
+  const name = (t.varNames && t.varNames[0]) || '';
+  const entry = name ? temp.get(name) : null;
+  if (!tempCovers(entry, si, segments)) return false;
+  if (entry.unquotedSafe) return true;
+  if (!Number.isInteger(t.start) || !Number.isInteger(t.end)) return false;
+  const span = String(raw || '').slice(t.start, t.end);
+  return span === '"$' + name + '"' || span === '"${' + name + '}"';
+}
+
+// K1/W1/W3: git operations that destroy history or remote refs. Each check
+// reads the argv of a segment whose command word is git, so the same words in
+// grep, echo or commit-message data do not ask.
+// WI-21 round 5 MF-R4-1: true when the word is not provably the literal text it
+// spells. That is any variable, parameter expansion, command/process
+// substitution or arithmetic expansion ANYWHERE in the word (also mixed with
+// literal text: "x$@", x"${A[@]}", w$X, H$X), a backslash-newline, an unquoted
+// brace expansion ({w,-f} {1..3}), a tilde at the start, and an unquoted glob
+// that can match a name starting with "-" (* ?f -[f] @(...)). The tokenizer
+// keeps only the literal part in t.canon, so every git and runner rule calls
+// this before it trusts t.canon. Unknown text is true (fail closed).
+function rawHasExpansion(raw) {
+  if (typeof raw !== 'string' || raw === '') return false;
+  if (raw.includes('\\\n')) return true;
+  // WI-21 round 6 L-R5-1: ANSI-C $'..' and locale $"..." quoting decode escapes
+  // ($'\x2d' is "-"), and the glob check below cannot see through them
+  // ($'-'* matches -f). Any word that holds either form is unknown.
+  if (raw.includes("$'") || raw.includes('$"')) return true;
+  let prefix = '';      // the literal text before the first unquoted glob
+  let braceDepth = 0;
+  let i = 0;
+  const n = raw.length;
+  const dollarExpands = (j) => { const c = raw[j + 1]; return c !== undefined && /[({A-Za-z_@*#?$!0-9-]/.test(c); };
+  if (raw[0] === '~') return true;
+  while (i < n) {
+    const c = raw[i];
+    if (c === '\\') { prefix += raw[i + 1] || ''; i += 2; continue; }
+    if (c === "'") {
+      const e = raw.indexOf("'", i + 1);
+      if (e === -1) return true;
+      prefix += raw.slice(i + 1, e); i = e + 1; continue;
+    }
+    if (c === '$' && raw[i + 1] === "'") {
+      let j = i + 2;
+      while (j < n && raw[j] !== "'") j += raw[j] === '\\' ? 2 : 1;
+      if (j >= n) return true;
+      prefix += 'x'; i = j + 1; continue;
+    }
+    if (c === '"' || (c === '$' && raw[i + 1] === '"')) {
+      let j = c === '"' ? i + 1 : i + 2;
+      while (j < n && raw[j] !== '"') {
+        if (raw[j] === '\\') { prefix += raw[j + 1] || ''; j += 2; continue; }
+        if (raw[j] === '`') return true;
+        if (raw[j] === '$' && dollarExpands(j)) return true;
+        prefix += raw[j]; j++;
+      }
+      if (j >= n) return true;
+      i = j + 1; continue;
+    }
+    if (c === '`') return true;
+    if (c === '$' && dollarExpands(i)) return true;
+    if ((c === '<' || c === '>') && raw[i + 1] === '(') return true;
+    if (c === '{') { braceDepth++; prefix += c; i++; continue; }
+    if (c === '}') { if (braceDepth > 0) braceDepth--; prefix += c; i++; continue; }
+    if (braceDepth > 0 && (c === ',' || (c === '.' && raw[i + 1] === '.'))) return true;
+    if (c === '*' || c === '?' || c === '[' || (/[@!+]/.test(c) && raw[i + 1] === '(')) {
+      if (prefix === '' || prefix[0] === '-') return true;
+    }
+    prefix += c; i++;
+  }
+  return false;
+}
+function wordHasExpansion(t) {
+  if (!t) return false;
+  if (t.varCount || t.substCount) return true;
+  return rawHasExpansion(t.raw);
+}
+const GIT_GLOBAL_WITH_ARG = new Set(['-C', '--git-dir', '--work-tree', '--namespace', '--exec-path',
+  '--super-prefix', '--list-cmds', '--attr-source']);
+const GIT_PUSH_WITH_ARG = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec',
+  '--recurse-submodules']);
+const PUSH_FORCE_MSG = 'Force push may cause data loss. Consider --force-with-lease.';
+// WI-21 round 6 MF-R5-1: git parse-options accepts ANY unambiguous prefix of a
+// long option (`git checkout --f` and `--fo` are --force). So a name matches a
+// dangerous option when it is a nonempty prefix of it. A prefix that is
+// ambiguous between a dangerous and a benign option also matches: git rejects
+// an ambiguous prefix, so asking costs nothing (fail closed).
+function longOptIs(name, full) { return typeof name === 'string' && name.length >= 1 && full.startsWith(name); }
+function gitPushMessage(args) {
+  let positional = 0;
+  let optsDone = false;
+  for (let k = 0; k < args.length; k++) {
+    const t = args[k];
+    const v = t.canon;
+    // WI-21 round 5: an expanded word can be -f, --force or a +refspec.
+    if (wordHasExpansion(t)) return GIT_UNKNOWN_WORD_MSG;
+    if (!optsDone && v === '--') { optsDone = true; continue; }
+    if (!optsDone && /^--/.test(v)) {
+      const name = v.slice(2).split('=')[0];
+      if (/^force-(with-lease|if-includes)$/.test(name) || /^no-/.test(name)) continue;
+      if (longOptIs(name, 'force')) return PUSH_FORCE_MSG;
+      if (longOptIs(name, 'mirror')) return 'git push --mirror overwrites and deletes remote refs to match this clone. Verify the remote first.';
+      if (longOptIs(name, 'delete')) return 'git push --delete removes a remote branch or tag. Verify the ref name.';
+      if (longOptIs(name, 'prune')) return 'git push --prune deletes remote branches that have no local copy. Verify with --dry-run first.';
+      if (GIT_PUSH_WITH_ARG.has('--' + name) && !v.includes('=')) k++;
+      continue;
+    }
+    if (!optsDone && /^-[A-Za-z0-9]+$/.test(v)) {
+      for (const ch of v.slice(1)) {
+        if (ch === 'f') return PUSH_FORCE_MSG;
+        if (ch === 'd') return 'git push -d removes a remote branch or tag. Verify the ref name.';
+        if (ch === 'o') { if (v.endsWith('o')) k++; break; }
+      }
+      continue;
+    }
+    positional++;
+    if (/^\+/.test(v)) return PUSH_FORCE_MSG + ' A +refspec forces the update.';
+    if (positional > 1 && /^:/.test(v)) return 'A git push refspec of the form :ref deletes the remote ref. Verify the ref name.';
+  }
+  return null;
+}
+// WI-8 REV1: run fn over a resolved argv and over every command that the argv
+// runs later. That covers the argv after find -exec, the argv suffix of an
+// ARGV_EXEC_CMDS wrapper (xargs, ssh, watch, flock, chroot, taskset ...), and
+// a quoted payload with whitespace (`ssh host 'cd r && git push -f'`,
+// `sh -c '...'`, `tmux new '...'`). This is the same expansion that
+// powerStateMessage uses.
+// WI-8 REV2: every fn call and every tokenize spends one step from a shared
+// budget. A command that needs more steps (a long run of nested wrappers) asks
+// instead of running past the hook timeout, which would drop the verdict.
+const SCAN_STEP_LIMIT = 400;
+const SCAN_BUDGET_MSG = 'The command nests too many wrappers (xargs/ssh/find -exec ...) for the guard to analyze. Confirm the command is safe.';
+function scanSpend(budget) { budget.left--; return budget.left < 0; }
+function scanWrapped(r, depth, fn, budget) {
+  if (scanSpend(budget)) return SCAN_BUDGET_MSG;
+  if (!r.length) return null;
+  // WI-20 F2: past the depth cap the payload is unread, which is not "nothing found".
+  if (depth > MAX_SHELL_C_DEPTH) return SCAN_BUDGET_MSG;
+  const m0 = fn(r);
+  if (m0) return m0;
+  // `env -S 'git push -f'` leaves the whole payload as the command word.
+  if (/\s/.test(r[0].canon)) {
+    const mw = scanCommandText(r[0].canon, depth + 1, fn, budget);
+    if (mw) return mw;
+  }
+  const c0 = r[0].varCount || r[0].substCount ? '' : basename(r[0].canon);
+  if (c0 === 'find') {
+    for (let k = 1; k < r.length - 1; k++) {
+      if (!FIND_EXEC_FLAGS.has(r[k].canon)) continue;
+      if (depth + 1 > MAX_SHELL_C_DEPTH) return SCAN_BUDGET_MSG;   // WI-20 F2
+      const m = scanWrapped(resolveEffectiveCommand(r.slice(k + 1)), depth + 1, fn, budget);
+      if (m) return m;
+    }
+  }
+  if (ARGV_EXEC_CMDS.has(c0) || SHELL_INTERPRETERS_EVAL.has(c0)) {
+    for (let k = 1; k < r.length; k++) {
+      if (scanSpend(budget)) return SCAN_BUDGET_MSG;
+      if (ARGV_EXEC_CMDS.has(c0)) {
+        const m = scanWrapped(resolveEffectiveCommand(r.slice(k)), depth + 1, fn, budget);
+        if (m) return m;
+      }
+      if (/\s/.test(r[k].canon)) {
+        const mm = scanCommandText(r[k].canon, depth + 1, fn, budget);
+        if (mm) return mm;
+      }
+    }
+  }
+  return null;
+}
+function scanCommandText(text, depth, fn, budget) {
+  if (scanSpend(budget)) return SCAN_BUDGET_MSG;
+  let segs = [];
+  try { segs = tokenize(text).segments; } catch (e) { segs = []; }
+  for (const sg of segs) {
+    const m = scanWrapped(commandPosition(sg.argv), depth, fn, budget);
+    if (m) return m;
+  }
+  return null;
+}
+// Run fn over every segment (wrappers expanded) and over the text a pipe
+// feeds into a STDIN_EXEC_CMDS consumer (`echo 'git push -f' | at now`).
+function scanSegments(segments, fn) {
+  const budget = { left: SCAN_STEP_LIMIT };
+  for (let si = 0; si < segments.length; si++) {
+    const m = scanWrapped(commandPosition(segments[si].argv), 0, (r) => fn(r, si), budget);
+    if (m) return m;
+    // `env -S 'cmd args'` / `env --split-string='cmd args'`: resolveEffectiveCommand
+    // skips the -S value, but env runs it as a command line.
+    const a = segments[si].argv;
+    if (a.some(t => basename(t.canon) === 'env')) {
+      for (let k = 0; k < a.length; k++) {
+        let text = null;
+        if ((a[k].canon === '-S' || a[k].canon === '--split-string') && a[k + 1]) text = a[k + 1].canon;
+        else if (/^--split-string=/.test(a[k].canon)) text = a[k].canon.slice('--split-string='.length);
+        else if (/^-S./.test(a[k].canon)) text = a[k].canon.slice(2);
+        if (text) {
+          const mm = scanCommandText(text, 1, (r) => fn(r, si), budget);
+          if (mm) return mm;
+        }
+      }
+    }
+  }
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (segments[i].op !== '|') continue;
+    const c = commandPosition(segments[i + 1].argv);
+    if (!c.length || !STDIN_EXEC_CMDS.has(basename(c[0].canon))) continue;
+    for (const t of segments[i].argv) {
+      if (!/\s/.test(t.canon)) continue;
+      const m = scanCommandText(t.canon, 1, (r) => fn(r, i + 1), budget);
+      if (m) return m;
+    }
+  }
+  return null;
+}
+const GIT_OUTPUT_MSG = 'This git option writes its output to a file (--output, -o, --output-directory, bundle create). It can overwrite any file, a hook included. Redirect to a file under cagents-memory/ or /tmp instead, and confirm the target.';
+const GIT_LOCATION_MSG = 'git -C / --git-dir / --work-tree / --exec-path points git at another repo or helper set. Its config (core.fsmonitor, core.pager, hooks) can run code. Confirm the directory is trusted.';
+// The project root, as a literal path or as $CLAUDE_PROJECT_DIR.
+function projectRoots() {
+  const roots = new Set();
+  const norm = (p) => String(p || '').replace(/\/+$/, '');
+  if (process.env.CLAUDE_PROJECT_DIR) roots.add(norm(process.env.CLAUDE_PROJECT_DIR));
+  try { roots.add(norm(require('path').resolve(__dirname, '..', '..'))); } catch (e) { /* no root */ }
+  roots.delete('');
+  return roots;
+}
+// WI-21 round 2 M-1: a variable word is trusted only in its plain form
+// ($NAME, ${NAME}, "$NAME", "${NAME}"), never with a default/alternate
+// operator (${NAME:-x}, ${NAME:=x}, ${NAME:+x}, ${NAME#x} ...), and never when
+// the same command reassigns the name (`reassigned` holds those names).
+function isPlainVarWord(t, name, reassigned) {
+  if (!t || t.substCount !== 0 || t.varCount !== 1 || t.litLen !== 0) return false;
+  if (!Array.isArray(t.varNames) || t.varNames[0] !== name) return false;
+  if (reassigned && reassigned.has(name)) return false;
+  if (typeof t.raw !== 'string') return false;
+  const re = new RegExp('^("?)\\$(\\{' + name + '\\}|' + name + ')\\1/?$');
+  return re.test(t.raw);
+}
+// Names a command list (re)assigns: NAME=, NAME+=, export/declare/read/
+// printf -v/local/readonly/typeset NAME, unset NAME, cd -P sets PWD is ignored.
+const ASSIGN_WORD_RE = /^([A-Za-z_][A-Za-z0-9_]*)\+?=/;
+const NAME_SETTER_CMDS = new Set(['export', 'declare', 'typeset', 'local', 'readonly', 'read', 'unset', 'mapfile', 'readarray', 'getopts', 'printf', 'let']);
+function reassignedNames(segments, out) {
+  out = out || new Set();
+  for (const seg of segments || []) {
+    let setter = false;
+    for (const t of seg.argv) {
+      if (t.varCount || t.substCount) continue;
+      const m = ASSIGN_WORD_RE.exec(t.canon);
+      if (m) { out.add(m[1]); continue; }
+      const b = basename(t.canon);
+      if (NAME_SETTER_CMDS.has(b) || b === 'env') { setter = true; continue; }
+      if (setter && /^[A-Za-z_][A-Za-z0-9_]*$/.test(t.canon)) out.add(t.canon);
+    }
+  }
+  return out;
+}
+function isProjectRootWord(t, reassigned) {
+  if (!t) return false;
+  if (isPlainVarWord(t, 'CLAUDE_PROJECT_DIR', reassigned)) return true;
+  if (t.substCount || t.varCount) return false;
+  const v = t.canon.replace(/\/+$/, '');
+  return v !== '' && projectRoots().has(v);
+}
+// A directory word that names the current directory: ., ./, $PWD, $(pwd).
+function isSameDirWord(t, reassigned) {
+  if (!t) return false;
+  if (!t.substCount && !t.varCount) return /^\.\/?$/.test(t.canon);
+  if (isPlainVarWord(t, 'PWD', reassigned)) return true;
+  return t.litLen === 0 && t.varCount === 0 && t.substCount === 1 &&
+    Array.isArray(t.substInners) && t.substInners.length === 1 && /^\s*pwd\s*$/.test(t.substInners[0]);
+}
+// args = argv from the subcommand word on.
+function gitOutputMessage(args) {
+  const sub = args.length && !wordHasExpansion(args[0]) ? args[0].canon : null;
+  for (let i = 1; i < args.length; i++) {
+    const t = args[i];
+    if (wordHasExpansion(t)) {
+      // A substitution or a variable can expand to --output=<file>.
+      if (sub === null || /^(log|show|diff|whatchanged|range-diff|format-patch|archive|bundle|diff-tree|diff-files|diff-index|cherry|shortlog)$/.test(sub)) return GIT_OUTPUT_MSG;
+      continue;
+    }
+    const v = t.canon;
+    if (/^--/.test(v)) {
+      const name = v.slice(2).split('=')[0];
+      if (name.startsWith('output') || longOptIs(name, 'output')) return GIT_OUTPUT_MSG;
+      continue;
+    }
+    if ((sub === 'format-patch' || sub === 'archive' || sub === null) && /^-[A-Za-z0-9]*o/.test(v)) return GIT_OUTPUT_MSG;
+  }
+  if (sub === 'bundle' && args[1] && args[1].canon === 'create') return GIT_OUTPUT_MSG;
+  return null;
+}
+const GIT_EXEC_CFG_RE = /^(core\.(hookspath|fsmonitor|pager|sshcommand|editor|askpass|gitproxy|worktree|attributesfile|excludesfile|alternaterefscommand)|init\.templatedir|trailer\.|sendemail\.|include\.|includeif\.|diff\.|merge\.|filter\.|pager\.|sequence\.editor|gpg\.|credential\.|uploadpack\.|receivepack\.|protocol\.|http\.|remote\.|url\.|interactive\.difffilter|instaweb\.|web\.browser|browser\.|man\.|difftool\.|mergetool\.|ssh\.)/i;
+const GIT_ALIAS_MSG = 'git config set on the command line (-c, --config-env, GIT_CONFIG_*) can define an alias or a push/mirror setting that hides a force push. Verify the command.';
+function gitArgvMessage(argv) {
+  if (!argv.length || argv[0].varCount || argv[0].substCount || basename(argv[0].canon) !== 'git') return null;
+  let k = 1;
+  const cfg = [];
+  while (k < argv.length) {
+    const v = argv[k].canon;
+    // WI-21 round 5: an expanded global option (-$X, --$X) can be -c alias.x=...
+    if (wordHasExpansion(argv[k]) && (/^-/.test(v) || v === '')) {
+      if (v !== '') return GIT_LOCATION_MSG;
+      break;
+    }
+    if (v === '-c') {
+      // WI-21 round 2: a -c value from a variable or a substitution can be any key.
+      const cv = argv[k + 1];
+      if (cv && wordHasExpansion(cv)) return GIT_LOCATION_MSG;
+      cfg.push(cv ? cv.canon : ''); k += 2; continue;
+    }
+    if (/^-c./.test(v)) { cfg.push(v.slice(2)); k++; continue; }
+    if (/^--config-env=/.test(v)) { cfg.push(v.slice('--config-env='.length)); k++; continue; }
+    if (v === '--config-env' && wordHasExpansion(argv[k + 1])) return GIT_LOCATION_MSG;
+    if (v === '--config-env') { cfg.push(argv[k + 1] ? argv[k + 1].canon : ''); k += 2; continue; }
+    // WI-21 W21-3/W21-6: -C, --git-dir, --work-tree and --exec-path=<dir> point
+    // git at a repo, config or helper set the agent may have planted. Only the
+    // project root itself is trusted.
+    if (v === '-C' || v === '--git-dir' || v === '--work-tree') {
+      if (!(v === '-C' && (isProjectRootWord(argv[k + 1]) || isSameDirWord(argv[k + 1])))) return GIT_LOCATION_MSG;
+      k += 2; continue;
+    }
+    if (/^(--git-dir|--work-tree|--exec-path)=/.test(v) || /^-C./.test(v)) return GIT_LOCATION_MSG;
+    if (GIT_GLOBAL_WITH_ARG.has(v)) { k += 2; continue; }
+    if (/^-/.test(v)) { k++; continue; }
+    break;
+  }
+  // WI-21 W21-1: --output[=]<file> (log/show/diff/whatchanged/range-diff/...)
+  // and format-patch/archive -o write a file the agent names, with content the
+  // agent shapes (--format). That can overwrite a hook. Ask on any spelling.
+  { const om = gitOutputMessage(argv.slice(k)); if (om) return om; }
+  if (cfg.some(c => /^alias\./i.test(c) || /mirror/i.test(c) || /\.push\s*=\s*[+:]/i.test(c))) return GIT_ALIAS_MSG;
+  // WI-15 R2: clean.requireForce=false lets `git clean -d` delete without -f.
+  if (cfg.some(c => /^clean\.requireforce/i.test(c))) return GIT_DISCARD_MSG.clean;
+  // WI-21 W21-6: config keys that name a program or a hook directory run it.
+  if (cfg.some(c => GIT_EXEC_CFG_RE.test(c))) return GIT_LOCATION_MSG;
+  const subTok = argv[k];
+  if (!subTok) return null;
+  if (wordHasExpansion(subTok)) {
+    // W2/F2: `git $(echo stash) clear` hides the subcommand. A literal discard
+    // verb after it still asks.
+    if (argv.slice(k + 1).some(t => !wordHasExpansion(t) && /^(clear|drop)$/.test(t.canon))) {
+      return GIT_DISCARD_MSG.stash;
+    }
+    // WI-15 R1: try each discard rule on the rest of the argv.
+    for (const name of Object.keys(GIT_DISCARD_MSG)) {
+      const m = gitDiscardMessage(name, argv.slice(k + 1));
+      if (m && name !== 'stash' && name !== 'restore') return m;
+    }
+    return null;
+  }
+  const sub = subTok.canon;
+  const args = argv.slice(k + 1);
+  // WI-21 round 5: an expanded word matches every literal test (fail closed).
+  const has = (re) => args.some(t => wordHasExpansion(t) || re.test(t.canon));
+  if (sub === 'push') { const m = gitPushMessage(args); if (m) return m; }
+  if (sub === 'filter-branch' || sub === 'filter-repo') {
+    return 'git ' + sub + ' rewrites history for every matched commit. Back up first (git clone --mirror).';
+  }
+  if (sub === 'update-ref' && has(/^(-d|--delete|--stdin)$/)) {
+    return 'git update-ref -d/--stdin changes or deletes refs directly, with no safety checks. Verify the ref names.';
+  }
+  if (sub === 'reflog' && args.length && (wordHasExpansion(args[0]) || /^(expire|delete)$/.test(args[0].canon))) {
+    return 'git reflog ' + (args[0].canon || '<expanded word>') + ' removes the recovery record for lost commits. Consider keeping the default expiry.';
+  }
+  if (sub === 'prune' && (args.some(wordHasExpansion) || !args.some(t => /^(-n|--dry-run)$/.test(t.canon)))) {
+    return 'git prune permanently deletes unreachable objects (lost commits). Run git prune -n to preview.';
+  }
+  if (sub === 'gc' && args.some(t => wordHasExpansion(t) || (/^--prune=/.test(t.canon) && t.canon !== '--prune=never'))) {
+    return 'git gc --prune=<date> can permanently delete unreachable objects (lost commits). Consider the default prune window.';
+  }
+  const w2 = gitDiscardMessage(sub, args);
+  if (w2) return w2;
+  return null;
+}
+// W2: git subcommands that throw away uncommitted work or unmerged branches.
+// The settings.json allowlist no longer pre-approves checkout/stash/branch as a
+// whole, and these rules ask whether or not an allow rule matches. A bare
+// `git checkout <name>` stays allowed: a branch name and a file path look the
+// same statically, so only the unambiguous discard forms ask.
+const GIT_DISCARD_MSG = {
+  checkout: 'git checkout of a path (a pathspec, --, ., a tree-ish plus a path, --ours/--theirs) or --force overwrites uncommitted changes. Consider git stash push first.',
+  restore: 'git restore of the working tree discards uncommitted changes. Use --staged to only unstage, or git stash push first.',
+  switch: 'git switch --discard-changes/--force throws away uncommitted changes. Consider git stash push first.',
+  stash: 'git stash drop/clear deletes stashed work permanently. Check git stash list first.',
+  branch: 'git branch -D force-deletes a branch even if it is not merged. Consider git branch -d.',
+  worktree: 'git worktree remove --force deletes the worktree with its uncommitted and untracked files. Commit or stash in that worktree first.',
+  clean: 'git clean --force deletes untracked files permanently. Run git clean -n to preview.',
+  // WI-21 W21-7: reset --hard/--keep/--merge rewrite the working tree.
+  reset: 'git reset --hard/--keep/--merge overwrites uncommitted changes in the working tree. Consider git stash push first.'
+};
+// WI-21 W21-4: a variable or a substitution word in a discard subcommand can
+// expand to -f, --hard, -D, drop ... An unknown word asks.
+const GIT_UNKNOWN_WORD_MSG = 'A variable or a command substitution in this git command can expand to a discard option (-f, --hard, -D, drop). Write the words out literally, or confirm.';
+// Checkout options that take the next word as their value.
+const CHECKOUT_WITH_ARG = new Set(['-b', '-B', '--orphan', '--conflict', '--pathspec-from-file']);
+// A word that can only be a path: ./x ../x /x, a glob, or a magic pathspec.
+const PATHLIKE_RE = /^(\.{1,2}\/|\/|:\(|:\/)|[*?[]/;
+// WI-21 round 2 MF-2: true when the token's source text is exactly one
+// double-quoted string ("$NAME", "${NAME}", "$(cmd ...)", "pre-$X"), so the
+// shell does no word splitting or globbing on it. Nested quotes inside a
+// $(...) are skipped. Anything the scanner does not understand is false.
+// WI-21 round 4 MF-R3-1: any indirection `${!...}` (its target can be `A[@]`
+// or `@`), `$@`, `${@`, and any subscript holding `@` (`[@]`, `[ @ ]` ...) can
+// expand to several words, so none of them is provably one word (fail closed).
+const MULTIWORD_EXPANSION_RE = /\$@|\$\{@|\$\{!|\[[^\]]*@/;
+function isSingleDQWord(t) {
+  // WI-21 round 4 MF-R3-1: bash deletes backslash-newline inside double quotes
+  // before it expands, so `"$\<LF>@"` is `"$@"`. Strip the pairs first so the
+  // checks below see what bash expands.
+  const r = (t && typeof t.raw === 'string' ? t.raw : '').replace(/\\\n/g, '');
+  if (r.length < 2 || r[0] !== '"') return false;
+  // WI-21 round 3 MF-R2-2: inside double quotes "$@", "${@...}", "${A[@]}"
+  // and "${!prefix@}" still expand to one word per element, so they can inject
+  // -f. "$*" and "${A[*]}" join into one word and stay exempt.
+  if (MULTIWORD_EXPANSION_RE.test(r)) return false;
+  let i = 1;
+  let depth = 0;
+  while (i < r.length) {
+    const c = r[i];
+    if (c === '\\') { i += 2; continue; }
+    if (depth === 0) {
+      if (c === '"') return i === r.length - 1;
+      if (c === '$' && r[i + 1] === '(') { depth = 1; i += 2; continue; }
+      i++; continue;
+    }
+    if (c === "'") { const e = r.indexOf("'", i + 1); if (e === -1) return false; i = e + 1; continue; }
+    if (c === '"') {
+      let e = i + 1;
+      while (e < r.length && r[e] !== '"') e += r[e] === '\\' ? 2 : 1;
+      if (e >= r.length) return false;
+      i = e + 1; continue;
+    }
+    if (c === '(') depth++;
+    else if (c === ')') depth--;
+    i++;
+  }
+  return false;
+}
+function gitDiscardMessage(sub, args) {
+  if (!GIT_DISCARD_MSG[sub]) return null;
+  const vals = [];
+  for (const t of args) {
+    // A word built from a variable or a substitution could be anything. It is
+    // kept as null, so it counts as a word but never matches a literal.
+    // WI-21 round 5 MF-R4-1: a word with literal text AND an expansion ("x$@",
+    // w$X) is unknown too. t.canon holds only its literal part.
+    if (wordHasExpansion(t)) { vals.push(null); continue; }
+    vals.push(t.canon);
+  }
+  let dashdash = -1;
+  for (let i = 0; i < vals.length; i++) if (vals[i] === '--') { dashdash = i; break; }
+  const opts = dashdash === -1 ? vals : vals.slice(0, dashdash);
+  // WI-21 W21-4: null words ask, except the value of an option that takes a
+  // name or a message (checkout -b <name>, stash -m <msg>).
+  {
+    const valueOpts = sub === 'checkout' ? /^(-b|-B|--orphan)$/ : sub === 'stash' ? /^(-m|--message)$/ : null;
+    for (let i = 0; i < vals.length; i++) {
+      // WI-21 round 4 MF-R3-1: the tokenizer reads `"$\<LF>@"` as the literal
+      // `$@`, but bash deletes the backslash-newline first and expands "$@".
+      // A word with a backslash-newline is not provably what it spells: ask.
+      if (args[i] && typeof args[i].raw === 'string' && args[i].raw.includes('\\\n')) return GIT_UNKNOWN_WORD_MSG;
+      if (vals[i] !== null) continue;
+      const prev = i > 0 ? vals[i - 1] : null;
+      // WI-21 round 2 MF-2: only ONE fully double-quoted word is exempt. An
+      // unquoted $X / $(...) is word-split and can inject -f.
+      if (!isSingleDQWord(args[i])) return GIT_UNKNOWN_WORD_MSG;
+      if (valueOpts && prev !== null && valueOpts.test(prev)) continue;
+      if (sub === 'checkout' && prev !== null && /^-[A-Za-z]*[bB]$/.test(prev)) continue;
+      return GIT_UNKNOWN_WORD_MSG;
+    }
+  }
+  const longHas = (full) => opts.some(v => v && /^--[a-z]/.test(v) && longOptIs(v.slice(2).split('=')[0], full));
+  const shortHas = (ch) => opts.some(v => v && /^-[A-Za-z0-9]+$/.test(v) && v.slice(1).includes(ch));
+  const msg = GIT_DISCARD_MSG[sub];
+  if (sub === 'checkout') {
+    if (dashdash !== -1 && vals.length > dashdash + 1) return msg;
+    if (longHas('force') || shortHas('f')) return msg;
+    if (longHas('pathspec-from-file')) return msg;
+    // WI-21 round 6: --patch/-p picks hunks to discard from the working tree.
+    if (longHas('patch') || shortHas('p')) return msg;
+    let newBranch = false;
+    const positionals = [];
+    for (let i = 0; i < opts.length; i++) {
+      const v = opts[i];
+      if (v !== null && /^-/.test(v)) {
+        const name = v.split('=')[0];
+        if (name === '-b' || name === '-B' || name === '--orphan') newBranch = true;
+        if (CHECKOUT_WITH_ARG.has(name) && !v.includes('=')) { i++; continue; }
+        // WI-21 FP-2: a short cluster such as -qb <name>. b/B takes the rest
+        // of the cluster, or the next word, as the branch name.
+        const cl = /^-([A-Za-z]+)$/.exec(v);
+        if (cl && !CHECKOUT_WITH_ARG.has(v)) {
+          const at = cl[1].search(/[bB]/);
+          if (at !== -1) { newBranch = true; if (at === cl[1].length - 1) i++; }
+        }
+        continue;
+      }
+      positionals.push(v);
+    }
+    if (positionals.some(v => v !== null && (v === '.' || PATHLIKE_RE.test(v)))) return msg;
+    // `git checkout <tree-ish> <path>`: two words name a path unless a new
+    // branch is made (`-b x origin/main`).
+    if (!newBranch && positionals.length >= 2) return msg;
+    // --ours/--theirs/--merge only act on paths when a word follows.
+    // WI-21 round 6: --conflict=<style> implies --merge; -2/-3 are --ours/--theirs.
+    if (positionals.length && (longHas('ours') || longHas('theirs') || longHas('merge') || longHas('conflict') ||
+      shortHas('m') || shortHas('2') || shortHas('3'))) return msg;
+    return null;
+  }
+  if (sub === 'restore') {
+    const staged = longHas('staged') || shortHas('S');
+    const worktree = longHas('worktree') || shortHas('W');
+    return (!staged || worktree) ? msg : null;
+  }
+  if (sub === 'switch') {
+    return (longHas('discard-changes') || longHas('force') || shortHas('f')) ? msg : null;
+  }
+  if (sub === 'stash') {
+    const verb = vals.find(v => v === null || !/^-/.test(v));
+    // W2/F2: a verb from a variable or a substitution can be drop or clear.
+    return (verb === null || verb === 'drop' || verb === 'clear') ? msg : null;
+  }
+  if (sub === 'branch') {
+    if (shortHas('D')) return msg;
+    const del = longHas('delete') || shortHas('d');
+    const force = longHas('force') || shortHas('f');
+    return (del && force) ? msg : null;
+  }
+  if (sub === 'worktree') {
+    return (vals[0] === 'remove' && (longHas('force') || shortHas('f'))) ? msg : null;
+  }
+  if (sub === 'clean') {
+    const force = longHas('force') || shortHas('f');
+    // WI-21 round 6: read dry-run the way git does. -e/--exclude takes the next
+    // word (or the rest of the cluster) as its value, so `-e -n` and `-en` are
+    // NOT dry runs. --no-dry-run (or any --no-* prefix of it) undoes -n, so any
+    // --no word cancels the dry run (fail closed).
+    let dry = false;
+    let noWord = false;
+    for (let i = 0; i < opts.length; i++) {
+      const v = opts[i];
+      if (v === null || !/^-/.test(v)) continue;
+      if (/^--no/.test(v)) { noWord = true; continue; }
+      if (/^--/.test(v)) {
+        const name = v.slice(2).split('=')[0];
+        if (longOptIs(name, 'exclude')) { if (!v.includes('=')) i++; continue; }
+        if (longOptIs(name, 'dry-run')) dry = true;
+        continue;
+      }
+      const cl = v.slice(1);
+      for (let j = 0; j < cl.length; j++) {
+        if (cl[j] === 'e') { if (j === cl.length - 1) i++; break; }
+        if (cl[j] === 'n') dry = true;
+      }
+    }
+    return (force && !(dry && !noWord)) ? msg : null;
+  }
+  if (sub === 'reset') {
+    return (longHas('hard') || longHas('keep') || longHas('merge')) ? msg : null;
+  }
+  return null;
+}
+// WI-15 F4: settings.json pre-approves the test runner and the CI scripts.
+// Extra arguments can point those runners at code an agent wrote (a vitest
+// config or root, an npm --prefix, a ../ path out of scripts/ci). Those forms
+// ask, so an allow rule never runs an unreviewed file with no prompt.
+const RUNNER_MSG = 'This test or CI runner argument can load code from outside tests/ or scripts/ci/ (a config, a root, a setup file, a prefix, or a ../ path). Confirm the target files are trusted.';
+// WI-15 F4b: an allowlist of argument shapes, not a blocklist. vitest and npm
+// have many options that load code (--reporter=<path>, --environment,
+// --script-shell, --node-options ...), so any other option asks.
+const VITEST_SAFE_FLAG_RE = /^(--run|--no-coverage|--silent|--passWithNoTests|--no-color|--hideSkippedTests|--bail(=\d+)?|--retry=\d+|--testTimeout=\d+|--reporter=(default|verbose|dot|basic|json|junit|tap|tap-flat|hanging-process)|-u|--update|--coverage)$/;
+const VITEST_SAFE_WITH_ARG = new Set(['-t', '--testNamePattern']);
+function runnerArgv(r) {
+  if (!r.length || r[0].varCount || r[0].substCount) return null;
+  const cmd = basename(r[0].canon);
+  // WI-21 round 5: match on the literal text, then treat an expanded word among
+  // the matched words (npm test$X, scripts/ci/x.sh$X) as unknown (fail closed).
+  const v = r.map(t => t.canon);
+  const hit = (kind, from) => ({ kind, args: r.slice(from), unknown: r.slice(1, from).some(wordHasExpansion) });
+  if (cmd === 'npx' && v[1] === 'vitest') return hit('vitest', 2);
+  if (cmd === 'vitest') return hit('vitest', 1);
+  if (cmd === 'npm' && (v[1] === 'test' || v[1] === 't' || (v[1] === 'run' && v[2] === 'test'))) return hit('npm', v[1] === 'run' ? 3 : 2);
+  if ((cmd === 'bash' || cmd === 'sh' || cmd === 'node') && v[1] && /^(\.\/)?scripts\/ci\//.test(v[1])) return hit('ci', 1);
+  return null;
+}
+function runnerMessage(segments) {
+  return scanSegments(segments, (r) => {
+    const hit = runnerArgv(r);
+    if (!hit) return null;
+    if (hit.unknown) return RUNNER_MSG;
+    const a = hit.args;
+    let afterDashDash = hit.kind !== 'npm';
+    for (let i = 0; i < a.length; i++) {
+      const t = a[i];
+      // A variable or a substitution can expand to any option.
+      if (wordHasExpansion(t)) return RUNNER_MSG;
+      const v = t.canon;
+      if (/(^|\/)\.\.(\/|$)/.test(v)) return RUNNER_MSG;
+      if (hit.kind === 'ci') continue;
+      if (!afterDashDash) {
+        // npm options before `--` configure npm itself (--prefix, --script-shell ...).
+        if (v === '--') { afterDashDash = true; continue; }
+        return RUNNER_MSG;
+      }
+      if (!/^-/.test(v)) {
+        if (/^\//.test(v)) return RUNNER_MSG;
+        continue;
+      }
+      if (v === '--config' || v === '-c') {
+        if (wordHasExpansion(a[i + 1])) return RUNNER_MSG;
+        const val = a[i + 1] ? a[i + 1].canon : '';
+        if (val.replace(/^\.\//, '') !== 'tests/vitest.config.js') return RUNNER_MSG;
+        i++; continue;
+      }
+      if (/^--config=/.test(v)) {
+        if (v.slice('--config='.length).replace(/^\.\//, '') !== 'tests/vitest.config.js') return RUNNER_MSG;
+        continue;
+      }
+      // WI-21 W21-9: -t never swallows an option as its value.
+      if (VITEST_SAFE_WITH_ARG.has(v)) {
+        const nx = a[i + 1];
+        if (!nx || wordHasExpansion(nx) || /^-/.test(nx.canon)) return RUNNER_MSG;
+        i++; continue;
+      }
+      if (/^--testNamePattern=/.test(v)) continue;
+      if (VITEST_SAFE_FLAG_RE.test(v)) continue;
+      return RUNNER_MSG;
+    }
+    return null;
+  });
+}
+// WI-21 W21-3: every runner and git allow rule trusts the working directory
+// (a relative scripts/ci path, the package.json npm reads, the .git config git
+// reads). An agent can plant those files under cagents-memory/, cd there and
+// run an allowlisted command. So a cd/pushd/popd (or env -C) to any directory
+// other than the project root, followed by a runner or a git word, asks.
+const CWD_MSG = 'This command changes directory and then runs git or a test/CI runner. Its package.json, scripts/ or .git config there can run code. Run it from the project root, or confirm the directory is trusted.';
+const RUNNER_WORDS = new Set(['git', 'npm', 'npx', 'vitest', 'node', 'nodejs', 'bash', 'sh', 'zsh', 'dash',
+  'yarn', 'pnpm', 'corepack', 'make']);
+const CD_CMDS = new Set(['cd', 'pushd', 'popd', 'chdir']);
+function wordsOfToken(t) {
+  const texts = [t.canon].concat(t.substInners || []);
+  const out = [];
+  for (const x of texts) for (const w of String(x).split(/[\s;&|()<>`'"{}]+/)) if (w) out.push(basename(w));
+  return out;
+}
+function segMentionsRunner(seg) {
+  return seg.argv.some(t => wordsOfToken(t).some(w => RUNNER_WORDS.has(w)));
+}
+function envChdirTarget(argv) {
+  // `env -C dir cmd` / `env --chdir=dir cmd`: returns the dir token (or a
+  // pseudo token for the combined form), or undefined when there is none.
+  let inEnv = false;
+  for (let k = 0; k < argv.length; k++) {
+    const t = argv[k];
+    if (!t.varCount && !t.substCount && basename(t.canon) === 'env') { inEnv = true; continue; }
+    if (!inEnv) continue;
+    const v = t.canon;
+    if (v === '-C' || v === '--chdir') return argv[k + 1] || { canon: '', litLen: 0, varCount: 0, substCount: 0 };
+    if (/^--chdir=/.test(v)) return { canon: v.slice('--chdir='.length), litLen: 1, varCount: t.varCount, substCount: t.substCount };
+    if (/^-C./.test(v)) return { canon: v.slice(2), litLen: 1, varCount: t.varCount, substCount: t.substCount };
+  }
+  return undefined;
+}
+function cwdShiftMessage(segments, depth, reassigned) {
+  if ((depth || 0) > MAX_SHELL_C_DEPTH) return null;
+  reassigned = reassignedNames(segments, new Set(reassigned || []));
+  let shifted = false;
   for (const seg of segments) {
+    if (shifted && segMentionsRunner(seg)) return CWD_MSG;
+    const et = envChdirTarget(seg.argv);
+    if (et !== undefined && !isProjectRootWord(et, reassigned) && !isSameDirWord(et, reassigned) && segMentionsRunner(seg)) return CWD_MSG;
+    const r = commandPosition(seg.argv);
+    const c0 = r.length && !r[0].varCount && !r[0].substCount ? basename(r[0].canon) : '';
+    // WI-21 round 2: eval runs in the CURRENT shell, so a cd inside its payload
+    // moves the cwd for the segments after it. Probe the payload followed by a
+    // git word: a CWD_MSG means the payload left the cwd shifted.
+    if (c0 === 'eval' && !shifted) {
+      let sg = null;
+      try { sg = tokenize(r.slice(1).map(t => t.canon).join(' ') + '\ngit').segments; } catch (e) { sg = null; }
+      if (!sg || cwdShiftMessage(sg, (depth || 0) + 1, reassigned)) shifted = true;
+    }
+    // A shell -c payload or a substitution runs its own command list.
+    if (SHELL_INTERPRETERS_EVAL.has(c0) || c0 === 'eval') {
+      for (const t of r.slice(1)) {
+        if (!/\s/.test(t.canon)) continue;
+        let sg = [];
+        try { sg = tokenize(t.canon).segments; } catch (e) { sg = []; }
+        const m = cwdShiftMessage(sg, (depth || 0) + 1, reassigned);
+        if (m) return m;
+      }
+    }
+    for (const t of seg.argv) {
+      for (const inner of t.substInners || []) {
+        let sg = [];
+        try { sg = tokenize(inner).segments; } catch (e) { sg = []; }
+        const m = cwdShiftMessage(sg, (depth || 0) + 1, reassigned);
+        if (m) return m;
+      }
+    }
+    if (CD_CMDS.has(c0)) {
+      const target = r.slice(1).find(t => t.varCount || t.substCount || !/^-/.test(t.canon) || t.canon === '-');
+      if (!(c0 !== 'popd' && isSameDirWord(target, reassigned))) shifted = c0 === 'popd' || !target || !isProjectRootWord(target, reassigned);
+    }
+  }
+  return null;
+}
+// WI-21 W21-5: an environment assignment in front of a runner or git can load
+// code (NODE_OPTIONS=--require, npm_config_script_shell, GIT_PAGER,
+// GIT_EXTERNAL_DIFF, GIT_DIR, HOME with a planted .gitconfig, PATH ...).
+const ENV_MSG = 'An environment setting (NODE_OPTIONS, npm_config_*, VITEST_*, GIT_*, CAGENTS_*, HOME, PATH, LD_*) is set for git or a test/CI runner. It can load code the agent wrote. Confirm the setting.';
+// WI-21 round 6 L-R5-2: CAGENTS_* overrides (CAGENTS_ADVISORY_DIR,
+// CAGENTS_PROJECT_ROOT) make scripts/ci require() code from a directory.
+const DANGER_ENV_RE = /^(CAGENTS_\w*|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|[Nn][Pp][Mm]_[Cc][Oo][Nn][Ff][Ii][Gg]_\w*|VITEST\w*|VITE_\w*|GIT_\w*|LD_\w*|DYLD_\w*|BASH_ENV|ENV|PATH|HOME|XDG_CONFIG_HOME|SHELLOPTS|BASHOPTS|PS4|PROMPT_COMMAND|PREFIX|EDITOR|VISUAL|PAGER|LESSOPEN|LESSCLOSE|BROWSER|SSH_ASKPASS|IFS|LESS|MANPAGER|MANOPT)$/;
+const EXPORT_CMDS = new Set(['export', 'declare', 'typeset', 'local', 'readonly']);
+// WI-21 round 2 M-2: commands that set a variable without NAME=: read NAME,
+// printf -v NAME, mapfile/readarray NAME, getopts spec NAME. Every bare
+// identifier after them counts as a set name (fail closed).
+const INDIRECT_SETTER_CMDS = new Set(['read', 'printf', 'mapfile', 'readarray', 'getopts']);
+const ENV_ASSIGN_RE = /^([A-Za-z_][A-Za-z0-9_]*)\+?=([\s\S]*)$/;
+const ENV_SOURCE_MSG = 'This command sources a shell file (source / .) or splits an env -S string before git or a test/CI runner. The file can set NODE_OPTIONS, GIT_* or PATH. Confirm the file is trusted.';
+function envPrefixMessage(segments, depth) {
+  if ((depth || 0) > MAX_SHELL_C_DEPTH) return null;
+  const names = [];
+  // WI-21 round 6: names set by an assignment-only segment (`A="$(git ...)"`).
+  // A substitution in that segment runs before the assignment, so only a
+  // runner in ANOTHER segment can see the value.
+  const bareNames = [];
+  let sourced = false;
+  let envSplit = false;
+  const sourceSegs = new Set();
+  const isName = (w) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(w);
+  for (const seg of segments) {
+    const a = skipLeadKeywords(seg.argv);
+    const bare = a.length > 0 && a.every(x => x.litLen > 0 && ENV_ASSIGN_RE.test(x.canon));
+    let k = 0;
+    while (k < a.length) {
+      const t = a[k];
+      const m = ENV_ASSIGN_RE.exec(t.canon);
+      if (m && t.litLen > 0) { if (bare) bareNames.push({ n: m[1], seg }); else names.push(m[1]); k++; continue; }
+      const b = t.varCount || t.substCount ? '' : basename(t.canon);
+      if (b === 'source' || b === '.') { sourced = true; sourceSegs.add(seg); break; }
+      if (b === 'eval') {
+        // eval NAME=x ...: re-read the joined words as a command list.
+        let sg = [];
+        try { sg = tokenize(a.slice(k + 1).map(x => x.canon).join(' ')).segments; } catch (e) { sourced = true; }
+        for (const s2 of sg) for (const x of s2.argv) { const mm = ENV_ASSIGN_RE.exec(x.canon); if (mm) names.push(mm[1]); }
+        if (envPrefixMessage(sg, (depth || 0) + 1)) sourced = true;
+        break;
+      }
+      if (INDIRECT_SETTER_CMDS.has(b)) {
+        for (const x of a.slice(k + 1)) if (!x.varCount && !x.substCount && isName(x.canon)) names.push(x.canon);
+        break;
+      }
+      if (b === 'env' || EXPORT_CMDS.has(b)) {
+        const isEnv = b === 'env';
+        k++;
+        while (k < a.length) {
+          const v = a[k].canon;
+          const mm = ENV_ASSIGN_RE.exec(v);
+          if (mm) { names.push(mm[1]); k++; continue; }
+          if (isEnv && (v === '-u' || v === '--unset')) { if (a[k + 1]) names.push(a[k + 1].canon); k += 2; continue; }
+          if (isEnv && /^--unset=/.test(v)) { names.push(v.slice(8)); k++; continue; }
+          if (isEnv && /^-u./.test(v)) { names.push(v.slice(2)); k++; continue; }
+          if (isEnv && (v === '-S' || v === '--split-string' || /^-S./.test(v) || /^--split-string=/.test(v))) {
+            // env -S 'NAME=x cmd': re-read the split string as a command.
+            const payload = /^-S./.test(v) ? v.slice(2) : /^--split-string=/.test(v) ? v.slice(15) : (a[k + 1] ? a[k + 1].canon : '');
+            const pt = /^-S./.test(v) || /^--split-string=/.test(v) ? a[k] : a[k + 1];
+            let sg = null;
+            if (pt && !pt.varCount && !pt.substCount) { try { sg = tokenize(payload).segments; } catch (e) { sg = null; } }
+            if (!sg || envPrefixMessage(sg, (depth || 0) + 1)) envSplit = true;
+            else for (const s2 of sg) for (const x of s2.argv) { const mm = ENV_ASSIGN_RE.exec(x.canon); if (mm && x.litLen > 0) names.push(mm[1]); }
+            k = a.length; continue;
+          }
+          if (isEnv && (v === '-C' || v === '--chdir')) { k += 2; continue; }
+          if (/^-/.test(v)) { k++; continue; }
+          // export NAME / declare -x NAME: a value-less export of a name set earlier.
+          if (!isEnv && !a[k].varCount && !a[k].substCount && isName(v)) { names.push(v); k++; continue; }
+          break;
+        }
+        continue;
+      }
+      if (WRAPPER_CMDS.has(b)) { k++; continue; }
+      break;
+    }
+  }
+  if (envSplit && segments.some(segMentionsRunner)) return ENV_SOURCE_MSG;
+  // A sourced file affects the segments after it, so the runner word must be
+  // in another segment (`source <(kubectl completion bash)` alone is not one).
+  if (sourced && segments.some(sg => !sourceSegs.has(sg) && segMentionsRunner(sg))) return ENV_SOURCE_MSG;
+  if (bareNames.some(b => DANGER_ENV_RE.test(b.n) && segments.some(sg => sg !== b.seg && segMentionsRunner(sg)))) return ENV_MSG;
+  if (!names.some(n => DANGER_ENV_RE.test(n))) return null;
+  return segments.some(segMentionsRunner) ? ENV_MSG : null;
+}
+// WI-21 round 2 L-1: xargs / parallel append words read from stdin to the
+// command they wrap, so `echo --reporter=./x.mjs | xargs npm test --` hides the
+// runner argument from every argv check. Any of them wrapping git or a test/CI
+// runner asks.
+const XARGS_MSG = 'xargs or parallel adds words read from stdin to git or a test/CI runner, so the guard cannot see the final arguments. Write the arguments out, or confirm.';
+const STDIN_ARGV_CMDS = new Set(['xargs', 'parallel']);
+function xargsRunnerMessage(segments) {
+  for (const seg of segments) {
+    const ix = seg.argv.findIndex(t => !t.varCount && !t.substCount && STDIN_ARGV_CMDS.has(basename(t.canon)));
+    if (ix === -1) continue;
+    if (!segMentionsRunner({ argv: seg.argv.slice(ix + 1) })) continue;
+    // A literal echo/printf producer whose words are plain names (no option,
+    // no ..) adds known words, which the other git checks then see as data.
+    const si = segments.indexOf(seg);
+    const prev = si > 0 && segments[si - 1].op === '|' ? segments[si - 1] : null;
+    const words = prev ? echoWordsOfSeg(prev) : null;
+    if (words !== null && words.split(/\s+/).filter(Boolean).every(w => /^[A-Za-z0-9_.\/:@+][A-Za-z0-9_.\/:@+-]*$/.test(w) && !/(^|\/)\.\.(\/|$)/.test(w))) continue;
+    return XARGS_MSG;
+  }
+  return null;
+}
+function gitHistoryMessage(segments, raw) {
+  // GIT_CONFIG_PARAMETERS / GIT_CONFIG_KEY_n set config (and aliases) from
+  // the environment, which commandPosition() strips as assignments.
+  const envCfg = /(?<![A-Za-z0-9_])GIT_CONFIG_(PARAMETERS|COUNT|KEY_\d+|VALUE_\d+)(?![A-Za-z0-9_])/.test(String(raw || ''));
+  return scanSegments(segments, (r) => {
+    if (envCfg && r.length && basename(r[0].canon) === 'git') return GIT_ALIAS_MSG;
+    return gitArgvMessage(r);
+  });
+}
+
+// W4: `find ... -delete` or `-exec rm` asks unless every search root is a temp
+// path. A protected root already denies in checkDisabledList. A temp root is a
+// literal path under /tmp/ (not /tmp itself, no `..`), a literal path under the
+// hook's TMPDIR, or a variable that buildTempAssignMap proves is a mktemp
+// path. No root means `.`, which is not a temp path.
+const FIND_DELETE_CMDS = new Set(['rm', 'rmdir', 'unlink', 'shred', 'srm', 'wipe']);
+function isTempLiteralPath(p) {
+  const s = String(p || '');
+  if (/(^|\/)\.\.(\/|$)/.test(s)) return false;
+  if (/^\/tmp\/[^/]/.test(s)) return true;
+  const envTmp = process.env.TMPDIR;
+  if (envTmp && envTmp.length > 1 && PATH_SAFE_RE.test(envTmp)) {
+    const base = envTmp.replace(/\/+$/, '');
+    if (base.length > 1 && s.startsWith(base + '/') && s.length > base.length + 1) return true;
+  }
+  return false;
+}
+const FIND_CODE_INTERPRETERS = /^(perl|python[0-9.]*|ruby|node|nodejs|php|lua|tclsh|awk|gawk)$/;
+function findArgvDeletes(rest) {
+  for (let k = 0; k < rest.length; k++) {
+    const v = rest[k].canon;
+    if (v === '-delete') return true;
+    if (!FIND_EXEC_FLAGS.has(v)) continue;
+    const run = resolveEffectiveCommand(rest.slice(k + 1));
+    if (!run.length) continue;
+    const r0 = run[0];
+    if (r0.varCount || r0.substCount) return true;
+    const b = basename(r0.canon);
+    if (FIND_DELETE_CMDS.has(b)) return true;
+    // An interpreter can unlink files from its own code.
+    if (FIND_CODE_INTERPRETERS.test(b)) return true;
+    if (SHELL_INTERPRETERS_EVAL.has(b)) {
+      // A variable or substituted payload is unknown, so it counts as a delete.
+      if (run.some(t => t.varCount > 0 || t.substCount > 0)) return true;
+      if (run.some(t => /\b(rm|rmdir|unlink|shred)\b/.test(t.canon))) return true;
+    }
+  }
+  return false;
+}
+function findDeleteMessage(segments, temp, raw) {
+  return scanSegments(segments, (argv, si) => {
+    if (!argv.length || argv[0].varCount || argv[0].substCount || basename(argv[0].canon) !== 'find') return null;
+    const rest = argv.slice(1);
+    if (!findArgvDeletes(rest)) return null;
+    let k = 0;
+    let follows = false;
+    while (k < rest.length) {
+      const v = rest[k].canon;
+      // -L and -H follow symlinks, which can lead out of a temp root.
+      if (v === '-L' || v === '-H') { follows = true; k++; continue; }
+      if (/^-(P|O\d)$/.test(v)) { k++; continue; }
+      if (v === '-D') { k += 2; continue; }
+      break;
+    }
+    const roots = [];
+    for (; k < rest.length; k++) {
+      const t = rest[k];
+      if (t.litLen > 0 && t.varCount === 0 && t.substCount === 0 && /^[-(!,)]/.test(t.canon)) break;
+      roots.push(t);
+    }
+    if (rest.some(t => t.canon === '-follow')) follows = true;
+    // A trailing slash makes find follow a root that is a symlink.
+    const allTemp = !follows && roots.length > 0 && roots.every(t =>
+      isTempVarToken(t, si, segments, temp, raw) ||
+      (t.litLen > 0 && t.varCount === 0 && t.substCount === 0 && !/\/$/.test(t.canon) && isTempLiteralPath(t.canon)));
+    if (allTemp) return null;
+    return 'find -delete / -exec rm removes every match under the search root (' +
+      (roots.length ? roots.map(t => t.canon || '$var').join(' ') : '.') +
+      '). Run the same find with -print first to check the matches.';
+  });
+}
+
+// Single-quote a word for re-evaluation (the evaluator re-tokenizes it).
+function shq(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
+
+// H2/REV1: a literal whose first word runs a string, a file or its own argv as
+// code, or wraps another command, is never resolved: `C=eval; $C "..."`,
+// `C=source; $C f`, `C=xargs; ... | $C rm -rf`, `C=taskset; $C 1 reboot` keep
+// the variable-indirection ask. Sets are read at call time (ARGV_EXEC_CMDS is
+// defined further down).
+const UNRESOLVABLE_EXTRA = new Set(['exec', 'command', 'builtin', 'xargs', 'find', 'sudo', 'doas', 'su', 'pkexec',
+  'nohup', 'time', 'env', 'trap', 'coproc']);
+function isUnresolvableWord(w) {
+  const b = basename(w);
+  return VAR_WRITER_CMDS.has(w) || VAR_WRITER_CMDS.has(b) || UNRESOLVABLE_EXTRA.has(b) || WRAPPER_CMDS.has(b) ||
+    ARGV_EXEC_CMDS.has(b);
+}
+
+function checkVariableExpansion(segments, depth, raw) {
+  let ask = null;
+  // Loose map (NAME -> last literal, command order), used ONLY to DENY a
+  // recursive delete whose variable target held a protected path. A stale or
+  // rebound entry here can only make the guard stricter.
+  const assign = new Map();
+  // Strict map (S2a), used for every decision that SKIPS an ask.
+  const literal = buildLiteralAssignMap(segments, String(raw || ''));
+  // H5: mktemp-assigned variables, used only to skip the unknown-target ask.
+  const temp = buildTempAssignMap(segments, String(raw || ''));
+  const splices = [];
+  for (let si = 0; si < segments.length; si++) {
+    const seg = segments[si];
     if (!seg.argv.length) continue;
     for (const t of seg.argv) {
       const m = (t.litLen > 0 && t.varCount === 0 && t.substCount === 0) && INLINE_ASSIGN_RE.exec(t.canon);
       if (!m) break;               // assignments only ever PREFIX a segment
       assign.set(m[1], m[2]);
     }
-    const ft = seg.argv[0];
+    const argv = commandPosition(seg.argv);
+    if (!argv.length) continue;
+    const ft = argv[0];
     if (isPureVar(ft)) {
-      const rest = seg.argv.slice(1);
+      const rest = argv.slice(1);
       if (isVisiblyDestructiveArgv(rest)) {
         return D('variable in command position with a destructive argv (canonicalizes to a destructive command)');
+      }
+      // H2: a variable assigned a FULLY literal value earlier in the same
+      // command string is not hidden - substitute it and judge the real
+      // command. The value is word-split exactly like an unquoted expansion
+      // (no re-parse of quotes/operators/comments), each word re-quoted.
+      // H2/REV1: the resolved words are spliced into the WHOLE command string
+      // at this token's span and the rebuilt string is judged once (after the
+      // loop), so pipe, download-exec, egress and consumer checks see the real
+      // command (`C=bash; curl x | $C` denies like `curl x | bash`).
+      const vname = (ft.varNames && ft.varNames[0]) || '';
+      const entry = vname ? literal.get(vname) : null;
+      const restLiteral = rest.every(t => t.varCount === 0 && t.substCount === 0);
+      const words = entry ? entry.value.split(/[ \t\n]+/).filter(Boolean) : [];
+      if (entry && entry.idx < si && restLiteral && Number.isInteger(ft.start) && Number.isInteger(ft.end) &&
+          !(words.length && isUnresolvableWord(words[0]))) {
+        splices.push({ start: ft.start, end: ft.end, text: words.map(shq).join(' ') });
+        continue;
       }
       ask = ask || A('a variable is executed as a command (variable-indirection); its contents are not statically visible');
     } else {
       const cmd = basename(ft.canon);
-      if (isDestructiveFileCmd(cmd) && hasRecursiveForce(seg.argv)) {
+      if (isDestructiveFileCmd(cmd) && hasRecursiveForce(argv)) {
         let unknownTarget = false;
-        for (const t of seg.argv.slice(1)) {
+        for (const t of argv.slice(1)) {
           if (isCmdSubstPosition(t)) { unknownTarget = true; continue; }
           if (!isPureVar(t)) continue;
           // Constant propagation: `S=/tmp/scratch; rm -rf $S` IS statically
           // resolvable — the value was assigned a literal earlier in the same
           // command string, so judge the REAL path instead of asking blindly.
-          // This is sharper in BOTH directions: a variable holding a protected
-          // path now DENIES (it previously only asked), and one holding an
-          // ordinary scratch path stops prompting. A variable assigned anywhere
-          // else (the environment, an earlier Bash call) stays unknown.
+          // A protected path in the loose map DENIES; the ask is skipped only
+          // when the strict map (S2a) proves the value at this point.
           const name = (t.varNames && t.varNames[0]) || '';
-          if (!name || !assign.has(name)) { unknownTarget = true; continue; }
-          const val = assign.get(name);
-          if (isDangerousPath(val)) return D('recursive/forced delete of a protected path (' + name + '=' + val + ')');
+          if (name && assign.has(name) && isDangerousPath(assign.get(name))) {
+            return D('recursive/forced delete of a protected path (' + name + '=' + assign.get(name) + ')');
+          }
+          // H5: a mktemp-assigned variable is a fresh temp path.
+          if (isTempVarToken(t, si, segments, temp, raw)) continue;
+          const entry = name ? literal.get(name) : null;
+          if (!entry || entry.idx >= si) { unknownTarget = true; continue; }
+          if (isDangerousPath(entry.value)) return D('recursive/forced delete of a protected path (' + name + '=' + entry.value + ')');
         }
         if (unknownTarget) ask = ask || A('recursive/forced delete with a variable/substitution target (path unknown at analysis time)');
       }
     }
   }
+  if (splices.length && typeof raw === 'string') {
+    let rebuilt = raw;
+    for (const sp of splices.sort((a, b) => b.start - a.start)) {
+      rebuilt = rebuilt.slice(0, sp.start) + sp.text + rebuilt.slice(sp.end);
+    }
+    // WI-20 N7: quoting can grow the text past MAX_LEN; keep the plain ask
+    // instead of a length deny.
+    if (rebuilt.length > MAX_LEN) {
+      ask = ask || A('a variable is executed as a command (variable-indirection); its contents are not statically visible');
+    } else {
+      const v = evaluateInternal(rebuilt, depth + 1);   // S2b: real depth
+      if (v && v.kind === 'deny') return v;
+      if (v && v.kind === 'ask') ask = ask || v;
+    }
+  }
   return ask;
 }
 
+// WI-20 REV2 R5/R6: the -c payload of a shell argv. bash takes a short-option
+// cluster containing c (-c, -ec, -xc, -lc) anywhere among its leading options,
+// and the command string is the first non-option word after them
+// (`bash -c -e 'cmd'`, `bash -e -c 'cmd'`). -o / +o and the rc-file options
+// consume a value. Returns { token } when -c is present (token may be null).
+const SHELL_OPT_WITH_ARG = new Set(['-o', '+o', '-O', '+O', '--rcfile', '--init-file']);
+function shellCPayload(rrest) {
+  let seenC = false;
+  for (let k = 0; k < rrest.length; k++) {
+    const t = rrest[k], v = t.canon;
+    // REV4 R3-1: a variable/substitution word in option position may expand to
+    // -c or to an option that takes a value. The parse is ambiguous: fail closed.
+    if (t.varCount || t.substCount) return shellCFallback(rrest, k, seenC);
+    // REV4 R3-3: a lone `-` ends the options, like `--`.
+    if (v === '--' || v === '-') return seenC ? { tokens: rrest[k + 1] ? [rrest[k + 1]] : [] } : null;
+    if (SHELL_OPT_WITH_ARG.has(v)) { k++; continue; }
+    if (/^[-+][A-Za-z]+$/.test(v)) {
+      if (v[0] === '-' && v.includes('c')) seenC = true;
+      // REV3 R2-1: each o / O in a cluster (-eo, -euxo, -co, -Oc) takes the next word as its value.
+      k += (v.match(/[oO]/g) || []).length;
+      continue;
+    }
+    if (/^--[A-Za-z-]+$/.test(v)) continue;
+    if (/^[-+]/.test(v)) return shellCFallback(rrest, k, seenC);   // REV4: unclassifiable option word
+    return seenC ? { tokens: [t] } : null;
+  }
+  return seenC ? { tokens: [] } : null;
+}
+// REV4 R3-1: every later word that does not look like an option, plus the word
+// after any -c cluster wherever it sits, is a candidate payload and is judged.
+function shellCFallback(rrest, k, seenC) {
+  const cand = new Set();
+  for (let j = 0; j < rrest.length; j++) {
+    const v = rrest[j].canon;
+    if (/^-[A-Za-z]*c[A-Za-z]*$/.test(v) && rrest[j + 1]) { seenC = true; cand.add(rrest[j + 1]); }
+    if (j > k && (rrest[j].varCount || rrest[j].substCount || !/^[-+]/.test(v))) cand.add(rrest[j]);
+  }
+  return { tokens: [...cand], ambiguous: true };
+}
+// WI-20 REV2 R3/R4/R8: the code an `eval` runs, with a leading run of `eval`
+// words and `--` collapsed so a long eval chain is judged once (linear).
+function evalCodeOf(args) {
+  let k = 0;
+  while (k < args.length && !args[k].varCount && !args[k].substCount && (args[k].canon === 'eval' || args[k].canon === '--')) k++;
+  const rest = args.slice(k);
+  if (!rest.length || rest.some(t => t.varCount > 0 || t.substCount > 0)) return null;
+  return rest.map(t => t.canon).join(' ');
+}
+
+// WI-20 REV3 R2-3: fail closed on process substitution. When the command line
+// has a <(...) / >(...) AND any segment runs a shell, source/., an interpreter,
+// or `exec` with a redirect, the substitution may be fed to it as code through
+// any fd route (`bash < <(..)`, `bash 0<&3 3< <(..)`, `exec < <(..); sh`). Each
+// substitution is then judged as a script, as `bash <(...)` is: a curl/wget
+// inner denies, and a literal echo/printf output is evaluated. An unresolvable
+// producer (`source <(kubectl completion bash)`) keeps its verdict.
+function procSubstScriptVerdict(segments, depth) {
+  const ps = [];
+  for (const seg of segments) {
+    for (const t of seg.argv) if (t.procSubst) ps.push(t);
+    for (const r of seg.redirects) if (r.target && r.target.procSubst) ps.push(r.target);
+  }
+  if (!ps.length) return null;
+  const runsCode = segments.some(seg => {
+    const r = commandPosition(seg.argv);
+    const c0 = r.length ? basename(r[0].canon) : '';
+    if (SHELL_INTERPRETERS_EVAL.has(c0) || c0 === 'source' || c0 === '.' || isInterpreter(c0)) return true;
+    const a = skipLeadKeywords(seg.argv);
+    return a.length > 0 && a[0].canon === 'exec' && seg.redirects.length > 0;
+  });
+  if (!runsCode) return null;
+  let ask = null;
+  for (const t of ps) {
+    const inner = t.substInners[0] || '';
+    if (/\b(curl|wget)\b/.test(inner)) return D('download-then-execute (a fetched script is run by a shell through a process substitution)');
+    const texts = producedScripts(inner, 0);
+    if (texts === null) { ask = ask || A('process-substitution producers nest too deep for the guard to analyze'); continue; }
+    for (const text of texts) {
+      if (/\b(curl|wget)\b/.test(text)) return D('download-then-execute (a fetched script is run by a shell through a process substitution)');
+      const v = evaluateInternal(text, depth + 1);
+      if (v && v.kind === 'deny') return D('process-substitution script is destructive: ' + (v.reason || ''));
+      if (v && v.kind === 'ask') ask = ask || A('process-substitution script requires confirmation: ' + (v.reason || ''));
+    }
+  }
+  return ask;
+}
+// REV4 R3-2: the script text a producer can emit. A literal echo/printf emits
+// its words (one text per echo segment). Any producer that nests a <(...),
+// $(...) or `...` (cat/tac/sed/head ... of a substitution, echo $(echo X)) is
+// recursed to its innermost producers. Anything else emits nothing judgeable;
+// its own commands are still judged by checkCommandSubstitution as before
+// WI-20. null = nested past MAX_SUBST_DEPTH.
+function producedScripts(inner, n) {
+  if (n > MAX_SUBST_DEPTH) return null;
+  const one = echoOutputOf(inner);
+  if (one !== null) return [one];
+  let segs;
+  try { segs = tokenize(inner).segments; } catch (e) { return []; }
+  const out = [];
+  for (const seg of segs) {
+    const w = echoWordsOfSeg(seg);
+    if (w !== null) out.push(w);
+    const toks = seg.argv.concat(seg.redirects.map(r => r.target).filter(Boolean));
+    for (const t of toks) {
+      for (const si of (t.substInners || [])) {
+        const sub = producedScripts(si, n + 1);
+        if (sub === null) return null;
+        out.push(...sub);
+      }
+    }
+  }
+  return out;
+}
+
 // ── Component 3: command-substitution recursion ─────────────────────────────
+// WI-20 G3: the words a plain `echo`/`printf %s` of literal words prints, or null.
+function echoOutputOf(inner) {
+  let segs;
+  try { segs = tokenize(inner).segments; } catch (e) { return null; }
+  if (segs.length !== 1) return null;
+  return echoWordsOfSeg(segs[0]);
+}
+function echoWordsOfSeg(seg) {
+  const a = seg.argv;
+  if (!a.length || !/^(echo|printf)$/.test(a[0].canon) || a.some(t => t.varCount || t.substCount)) return null;
+  let words = a.slice(1).map(t => t.canon);
+  if (a[0].canon === 'echo') while (words.length && /^-[neE]+$/.test(words[0])) words.shift();
+  else if (words[0] === '%s' || words[0] === '%s\\n') words = words.slice(1);
+  else if (words.length === 1 && !/[%\\]/.test(words[0])) { /* printf FORMAT with no % or escape prints it */ }
+  else return null;
+  return words.join(' ');
+}
 function checkCommandSubstitution(segments, depth) {
   let ask = null;
   for (const seg of segments) {
-    if (seg.argv.length) {
-      const ft = seg.argv[0];
-      if (isCmdSubstPosition(ft) && isVisiblyDestructiveArgv(seg.argv.slice(1))) {
+    const head = skipLeadKeywords(seg.argv);
+    if (head.length) {
+      const ft = head[0];
+      if (isCmdSubstPosition(ft) && isVisiblyDestructiveArgv(head.slice(1))) {
         return D('command name computed by a substitution with a destructive argv');
+      }
+      // WI-20 G3: `$(echo CMD ARGS)` in command position runs CMD ARGS.
+      if (isCmdSubstPosition(ft) && ft.substInners.length === 1) {
+        const out = echoOutputOf(ft.substInners[0]);
+        if (out !== null) {
+          const v = evaluateInternal(out + (head.length > 1 ? ' ' + head.slice(1).map(t => shq(t.canon)).join(' ') : ''), depth + 1);
+          if (v && v.kind === 'deny') return D('command computed by a substitution is destructive: ' + (v.reason || ''));
+          if (v && v.kind === 'ask') ask = ask || A('command computed by a substitution requires confirmation: ' + (v.reason || ''));
+        }
+      }
+    }
+    // WI-20 G3: bash expands $(...) and `...` in an UNQUOTED heredoc body.
+    for (const hd of (seg.heredocs || [])) {
+      if (hd.quoted) continue;
+      for (const inner of substInnersOf(hd.body)) {
+        const v = evaluateInternal(inner, depth + 1);
+        if (v && v.kind === 'deny') return D('heredoc body substitution is destructive: ' + (v.reason || ''));
+        if (v && v.kind === 'ask') ask = ask || A('heredoc body substitution requires confirmation');
       }
     }
     const tokens = seg.argv.concat(seg.redirects.map(r => r.target).filter(Boolean));
@@ -742,6 +2099,203 @@ function findGroupProducer(segments, closeIdx) {
   }
   return null;
 }
+// H3: `producer | python3 -c '<literal program>'` (or node -e/-p) runs a
+// VISIBLE program; the piped stdin is data, not code. H3/REV2: this is an
+// ALLOWLIST. Only python* and node/nodejs qualify (perl, ruby and every other
+// interpreter always keep the pipe ask), and the program must pass
+// pythonProgramIsData / nodeProgramIsData below. DYNAMIC_CODE_RE stays as an
+// extra rejection layer on top of the allowlist.
+const PY_INLINE = ['-c'];
+const NODE_INLINE = ['-e', '-p', '--eval', '--print'];
+function inlineFlagsFor(cmd) {
+  if (/^python[23]?(\.\d+)?$/.test(cmd)) return PY_INLINE;
+  if (cmd === 'node' || cmd === 'nodejs') return NODE_INLINE;
+  return null;
+}
+// Python: every imported module (root name) must be in this set.
+const PY_IMPORT_OK = new Set(['json', 'sys', 're', 'csv', 'collections', 'itertools', 'functools', 'math',
+  'statistics', 'datetime', 'textwrap', 'pprint', 'string', 'operator', 'decimal', 'fractions', 'uuid']);
+// Python names that reach code, files, frames or other modules from an
+// allowed module (uuid.os, re.enum.builtins, sys._getframe, attrgetter ...).
+const PY_REJECT_RE = new RegExp([
+  '__', '\\bmodules\\b', '\\[\\s*:\\s*:', '\\.\\s*_',
+  'exec', 'eval', 'compile', 'system', 'popen', 'spawn',
+  '\\b\\w*attr(getter)?\\b', '\\bmethodcaller\\b', '\\bvars\\b', '\\bglobals\\b', '\\blocals\\b',
+  '\\bopen\\s*\\(', '\\bhelp\\s*\\(', '\\blicense\\s*\\(', '\\bget_field\\b', '\\bget_value\\b', '\\bFormatter\\b',
+  '\\b(os|posix|nt|posixpath|ntpath|genericpath|builtins|copyreg|types|monitoring|subprocess|shutil|io|pathlib)\\b',
+  '\\b(tb|f|gi|cr|ag)_\\w+', 'traceback', '\\bsettrace\\b', '\\bsetprofile\\b',
+  // H3/REV3: hook callables, bare open, callable-taking builtins, callback
+  // keyword args and builtin aliasing (f=open; f(...)) keep the ask.
+  'breakpoint\\w*', '\\bopen\\b', '\\b(map|filter)\\s*\\(',
+  '\\b(object_hook|object_pairs_hook|parse_float|parse_int|parse_constant|cls)\\s*=',
+  '=\\s*(open|print|exec|eval|__import__|getattr|compile)\\b', '\\bsys\\s+as\\b'
+].join('|'));
+// H3/REV3: the only sys members a data program may touch.
+const PY_SYS_OK = new Set(['stdin', 'stdout', 'stderr', 'argv', 'exit', 'maxsize']);
+function pythonProgramIsData(p) {
+  if (PY_REJECT_RE.test(p)) return false;
+  let rest = p;
+  // from M import a, b  (M must be allowed; names must not be private)
+  const fromRe = /\bfrom\s+([\w.]+)\s+import\s+(\(?[\w\s,]+\)?)/g;
+  let m;
+  while ((m = fromRe.exec(p)) !== null) {
+    if (!PY_IMPORT_OK.has(m[1].split('.')[0])) return false;
+    if (m[2].split(/[\s,()]+/).some(n => n.startsWith('_'))) return false;
+    if (m[1] === 'sys' && m[2].split(/[\s,()]+/).some(n => n && !PY_SYS_OK.has(n))) return false;
+  }
+  rest = rest.replace(fromRe, ' ');
+  // import a, b.c as x
+  const impRe = /\bimport\s+([A-Za-z_][\w.]*(?:\s+as\s+\w+)?(?:\s*,\s*[A-Za-z_][\w.]*(?:\s+as\s+\w+)?)*)/g;
+  while ((m = impRe.exec(rest)) !== null) {
+    for (const part of m[1].split(',')) {
+      if (!PY_IMPORT_OK.has(part.trim().split(/\s+/)[0].split('.')[0])) return false;
+    }
+  }
+  rest = rest.replace(impRe, ' ');
+  // H3/REV3: every remaining `sys` is sys.<allowed member> (no alias, no
+  // sys.breakpointhook / sys.path.insert).
+  const sysAll = (rest.match(/\bsys\b/g) || []).length;
+  const sysOk = (rest.match(/\bsys\s*\.\s*\w+/g) || [])
+    .filter(x => PY_SYS_OK.has(x.replace(/^sys\s*\.\s*/, ''))).length;
+  if (sysAll !== sysOk) return false;
+  // Any import word the two forms above did not account for (from . import,
+  // import inside a string, odd syntax) keeps the ask.
+  return !/\bimport\b/.test(rest);
+}
+// Node: require() targets must be one of these literal module names.
+const NODE_REQUIRE_OK = new Set(['fs', 'path', 'util', 'readline']);
+const NODE_PROCESS_OK = new Set(['stdin', 'stdout', 'stderr', 'argv', 'exit', 'exitCode', 'env']);
+const NODE_REJECT_RE = new RegExp([
+  '__', '\\.\\s*_', '\\bmainModule\\b', '\\b_load\\b', '\\bmodule\\b', '\\bglobal\\b', '\\bglobalThis\\b',
+  '\\bconstructor\\b', '\\bFunction\\b', '\\beval\\b', '\\bimport\\b', '\\barguments\\b', '\\bprototype\\b',
+  '\\b(fetch|WebSocket|EventSource|XMLHttpRequest|Worker|SharedWorker|navigator|Proxy|Reflect)\\b',
+  // fs writes and file mutation (process.stdout/stderr.write is stripped first)
+  // H3/REV3: property-walk and bulk-copy reflection, and string joins (built keys)
+  '\\b(getOwnPropertyDescriptor\\w*|getPrototypeOf|setPrototypeOf|defineProperty\\w*)\\b',
+  '\\bObject\\s*\\.\\s*(entries|values|fromEntries|assign)\\b', '\\.\\s*join\\s*\\(',
+  '\\b(write\\w*|append\\w*|open\\w*|rm|rmSync|rmdir\\w*|unlink\\w*|rename\\w*|copyFile\\w*|cp|cpSync|symlink\\w*|link|linkSync|chmod\\w*|chown\\w*|lchown\\w*|lutimes\\w*|truncate\\w*|ftruncate\\w*|mkdir\\w*|mkdtemp\\w*|utimes\\w*|futimes\\w*|promises|createWriteStream)\\b'
+].join('|'));
+// H3/REV3: require('fs') is used only as require('fs').<read member> or bound
+// once by `const|let|var NAME = require('fs')` with every later NAME being
+// NAME.<read member>. Destructuring, spreading, passing fs as an argument or
+// Object.entries(fs) keeps the ask.
+const NODE_FS_OK = new Set(['readFileSync', 'existsSync', 'readdirSync', 'statSync', 'lstatSync']);
+function nodeFsUseIsReadOnly(q) {
+  const reqFs = /\brequire\s*\(\s*(['"])(?:node:)?fs\1\s*\)/g;
+  const names = [];
+  let m;
+  while ((m = reqFs.exec(q)) !== null) {
+    const before = q.slice(0, m.index);
+    const after = q.slice(m.index + m[0].length);
+    const bind = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*$/.exec(before);
+    if (bind) { names.push(bind[1]); continue; }
+    const mem = /^\s*\.\s*(\w+)/.exec(after);
+    if (!mem || !NODE_FS_OK.has(mem[1])) return false;
+  }
+  const q2 = q.replace(reqFs, 'require()');   // the 'fs' literal is not a use
+  for (const n of names) {
+    const esc = n.replace(/\$/g, '\\$');
+    const all = (q2.match(new RegExp('(?<![\\w$.])' + esc + '(?![\\w$])', 'g')) || []).length;
+    const ok = (q2.match(new RegExp('(?<![\\w$.])' + esc + '\\s*\\.\\s*(\\w+)', 'g')) || [])
+      .filter(x => NODE_FS_OK.has(x.replace(/^.*\.\s*/, ''))).length;
+    if (all - 1 !== ok) return false;     // -1: the declaration itself
+  }
+  return true;
+}
+function nodeProgramIsData(p) {
+  const q = p.replace(/\bprocess\s*\.\s*std(out|err)\s*\.\s*write\b/g, 'process.stdout');
+  if (NODE_REJECT_RE.test(q)) return false;
+  // every require is require('<allowed literal>')
+  const reqAll = (q.match(/\brequire\b/g) || []).length;
+  const reqOk = (q.match(/\brequire\s*\(\s*(['"])(?:node:)?([\w]+)\1\s*\)/g) || [])
+    .filter(r => NODE_REQUIRE_OK.has(r.replace(/^require\s*\(\s*['"](?:node:)?|['"]\s*\)$/g, ''))).length;
+  if (reqAll !== reqOk) return false;
+  if (!nodeFsUseIsReadOnly(q)) return false;
+  // every `process` is process.<allowed member>
+  const procAll = (q.match(/\bprocess\b/g) || []).length;
+  let procOk = 0;
+  const procRe = /\bprocess\s*\.\s*(\w+)/g;
+  let m;
+  while ((m = procRe.exec(q)) !== null) { if (NODE_PROCESS_OK.has(m[1])) procOk++; }
+  if (procAll !== procOk) return false;
+  // computed member access: x[...] / x?.[...] only with a number or a single
+  // plain string literal as the key. A computed key from a variable or an
+  // expression ([k], ["a"+"b"], [s.join('')]) keeps the ask: stdin-supplied
+  // keys can walk to constructor/Function.
+  const memRe = /([\w$)\]]\s*|\?\.)\[([^\]]*)\]/g;
+  while ((m = memRe.exec(q)) !== null) {
+    const key = m[2].trim();
+    if (!/^(\d+|'[^'\\+]*'|"[^"\\+]*")$/.test(key)) return false;
+  }
+  return true;
+}
+// S3a: a program that can run other code or other processes keeps the ask.
+// The list covers the exec/spawn/popen families, dynamic import and load
+// helpers, reflection that can reach a blocked name, string-built names and
+// encoded payloads, and the Perl/Ruby command-quote forms.
+const DYNAMIC_CODE_RE = new RegExp([
+  '\\b(exec\\w*|eval\\w*|compile\\w*|__import__|system|\\w*popen\\w*|subprocess|\\w*spawn\\w*|child_process|Function|pty|socket|fork\\w*)\\b',
+  '\\brequire\\s*\\(\\s*([^\'"\\s]|[\'"](vm|v8|worker_threads|module|inspector|cluster|net|dgram|tls|http2?|https)[\'"])',
+  '\\b(importlib|runpy|ctypes|cffi|marshal|pickle|cPickle|dill|shelve|codeop|InteractiveConsole|builtins|__builtins__|getattr|setattr|globals|locals|os\\.dup2)\\b|\\bvars\\s*\\(',
+  '\\b(binding|dlopen|Worker|Reflect|constructor|globalThis|send|__send__|public_send|const_get|instance_eval|class_eval|module_eval|instance_variable_get)\\b',
+  '\\bimport\\s*\\(',                         // JS dynamic import()
+  '`',                                        // Perl/Ruby/JS backtick command or template
+  '\\bqx\\s*\\W', '%x\\s*\\W',                // Perl qx//, Ruby %x()
+  '\\bopen\\b[^;]*[\'"]\\s*-?\\|',            // Perl/Ruby open() of a pipe
+  '[\'"]\\s*[+.]\\s*[\'"]',                   // string-built name: 'sy'+'stem', "sys"."tem"
+  '\\b(chr|fromCharCode|b64decode|a85decode|unhexlify|fromhex|atob|rot13)\\b',
+  '\\\\x[0-9a-fA-F]{2}|\\\\u[0-9a-fA-F]{4}|\\\\[0-7]{3}',  // escaped bytes in the program
+  // H3/REV1: programs that read stdin AS CODE (REPLs, debuggers, the code
+  // module, a load of /dev/stdin) and file-write APIs (the piped data lands in
+  // a file) keep the ask.
+  '\\b(code|pdb|repl|breakpoint|runsource|runcode|set_trace|Interactive\\w*)\\b',
+  '/dev/stdin|/dev/fd/\\d|/proc/self/fd/\\d|\\bSTDIN\\b|\\$stdin\\b',
+  '\\bdo\\s*\\(?\\s*[\'"$]',                                       // Perl do FILE
+  '\\b(load|require|require_relative)\\s*\\(?\\s*([\'"]\\s*[./~]|[$@A-Z])',  // Ruby/Perl load of a path
+  '\\bopen\\s*\\([^)]*,\\s*[\'"][^\'"]*[wax+]',                     // open(path, "w"|"a"|"x"|"+")
+  '\\b(write\\w*Sync|append\\w*|write_text|write_bytes|createWriteStream|writeFile|syswrite)\\b|\\b(IO|File)\\.write\\b'
+].join('|'));
+// S3b: flags that make the interpreter read stdin AS CODE after the program.
+function hasInteractiveFlag(cmd, argv) {
+  return argv.slice(1).some(t => {
+    const v = t.canon;
+    if (v === '-i' || v === '--interactive') return true;
+    // python combined short flags (-ic, -Bi, -iB ...)
+    return /^python/.test(cmd) && /^-[A-Za-z]*i[A-Za-z]*$/.test(v);
+  });
+}
+function inlineProgramIsData(seg) {
+  const argv = seg.argv;
+  const cmd = basename(argv[0].canon);
+  const flags = inlineFlagsFor(cmd);
+  if (!flags) return false;
+  const isData = flags === PY_INLINE ? pythonProgramIsData : nodeProgramIsData;
+  if (hasInteractiveFlag(cmd, argv)) return false;
+  // H3/REV3: argv is EXACTLY [interpreter, program-flag, program]. Any other
+  // token (`-`, `-m code`, `--require x`, a trailing `--inspect`) keeps the ask.
+  // The one exception is the fd number of a redirect (`2>&1`), which the
+  // tokenizer leaves as a trailing argv word.
+  const fdWord = argv.length === 4 && seg.redirects && seg.redirects.length > 0 &&
+    /^\d$/.test(argv[3].canon) && !argv[3].varCount && !argv[3].substCount;
+  if ((argv.length !== 3 && !fdWord) || !flags.includes(argv[1].canon)) return false;
+  let found = false;
+  // Every program flag counts (`perl -e A -e B` runs both). S3c: the fields
+  // below are the tokenizer's own (canon, varCount, substCount; see tokenize()).
+  for (let k = 1; k < argv.length - 1; k++) {
+    if (!flags.includes(argv[k].canon)) continue;
+    const p = argv[k + 1];
+    if (!p || p.varCount || p.substCount) return false;
+    if (DYNAMIC_CODE_RE.test(p.canon)) return false;
+    // WI-20 F1: Python NFKC-folds fullwidth identifiers (ｅｘｅｃ runs exec) and
+    // JS reads \u{65} / \u0065 in identifiers, so the ASCII allowlist below
+    // cannot see them. Any non-ASCII character or \u \U \x \N{ keeps the ask.
+    if (/[^\x00-\x7f]|\\[uUxN]/.test(p.canon)) return false;
+    if (!isData(p.canon)) return false;     // H3/REV2 allowlist gate
+    found = true;
+    k++;
+  }
+  return found;
+}
 function checkPipeDestination(segments) {
   let ask = null;
   // Consumer-driven scan: for every interpreter sink, resolve the producer that
@@ -750,8 +2304,15 @@ function checkPipeDestination(segments) {
   for (let j = 1; j < segments.length; j++) {
     const consumer = segments[j];
     if (!consumer.argv.length) continue;
-    const cCmd = basename(consumer.argv[0].canon);
+    // H3/REV3: judge the consumer past assignment prefixes and wrappers
+    // (`PYTHONSTARTUP=x python3`, `env node`); such a prefix also disqualifies
+    // the inline-program allowance below.
+    const cArgv = stripGroupingTokens(consumer.argv);
+    const cRes = resolveEffectiveCommand(cArgv);
+    if (!cRes.length) continue;
+    const cCmd = basename(cRes[0].canon);
     if (!isInterpreter(cCmd)) continue;
+    const cBare = cRes.length === consumer.argv.length;
 
     const prev = segments[j - 1];
     let producer = null;
@@ -775,6 +2336,7 @@ function checkPipeDestination(segments) {
     if (isDecoderSegment(producer) || isFetchSegment(producer)) {
       return D('decoder/fetch piped into an interpreter (obfuscated code execution)');
     }
+    if (knownPipe && cBare && inlineProgramIsData(consumer)) continue;   // H3
     if (knownPipe) {
       ask = ask || A('output piped into an interpreter (' + cCmd + '); confirm the input is trusted');
     }
@@ -796,19 +2358,20 @@ const DENY_CANON = [
   /\bwget\b.*(--post-file|--post-data|--body-file|--body-data)/
 ];
 
+// K1/W1: git push is judged on the git segment's argv by gitHistoryMessage(),
+// not by a regex over the whole string (which fired on `grep "git push --force"`
+// data and missed `-f`, `+refspec`, `--mirror`, `--delete`).
 const ASK_CANON = [
-  { re: /git push\b.*--force(?![\w-])/, msg: 'Force push may cause data loss. Consider --force-with-lease.' },
   { re: /git reset --hard\b/, msg: 'Hard reset discards uncommitted changes. Consider git stash or --soft first.' },
   { re: /git\s+clean\b.*-\w*f\w*d|git\s+clean\b.*-\w*d\w*f/, msg: 'git clean -fd removes untracked files. Consider git clean -n to preview.' },
-  { re: /\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i, msg: 'DROP permanently destroys data. Consider renaming or backing up first.' },
-  { re: /\bTRUNCATE\s+TABLE\b/i, msg: 'TRUNCATE removes all rows irrecoverably. Consider DELETE ... WHERE or a backup first.' },
-  { re: /\bDELETE\s+FROM\b(?!\s.*\bWHERE\b)/is, msg: 'DELETE FROM without WHERE removes all rows. Add a WHERE clause.' },
+  { sql: true, re: /\bDROP\s+(TABLE|DATABASE|SCHEMA)\b/i, msg: 'DROP TABLE/DATABASE permanently destroys data. Consider renaming the table first (ALTER TABLE ... RENAME), or use DROP ... IF EXISTS with a backup.' },
+  { sql: true, re: /\bTRUNCATE\s+TABLE\b/i, msg: 'TRUNCATE TABLE removes all rows irrecoverably. Consider DELETE FROM with a WHERE clause for selective removal, or create a backup first.' },
+  { sql: true, re: /\bDELETE\s+FROM\b(?!\s.*\bWHERE\b)/is, msg: 'DELETE FROM without WHERE clause removes all rows. Add a WHERE clause to target specific rows, or use TRUNCATE if you intend to remove everything.' },
   { re: /\bchmod\s+777\b/, msg: 'chmod 777 grants world rwx. Consider 755 or 700.' },
   { re: /\bchown\s+-R\s+root\b/, msg: 'Recursive chown to root may lock you out. Verify the path.' },
   { re: /\bkill\s+-9\s+-1\b/, msg: 'kill -9 -1 SIGKILLs all your processes. Consider targeting a PID.' },
   { re: /\bkillall\b/, msg: 'killall terminates all processes matching a name. Consider a specific PID.' },
   { re: /\bpkill\s+-9\b/, msg: 'pkill -9 SIGKILLs without graceful shutdown. Consider SIGTERM first.' },
-  { re: /\b(shutdown|poweroff|reboot|halt)\b/, msg: 'This affects system power state. Verify the target machine.' },
   { re: /\biptables\s+-F\b/, msg: 'iptables -F flushes all firewall rules. Save with iptables-save first.' },
   { re: /\bufw\s+disable\b/, msg: 'Disabling the firewall exposes all ports. Consider per-port rules.' },
   { re: /\bsystemctl\s+(disable|stop)\b/, msg: 'Stopping/disabling a service may affect stability. Check dependents first.' },
@@ -818,11 +2381,352 @@ const ASK_CANON = [
   { re: /\bfdisk\b/, msg: 'fdisk modifies partition tables. Verify the device and back up first.' }
 ];
 
-function checkDisabledList(segments, canon, depth) {
+// H1: power-state change. Only a power verb in COMMAND POSITION asks; the same
+// word as data (`grep halt f`, a branch name, a commit message) does not.
+const POWER_CMD_RE = /^(shutdown|poweroff|reboot|halt|kexec)$/;   // WI-20 G10: kexec
+// S1a/S1b: any argument of systemctl/loginctl, so leading flags
+// (`systemctl --force reboot`, `-i`, `--no-wall`, `-H host`) cannot hide it.
+const POWER_VERB_RE = /^(reboot|soft-reboot|poweroff|halt|kexec|suspend|hibernate|hybrid-sleep|suspend-then-hibernate)$/;
+const POWER_TARGET_RE = /^((reboot|soft-reboot|poweroff|halt|kexec)\.target|runlevel[06](\.target)?)$/;   // WI-20 G10: runlevel0/6
+// S1c: commands that run (part of) their own argv as a command. Every literal
+// suffix of their argv is checked, and a quoted argument (the remote command
+// of ssh) is tokenized and checked as a command line.
+// H1/REV1: CPU/IO/scheduling, namespace, lock, user/group switch wrappers.
+const ARGV_EXEC_CMDS = new Set(['xargs', 'busybox', 'toybox', 'ssh', 'chroot', 'nsenter', 'watch', 'parallel',
+  'setpriv', 'runuser', 'unbuffer', 'strace', 'ltrace', 'flock', 'systemd-run', 'machinectl', 'firejail', 'script',
+  'taskset', 'chrt', 'ionice', 'stdbuf', 'setsid', 'unshare', 'doas', 'su', 'sg', 'newgrp', 'nohup', 'nice',
+  'timeout', 'env', 'exec', 'command',
+  // H1/REV2: schedulers and terminal multiplexers run their argv later.
+  'at', 'batch', 'tmux', 'screen']);
+// H1/REV2: these consumers run what they read on stdin (or build a command
+// line from it), so a power verb in the producer of the pipe asks.
+const STDIN_EXEC_CMDS = new Set(['at', 'batch', 'xargs', 'parallel']);
+function pipedPowerMessage(segments) {
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (segments[i].op !== '|') continue;
+    const c = commandPosition(segments[i + 1].argv);
+    if (!c.length || !STDIN_EXEC_CMDS.has(basename(c[0].canon))) continue;
+    for (const t of segments[i].argv) {
+      for (const w of t.canon.split(/[\s;&|]+/)) {
+        const b = basename(w);
+        if (POWER_CMD_RE.test(b)) return POWER_MSG[b] || POWER_GENERIC;
+        if (POWER_VERB_RE.test(b)) return POWER_GENERIC;
+      }
+    }
+  }
+  return null;
+}
+// H1/REV1: find runs the argv after -exec/-execdir/-ok/-okdir as a command.
+const FIND_EXEC_FLAGS = new Set(['-exec', '-execdir', '-ok', '-okdir']);
+const POWER_MSG = {
+  shutdown: 'This will shut down the system. Verify this is the intended target machine. Consider shutdown -c to cancel if triggered accidentally.',
+  poweroff: 'This will shut down the system (poweroff). Verify this is the intended target machine. Consider shutdown -c to cancel if triggered accidentally.',
+  reboot: 'This will reboot the system. Verify this is the intended target machine and save all work first.',
+  halt: 'halt stops the system immediately. Consider shutdown -h +1 to give users a 1-minute warning.'
+};
+const POWER_GENERIC = 'This affects system power state. Verify the target machine.';
+// WI-8 REV2: the direct power checks on one resolved argv. The find -exec,
+// wrapper-suffix and quoted-payload expansion now runs through the budgeted
+// scanWrapped(), so a long wrapper chain asks fast instead of timing out.
+function powerArgvMessage(r) {
+  if (!r.length) return null;
+  const c0 = basename(r[0].canon);
+  if (POWER_CMD_RE.test(c0)) return POWER_MSG[c0] || POWER_GENERIC;
+  const args = r.slice(1).map(t => t.canon);
+  // WI-20 G10: logind over D-Bus, and a sysrq write through tee.
+  if (/^(busctl|dbus-send|gdbus)$/.test(c0) && args.some(a => /login1/.test(a)) &&
+      args.some(a => /(Reboot|PowerOff|Halt|KExec)/.test(a))) return POWER_GENERIC;
+  if (c0 === 'tee' && args.includes('/proc/sysrq-trigger')) return POWER_GENERIC;
+  if ((c0 === 'systemctl' || c0 === 'loginctl') && args.some(a => POWER_VERB_RE.test(a) || POWER_TARGET_RE.test(a))) return POWER_GENERIC;
+  if ((c0 === 'init' || c0 === 'telinit') && /^[06]$/.test(args[0] || '')) return POWER_GENERIC;
+  return null;
+}
+function powerStateMessage(r, depth) {
+  return scanWrapped(r, depth, powerArgvMessage, { left: SCAN_STEP_LIMIT });
+}
+
+// H8/REV2: SQL keywords (DROP/TRUNCATE/DELETE) ask UNLESS every segment runs a
+// read-only text tool. This is an ALLOWLIST: any other command (a DB client,
+// a cloud CLI with --sql, an interpreter, a wrapper, a computed command name)
+// keeps the ask. Each segment is judged after compound keywords, grouping
+// tokens and transparent wrappers are removed. A command-substitution inner
+// is a separate evaluation, so `$(psql ...)` is judged on its own.
+// H8/REV3: awk, sed, sort, uniq, yq, find, diff, gh, less and more are out
+// (each can run a command or write a file); git is limited to the
+// subcommands in SQL_GIT_SUBCMDS.
+const SQL_SAFE_CMDS = new Set(['grep', 'egrep', 'fgrep', 'rg', 'ag', 'ack', 'git', 'cat',
+  'head', 'tail', 'echo', 'printf', 'cut', 'tr', 'wc', 'jq', 'ls', 'test', '[', 'true', 'false', 'cd']);
+const SQL_GREP_CMDS = new Set(['grep', 'egrep', 'fgrep', 'rg', 'ag', 'ack']);
+const SQL_GIT_SUBCMDS = new Set(['commit', 'log', 'show', 'grep', 'status', 'blame', 'worktree']);
+const SQL_GIT_BAD_ARG = /^(-c|-x|-O.*|--exec.*|--open-files-in-pager.*|--upload-pack.*|--receive-pack.*|--ext-diff|--config-env.*|--output.*)$/;
+const SQL_SAFE_TRAILERS = new Set(['done', 'fi', 'esac', ']']);
+function sqlSegmentIsReadOnly(seg) {
+  const a = stripGroupingTokens(skipLeadKeywords(seg.argv));
+  if (!a.length) return true;
+  if (a[0].varCount === 0 && a[0].substCount === 0 && SQL_SAFE_TRAILERS.has(a[0].canon)) return true;
+  // `for NAME in words` : the word list is data
+  if (a[0].canon === 'for' && a[0].varCount === 0 && a[0].substCount === 0) return true;
+  const r = resolveEffectiveCommand(a);
+  // H8/REV3: no assignment (GIT_*, PATH, EDITOR ...) and no wrapper prefix.
+  if (!r.length || r.length !== a.length) return false;
+  const t0 = r[0];
+  if (!(t0.litLen > 0) || t0.varCount || t0.substCount) return false;
+  const name = t0.canon;
+  // a bare name or a system bin path; a local ./grep script is not trusted
+  if (name.includes('/') && !/^\/(usr\/(local\/)?)?bin\/[^/]+$/.test(name)) return false;
+  const cmd = basename(name);
+  if (!SQL_SAFE_CMDS.has(cmd)) return false;
+  const args = r.slice(1).map(t => t.canon);
+  // H8/REV3: preprocessors and pagers run commands.
+  if (SQL_GREP_CMDS.has(cmd) && args.some(v => /^--(pre|pager|open-files-in-pager)/.test(v) || /^-[A-Za-z]*O/.test(v))) return false;
+  if (cmd === 'git') {
+    if (!SQL_GIT_SUBCMDS.has(args[0])) return false;
+    if (args[0] === 'worktree' && args[1] !== 'add') return false;
+    if (args.some(v => SQL_GIT_BAD_ARG.test(v) || /^!/.test(v))) return false;
+  }
+  return true;
+}
+// H8/REV3: any output redirection other than to /dev/null or an fd dup
+// (>&2) keeps the ask.
+function sqlRedirectIsSafe(r) {
+  if (!/>/.test(r.op)) return true;                 // < << <<< are input
+  const t = r.target;
+  if (!t || t.varCount || t.substCount) return false;
+  if (r.op === '>&') return /^\d+$/.test(t.canon);
+  return t.canon === '/dev/null';
+}
+function sqlIsReadOnlyText(segments, raw) {
+  if (hasOpaqueContext(segments)) return false;   // WI-20 F3
+  return segments.every(seg => sqlSegmentIsReadOnly(seg) && seg.redirects.every(sqlRedirectIsSafe));
+}
+
+// WI-20 F3: the inline text of contexts whose commands the argv checks may not
+// see: the substitutions of an unquoted heredoc body, the ${...$(...)} inner,
+// the <(...) / >(...) inner, the args of a command-position
+// eval/trap/coproc/function/builtin, a herestring or heredoc fed to a shell or
+// `source`/`.`, a command-position substitution, and the text written to a
+// file that a shell or source then runs. `source FILE` / `. FILE` alone has no
+// inline text. REV1: the belt regexes run on these texts only, never on the
+// whole command, so `grep -E "halt|..." log; . ~/env` stays allow.
+const OPAQUE_WORDS = new Set(['eval', 'trap', 'coproc', 'function', 'builtin']);
+function opaqueInnerTexts(segments) {
+  const out = [];
+  const written = new Map();
+  for (const seg of segments) {
+    for (const hd of (seg.heredocs || [])) if (!hd.quoted && /\$\(|`/.test(hd.body)) out.push(...substInnersOf(hd.body));
+    const toks = seg.argv.concat(seg.redirects.map(x => x.target).filter(Boolean));
+    for (const t of toks) {
+      if (t.procSubst) out.push(...t.substInners);
+      if (t.paramInners) out.push(...t.paramInners);
+    }
+    const a = seg.argv;
+    let k = 0;
+    while (k < a.length && !a[k].varCount && !a[k].substCount && (LEAD_KEYWORDS.has(a[k].canon) || OPAQUE_WORDS.has(a[k].canon))) {
+      if (OPAQUE_WORDS.has(a[k].canon)) { out.push(a.slice(k + 1).map(t => t.canon).join(' ')); break; }
+      k++;
+    }
+    const r = commandPosition(a);
+    if (r.length && isCmdSubstPosition(r[0])) out.push(...r[0].substInners);
+    const c0 = r.length ? basename(r[0].canon) : '';
+    // REV2 R3: an opaque word behind a wrapper or assignment (`command eval ...`)
+    if (OPAQUE_WORDS.has(c0) && r.length < a.length) out.push(r.slice(1).map(t => t.canon).join(' '));
+    if (SHELL_INTERPRETERS_EVAL.has(c0) || c0 === 'source' || c0 === '.' || OPAQUE_WORDS.has(c0)) {
+      for (const x of seg.redirects) if (x.op === '<<<' && x.target) out.push(x.target.canon);
+      for (const hd of (seg.heredocs || [])) out.push(hd.body);
+      for (const t of r.slice(1)) if (written.has(t.canon)) out.push(written.get(t.canon));
+    }
+    for (const x of seg.redirects) {
+      if (/>/.test(x.op) && x.target && x.target.litLen) {
+        written.set(x.target.canon, a.map(t => t.canon).join(' ') + ' ' + (seg.heredocs || []).map(h => h.body).join('\n'));
+      }
+    }
+  }
+  return out.filter(Boolean);
+}
+function hasOpaqueContext(segments) { return opaqueInnerTexts(segments).length > 0; }
+// The raw HITL checks bash-validator ran before K1/H1/H8 moved them onto argv.
+const BELT_PATTERNS = [
+  { re: /git push.*--force(?![\w-])/, msg: PUSH_FORCE_MSG },
+  { re: /\b(shutdown|poweroff)\b/, msg: POWER_MSG.shutdown },
+  { re: /\breboot\b/, msg: POWER_MSG.reboot },
+  { re: /\bhalt\b/, msg: POWER_MSG.halt }
+];
+function opaqueBeltMessage(segments) {
+  for (const text of opaqueInnerTexts(segments)) {
+    for (const { re, msg } of BELT_PATTERNS) if (re.test(text)) return msg;
+    for (const { re, msg, sql } of ASK_CANON) if (sql && re.test(text)) return msg;
+  }
+  return null;
+}
+
+// EVAL/REV2: true when the eval payload is only `NAME=<ref>` assignments
+// and/or `echo|printf <ref>...` statements, where <ref> is a plain variable
+// reference ($V, ${V}, ${!V}, optionally behind an escaped \$). Any command
+// substitution, any other command, or any other text returns false.
+const EVAL_REF = '(?:\\\\\\$)?(?:\\$[A-Za-z_][A-Za-z0-9_]*|\\$\\{!?[A-Za-z_][A-Za-z0-9_]*\\})';
+const EVAL_ASSIGN_RE = new RegExp('^[A-Za-z_][A-Za-z0-9_]*=(?:' + EVAL_REF + ')+$');
+const EVAL_ECHO_RE = new RegExp('^(?:echo|printf)(?:\\s+-[neE]+)*(?:\\s+(?:' + EVAL_REF + ')+)+$');
+function evalIsIndirectRead(rest, command) {
+  if (typeof command !== 'string' || rest.some(t => t.substCount > 0)) return false;
+  const words = [];
+  for (const t of rest) {
+    if (typeof t.start !== 'number' || typeof t.end !== 'number') return false;
+    let w = command.slice(t.start, t.end);
+    const m = /^"([^"]*)"$/.exec(w);
+    if (m) w = m[1];
+    if (/["'`]|\$\(/.test(w)) return false;
+    words.push(w);
+  }
+  const parts = words.join(' ').split(/\s*;\s*/).filter(Boolean);
+  return parts.length > 0 && parts.every(p => EVAL_ASSIGN_RE.test(p) || EVAL_ECHO_RE.test(p));
+}
+
+// ── brace expansion (WI-17) ─────────────────────────────────────────────────
+// The tokenizer keeps `{a,b}` as literal text, so `rm -rf /{etc,}`,
+// `rm -r{f,} /etc`, `chmod -R 7{7,}7 /` and `{r,}m -rf /etc` reached the
+// structured checks with a canon that names no protected path or flag. Bash
+// expands those words before exec. braceExpandWord() does the same expansion
+// for a plain word (comma lists, nested), and braceVerdict() re-judges the
+// segment with the expanded words. A sequence ({1..3}) or a brace in a quoted
+// or $-word cannot be expanded here, so that word fails closed to ask when the
+// segment can delete or change files.
+const BRACE_SIMPLE_WORD_RE = /^[A-Za-z0-9_\/.,{}~+=:@%^*?\[\]!#-]+$/;
+const BRACE_MAX_WORDS = 256;
+// WI-17 round 2 (F2): bound the work BEFORE and DURING expansion. Empty
+// alternatives are dropped from the output, so `{,}` x 26 never grows the
+// output past BRACE_MAX_WORDS, yet it makes 2^26 recursive calls and the 5 s
+// hook timeout fails open. braceRawProduct() counts the alternatives product
+// (empties included) without expanding, and every braceExpandWord() call
+// spends one step of a budget shared by the whole segment. Over either cap
+// the word is not expanded, and braceVerdict() fails closed to ask.
+const BRACE_MAX_PRODUCT = 4096;
+const BRACE_MAX_STEPS = 8192;
+const BRACE_MAX_GROUPS = 32;
+// Product of the alternatives in every comma group of a word, empties counted.
+// Nested groups multiply (an over-estimate for `{a,{b,c}}`, which is the safe
+// direction). Returns Infinity past a cap so the caller never multiplies on.
+function braceRawProduct(w) {
+  let product = 1;
+  let groups = 0;
+  const stack = [];
+  for (let i = 0; i < w.length; i++) {
+    const c = w[i];
+    if (c === '{') stack.push(1);
+    else if (c === ',' && stack.length) stack[stack.length - 1]++;
+    else if (c === '}' && stack.length) {
+      const n = stack.pop();
+      if (n > 1) {
+        groups++;
+        product *= n;
+        if (product > BRACE_MAX_PRODUCT || groups > BRACE_MAX_GROUPS) return Infinity;
+      }
+    }
+  }
+  return product;
+}
+const BRACE_FAILCLOSED_CMDS = /^(rm|rmdir|shred|unlink|srm|wipe|find|chmod|chown|chgrp|dd|sed|install|tar|cp|mv|tee|truncate|ln|xargs|env|sudo|doas|nice|nohup|timeout|command|exec|builtin)$/;
+function braceExpandWord(w, budget) {
+  if (!budget) budget = { steps: 0 };
+  if (++budget.steps > BRACE_MAX_STEPS) return null;
+  for (let i = 0; i < w.length; i++) {
+    if (w[i] !== '{') continue;
+    let depth = 0;
+    const commas = [];
+    let j = i;
+    for (; j < w.length; j++) {
+      const c = w[j];
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) break; }
+      else if (c === ',' && depth === 1) commas.push(j);
+    }
+    if (j >= w.length) return [w];           // unmatched '{' is literal in bash
+    if (commas.length === 0) {
+      if (w.slice(i + 1, j).includes('..')) return null; // {1..3}: not expanded here
+      continue;                              // `{}` / `{x}` is literal; nested lists may follow
+    }
+    const pre = w.slice(0, i);
+    const post = w.slice(j + 1);
+    const out = [];
+    let s = i + 1;
+    for (const c of [...commas, j]) {
+      const sub = braceExpandWord(pre + w.slice(s, c) + post, budget);
+      if (!sub) return null;
+      out.push(...sub);
+      if (out.length > BRACE_MAX_WORDS) return null;
+      s = c + 1;
+    }
+    return out.filter(x => x !== '');        // bash drops a word that expands to empty
+  }
+  return [w];
+}
+// WI-17 round 2 (F1): an expanded word is a literal in bash, but braceVerdict
+// re-judges the words as shell text. A word that starts with `#` (from
+// `{#,/}`) would then open a comment and hide every later word, so
+// `rm -rf {#,/}` allowed. Single-quote such a word (and a leading `{`, `}`
+// or `!`, which the re-join could read as a reserved word) before the
+// re-join. BRACE_SIMPLE_WORD_RE admits no quote, so the quoting is exact.
+function braceQuoteWord(x) {
+  return /^[#{}!]/.test(x) ? "'" + x + "'" : x;
+}
+// Returns a verdict for the segment's argv after brace expansion, or null
+// when no word holds a brace expansion.
+function braceVerdict(argv, depth) {
+  let changed = false;
+  let unsupported = false;
+  let overBudget = false;
+  const budget = { steps: 0 };
+  const words = [];
+  for (const t of argv) {
+    const raw = typeof t.raw === 'string' ? t.raw : t.canon;
+    if (!raw || !raw.includes('{') || !(raw.includes(',') || raw.includes('..'))) { words.push(raw); continue; }
+    if (!BRACE_SIMPLE_WORD_RE.test(raw)) { unsupported = true; words.push(raw); continue; }
+    // F2: a word whose raw alternatives product (or the shared step budget)
+    // is over the cap is never expanded. That ask holds for any command, not
+    // only the BRACE_FAILCLOSED_CMDS list: the size itself is the signal.
+    if (braceRawProduct(raw) > BRACE_MAX_PRODUCT) { overBudget = true; break; }
+    const exp = braceExpandWord(raw, budget);
+    if (!exp) {
+      if (budget.steps > BRACE_MAX_STEPS) { overBudget = true; break; }
+      unsupported = true; words.push(raw); continue;
+    }
+    if (exp.length !== 1 || exp[0] !== raw) changed = true;
+    words.push(...exp.map(braceQuoteWord));
+  }
+  if (overBudget) {
+    return A('A word in this command uses brace expansion ({a,b}) that expands past the guard limit. Write the words out in full, or confirm.');
+  }
+  if (unsupported) {
+    // WI-17 round 3 (N1): judge the resolved command too. A leading
+    // assignment or a wrapper (stdbuf, ionice, setsid, ...) puts the real
+    // command in a later word, so `X=1 rm -rf {\#,/etc}` and
+    // `stdbuf -oL rm -rf {"#",/usr}` allowed on the raw argv[0]. Fail closed
+    // when any word up to and including the resolved command holds `{`, or
+    // when the raw or the resolved command is on the fail-closed list.
+    const wordOf = t => (t ? String(t.raw || t.canon || '') : '');
+    const isFailClosed = t => !!t && (BRACE_FAILCLOSED_CMDS.test(basename(wordOf(t))) ||
+      BRACE_FAILCLOSED_CMDS.test(basename(String(t.canon || ''))));
+    const rargv = resolveEffectiveCommand(argv);
+    const lead = argv.slice(0, argv.length - rargv.length + (rargv.length ? 1 : 0));
+    if (lead.some(t => wordOf(t).includes('{')) || isFailClosed(argv[0]) || isFailClosed(rargv[0])) {
+      return A('A word in this command uses brace expansion ({a,b} or {1..3}) that the guard cannot expand. The expanded words can name a protected path or flag. Write the words out in full, or confirm.');
+    }
+    return null;
+  }
+  if (!changed || depth >= MAX_RECURSION) return null;
+  const inner = evaluateInternal(words.join(' '), depth + 1);
+  if (inner && inner.kind === 'deny') return D((inner.reason || 'blocked destructive command') + ' (after brace expansion)');
+  if (inner && inner.kind === 'ask') return A((inner.reason || 'requires confirmation') + ' (after brace expansion)');
+  return null;
+}
+
+function checkDisabledList(segments, canon, depth, command) {
   let shellCAsk = null;
+  let sysrqAsk = null;
+  { const pv = procSubstScriptVerdict(segments, depth); if (pv && pv.kind === 'deny') return pv; if (pv) shellCAsk = pv; }
   // ---- structured DENY checks ----
   for (const seg of segments) {
-    const argv = seg.argv;
+    // R1: judge the command after compound keywords (`then rm ...`, `{ rm ...`).
+    const argv = skipLeadKeywords(seg.argv);
     if (argv.length) {
       const cmd = basename(argv[0].canon);
       const rest = argv.slice(1);
@@ -836,6 +2740,9 @@ function checkDisabledList(segments, canon, depth) {
       const resolved = resolveEffectiveCommand(argv);
       const rcmd = resolved.length ? basename(resolved[0].canon) : '';
       const rrest = resolved.length ? resolved.slice(1) : [];
+
+      // WI-17: judge the words bash produces after brace expansion.
+      { const bv = braceVerdict(argv, depth); if (bv && bv.kind === 'deny') return bv; if (bv) shellCAsk = shellCAsk || bv; }
 
       // rm-family recursive-force of a literal protected path
       if (isDestructiveFileCmd(rcmd) && hasRecursiveForce(resolved)) {
@@ -872,13 +2779,25 @@ function checkDisabledList(segments, canon, depth) {
       // recursed through the evaluator (bounded depth) rather than treated as
       // inert text. Most-restrictive of outer/inner: deny short-circuits
       // immediately; ask is held until the end of this function.
+      // WI-20 F2/G2: at the depth cap the payload is not read, so ask.
+      if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth >= MAX_SHELL_C_DEPTH &&
+          (shellCPayload(rrest) || (seg.heredocs || []).length || seg.redirects.some(r => r.op === '<<<'))) {
+        shellCAsk = shellCAsk || A('shell -c / heredoc script nesting is too deep for the guard to analyze. Confirm the command is safe.');
+      }
+      // WI-20: a shell or source reading a process substitution runs its
+      // output as a script (`bash <(curl ...)`, `bash <(echo rm -rf /etc)`).
       if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth < MAX_SHELL_C_DEPTH) {
-        for (let k = 0; k < rrest.length; k++) {
-          if (rrest[k].canon === '-c' && rrest[k + 1]) {
-            const inner = evaluateInternal(rrest[k + 1].canon, depth + 1);
+        const sc = shellCPayload(rrest);
+        for (const pt of (sc ? sc.tokens : [])) {
+          // WI-20: `bash -c "$(echo CMD)"` runs CMD; REV4 R3-2: also a nested
+          // producer (`bash -c "$(cat <(echo CMD))"`).
+          const texts = [pt.canon];
+          for (const si of (pt.substInners || [])) texts.push(...(producedScripts(si, 0) || []));
+          for (const text of texts) {
+            if (!text) continue;
+            const inner = evaluateInternal(text, depth + 1);
             if (inner && inner.kind === 'deny') return D('shell -c payload is destructive: ' + (inner.reason || ''));
             if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('shell -c payload requires confirmation: ' + (inner.reason || ''));
-            break;
           }
         }
       }
@@ -890,12 +2809,33 @@ function checkDisabledList(segments, canon, depth) {
       // whose body is a protected-path delete still DENIES. Non-shell heredoc
       // consumers (cat, python3, git commit -F -) never execute the body, so
       // their heredocs correctly stay inert.
-      if (SHELL_INTERPRETERS_EVAL.has(rcmd) && depth < MAX_SHELL_C_DEPTH) {
-        for (const hd of (seg.heredocs || [])) {
-          const inner = evaluateInternal(hd.body, depth + 1);
+      // WI-20 G3: a herestring fed to a shell, and a heredoc or herestring fed
+      // to `source /dev/stdin`, is a script too.
+      const stdinScript = SHELL_INTERPRETERS_EVAL.has(rcmd) ||
+        ((rcmd === 'source' || rcmd === '.') && rrest.some(t => /^\/(dev\/stdin|dev\/fd\/0|proc\/self\/fd\/0)$/.test(t.canon)));
+      if (stdinScript && depth < MAX_SHELL_C_DEPTH) {
+        const scripts = (seg.heredocs || []).map(hd => hd.body)
+          .concat(seg.redirects.filter(r => r.op === '<<<' && r.target).map(r => r.target.canon));
+        for (const body of scripts) {
+          const inner = evaluateInternal(body, depth + 1);
           if (inner && inner.kind === 'deny') return D('heredoc script payload is destructive: ' + (inner.reason || ''));
           if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A('heredoc script payload requires confirmation: ' + (inner.reason || ''));
         }
+      }
+
+      // WI-20 G3: `eval WORDS` runs WORDS; `trap 'CMD' SIG` runs CMD.
+      // REV2 R3/R4: judged on the wrapper-resolved command (`command eval`,
+      // `builtin eval`, `exec eval`, `x=1 eval`, `eval --`).
+      let codeArg = null;
+      if (rcmd === 'eval') codeArg = evalCodeOf(rrest);
+      if (rcmd === 'trap') {
+        const ta = rrest[0] && rrest[0].canon === '--' ? rrest.slice(1) : rrest;
+        if (ta.length >= 2 && !/^-/.test(ta[0].canon)) codeArg = ta[0].canon;
+      }
+      if (codeArg !== null) {
+        const inner = evaluateInternal(codeArg, depth + 1);
+        if (inner && inner.kind === 'deny') return D(rcmd + ' payload is destructive: ' + (inner.reason || ''));
+        if (inner && inner.kind === 'ask') shellCAsk = shellCAsk || A(rcmd + ' payload requires confirmation: ' + (inner.reason || ''));
       }
 
       // tar extracting into a protected path
@@ -945,7 +2885,16 @@ function checkDisabledList(segments, canon, depth) {
       }
 
       // eval of a built/substituted command string
-      if (cmd === 'eval' && rest.some(t => t.varCount > 0 || t.substCount > 0)) return D('eval of a built/substituted command string');
+      // EVAL/REV2 narrowing: a payload that is only an assignment and/or an
+      // echo/printf of plain variable references (`eval sc=\$$s`,
+      // `eval "echo \$$s"`, `eval x=\${!v}`) asks instead of denying. This
+      // applies at top level and in loop bodies. The value of the variable can
+      // still inject code at eval time, so it is never an allow. Every other
+      // eval with a variable or a substitution keeps the deny.
+      if (cmd === 'eval' && rest.some(t => t.varCount > 0 || t.substCount > 0)) {
+        if (evalIsIndirectRead(rest, command)) return A('eval of an indirect variable reference; confirm the variable values are trusted');
+        return D('eval of a built/substituted command string');
+      }
 
       // interpreter-with-inline-code obfuscation
       if (/^python(2|3)?$/.test(cmd) && rest.some(t => t.canon === '-c') && /(os\.system|subprocess|os\.popen)/.test(joined)) return D('python -c invoking os.system/subprocess');
@@ -961,6 +2910,7 @@ function checkDisabledList(segments, canon, depth) {
         const tgt = r.target.canon;
         if (isBlockDevice(tgt)) return D('redirecting output to a block device');
         if (isSensitivePath(tgt)) return D('redirecting output to a sensitive file');
+        if (tgt === '/proc/sysrq-trigger') sysrqAsk = POWER_GENERIC;   // WI-20 G10
       }
     }
   }
@@ -970,9 +2920,10 @@ function checkDisabledList(segments, canon, depth) {
     let fetchIdx = -1;
     for (let i = 0; i < segments.length; i++) {
       const seg = segments[i];
-      if (!seg.argv.length) continue;
-      const cmd = basename(seg.argv[0].canon);
-      const rest = seg.argv.slice(1);
+      const sa = skipLeadKeywords(seg.argv);
+      if (!sa.length) continue;
+      const cmd = basename(sa[0].canon);
+      const rest = sa.slice(1);
       const fetchOut = (cmd === 'curl' || cmd === 'wget')
         && (rest.some(t => /^-[oO]$/.test(t.canon) || t.canon === '--output') || seg.redirects.some(r => /^>/.test(r.op)));
       if (fetchOut && fetchIdx < 0) fetchIdx = i;
@@ -989,9 +2940,10 @@ function checkDisabledList(segments, canon, depth) {
       seg.argv.some(t => t.litLen > 0 && isSensitivePath(t.canon)) ||
       seg.redirects.some(r => r.target && isSensitivePath(r.target.canon)));
     const egress = segments.some(seg => {
-      if (!seg.argv.length) return false;
-      const cmd = basename(seg.argv[0].canon);
-      const rest = seg.argv.slice(1).map(t => t.canon).join(' ');
+      const sa = skipLeadKeywords(seg.argv);
+      if (!sa.length) return false;
+      const cmd = basename(sa[0].canon);
+      const rest = sa.slice(1).map(t => t.canon).join(' ');
       if (/^(curl|wget|nc|netcat|scp|sftp|rsync|socat|ftp|tftp)$/.test(cmd)) return true;
       if (cmd === 'curl' && /(-d\b|--data|--data-binary|-T\b|--upload-file|@-)/.test(rest)) return true;
       return false;
@@ -1001,7 +2953,8 @@ function checkDisabledList(segments, canon, depth) {
     for (let i = 0; i < segments.length - 1; i++) {
       if (segments[i].op !== '|') continue;
       const prodSensitive = segments[i].argv.some(t => t.litLen > 0 && isSensitivePath(t.canon));
-      const consCmd = segments[i + 1].argv.length ? basename(segments[i + 1].argv[0].canon) : '';
+      const consArgv = skipLeadKeywords(segments[i + 1].argv);
+      const consCmd = consArgv.length ? basename(consArgv[0].canon) : '';
       if (prodSensitive && /^(curl|wget|nc|netcat|scp|socat)$/.test(consCmd)) return D('piping a sensitive file into a network egress sink (exfiltration)');
     }
   }
@@ -1016,15 +2969,45 @@ function checkDisabledList(segments, canon, depth) {
   {
     let plainSensitiveRead = false;
     for (const seg of segments) {
-      const sensitiveRead = seg.argv.length && isReader(basename(seg.argv[0].canon)) &&
-        seg.argv.slice(1).some(t => t.litLen > 0 && isSensitivePath(t.canon));
+      const sa = skipLeadKeywords(seg.argv);
+      const sensitiveRead = sa.length && isReader(basename(sa[0].canon)) &&
+        sa.slice(1).some(t => t.litLen > 0 && isSensitivePath(t.canon));
       if (!sensitiveRead) continue;
       if (seg.ifsSplit) return D('obfuscated read of a sensitive credential file ($IFS field-split)');
       plainSensitiveRead = true;
     }
     if (plainSensitiveRead) return A('reading a sensitive credential file; confirm this is intended');
   }
-  for (const { re, msg } of ASK_CANON) { if (re.test(canon)) return A(msg); }
+  // H1: power-state verbs ask only in command position (see powerStateMessage).
+  for (const seg of segments) {
+    const msg = powerStateMessage(commandPosition(seg.argv), 0);
+    if (msg) return A(msg);
+  }
+  { const pm = pipedPowerMessage(segments); if (pm) return A(pm); }
+  if (sysrqAsk) return A(sysrqAsk);
+  // K1/W1/W3: force push, mirror/delete push and history rewrites, read from
+  // the git segment's argv (data that only mentions them does not ask).
+  { const gm = gitHistoryMessage(segments, command); if (gm) return A(gm); }
+  { const rm = runnerMessage(segments); if (rm) return A(rm); }
+  { const cm = cwdShiftMessage(segments, 0); if (cm) return A(cm); }
+  { const em = envPrefixMessage(segments); if (em) return A(em); }
+  { const xm = xargsRunnerMessage(segments); if (xm) return A(xm); }
+  // W4: find -delete / -exec rm on any root that is not a temp path.
+  {
+    const raw = typeof command === 'string' ? command : '';
+    const fm = findDeleteMessage(segments, buildTempAssignMap(segments, raw), raw);
+    if (fm) return A(fm);
+  }
+  // H8/REV2: SQL keywords ask unless every segment is a read-only text tool.
+  // H8/REV3: SQL keywords are also matched on the raw command, so text the
+  // tokenizer drops (a trailing `# DROP TABLE` comment) still counts, as it
+  // did when bash-validator matched the raw string.
+  for (const { re, msg, sql } of ASK_CANON) {
+    const hit = re.test(canon) || (sql && typeof command === 'string' && re.test(command));
+    if (hit && (!sql || !sqlIsReadOnlyText(segments, command))) return A(msg);
+  }
+  // WI-20 F3: the fallback belt for text the argv checks above cannot see.
+  { const bm = opaqueBeltMessage(segments); if (bm) return A(bm); }
 
   // WI-P1: a shell -c payload that recursed to 'ask' (rather than 'deny')
   // surfaces here — nothing stronger was found elsewhere in this function.
@@ -1056,10 +3039,10 @@ function evaluateInternal(command, depth) {
   catch (e) { return DF('canonicalization failure (fail-closed)'); }
 
   const components = [
-    () => checkVariableExpansion(segments),
+    () => checkVariableExpansion(segments, depth, command),
     () => checkCommandSubstitution(segments, depth),
     () => checkPipeDestination(segments),
-    () => checkDisabledList(segments, canon, depth)
+    () => checkDisabledList(segments, canon, depth, command)
   ];
 
   let ask = null;
@@ -1105,4 +3088,10 @@ function evaluate(command) {
   return null;
 }
 
-module.exports = { evaluate, tokenize };
+// WI-21 W21-3: true when any segment names git or a test/CI runner. The hook
+// uses it for a persisted working directory (input.cwd). Never throws.
+function mentionsRunner(command) {
+  try { return tokenize(String(command || '')).segments.some(segMentionsRunner); } catch (e) { return true; }
+}
+
+module.exports = { evaluate, tokenize, mentionsRunner };

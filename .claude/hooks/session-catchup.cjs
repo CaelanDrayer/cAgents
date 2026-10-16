@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession } = require('./hook-utils.cjs');
+const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTerminalState, extractYamlValue, safeRead, countPattern, ensureDir, MAX_SESSION_START_CHARS, findActiveSession, repairSession } = require('./hook-utils.cjs');
 
 /**
  * Liveness check (WI-4, session run_concurrent-session-hooks_260602_001):
@@ -25,6 +25,13 @@ const { createHook, AGENT_MEMORY_DIR, SESSION_PREFIXES, TERMINAL_STATES, isTermi
  *
  * The default threshold is 60s; tests override via CAGENTS_SESSION_LIVENESS_MS.
  */
+// WI-17: the exact line that scripts/update-check.sh prints. A cached result
+// that does not match is not injected into the SessionStart context.
+const UPDATE_RESULT_RE = /^cAgents update available: v[0-9A-Za-z.+-]{1,40} -> v[0-9A-Za-z.+-]{1,40}\. Run: cd \/[A-Za-z0-9._\/+@%:,~-]{0,199} && git pull$/;
+// WI-17 round 2 (F4): the `cd` group is a path with no space, so the line
+// cannot carry free prose. update-check.sh prints its ${ROOT} there. A root
+// path with a space fails the match, and the line is then dropped (safe).
+
 function getLivenessThresholdMs() {
   const v = parseInt(process.env.CAGENTS_SESSION_LIVENESS_MS || '60000', 10);
   return Number.isFinite(v) && v >= 0 ? v : 60000;
@@ -113,6 +120,8 @@ function findIncompleteSessions() {
     if (isSessionLive(sessionDir)) {
       continue;
     }
+    // WI-028 / HS-10: sweep-mode self-heal of idle sessions (top 10 by mtime, live ones skipped above).
+    repairSession(sessionDir, { mode: 'sweep' });
 
     const statusFile = path.join(sessionDir, 'status.yaml');
     const content = safeRead(statusFile);
@@ -244,7 +253,7 @@ createHook('SessionCatchup', async (input) => {
   // skill set is /act, /team, /designer, /helper — the guidance below must
   // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
   // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
-  let cagentsContext = 'cAgents V12.74.1 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. IMPORTANT: When spawned as a cAgents agent, self-register your agent type in workflow/agent_tree.yaml for audit trail (SubagentStart hook injects instructions). IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.76.0 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. workflow/agent_tree.yaml is hook-owned: the SubagentStart and SubagentStop hooks record every spawn and stop, so agents do not self-register. Only the skill that creates a session writes the file, once, to seed the depth-0 root entry. IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0; path corrected in WI-5, session
   // run_improve-skills-hooks_260703_001): the CANONICAL product-context
@@ -315,7 +324,10 @@ createHook('SessionCatchup', async (input) => {
     try {
       if (fs.existsSync(resultFile)) {
         const cached = fs.readFileSync(resultFile, 'utf8').trim();
-        if (cached) {
+        // WI-17: the result file is under cagents-memory/, which an agent can
+        // write with no prompt. Inject it only when it is the one line that
+        // scripts/update-check.sh prints. Any other text is data, not context.
+        if (cached && cached.length <= 300 && UPDATE_RESULT_RE.test(cached)) {
           cagentsContext = cached + '\n' + cagentsContext;
         }
       }

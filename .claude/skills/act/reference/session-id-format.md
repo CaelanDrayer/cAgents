@@ -69,7 +69,7 @@ At creation time, /act writes these three files:
 |------|---------|
 | `instruction.yaml` | User request + metadata |
 | `status.yaml` | Pipeline state and history |
-| `workflow/agent_tree.yaml` | Self-registration as root agent |
+| `workflow/agent_tree.yaml` | Depth-0 root entry (seeded once at init; hooks own it after that) |
 
 ### instruction.yaml
 

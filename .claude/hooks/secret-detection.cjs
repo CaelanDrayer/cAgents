@@ -46,14 +46,43 @@ function getBackupDir(sessionId) {
 }
 
 function sanitizeContent(content, findings) {
-  // Sort findings by descending start index so replacements don't shift earlier ones.
-  const sorted = [...findings].sort((a, b) => b.index - a.index);
+  // WI-17 round 3: replace the secret token span of each finding (group 1
+  // when the pattern has one, else the whole match). Two findings can cover
+  // the same text (a generic `apiKey = "..."` match around an `sk-ant-` token).
+  // Before, both were replaced with indices into the original content, so the
+  // second replacement cut text next to the secret. WI-17 round 4 (L3): sort
+  // by start and MERGE overlapping or adjacent spans into one span that runs
+  // to the furthest end (dropping the later span left a vendor-token tail in
+  // clear, e.g. `api_key="<20>hvs.<90>"`). The placeholder is then the sha256
+  // of exactly the merged text it replaced, which is what secret-restore.cjs
+  // checks. When the merged text is not a plain secret token (restore's strict
+  // charset / length), the span is still masked: masking wins over
+  // restorability, and restore will refuse that file rather than guess.
+  const spans = findings.map(f => (typeof f.tokenValue === 'string' && f.tokenValue
+    ? { f, start: f.tokenIndex, value: f.tokenValue }
+    : { f, start: f.index, value: f.value }))
+    .filter(s => typeof s.value === 'string' && s.value.length > 0 && s.value === content.slice(s.start, s.start + s.value.length))
+    .sort((a, b) => a.start - b.start || b.value.length - a.value.length);
+  const kept = [];
+  for (const s of spans) {
+    const end = s.start + s.value.length;
+    const last = kept[kept.length - 1];
+    if (last && s.start <= last.end) {
+      if (end > last.end) last.end = end;
+      continue;
+    }
+    kept.push({ f: s.f, start: s.start, end });
+  }
+  for (const k of kept) k.value = content.slice(k.start, k.end);
+  // Replace from the end so earlier indices stay valid.
+  kept.reverse();
   let out = content;
   const placeholders = [];
-  for (const f of sorted) {
-    const hash = crypto.createHash('sha256').update(f.value).digest('hex').slice(0, 8);
+  for (const s of kept) {
+    const f = s.f;
+    const hash = crypto.createHash('sha256').update(s.value).digest('hex').slice(0, 8);
     const placeholder = `BLOCK_${hash}`;
-    out = out.slice(0, f.index) + placeholder + out.slice(f.index + f.value.length);
+    out = out.slice(0, s.start) + placeholder + out.slice(s.start + s.value.length);
     placeholders.push({
       placeholder,
       hash,
@@ -376,7 +405,14 @@ function scanForSecrets(content, filePath) {
       findings[secretType.severity].push({
         type: secretType.name, severity: secretType.severity, line: lines.length, redacted,
         // v12.0.4: capture raw value + index for sanitize-mode (NEVER logged or persisted).
-        value: match[0], index: match.index
+        value: match[0], index: match.index,
+        // WI-17 round 3: a pattern with a capture group (`api_key = "<tok>"`)
+        // names the secret token in group 1. Sanitize mode replaces only that
+        // token, so the placeholder stands for a plain token and
+        // secret-restore.cjs can check the .orig against it.
+        ...(match[1] && match[0].lastIndexOf(match[1]) >= 0
+          ? { tokenValue: match[1], tokenIndex: match.index + match[0].lastIndexOf(match[1]) }
+          : {})
       });
     }
     // Early termination: skip lower severity if critical/high found

@@ -152,10 +152,10 @@ When the team manifest includes a template with waves, coordinate the work wave 
 Pull the matching worked example when you coordinate the waves and the gates:
 
 - See @docs/example-store/ex-gates-context-budget-tiers.md. Shift the read-depth across the peak / good / degrading / poor bands. Checkpoint before a forced compaction during a long lead session.
-- See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each wave gate pre-flight, revision, escalation, or abort. Add revision stall-detection.
-- See @docs/example-store/ex-gates-deterministic-candidate-selection.md. Bind each teammate spawn to named files, and surface what you skipped.
-- See @docs/example-store/ex-review-blind-dual-convergence.md. Use two independent blind reviewers at each wave gate. Both reviewers must pass.
-- See @docs/example-store/ex-review-distrust-self-report.md. Treat each teammate self-report as an unverified claim, and check it against the actual outputs.
+- See @docs/example-store/ex-verification-completed-is-not-done.md. Treat a 'completed' status as a claim. Check the outputs before you call the work done.
+- See @docs/example-store/ex-skill-authoring-override-precedence.md. Name the override conditions, and apply one tie-break: the harder constraint wins and the shape stays.
+- See @docs/example-store/ex-structured-io-pre-send-shape-check.md. Make five cuts before you send a report or a reply. The first and last lines must stand alone.
+- See @docs/example-store/ex-structured-io-terse-return-grammar.md. Use a fixed reply grammar: one row per hit, a zero-hit sentinel, a totals line, and canned refusals.
 
 ---
 

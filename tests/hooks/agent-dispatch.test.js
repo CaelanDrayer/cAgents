@@ -8,8 +8,9 @@
  *
  * Coverage (acceptance criteria):
  *   (a) short-circuit: session-init-gate deny => dispatcher denies, advisory NOT consulted.
- *   (b) FAIL-CLOSED: a throw in the session-presence gate => DENY; a throw in the
- *       advisory gate => CONTINUE (fail-open).
+ *   (b) FAIL-OPEN: a throw in session-init-gate (advisory, HS-7 / F2) => loud
+ *       CONTINUE (systemMessage + stderr warning, no denied-spawn record); a throw
+ *       in the advisory model-routing-advisor => CONTINUE (fail-open).
  *   (c) heterogeneous returns: no deny + advisory systemMessage => {continue, systemMessage};
  *       session-init-gate alias verdict (systemMessage + hookSpecificOutput) preserved;
  *       all-null => null.
@@ -91,22 +92,37 @@ describe('agent-dispatch.cjs (PreToolUse[Agent] dispatcher)', () => {
   });
 
   // ── (b) FAIL-CLOSED / FAIL-OPEN ───────────────────────────────────────────
-  describe('(b) fail-closed (session gate) vs fail-open (advisory)', () => {
+  describe('(b) fail-open on a throw in either sub-gate', () => {
     let makeDispatchHandler;
     beforeEach(() => { ({ makeDispatchHandler } = loadFactory()); });
 
-    it('session-init-gate THROWS => dispatcher DENIES (fail-closed), short-circuits', async () => {
+    // F2: session-init-gate is advisory (HS-7). Before the fix, a logic throw
+    // inside it made AgentDispatch DENY, so one gate bug blocked every Agent spawn.
+    it('session-init-gate THROWS => dispatcher ALLOWS loudly (systemMessage + stderr), no denied-spawn record', async () => {
       const sessionGate = vi.fn(async () => { throw new Error('findActiveSession crashed'); });
       const modelAdvisor = vi.fn(NULL);
       const h = makeDispatchHandler({ sessionGate, modelAdvisor });
-      const verdict = await h({ tool_name: 'Agent', tool_input: {} });
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let verdict;
+      let stderr;
+      try {
+        verdict = await h({ tool_name: 'Agent', tool_input: {} });
+      } finally {
+        // Capture before mockRestore(), which also clears the recorded calls.
+        stderr = errSpy.mock.calls.map((c) => c.join(' ')).join('\n');
+        errSpy.mockRestore();
+      }
 
-      expect(verdict.deny).toBe(true);
-      expect(verdict.reason).toMatch(/FAIL-CLOSED/);
-      expect(verdict.reason).toMatch(/session-init-gate/);
-      // NOT continue:true — the createHook FAIL-OPEN must be bypassed by our inner catch.
-      expect(verdict.continue).toBeUndefined();
-      expect(modelAdvisor).not.toHaveBeenCalled();
+      expect(verdict.deny).toBeUndefined();
+      expect(verdict.hookSpecificOutput?.permissionDecision).toBeUndefined();
+      expect(verdict.continue).toBe(true);
+      expect(verdict.systemMessage).toMatch(/^\[FAIL-OPEN\] session-init-gate threw \(findActiveSession crashed\)/);
+      expect(verdict.systemMessage).toMatch(/Agent spawn allowed/);
+      expect(verdict.systemMessage).toMatch(/hook bug, please report it/);
+
+      expect(stderr).toMatch(/\[AgentDispatch\] session-init-gate FAILED OPEN.*findActiveSession crashed/);
+      // Nothing was denied, so no denied-spawn record is written.
+      expect(stderr).not.toMatch(/denied-spawn/);
     });
 
     it('model-routing-advisor THROWS (advisory) => dispatcher CONTINUES (fail-open)', async () => {
@@ -174,17 +190,26 @@ describe('agent-dispatch.cjs (PreToolUse[Agent] dispatcher)', () => {
       }
     );
 
-    it('a genuine TypeError still DENIES (fail-closed preserved — this is not an over-correction)', async () => {
+    it('a genuine TypeError (logic fault) fails OPEN loudly, not CLOSED (HS-7 / F2)', async () => {
       const sessionGate = vi.fn(async () => { throw new TypeError("Cannot read properties of undefined (reading 'x')"); });
       const modelAdvisor = vi.fn(NULL);
       const h = makeDispatchHandler({ sessionGate, modelAdvisor });
-      const verdict = await h({ tool_name: 'Agent', tool_input: {} });
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      let verdict;
+      let stderr;
+      try {
+        verdict = await h({ tool_name: 'Agent', tool_input: {} });
+      } finally {
+        // Capture before mockRestore(), which also clears the recorded calls.
+        stderr = errSpy.mock.calls.map((c) => c.join(' ')).join('\n');
+        errSpy.mockRestore();
+      }
 
-      expect(verdict.deny).toBe(true);
-      expect(verdict.reason).toMatch(/FAIL-CLOSED/);
-      expect(verdict.reason).toMatch(/session-init-gate/);
-      expect(verdict.reason).toMatch(/LOGIC fault/);
-      expect(modelAdvisor).not.toHaveBeenCalled();
+      expect(verdict.deny).toBeUndefined();
+      expect(verdict.continue).toBe(true);
+      expect(verdict.systemMessage).toMatch(/FAIL-OPEN/);
+      expect(verdict.systemMessage).toMatch(/session-init-gate threw/);
+      expect(stderr).toMatch(/\[AgentDispatch\] session-init-gate FAILED OPEN \(logic throw\)/);
     });
 
     it('an errno-less Error whose message carries the ERRNO prefix is still classified as I/O', async () => {
@@ -219,9 +244,17 @@ describe('agent-dispatch.cjs (PreToolUse[Agent] dispatcher)', () => {
       expect(ioVerdict.hookSpecificOutput.permissionDecisionReason).toContain('EACCES');
       expect(ioVerdict.hookSpecificOutput.permissionDecisionReason).toContain('/x/sessions');
 
+      // HS-7: SessionInitGate is advisory, so the standalone route fails OPEN
+      // (loud) on a logic throw, and so does the dispatcher route (F2). AgentDispatch
+      // stays in FAIL_CLOSED_HOOKS only for dispatcher faults OUTSIDE the sub-gate try/catch.
       const logic = utils.handlerFailureVerdict('SessionInitGate', new TypeError('boom'));
-      expect(logic.hookSpecificOutput.permissionDecision).toBe('deny');
-      expect(logic.hookSpecificOutput.permissionDecisionReason).toMatch(/FAIL-CLOSED/);
+      expect(logic.continue).toBe(true);
+      expect(logic.hookSpecificOutput?.permissionDecision).toBeUndefined();
+      expect(logic.systemMessage).toMatch(/threw and was caught/);
+
+      const gate = utils.handlerFailureVerdict('AgentDispatch', new TypeError('boom'));
+      expect(gate.hookSpecificOutput.permissionDecision).toBe('deny');
+      expect(gate.hookSpecificOutput.permissionDecisionReason).toMatch(/FAIL-CLOSED/);
     });
 
     it('a NON-gate hook never denies on a logic throw, but is never silent either', () => {

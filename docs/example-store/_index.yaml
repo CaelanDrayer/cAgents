@@ -4,7 +4,7 @@
 # Mirrors cagents-memory/_system/templates/teams/_index.yaml shape.
 
 schema_version: "1"
-catalog_version: "1.0"
+catalog_version: "1.1"
 
 categories:
   - review
@@ -17,13 +17,14 @@ categories:
   - structured-io
   - security
 
+
 examples:
   # ---- review ----
   - id: ex-review-distrust-self-report
     category: review
     source_repo: obra/superpowers
     applies_to: [cagents:reviewer, all-controllers]
-    demonstrates: "Reviewer treats the implementer's self-report (incl. stated rationale) as an unverified claim to check against the diff."
+    demonstrates: "Reviewer treats the implementer's self-report (incl. stated rationale) as an unverified claim to verify against the diff."
     path: ex-review-distrust-self-report.md
   - id: ex-review-blind-dual-convergence
     category: review
@@ -35,7 +36,7 @@ examples:
     category: review
     source_repo: NousResearch/hermes-agent
     applies_to: [cagents:reviewer, cagents:qa-lead]
-    demonstrates: "Risk-tiered auto-apply (SAFE auto / CAREFUL apply+verify / RISKY flag-only) with file:line-cited findings + Chesterton's-Fence check."
+    demonstrates: "Risk-tiered auto-apply (SAFE, CAREFUL, RISKY) with file:line-cited findings, a cost field, and a Chesterton's-Fence check."
     path: ex-review-safe-careful-risky.md
   - id: ex-review-standards-vs-spec-two-axis
     category: review
@@ -43,6 +44,12 @@ examples:
     applies_to: [cagents:reviewer, cagents:qa-lead, all-controllers]
     demonstrates: "Two orthogonal review axes (Standards vs Spec) run in parallel and never merged or reranked into one score."
     path: ex-review-standards-vs-spec-two-axis.md
+  - id: ex-review-adversarial-refutation
+    category: review
+    source_repo: NousResearch/hermes-agent
+    applies_to: [cagents:scholar, cagents:market-research-analyst, cagents:strategic-planner]
+    demonstrates: "Independent attempts with different framings, then a refuter pass that must break each located claim; only survivors are reported; cap of 3 rounds."
+    path: ex-review-adversarial-refutation.md
 
   # ---- verification ----
   - id: ex-verification-evidence-first
@@ -55,7 +62,7 @@ examples:
     category: verification
     source_repo: phuryn/pm-skills
     applies_to: [cagents:security-engineer, cagents:qa-lead, cagents:architect]
-    demonstrates: "Audit code against documented intent boundary-by-boundary; keep only trust/cost/data/tenant-boundary-crossing drift."
+    demonstrates: "Audit code against documented intent one boundary at a time; keep only drift that crosses a trust, cost, data, or tenant boundary."
     path: ex-verification-intended-vs-implemented.md
   - id: ex-verification-feedback-loop-first-debugging
     category: verification
@@ -67,15 +74,63 @@ examples:
     category: verification
     source_repo: vercel-labs/agent-skills
     applies_to: [cagents:validator, cagents:reviewer, all-controllers]
-    demonstrates: "Mechanically re-check each numeric/file/snippet/citation claim in a completed report with grep+fs+math; passRate=verified/(verified+failed); passRate<0.8 with >=2 claims triggers a re-gen with failures fed back."
+    demonstrates: "Extract each numeric/file/snippet/citation claim from a completed report and check it with grep+fs+math; passRate = verified/(verified+failed); passRate<0.8 with >=2 checkable claims triggers a re-gen with the failures fed back."
     path: ex-verification-mechanical-claim-check.md
+  - id: ex-verification-assert-vs-say-grounding
+    category: verification
+    source_repo: latent-spaces/brag
+    applies_to: [cagents:editor, cagents:ai-writing-editor, cagents:marketing-strategist]
+    demonstrates: "Assert-vs-say grounding read: each factual claim in a deliverable cites a source input; invented framing is allowed; a structural PASS says nothing about the claims."
+    path: ex-verification-assert-vs-say-grounding.md
+  - id: ex-verification-blind-baseline-eval
+    category: verification
+    source_repo: ayghri/i-have-adhd
+    applies_to: [cagents:optimizer, cagents:data-scientist, cagents:wave-reviewer]
+    demonstrates: "Blind A/B/C judge, weighted rubric plus blocker flag, runner isolation, identical (case, trial) coverage, recorded model and cost, comparative not absolute gate."
+    path: ex-verification-blind-baseline-eval.md
+  - id: ex-verification-completed-is-not-done
+    category: verification
+    source_repo: NousResearch/hermes-agent
+    applies_to: [cagents:team-lead, cagents:execution-monitor, cagents:operations-manager]
+    demonstrates: "A child's completed status is a claim: verify that the outputs exist and are fresh, and that every branch has 0 unmerged commits, before you close a wave."
+    path: ex-verification-completed-is-not-done.md
+  - id: ex-verification-coverage-ledger
+    category: verification
+    source_repo: NVIDIA/SkillSpector
+    applies_to: [cagents:validator, cagents:wave-reviewer, cagents:general-counsel]
+    demonstrates: "No findings is not PASS: each unread or uninterpretable required input is a ledger event that blocks a complete PASS, and each empty category is reported as not covered."
+    path: ex-verification-coverage-ledger.md
+  - id: ex-verification-loop-contract-three-exits
+    category: verification
+    source_repo: f/prompts.chat
+    applies_to: [cagents:execution-monitor, cagents:self-correct, cagents:operations-manager, cagents:coordinator]
+    demonstrates: "A nine-field loop contract with success, failure, and budget exits; strong observations per domain; checker preference order; thrashing and goal-drift guards."
+    path: ex-verification-loop-contract-three-exits.md
+  - id: ex-verification-measured-vs-inferred-ledger
+    category: verification
+    source_repo: juliusbrussee/caveman
+    applies_to: [cagents:optimizer, cagents:validator, cagents:data-scientist, cagents:marketing-analyst, cagents:cfo]
+    demonstrates: "Keep measured, inferred, and verified figures in separate ledgers; never add or relabel them; an empty result is no signal, not zero; publish the conditions where the change is net-negative."
+    path: ex-verification-measured-vs-inferred-ledger.md
+  - id: ex-verification-preregistered-null-result
+    category: verification
+    source_repo: affaan-m/ECC
+    applies_to: [cagents:scholar, cagents:data-scientist, cagents:social-scientist, cagents:optimizer]
+    demonstrates: "Pre-register hypotheses, arms, sample, and the reporting rule; include placebo and ablation arms; report the null and the cost; never cite an unconfirmed effect."
+    path: ex-verification-preregistered-null-result.md
+  - id: ex-verification-verify-and-stop
+    category: verification
+    source_repo: juliusbrussee/caveman
+    applies_to: [cagents:validator, cagents:wave-reviewer, cagents:operations-manager, cagents:general-counsel]
+    demonstrates: "Map each acceptance criterion to the smallest sufficient proof; reuse results for the same state; focused checks before wide gates; report pass, fail, unavailable, and blocked distinctly; stop with no polish once the proof is complete."
+    path: ex-verification-verify-and-stop.md
 
   # ---- minimalism ----
   - id: ex-minimalism-solution-ladder-before-after
     category: minimalism
     source_repo: multica-ai/andrej-karpathy-skills
     applies_to: [cagents:backend-developer, cagents:frontend-developer, cagents:reviewer]
-    demonstrates: "Over-abstraction (strategy pattern/ABC) vs a 3-line function — ladder rungs 1 and 7 in action."
+    demonstrates: "Over-abstraction (strategy pattern/ABC) vs a 3-line function: ladder rungs 1 and 7 in action."
     path: ex-minimalism-solution-ladder-before-after.md
   - id: ex-minimalism-surgical-diff-vs-refactor
     category: minimalism
@@ -89,7 +144,7 @@ examples:
     category: skill-authoring
     source_repo: anthropics/skills
     applies_to: [cagents:planner, cagents:technical-writer]
-    demonstrates: "The description IS the trigger: pack what-it-does + trigger keywords + file cues + explicit NOT-for negative boundaries."
+    demonstrates: "The description IS the trigger: what-it-does + trigger keywords + file cues + explicit NOT-for negative boundaries."
     path: ex-skill-authoring-pushy-description.md
   - id: ex-skill-authoring-progressive-disclosure
     category: skill-authoring
@@ -107,15 +162,21 @@ examples:
     category: skill-authoring
     source_repo: vercel-labs/agent-skills
     applies_to: [cagents:technical-writer, cagents:qa-lead, cagents:reviewer]
-    demonstrates: "One rule per file (title/impact/incorrect-correct schema) + _template stencil + _sections index, impact-prioritized prefix namespacing, and a build+validate step that rejects rules missing a valid impact or a bad+good pair."
+    demonstrates: "One rule per file with title/impact/incorrect-correct schema, a _template stencil + _sections index, impact-prioritized prefix namespacing, and a build+validate step that rejects rules missing a valid impact or a bad+good example pair."
     path: ex-skill-authoring-rule-per-file-lint.md
+  - id: ex-skill-authoring-override-precedence
+    category: skill-authoring
+    source_repo: ayghri/i-have-adhd
+    applies_to: [cagents:team-bootstrap, cagents:team-lead, cagents:optimizer, cagents:editor]
+    demonstrates: "Named override list plus one tie-break: the harder constraint wins, the shape stays; presentation rules never limit analysis."
+    path: ex-skill-authoring-override-precedence.md
 
   # ---- intake ----
   - id: ex-intake-ambiguous-request-disambiguation
     category: intake
     source_repo: multica-ai/andrej-karpathy-skills
-    applies_to: [cagents:planner, cagents:orchestrator, cagents:designer]
-    demonstrates: "Map a vague request ('make the search faster') to named interpretations with distinct effort before generating work items."
+    applies_to: [cagents:planner, cagents:orchestrator, cagents:market-research-analyst]
+    demonstrates: "Map a vague request to named interpretations with distinct effort before generating work items."
     path: ex-intake-ambiguous-request-disambiguation.md
   - id: ex-intake-assumption-surfacing
     category: intake
@@ -123,31 +184,37 @@ examples:
     applies_to: [cagents:planner, cagents:backend-developer, all-controllers]
     demonstrates: "State assumptions explicitly (or ask) instead of silently guessing scope/format/fields, then proceeding."
     path: ex-intake-assumption-surfacing.md
+  - id: ex-intake-frontier-round-interview
+    category: intake
+    source_repo: mattpocock/skills
+    applies_to: [cagents:market-research-analyst, cagents:product-owner, cagents:architect, cagents:life-coach]
+    demonstrates: "Ask the whole frontier of unblocked decisions per round, each with a recommended answer that 'yes' accepts; look up facts with subagents; stop when the frontier is empty."
+    path: ex-intake-frontier-round-interview.md
 
   # ---- gates ----
   - id: ex-gates-taxonomy-four-types
     category: gates
     source_repo: NousResearch/hermes-agent
     applies_to: [all-controllers, cagents:validator, cagents:wave-reviewer]
-    demonstrates: "Name every checkpoint Pre-flight / Revision / Escalation / Abort with a fixed 3-question template + revision stall-detection."
+    demonstrates: "Name each checkpoint Pre-flight, Revision, Escalation, or Abort with a fixed template of 3 questions, plus revision stall-detection."
     path: ex-gates-taxonomy-four-types.md
   - id: ex-gates-fact-forcing-pre-hoc
     category: gates
     source_repo: affaan-m/ECC
     applies_to: [cagents:backend-developer, all-controllers]
-    demonstrates: "Deny the FIRST write to a target until the agent presents concrete investigation facts (pre-hoc evidence gate)."
+    demonstrates: "Deny the first write to a target until the agent gives investigation facts; waive it for prior work; adopt it only behind its own eval."
     path: ex-gates-fact-forcing-pre-hoc.md
   - id: ex-gates-context-budget-tiers
     category: gates
     source_repo: NousResearch/hermes-agent
     applies_to: [all-controllers, cagents:team-lead, cagents:execution-monitor]
-    demonstrates: "PEAK / GOOD / DEGRADING / POOR context bands that change read-depth and trigger proactive checkpointing before compaction."
+    demonstrates: "PEAK, GOOD, DEGRADING, and POOR context bands that change the read depth and write a checkpoint before compaction."
     path: ex-gates-context-budget-tiers.md
   - id: ex-gates-deterministic-candidate-selection
     category: gates
     source_repo: vercel-labs/agent-skills
     applies_to: [cagents:planner, all-controllers, cagents:execution-monitor]
-    demonstrates: "A deterministic LLM-free gate selects investigation candidates from evidence, binds each to named files (never grep-the-repo), and surfaces every skipped candidate with its reason in a 'Not investigated' trust section."
+    demonstrates: "A pure/LLM-free gate picks investigation candidates from evidence (not LLM judgment), each investigation reads only the files its candidate names, and every skipped candidate is surfaced with a reason in a 'Not investigated' trust section."
     path: ex-gates-deterministic-candidate-selection.md
 
   # ---- strategy ----
@@ -183,17 +250,41 @@ examples:
     applies_to: [cagents:data-scientist, cagents:task-state, cagents:backend-developer]
     demonstrates: "role + input_schema + output_schema + instructions as an inline contract for data-transform agents (vague vs schema-constrained)."
     path: ex-structured-io-schema-role-contract.md
+  - id: ex-structured-io-pre-send-shape-check
+    category: structured-io
+    source_repo: ayghri/i-have-adhd
+    applies_to: [cagents:team-lead, cagents:coord-log-writer, cagents:support-director, cagents:customer-success-manager, cagents:editor]
+    demonstrates: "Five cuts before send, then a first-line and last-line test; keep hedges that carry real uncertainty; restate step N of M."
+    path: ex-structured-io-pre-send-shape-check.md
+  - id: ex-structured-io-terse-return-grammar
+    category: structured-io
+    source_repo: juliusbrussee/caveman
+    applies_to: [cagents:team-lead, cagents:team-bootstrap, cagents:wave-reviewer, cagents:execution-monitor]
+    demonstrates: "One row per hit (path:line | symbol | note of 6 words or less), group headers at 3+ rows, a 'No match.' sentinel, a totals line, canned refusals, and plain prose for security and destructive operations."
+    path: ex-structured-io-terse-return-grammar.md
 
   # ---- security ----
   - id: ex-security-allowed-tools-vs-actual
     category: security
     source_repo: NVIDIA/SkillSpector
     applies_to: [cagents:security-engineer, cagents:reviewer]
-    demonstrates: "Diff declared allowed-tools against capabilities the body/code actually uses (LP1-4: undeclared use, wildcard, no-decl, over-decl)."
+    demonstrates: "Compare declared allowed-tools with the capabilities that the body or code uses (LP1-4), with scoped-grant mapping and fail-safe remediation."
     path: ex-security-allowed-tools-vs-actual.md
   - id: ex-security-trigger-collision-abuse
     category: security
     source_repo: NVIDIA/SkillSpector
     applies_to: [cagents:planner, cagents:security-engineer]
-    demonstrates: "Trigger-abuse checks (TR1-3): single-common-word triggers, shadow-command collisions with reserved skill names, keyword-baiting."
+    demonstrates: "Trigger-abuse checks (TR1-3): single-common-word triggers, whole-name shadow collisions with reserved names, and unscoped keyword-baiting."
     path: ex-security-trigger-collision-abuse.md
+  - id: ex-security-direct-prohibition-scope
+    category: security
+    source_repo: NVIDIA/SkillSpector
+    applies_to: [cagents:security-engineer, cagents:devops-engineer]
+    demonstrates: "Exempt a risky-pattern match only when a negation directly governs it; unknown phrasing keeps detection (fail-closed)."
+    path: ex-security-direct-prohibition-scope.md
+  - id: ex-security-public-artifact-data-hygiene
+    category: security
+    source_repo: latent-spaces/brag
+    applies_to: [cagents:security-engineer, cagents:hitl, cagents:general-counsel]
+    demonstrates: "Public-artifact data hygiene: deny-list inspection, no secrets or real PII in any output (fictional stand-ins disclosed), and no hard-to-reverse outward action in the run; apply the same rules to every mode variant."
+    path: ex-security-public-artifact-data-hygiene.md

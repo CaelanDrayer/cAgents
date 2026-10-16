@@ -102,14 +102,11 @@ Create the session directory and its key files in this exact order, BEFORE you s
 
 ## Agent Audit Trail
 
-When a parent spawns you as a subagent, the SubagentStart hook injects context. That context asks you to self-register your cAgents agent name. If you see a message about self-registering in `agent_tree.yaml`, append your agent type information:
+When a parent spawns you as a subagent, the hooks record you in the agent tree. `subagent-tracker.cjs` (SubagentStart) appends a `spawn` event to `workflow/events.jsonl` and writes your row to `workflow/agent_tree.yaml`. It sets `cagents_type: "cagents:trigger"` from the spawn. `subagent-stop-tracker.cjs` (SubagentStop) records your stop.
 
-```yaml
-    cagents_type: "cagents:trigger"
-    role_description: "Universal entry point - domain detection and workflow initialization"
-```
+Do not edit `agent_tree.yaml`. The hooks own it and rewrite it atomically, so a hand-added row can break the tree. Write `status.yaml` before you spawn the orchestrator, so the hooks can find the session.
 
-This step is critical, because it audits which agents a workflow used. The SubagentStart event of Claude Code provides only a generic `agent_type`, which is often "general-purpose". Every cAgents agent must therefore self-report its actual role.
+The SubagentStart event of Claude Code gives only a generic `agent_type`, which is often "general-purpose". The tracker therefore reads the real `cagents:{name}` type from the spawn.
 
 ## Parent Session Linkage
 

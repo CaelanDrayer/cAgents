@@ -1,6 +1,6 @@
 ---
 name: ex-gates-taxonomy-four-types
-description: "Example: naming every workflow checkpoint as one of four types — Pre-flight, Revision, Escalation, Abort — each answering a fixed 3-question template (trigger / failure behavior / who resumes), plus a revision-loop stall-detection rule. Load when designing controller/validator gates."
+description: "Example: name each workflow checkpoint as one of four types: Pre-flight, Revision, Escalation, or Abort. Each type answers a fixed template of 3 questions: the trigger, the behavior on failure, and who resumes. A stall-detection rule ends a revision loop early. Load when you design controller or validator gates."
 license: MIT
 compatibility: "Claude Code 2.x, cAgents 12.x"
 metadata:
@@ -8,44 +8,47 @@ metadata:
   category: gates
   source_repo: NousResearch/hermes-agent
   source_url: "https://github.com/NousResearch/hermes-agent"
+  source_commit: ca069e12239a2c8d13887ac9f983557d00bdcfd2
   applies_to:
     - all-controllers
     - cagents:validator
     - cagents:wave-reviewer
-  demonstrates: "Name every checkpoint Pre-flight / Revision / Escalation / Abort with a fixed 3-question template + revision stall-detection."
+  demonstrates: "Name each checkpoint Pre-flight, Revision, Escalation, or Abort with a fixed template of 3 questions, plus revision stall-detection."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 ---
 
-# Example: Gate Taxonomy — Four Named Checkpoint Types
+# Example: Gate Taxonomy with Four Named Checkpoint Types
 
 ## Context
-cAgents' checkpoint concepts (BLOCKED/WARN/ESCALATE/HOLD/AUTO-FIX) are scattered
-across `controller-validation-checklist.md` and the dead-letter contract with no
-shared vocabulary. This example names four checkpoint *types* controllers, the
-validator, and wave-reviewer can cite by name.
+The checkpoint concepts of cAgents are BLOCKED, WARN, ESCALATE, HOLD, and
+AUTO-FIX. They are in `controller-validation-checklist.md` and in the dead-letter
+contract, with no shared vocabulary. This example names four checkpoint *types*.
+Controllers, the validator, and the wave-reviewer can cite each type by name.
 
 ## Example
 
-Every gate is exactly one of four types, and each answers three fixed questions —
-**what triggers it / what happens on failure / who resumes and from where**:
+Each gate is exactly one of four types. Each type answers three fixed questions:
+**what triggers it, what happens on failure, and who resumes from where**.
 
 | Type | Purpose | On failure | Resumes |
 |------|---------|-----------|---------|
-| **Pre-flight** | blocks entry; no partial work allowed | reject before any work starts | producer, from scratch |
-| **Revision** | loops back to the producer, bounded cap | send findings back; iterate | producer, from the fix |
-| **Escalation** | pause and ask the human — never guess | halt; await human input | human, then producer |
-| **Abort** | terminate + checkpoint to prevent damage | stop, save state | nobody (session ends) |
+| **Pre-flight** | blocks entry; no partial work is allowed | reject before any work starts | the producer, from the start |
+| **Revision** | loops back to the producer, with a cap on rounds | send the findings back and iterate | the producer, from the fix |
+| **Escalation** | pause and ask the human; never guess | halt and wait for human input | the human, then the producer |
+| **Abort** | stop and save a checkpoint to prevent damage | stop and save the state | nobody, because the session ends |
 
-Map onto cAgents surfaces:
-- Pre-flight = controller Pre-Execution Validation (Checks 0-6) — malformed plan never
-  reaches an executor.
-- Revision = the reviewer loop (`max_internal_rounds: 2`).
-- Escalation = tier-4 HITL gate / NEEDS_CONTEXT.
-- Abort = dead_letter promotion / unrecoverable error.
+The types map onto these cAgents surfaces:
 
-**Stall-detection rule for Revision gates** (the transferable addition): if the
-findings count does NOT shrink between round 1 and round 2, escalate *immediately*
-rather than spending the second allotted round on a doomed retry.
+- Pre-flight is the controller Pre-Execution Validation, Checks 0-6. A malformed
+  plan never gets to an executor.
+- Revision is the reviewer loop, with `max_internal_rounds: 2`.
+- Escalation is the tier-4 HITL gate, or a NEEDS_CONTEXT status.
+- Abort is a dead_letter promotion, or an unrecoverable error.
+
+**Stall-detection rule for Revision gates**: this is the addition that transfers
+to cAgents. If the count of findings does NOT get smaller from round 1 to round 2,
+escalate at once. Do not spend the last round on a retry that will fail.
 
 ```yaml
 gate: { type: revision, round: 2, findings_prev: 4, findings_now: 4 }
@@ -53,7 +56,7 @@ gate: { type: revision, round: 2, findings_prev: 4, findings_now: 4 }
 ```
 
 ## Why it matters
-Gives cAgents' scattered gate vocabulary one crisp naming scheme, and the
-stall-detection rule saves ~a full reviewer round of token budget on doomed retries.
-Distilled from NousResearch/hermes-agent
-`subagent-driven-development/references/gates-taxonomy.md`.
+The gate vocabulary of cAgents gets one clear naming scheme. The stall-detection
+rule saves about one full reviewer round of token budget on each retry that would
+fail. Distilled from NousResearch/hermes-agent
+`optional-skills/software-development/subagent-driven-development/references/gates-taxonomy.md`.

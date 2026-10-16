@@ -19,7 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, ensureDir, safeRead, extractYamlValue, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock, updateStatusHeartbeat, claimSession, getSessionOwner } = require('./hook-utils.cjs');
+const { createHook, resolveSession, ensureDir, safeRead, extractYamlValue, AGENT_MEMORY_DIR, PROJECT_ROOT, withFileLock, updateStatusHeartbeat, claimSession, getSessionOwner, claimFromAnyWrite } = require('./hook-utils.cjs');
 
 const SDK_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -232,6 +232,15 @@ createHook('PostWriteValidator', async (input) => {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || '';
 
+  // HS-1 claimFromAnyWrite: a session created with Bash (`cat > $S/status.yaml`) is claimed here too.
+  if (toolName === 'Bash') {
+    try {
+      const claimed = claimFromAnyWrite(input);
+      if (claimed.length) console.error(`[PostWriteValidator] claimed via Bash write: ${claimed.map(d => path.basename(d)).join(', ')}`);
+    } catch { /* best effort */ }
+    return null;
+  }
+
   if (!filePath) return null;
 
   const ext = path.extname(filePath).toLowerCase();
@@ -335,7 +344,8 @@ createHook('PostWriteValidator', async (input) => {
   // A's heartbeat fresh. Unclaimed or non-UUID cases keep the old behavior.
   if (basename === 'status.yaml') {
     try {
-      const statusDir = path.dirname(filePath);
+      // WI-028 B1(d): absolute-root rule; never resolve against the hook process cwd.
+      const statusDir = path.dirname(path.resolve(input.cwd || PROJECT_ROOT, filePath));
       const sid = input.session_id;
       const owner = SDK_UUID_RE.test(sid || '') ? getSessionOwner(statusDir) : null;
       const foreign = owner && SDK_UUID_RE.test(owner) && owner !== sid;
@@ -343,8 +353,9 @@ createHook('PostWriteValidator', async (input) => {
     } catch { /* best effort */ }
   }
 
-  // Log to session audit trail
-  const sessionDir = findActiveSession(input.session_id);
+  // Log to session audit trail (HS-1 shared resolver; liveness-gated like the
+  // findActiveSession call it replaces).
+  const sessionDir = resolveSession(input, { purpose: 'gate', claimHint: false });
   if (sessionDir) {
     try {
       const auditDir = ensureDir(path.join(sessionDir, 'workflow'));

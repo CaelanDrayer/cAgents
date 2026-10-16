@@ -1,6 +1,6 @@
 ---
 name: ex-verification-feedback-loop-first-debugging
-description: "Example: feedback-loop-first debugging — build a tight, fast, red-capable reproduction command BEFORE forming any hypothesis, choosing from 10 ranked loop strategies, and tag temporary debug logs for guaranteed cleanup. Load for bug-fix work items."
+description: "Example: feedback-loop-first debugging. Build a fast, deterministic reproduction command that can go red BEFORE you form a hypothesis, choose from 10 ranked loop strategies, and tag temporary debug logs so cleanup is certain. Load for bug-fix work items."
 license: MIT
 compatibility: "Claude Code 2.x, cAgents 12.x"
 metadata:
@@ -8,6 +8,8 @@ metadata:
   category: verification
   source_repo: mattpocock/skills
   source_url: "https://github.com/mattpocock/skills"
+  source_commit: 49dd158d1076134a641b33efb035946536778336
+  reviewed: "2026-10-15"
   applies_to:
     - cagents:backend-developer
     - cagents:qa-lead
@@ -19,16 +21,19 @@ metadata:
 # Example: Feedback-Loop-First Debugging
 
 ## Context
-90% of debugging is building a **tight** (fast, deterministic, sharp-signal)
-reproduction loop before any hypothesis. This gives a cAgents bug-fix work item a
-Check-0: no fix is proposed until a red-capable repro command exists and has been run.
+Most of debugging is the work to build a tight reproduction loop: fast,
+deterministic, and with a sharp signal. Build it before any hypothesis. This gives
+a cAgents bug-fix work item a Check 0. Propose no fix until a reproduction command
+that can go red exists and has run.
 
 ## Example
 
-**Anti-pattern**: "If you catch yourself reading code to build a theory before this
-repro command exists, STOP." Reading code first anchors you on a guess.
+**Anti-pattern.** You read code to build a theory before the reproduction command
+exists. If you see yourself do this, stop. Code that you read first anchors you on
+a guess.
 
-Build the loop from the first strategy that fits (preference order — tighter is better):
+Build the loop from the first strategy that fits. The list is in order of
+preference, and a tighter loop is better:
 
 ```
 1. Failing unit/integration test        6. Throwaway harness script
@@ -42,17 +47,24 @@ Then:
 
 ```
 - Establish the loop RED (reproduces the bug deterministically). Show it red.
+- Minimise the repro: remove inputs and steps until each one left is needed.
 - Write 3-5 FALSIFIABLE, ranked hypotheses; show them to the user BEFORE testing
   (anti-anchoring). Test the cheapest-to-falsify first.
+- When you force a change to test a hypothesis, prove that the change landed
+  (show the diff or the changed value) before you trust the result.
 - Any temporary instrumentation gets a tagged prefix: console.log("[DEBUG-a4f2] ...").
   Before reporting DONE: `grep -rn "\[DEBUG-a4f2\]"` and remove every hit.
+- Redact secrets and personal data from logs and traces that you keep or share.
 - Completion: the loop is now GREEN, and the hypothesis that turned out correct is
   stated in the commit/PR message so the next debugger learns.
 ```
 
+If no correct place exists to put the loop, report that as a finding. A codebase
+that you cannot test at the fault is part of the bug.
+
 ## Why it matters
-Strengthens `execution-self-validation.md` Check 3 (guard exit codes): the guard is
-established and shown *red before* the fix, not just green after. The tagged-debug-log
-convention (`[DEBUG-<hash>]`, grep-cleanable) is a small, immediately-adoptable rule
-for `self-correct` and execution agents. Distilled from mattpocock/skills
-`skills/engineering/diagnosing-bugs/SKILL.md`.
+This makes `execution-self-validation.md` Check 3 (guard exit codes) stronger.
+The guard exists and shows red before the fix, not only green after it. The
+tagged debug-log convention (`[DEBUG-<hash>]`, which grep can clean) is a small
+rule that `self-correct` and execution agents can adopt now. Distilled from
+mattpocock/skills `skills/engineering/diagnosing-bugs/SKILL.md`.

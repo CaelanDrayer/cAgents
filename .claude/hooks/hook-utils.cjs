@@ -165,6 +165,13 @@ const STDIN_FALLBACK_MS = 2000;
  * Read JSON from stdin with timeout.
  * Returns parsed object or {} on any failure.
  */
+// A1: how the last readStdin() call ended. 'eof' | 'parsed' (complete JSON
+// object seen before EOF) | 'eof-empty' | 'timeout-empty' | 'timeout-partial'
+// | 'tty'. 'timeout-partial' also covers bytes that end at EOF and do not
+// parse (a truncated payload) and a stdin 'error' after partial bytes;
+// 'timeout-empty' also covers a stdin 'error' with no bytes (F1).
+let lastStdinStatus = null;
+
 function readStdin(hookName) {
   return new Promise((resolve) => {
     let data = '';
@@ -172,37 +179,63 @@ function readStdin(hookName) {
     process.stdin.setEncoding('utf8');
 
     if (process.stdin.isTTY) {
+      lastStdinStatus = 'tty';
       resolve({});
       return;
     }
 
-    function done(result) {
+    function done(result, status) {
       if (resolved) return;
       resolved = true;
+      lastStdinStatus = status;
       resolve(result);
     }
 
-    process.stdin.on('data', (chunk) => { data += chunk; });
-    process.stdin.on('end', () => {
-      try { done(data ? JSON.parse(data) : {}); }
-      catch { done({}); }
+    // A1: CC writes ONE JSON object per hook run. Resolve as soon as the
+    // buffered bytes parse as a complete object instead of waiting for EOF.
+    // Only attempted when the last non-space char is '}' (cheap, no O(n^2)).
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+      if (/\}\s*$/.test(data)) {
+        try {
+          const obj = JSON.parse(data);
+          if (obj && typeof obj === 'object') done(obj, 'parsed');
+        } catch { /* incomplete -- keep reading */ }
+      }
     });
-    process.stdin.on('error', () => done({}));
+    process.stdin.on('end', () => {
+      if (!data.trim()) { done({}, 'eof-empty'); return; }
+      try { done(JSON.parse(data), 'eof'); }
+      catch { done({}, 'timeout-partial'); }
+    });
+    // F1: a stdin 'error' mid-payload is a truncation, not a clean read. Map
+    // it onto the same statuses as the fallback deadline so createHook denies
+    // (partial bytes) or allows loudly (no bytes) instead of allowing silently.
+    process.stdin.on('error', () => done({}, data.trim() ? 'timeout-partial' : 'timeout-empty'));
 
-    // Safety-only fallback timer. .unref() so it does NOT keep the Node event
-    // loop alive: once stdin ends normally and the hook's work completes, the
-    // process must exit immediately instead of lingering for this timer.
-    // If stdin never ends, the open stdin stream keeps the loop alive and this
-    // timer still fires — correctness is preserved, keep-alive is dropped.
-    // See STDIN_FALLBACK_MS above for why this must stay under every registered
-    // hook `timeout` in .claude/settings.json.
     const stdinFallbackTimer = setTimeout(() => {
       if (!resolved) console.error(hookName ? `[Hook] stdin reading timed out for hook: ${hookName}` : `[hook-utils] readStdin timeout after ${STDIN_FALLBACK_MS}ms`);
-      done({});
+      done({}, data.trim() ? 'timeout-partial' : 'timeout-empty');
     }, STDIN_FALLBACK_MS);
     stdinFallbackTimer.unref();
   });
 }
+
+// A1: release the stdin handle after the verdict so the process exits as soon
+// as pending work drains, even if the harness never closes stdin. Backstop
+// timer is unref'd: it only fires if some other handle keeps the loop alive.
+function releaseProcess() {
+  try { process.stdin.removeAllListeners('data'); process.stdin.destroy(); } catch {}
+  const t = setTimeout(() => process.exit(process.exitCode || 0), 1500);
+  t.unref();
+}
+
+// A1: deny gates fail CLOSED when a payload started arriving but never became
+// parseable (truncated); with NO bytes at all they fail OPEN but loud (W5:
+// allow + exactly one systemMessage). Only the real guards are listed.
+// SessionInitGate is advisory and fails open (HS-7); it runs inside
+// AgentDispatch, which is listed here.
+const NO_PAYLOAD_FAIL_CLOSED = new Set(['BashValidator', 'WriteEditDispatch', 'AgentDispatch']);
 
 /**
  * Read a file safely, returning null on any error.
@@ -289,9 +322,10 @@ function countPattern(content, pattern) {
  *       (VALIDATED / complete / completed / FINALIZED) — never failed / aborted /
  *       incomplete / any non-terminal state; AND
  *   (2) a REAL validation_report.yaml exists with a PASS / PARTIAL_PASS
- *       classification that was NOT written by a hook safety net. The stub writer
- *       (autoResolveWarnings) always stamps
- *       `generated_by: verify-completion-hook-safety-net`, so any report whose
+ *       classification that was NOT written by a hook safety net. The former stub
+ *       writer (autoResolveWarnings, removed in HS-10) stamped
+ *       `generated_by: verify-completion-hook-safety-net`. Such stubs can still be
+ *       on disk in old sessions, so any report whose
  *       `generated_by` names a hook/safety-net stub is rejected. A MISSING report
  *       is rejected too (no verdict ⇒ not genuine); AND
  *   (3) for plan-bearing sessions (workflow/plan.yaml exists), a
@@ -983,7 +1017,7 @@ function findActiveSession(hintOrOptions) {
     }
     if (!content) continue;
 
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'current_phase') || extractYamlValue(content, 'pipeline_state');
+    const phase = statusPhase(content); // HS-1: one phase reader (pipeline_state first), as the JSDoc promises
     if (phase && !isTerminalState(phase)) {
       // Strict ownership: with a UUID, only an owned session qualifies.
       if (!_ownershipQualifies(path.join(sessionsDir, session), ownerUuid)) continue;
@@ -1150,17 +1184,28 @@ function findTeamSession(input = {}) {
     });
 
   // Strict ownership: with a UUID hint, only a team session it owns qualifies.
+  // HS-1: one phase reader (statusPhase: pipeline_state first). Without an
+  // owner UUID, the newest-name guess is taken ONLY when exactly one live team
+  // session exists; with two or more it would bind to another instance's
+  // session, so the answer is null.
   const ownerUuid = _isSdkUuidShape(hint) ? hint : undefined;
+  const live = [];
   for (const session of teamSessions) {
     if (!_ownershipQualifies(path.join(sessionsDir, session), ownerUuid)) continue;
     const statusFile = path.join(sessionsDir, session, 'status.yaml');
     const content = safeRead(statusFile);
     if (!content) continue;
 
-    const phase = extractYamlValue(content, 'phase') || extractYamlValue(content, 'pipeline_state');
+    const phase = statusPhase(content);
     if (phase && !isTerminalState(phase)) {
-      return path.join(sessionsDir, session);
+      if (ownerUuid) return path.join(sessionsDir, session); // owned: newest owned wins
+      live.push(session);
+      if (live.length > 1) break;
     }
+  }
+  if (live.length === 1) return path.join(sessionsDir, live[0]);
+  if (live.length > 1) {
+    console.error(`[findTeamSession] ${live.length}+ live unowned team sessions and no pin; returning null (no newest-session guess).`);
   }
 
   // (A2-05, v12.x) The legacy "H-11: scan org_* session subdirectories for nested
@@ -1365,7 +1410,11 @@ function appendSessionEvent(sessionDir, evt) {
     const f = path.join(sessionDir, 'workflow', 'events.jsonl');
     ensureDir(path.dirname(f));
     const line = JSON.stringify({ ts: new Date().toISOString(), ...(evt || {}) }) + '\n';
-    withFileLock(f, () => fs.appendFileSync(f, line));
+    // HS-6: append-only. A line under 4 KB is one O_APPEND write(2), which the
+    // kernel does not interleave with other appenders, so no lock is needed (a
+    // lock here only added contention in spawn bursts). Bigger lines keep it.
+    if (Buffer.byteLength(line) < 4096) fs.appendFileSync(f, line, { flag: 'a' });
+    else withFileLock(f, () => fs.appendFileSync(f, line));
   } catch (e) {
     console.error('[appendSessionEvent] non-fatal: ' + (e && e.message));
   }
@@ -1503,23 +1552,23 @@ function findAvailableWork(taskListPath) {
  * @param {function} fn - Function to execute while holding the lock
  * @returns {*} Return value of fn
  */
-function withFileLock(filePath, fn) {
+const LOCK_SKIPPED = Symbol('LOCK_SKIPPED');
+
+function withFileLock(filePath, fn, opts = {}) {
   const lockDir = filePath + '.lock';
-  const maxRetries = 100;
+  const skipOnTimeout = opts.onTimeout === 'skip';
+  const maxRetries = opts.maxRetries || 100;
   const retryDelayMs = 20;
   const staleLockMs = 10000; // 10s mtime-based fallback stale threshold
 
+  // WI-7 review F5: acquisition and fn() are separate. Before, a throw from
+  // fn() landed in the acquisition catch, and fn() ran AGAIN without the lock.
+  // Now fn() runs once, under the lock, and its throw goes to the caller.
+  let acquired = false;
   for (let i = 0; i < maxRetries; i++) {
     try {
       fs.mkdirSync(lockDir);
-      // Lock acquired - write PID for liveness detection (REQ-014)
-      try { fs.writeFileSync(path.join(lockDir, 'pid'), String(process.pid)); } catch { /* best effort */ }
-      try {
-        return fn();
-      } finally {
-        // Remove lock dir and PID file atomically
-        try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch { /* best effort */ }
-      }
+      acquired = true;
     } catch (err) {
       if (err.code === 'EEXIST') {
         // Lock held by another process - PID-based liveness check (REQ-014)
@@ -1558,12 +1607,32 @@ function withFileLock(filePath, fn) {
         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, retryDelayMs);
         continue;
       }
+      if (skipOnTimeout) {
+        console.error(`[withFileLock] Unexpected error: ${err.message}; SKIPPING (no unlocked write)`);
+        return LOCK_SKIPPED;
+      }
       // Unexpected error - run without lock rather than failing
       console.error(`[withFileLock] Unexpected error: ${err.message}, proceeding without lock`);
       return fn();
     }
+    break; // acquired
   }
 
+  if (acquired) {
+    // Lock acquired - write PID for liveness detection (REQ-014)
+    try { fs.writeFileSync(path.join(lockDir, 'pid'), String(process.pid)); } catch { /* best effort */ }
+    try {
+      return fn();
+    } finally {
+      // Remove lock dir and PID file atomically
+      try { fs.rmSync(lockDir, { recursive: true, force: true }); } catch { /* best effort */ }
+    }
+  }
+
+  if (skipOnTimeout) {
+    console.error(`[withFileLock] Could not acquire lock after ${maxRetries} retries; SKIPPING (no unlocked write)`);
+    return LOCK_SKIPPED;
+  }
   // Exhausted retries - proceed without lock (better than failing)
   console.error(`[withFileLock] Could not acquire lock after ${maxRetries} retries, proceeding without lock`);
   return fn();
@@ -1631,12 +1700,12 @@ function warnWithReason({ what, why, fix, hook }) {
 const IO_ERRNOS = new Set(['EACCES', 'ENOENT', 'EIO', 'ENOTDIR', 'ELOOP']);
 
 // Hooks whose handler throw must FAIL CLOSED (deny) rather than continue.
-// Keeps the two invocation routes for the session gate — the in-process
-// agent-dispatch dispatcher and the standalone `node run-hook.cjs
-// session-init-gate` path — on IDENTICAL semantics. Before this they were
-// exact opposites: fail-closed under the dispatcher, silently fail-open
-// standalone (FS-4).
-const FAIL_CLOSED_HOOKS = new Set(['SessionInitGate', 'AgentDispatch']);
+// SessionInitGate was removed (HS-7): it is advisory, so a logic throw on the
+// standalone `node run-hook.cjs session-init-gate` route now fails OPEN with a
+// loud systemMessage (never a bare continue). Inside AgentDispatch a session-gate
+// logic throw also fails OPEN (WI-19 F2, agent-dispatch.cjs). AgentDispatch stays
+// here for faults outside its sub-gate try/catch.
+const FAIL_CLOSED_HOOKS = new Set(['AgentDispatch']);
 
 /**
  * True when `err` represents an I/O fault (see IO_ERRNOS). Checks `err.code`
@@ -1768,45 +1837,94 @@ function dedupGuard(hookName, input) {
     // On collision the SECOND invocation was treated as a duplicate and skipped,
     // bypassing the security gates (secret-detection, controller-delegation). A
     // full-input SHA-1 dedups ONLY truly-identical payloads, which is the intended
-    // plugin+project double-load case. The 2s window and double-load intent are
-    // unchanged.
+    // plugin+project double-load case. The window is now DEDUP_TTL_MS (A2, below).
     const fullInput = JSON.stringify(input);
     const hash = crypto.createHash('sha1').update(hookName + '\0' + fullInput).digest('hex').slice(0, 16);
     const dedupFile = path.join(os.tmpdir(), `cagents-dedup-${hookName}-${hash}`);
 
-    // Exclusive create: fails with EEXIST if another invocation already created it
-    const fd = fs.openSync(dedupFile, 'wx');
-    fs.closeSync(fd);
-
-    // Schedule cleanup: both on process exit (for short-lived subprocess invocations
-    // where process exits before the timer fires) and via timeout fallback.
-    // Without process.on('exit'), tests that run the hook via execSync would leave
-    // stale dedup files that cause the next identical invocation to be skipped.
-    process.on('exit', () => { try { fs.unlinkSync(dedupFile); } catch {} });
-    // Fallback cleanup timer ONLY — process.on('exit') above is the primary
-    // cleanup path for short-lived subprocess invocations. .unref() so this 2s
-    // timer never keeps a finished hook process alive (the linger we eliminate).
-    // If the loop stays alive for other reasons, the timer still fires and
-    // cleans up. Dedup correctness (plugin+project double-load) relies on the
-    // file existing during the concurrent invocations' overlap, not on this
-    // timer's keep-alive.
-    const dedupCleanupTimer = setTimeout(() => { try { fs.unlinkSync(dedupFile); } catch {} }, 2000);
-    dedupCleanupTimer.unref();
-    return false; // Not a duplicate — proceed
+    // A2 (HS-2): the marker now OUTLIVES the first process for DEDUP_TTL_MS. The old
+    // marker was unlinked at process exit, so a second copy that started a few
+    // ms after the first had finished (the common case: 6-60 ms launch skew vs
+    // ~10 ms handler time) always ran. Payloads for tool events carry a unique
+    // tool_use_id, so an identical payload inside the TTL is the same event.
+    // A marker older than DEDUP_TTL_MS (5 s, by mtime) never suppresses: it is
+    // unlinked and re-created, so a stale file from a crash cannot block a gate.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const fd = fs.openSync(dedupFile, 'wx');
+        fs.writeSync(fd, JSON.stringify({ pid: process.pid, t: Date.now() }));
+        fs.closeSync(fd);
+        _dedupFile = dedupFile;
+        if (Math.random() < 0.05) sweepDedupMarkers(); // markers no longer self-delete
+        return false; // first copy -- proceed
+      } catch (e) {
+        if (e.code !== 'EEXIST') return false;
+        let age = Infinity;
+        try { age = Date.now() - fs.statSync(dedupFile).mtimeMs; } catch { continue; }
+        if (age <= DEDUP_TTL_MS) { _dedupFile = dedupFile; return true; }
+        try { fs.unlinkSync(dedupFile); } catch {}
+      }
+    }
+    return false;
   } catch (e) {
-    if (e.code === 'EEXIST') return true; // Duplicate invocation — skip
-    return false; // On any other error, proceed (don't block hooks on dedup failure)
+    return false; // never block hooks on dedup failure
   }
 }
 
+const DEDUP_TTL_MS = 5000;
+function sweepDedupMarkers() {
+  try {
+    const os = require('os'); const dir = os.tmpdir(); const now = Date.now();
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.startsWith('cagents-dedup-')) continue;
+      const p = path.join(dir, f);
+      try { if (now - fs.statSync(p).mtimeMs > 60000) fs.unlinkSync(p); } catch {}
+    }
+  } catch {}
+}
+let _dedupFile = null;
+
+// A2: first copy records its verdict in the marker; a duplicate copy replays it
+// (waits up to DEDUP_REPLAY_WAIT_MS for the first copy to finish), so both
+// copies emit the same output contract. Fallback is {"continue":true}.
+const DEDUP_REPLAY_WAIT_MS = 1500;
+function dedupRecordVerdict(json) {
+  if (!_dedupFile) return;
+  try { fs.writeFileSync(_dedupFile, JSON.stringify({ pid: process.pid, t: Date.now(), verdict: json })); } catch {}
+}
+async function dedupReplayVerdict() {
+  const deadline = Date.now() + DEDUP_REPLAY_WAIT_MS;
+  while (_dedupFile && Date.now() < deadline) {
+    try {
+      const m = JSON.parse(fs.readFileSync(_dedupFile, 'utf8'));
+      if (m && typeof m.verdict === 'string') return m.verdict;
+    } catch {}
+    await new Promise(r => setTimeout(r, 25));
+  }
+  return JSON.stringify({ continue: true });
+}
+
 function createHook(name, handler) {
+  const emit = (obj) => { const j = JSON.stringify(obj); console.log(j); dedupRecordVerdict(j); };
   async function run() {
     try {
       const input = await readStdin(name);
 
+      if (lastStdinStatus === 'timeout-partial' && NO_PAYLOAD_FAIL_CLOSED.has(name)) {
+        emit(({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny',
+          permissionDecisionReason: `[FAIL-CLOSED] ${name} received a truncated hook payload (no complete JSON object before stdin ended or within ${STDIN_FALLBACK_MS} ms). Denying rather than evaluating an empty command.` } }));
+        return;
+      }
+      // W5: an EMPTY payload (no bytes at EOF or at the deadline) allows with
+      // exactly one systemMessage. Nothing arrived, so there is nothing to deny.
+      if ((lastStdinStatus === 'timeout-empty' || lastStdinStatus === 'eof-empty') && NO_PAYLOAD_FAIL_CLOSED.has(name)) {
+        emit(({ continue: true, systemMessage: `[FAIL-OPEN] ${name} received an empty hook payload (no bytes before stdin ended or within ${STDIN_FALLBACK_MS} ms); this gate did not evaluate the tool call.` }));
+        return;
+      }
+
       // Dedup guard: skip if another invocation of the same hook with the same input is already running
       if (dedupGuard(name, input)) {
-        console.log(JSON.stringify({ continue: true }));
+        console.log(await dedupReplayVerdict()); // A2: identical output contract
         return;
       }
 
@@ -1814,13 +1932,13 @@ function createHook(name, handler) {
         const result = await handler(input);
 
         if (!result) {
-          console.log(JSON.stringify({ continue: true }));
+          emit(({ continue: true }));
           return;
         }
 
         // Shorthand: { deny: true, reason: "..." } -> full PreToolUse deny response
         if (result.deny) {
-          console.log(JSON.stringify({
+          emit(({
             hookSpecificOutput: {
               hookEventName: 'PreToolUse',
               permissionDecision: 'deny',
@@ -1835,7 +1953,7 @@ function createHook(name, handler) {
         if (result.allow) {
           const hookEvent = result.hookEvent || 'PreToolUse';
           if (hookEvent === 'PermissionRequest') {
-            console.log(JSON.stringify({
+            emit(({
               hookSpecificOutput: {
                 hookEventName: 'PermissionRequest',
                 decision: {
@@ -1844,7 +1962,7 @@ function createHook(name, handler) {
               }
             }));
           } else {
-            console.log(JSON.stringify({
+            emit(({
               hookSpecificOutput: {
                 hookEventName: hookEvent,
                 permissionDecision: 'allow',
@@ -1874,7 +1992,7 @@ function createHook(name, handler) {
           result.continue = true;
         }
 
-        console.log(JSON.stringify(result));
+        emit((result));
 
       } catch (error) {
         // RF-4 / RF-5 (FS-4): a handler throw used to print to stderr — which the
@@ -1883,16 +2001,16 @@ function createHook(name, handler) {
         // OPEN and loud, logic faults fail CLOSED on the deny gates and loud-open
         // everywhere else. Nothing here is silent any more.
         console.error(`[${name}] Error: ${error && error.message}`);
-        console.log(JSON.stringify(handlerFailureVerdict(name, error)));
+        emit((handlerFailureVerdict(name, error)));
       }
 
     } catch (e) {
       // Fatal error (e.g., stdin read failure)
-      console.log(JSON.stringify({ continue: true }));
+      emit(({ continue: true }));
     }
   }
 
-  run();
+  run().finally(releaseProcess);
 }
 
 /**
@@ -1925,7 +2043,502 @@ function updateStatusHeartbeat(sessionDir) {
   });
 }
 
+// ============================================================
+// HS-1 + HS-6 (WI-7, from wi028-B): atomic write, one session resolver,
+// claim-on-any-write, append-only events, tolerant locked tree updates.
+// ============================================================
+
+/** Write via same-dir tmp + rename so a reader never sees a torn file. */
+function writeFileAtomic(filePath, data) {
+  const tmp = `${filePath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`;
+  fs.writeFileSync(tmp, data);
+  try { fs.renameSync(tmp, filePath); }
+  catch (e) { try { fs.unlinkSync(tmp); } catch { /* gone */ } throw e; }
+}
+
+// One stderr line per distinct resolver message per process (HS-1: "logs once
+// per process, not per call").
+const _resolveLogged = new Set();
+function _resolveLog(msg) {
+  if (_resolveLogged.has(msg)) return;
+  _resolveLogged.add(msg);
+  console.error(`[resolveSession] ${msg}`);
+}
+
+/**
+ * A session dir named explicitly by a prompt (SESSION_DIR=/abs/... or
+ * CAGENTS_SESSION_ID=<id>). Accepted only when it is a DIRECT child of
+ * AGENT_MEMORY_DIR/sessions (absolute-root rule: never cwd-relative), exists,
+ * and is unclaimed or owned by `uuid`. Returns the abs dir or null.
+ */
+function sessionFromPromptHint(promptText, uuid) {
+  if (!promptText || typeof promptText !== 'string') return null;
+  const m = promptText.match(/SESSION[_ ]DIR[:=\s]+["']?([^\s"']+)/i)
+    || promptText.match(/CAGENTS_SESSION_ID[:=\s]+["']?([^\s"']+)/i);
+  if (!m) return null;
+  const sessionsRoot = path.resolve(AGENT_MEMORY_DIR, 'sessions');
+  const hint = m[1].replace(/\/+$/, '');
+  const abs = path.isAbsolute(hint) ? path.resolve(hint) : path.join(sessionsRoot, path.basename(hint));
+  if (path.dirname(abs) !== sessionsRoot) return null;
+  if (!SESSION_PREFIXES.some(p => path.basename(abs).startsWith(p))) return null;
+  if (!fs.existsSync(abs)) { _resolveLog(`Prompt hint session not found on disk: ${path.basename(abs)}`); return null; }
+  const owner = getSessionOwner(abs);
+  if (owner && owner !== uuid) { _resolveLog(`Prompt hint names a foreign session; ignoring: ${path.basename(abs)}`); return null; }
+  return abs;
+}
+
+/**
+ * Sessions whose status.yaml / instruction.yaml a Bash command WROTE. Only a
+ * write TARGET counts (WI-7 review F1): the operand right after `>` / `>>` /
+ * `>|` (fd redirects such as `2>` and `&>` are ignored, and /dev/null is never
+ * a session file), a `tee` file argument, or the LAST operand of cp / mv /
+ * install. A path that is only read (`cat`, `grep`, `diff`, a cp SOURCE) never
+ * claims. $VAR / ${VAR} paths whose VAR is assigned in the same command are
+ * expanded. Relative paths resolve against input.cwd, then PROJECT_ROOT.
+ * Only direct children of AGENT_MEMORY_DIR/sessions with a SESSION_PREFIXES
+ * name qualify (F2, same rule as _sessionDirOfWrittenFile).
+ */
+function sessionDirsWrittenByBash(command, cwd) {
+  if (!command || typeof command !== 'string') return [];
+  if (!/(>|\btee\b|\bcp\b|\bmv\b|\binstall\b)/.test(command)) return []; // reads never claim
+  const vars = {};
+  const assignRe = /(?:^|[\s;&|(])(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=("([^"]*)"|'([^']*)'|([^\s;&|)]+))/g;
+  let a;
+  while ((a = assignRe.exec(command))) vars[a[1]] = a[3] ?? a[4] ?? a[5] ?? '';
+  const expanded = command.replace(/\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?/g, (all, v) => (v in vars ? vars[v] : all));
+  const unquote = (s) => s.replace(/^["']|["']$/g, '');
+  const operands = (argText) => (argText.match(/"[^"]*"|'[^']*'|[^\s]+/g) || []).map(unquote);
+  const targets = [];
+  // (a) Output redirects. The char before `>` must not be a digit, `&` or `>`
+  // (that is an fd redirect, `&>`, or the second char of `>>`).
+  const redirRe = /(^|[^0-9&>])(>>?|>\|)\s*("[^"]*"|'[^']*'|[^\s;&|<>()]+)/g;
+  let r;
+  while ((r = redirRe.exec(expanded))) {
+    const tgt = unquote(r[3]);
+    if (!tgt.startsWith('&')) targets.push(tgt); // `>&2` duplicates an fd
+  }
+  // (b) tee / cp / mv / install, per command segment (split on ; & | newline).
+  for (const seg of expanded.split(/[;&|\n]+/)) {
+    const m = seg.match(/^\s*(tee|cp|mv|install)\b(.*)$/);
+    if (!m) continue;
+    // Drop redirect clauses (handled above) and options.
+    const ops = operands(m[2].replace(/\d*>>?\s*\S+/g, ' ')).filter(o => o && !o.startsWith('-'));
+    if (!ops.length) continue;
+    if (m[1] === 'tee') targets.push(...ops);
+    else if (ops.length >= 2) targets.push(ops[ops.length - 1]);
+  }
+  const sessionsRoot = path.resolve(AGENT_MEMORY_DIR, 'sessions');
+  const out = new Set();
+  for (const raw of targets) {
+    if (raw.includes('$')) continue; // unexpanded variable: no guess
+    const base = path.basename(raw);
+    if (base !== 'status.yaml' && base !== 'instruction.yaml') continue;
+    const abs = path.resolve(cwd || PROJECT_ROOT, raw);
+    const dir = path.dirname(abs);
+    if (path.dirname(dir) !== sessionsRoot) continue;
+    if (!SESSION_PREFIXES.some(p => path.basename(dir).startsWith(p))) continue;
+    if (fs.existsSync(abs)) out.add(dir);
+  }
+  return [...out];
+}
+
+/** The session dir a Write/Edit/NotebookEdit file_path targets, when it is a
+ * sessions/<id>/(status|instruction).yaml under AGENT_MEMORY_DIR. */
+function _sessionDirOfWrittenFile(filePath, cwd) {
+  if (!filePath || typeof filePath !== 'string') return null;
+  const base = path.basename(filePath);
+  if (base !== 'status.yaml' && base !== 'instruction.yaml') return null;
+  const abs = path.resolve(cwd || PROJECT_ROOT, filePath);
+  const dir = path.dirname(abs);
+  if (path.dirname(dir) !== path.resolve(AGENT_MEMORY_DIR, 'sessions')) return null;
+  if (!SESSION_PREFIXES.some(p => path.basename(dir).startsWith(p))) return null;
+  return fs.existsSync(dir) ? dir : null;
+}
+
+/**
+ * HS-1 claimFromAnyWrite: claim the session(s) a tool call just created.
+ *   - PostToolUse Bash: `sessions/<id>/(status|instruction).yaml` redirects,
+ *     tee, cp, mv, install (breaks the circular bootstrap: a session created
+ *     with `cat > $S/status.yaml` used to be invisible to every hook).
+ *   - PostToolUse Write/Edit/NotebookEdit/MultiEdit: the same two files.
+ *   - PreToolUse Agent/Task: an explicit `SESSION_DIR=` in the spawn prompt.
+ * Never claims a foreign session (claimSession is first-claimant-wins).
+ * Returns the claimed dirs. Never throws.
+ */
+function claimFromAnyWrite(input) {
+  try {
+    const uuid = input && input.session_id;
+    if (!_isSdkUuidShape(uuid)) return [];
+    const ti = input.tool_input || {};
+    const tool = input.tool_name;
+    let dirs = [];
+    if (tool === 'Bash') {
+      dirs = sessionDirsWrittenByBash(ti.command, input.cwd);
+    } else if (tool === 'Write' || tool === 'Edit' || tool === 'MultiEdit' || tool === 'NotebookEdit') {
+      const d = _sessionDirOfWrittenFile(ti.file_path || ti.notebook_path, input.cwd);
+      if (d) dirs = [d];
+    } else if (tool === 'Agent' || tool === 'Task') {
+      const d = sessionFromPromptHint(ti.prompt, uuid);
+      if (d) dirs = [d];
+    }
+    return dirs.filter(d => claimSession(d, uuid));
+  } catch {
+    return [];
+  }
+}
+
+/** Usable for this purpose: present, and non-terminal unless terminal is OK. */
+function _usableFor(dir, terminalOk) {
+  if (!dir || !fs.existsSync(dir)) return false;
+  if (terminalOk) return true;
+  return !!_tryResolveCandidate(path.dirname(dir), path.basename(dir));
+}
+
+/**
+ * HS-1: ONE session resolver. Chain:
+ *   (1) the session this transcript OWNS (map pointer, then session.sdk_id
+ *       marker; resolveOwnedSession);
+ *   (2) an explicit absolute SESSION_DIR (or CAGENTS_SESSION_ID) in
+ *       tool_input.prompt, unclaimed or owned -> claimed when claimHint;
+ *   (3) an explicit non-UUID cAgents session id in input.session_id (legacy /
+ *       test payloads), else the CAGENTS_ACTIVE_SESSION env var;
+ *   (4) null.
+ * There is NO newest-mtime / newest-name pass: with two live sessions and no
+ * owner, pin, hint or env, the answer is null. A result owned by another
+ * transcript is dropped.
+ *
+ * purpose 'record' (default): where to FILE a record; the liveness label is
+ *   ignored (a pessimistic `incomplete` must not divert this session's audit
+ *   trail). purpose 'gate': a liveness-gated decision; terminal sessions do not
+ *   count. `includeTerminal` overrides the purpose default when given.
+ *
+ * @param {object} input - hook payload (session_id, tool_input.prompt).
+ * `allowEnv: false` skips the CAGENTS_ACTIVE_SESSION rung (SessionEnd uses it:
+ * an env var is not ownership).
+ *
+ * @param {{purpose?: 'record'|'gate', includeTerminal?: boolean, claimHint?: boolean, allowEnv?: boolean}} [opts]
+ * @returns {string|null} absolute session dir, or null.
+ */
+function resolveSession(input, { purpose = 'record', includeTerminal, claimHint = true, allowEnv = true } = {}) {
+  try {
+    const terminalOk = includeTerminal !== undefined ? !!includeTerminal : purpose !== 'gate';
+    const sid = input && typeof input.session_id === 'string' ? input.session_id : '';
+    const uuid = _isSdkUuidShape(sid) ? sid : null;
+    const sessionsDir = path.join(AGENT_MEMORY_DIR, 'sessions');
+    let dir = null;
+
+    // (1) ownership
+    if (uuid) dir = resolveOwnedSession(uuid, { includeTerminal: terminalOk });
+
+    // (2) explicit prompt hint
+    if (!dir) {
+      const hinted = sessionFromPromptHint(((input && input.tool_input) || {}).prompt, uuid);
+      if (hinted && _usableFor(hinted, terminalOk)) {
+        dir = hinted;
+        _resolveLog(`Resolved session from prompt hint: ${path.basename(hinted)}`);
+        if (claimHint && uuid) claimSession(hinted, uuid);
+      }
+    }
+
+    // (3) explicit non-UUID pin, else env
+    if (!dir) {
+      if (sid && !uuid) {
+        // Basename only (no path traversal). No prefix check: findActiveSession
+        // never had one, and test/legacy ids use other prefixes.
+        if (sid === path.basename(sid) && sid !== '.' && sid !== '..') {
+          const pinned = path.join(sessionsDir, sid);
+          if (_usableFor(pinned, terminalOk)) dir = pinned;
+        }
+      } else if (allowEnv) {
+        const env = process.env.CAGENTS_ACTIVE_SESSION;
+        if (env && env === path.basename(env) && env !== '.' && env !== '..') {
+          const envDir = path.join(sessionsDir, env);
+          if (_usableFor(envDir, terminalOk)) dir = envDir;
+          else _resolveLog(`CAGENTS_ACTIVE_SESSION="${env}" unusable (missing${terminalOk ? '' : ' or terminal'})`);
+        }
+      }
+    }
+
+    // Foreign drop: a dir whose marker names another transcript is never ours.
+    if (dir && sid) {
+      const owner = getSessionOwner(dir);
+      if (owner && owner !== sid) {
+        _resolveLog(`session ${path.basename(dir)} is owned by another transcript; not using it`);
+        return null;
+      }
+    }
+    return dir;
+  } catch (e) {
+    console.error('[resolveSession] non-fatal: ' + (e && e.message));
+    return null;
+  }
+}
+
+/** Read workflow/events.jsonl (append-only source of truth). Bad lines skipped. */
+function readSessionEvents(sessionDir) {
+  const raw = safeRead(path.join(sessionDir, 'workflow', 'events.jsonl'));
+  if (!raw) return [];
+  const out = [];
+  for (const line of raw.split('\n')) {
+    if (!line.trim()) continue;
+    try { out.push(JSON.parse(line)); } catch { /* torn/hand line: skip */ }
+  }
+  return out;
+}
+
+/**
+ * Load agent_tree.yaml tolerantly. On a parse error the bad bytes are kept in
+ * agent_tree.yaml.corrupt-<ts> and a fresh { agents: [] } is returned (the
+ * caller reconciles rows from events.jsonl). Returns { obj, recovered }.
+ */
+function loadAgentTreeTolerant(treeFile, yamlLib) {
+  const content = safeRead(treeFile);
+  if (!content) return { obj: { agents: [] }, recovered: null };
+  try {
+    const parsed = yamlLib.load(content);
+    if (parsed === null || parsed === undefined) return { obj: { agents: [] }, recovered: null };
+    if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+      if (parsed.agents === undefined && parsed.children === undefined) parsed.agents = [];
+      return { obj: parsed, recovered: null }; // non-canonical shapes: caller migrates
+    }
+  } catch (e) {
+    const q = `${treeFile}.corrupt-${Date.now()}`;
+    try { fs.writeFileSync(q, content); } catch { /* best effort */ }
+    console.error(`[agent_tree] malformed YAML quarantined to ${path.basename(q)}; rebuilding from events.jsonl (${e.message.split('\n')[0]})`);
+    return { obj: { agents: [] }, recovered: path.basename(q) };
+  }
+  const q = `${treeFile}.corrupt-${Date.now()}`;
+  try { fs.writeFileSync(q, content); } catch { /* best effort */ }
+  console.error(`[agent_tree] non-mapping YAML root quarantined to ${path.basename(q)}; rebuilding from events.jsonl`);
+  return { obj: { agents: [] }, recovered: path.basename(q) };
+}
+
+/**
+ * HS-6 updateYamlLocked: the ONE write path for agent_tree.yaml. Lock (SKIPS
+ * on timeout, never an unlocked write) -> tolerant parse (quarantine +
+ * rebuild) -> mutate(obj, ctx) -> tmp+rename. `mutate` may set
+ * `ctx.write = false` to skip the write; its return value is passed through.
+ * Returns LOCK_SKIPPED when the lock could not be taken.
+ *
+ * @param {string} filePath
+ * @param {object} yamlLib - js-yaml
+ * @param {(obj: object, ctx: {recovered: string|null, write: boolean}) => *} mutate
+ * @param {{header?: string, maxRetries?: number}} [opts]
+ */
+function updateYamlLocked(filePath, yamlLib, mutate, { header = '', maxRetries = 50 } = {}) {
+  return withFileLock(filePath, () => {
+    const { obj, recovered } = loadAgentTreeTolerant(filePath, yamlLib);
+    const ctx = { recovered, write: true };
+    const value = mutate(obj, ctx);
+    if (ctx.write) writeFileAtomic(filePath, header + yamlLib.dump(obj));
+    return value;
+  }, { onTimeout: 'skip', maxRetries });
+}
+
+/** Header for the hook-owned agent_tree.yaml. */
+function agentTreeHeader(sessionDir) {
+  return `# Agent Tree - cAgents Audit Trail (hook-owned; derived from workflow/events.jsonl)\n# Session: ${path.basename(sessionDir)}\n# Do not hand-edit. Hooks rewrite this file atomically.\n\n`;
+}
+
+/** Make the tree agree with events.jsonl: add missing spawns, apply stops. Idempotent. */
+function reconcileTreeFromEvents(treeObj, sessionDir) {
+  if (!Array.isArray(treeObj.agents)) return treeObj;
+  const byId = new Map(treeObj.agents.filter(a => a && a.id).map(a => [a.id, a]));
+  const events = readSessionEvents(sessionDir);
+  for (const ev of events) {
+    if (ev.type === 'spawn' && ev.agent_id && !byId.has(ev.agent_id)) {
+      const row = Object.assign({ id: ev.agent_id, type: ev.agent_type || 'unknown', parent: ev.parent || 'pipeline',
+        depth: typeof ev.depth === 'number' ? ev.depth : 1, spawned_at: ev.ts || null, stopped_at: null,
+        session: path.basename(sessionDir) }, ev.row || {});
+      treeObj.agents.push(row); byId.set(row.id, row);
+    } else if (ev.type === 'stop' && ev.agent_id && byId.has(ev.agent_id)) {
+      const row = byId.get(ev.agent_id);
+      if (!row.stopped_at) row.stopped_at = ev.ts || new Date().toISOString();
+    }
+  }
+  // Stops with no agent_id: k stop_anon events of type T close the k OLDEST
+  // anon_<T>_ rows. Count-based, so re-running is idempotent.
+  const anonStops = {};
+  for (const ev of events) if (ev.type === 'stop_anon' && ev.agent_type) (anonStops[ev.agent_type] = anonStops[ev.agent_type] || []).push(ev.ts);
+  for (const [t, tss] of Object.entries(anonStops)) {
+    const rows = treeObj.agents.filter(a => a && typeof a.id === 'string' && a.id.startsWith(`anon_${t}_`))
+      .sort((x, y) => String(x.spawned_at).localeCompare(String(y.spawned_at)));
+    rows.slice(0, tss.length).forEach((r, i) => { if (!r.stopped_at) r.stopped_at = tss[i] || new Date().toISOString(); });
+  }
+  return treeObj;
+}
+
+/** HS-6: the single fallback id for a SubagentStart/Stop with no agent_id. */
+function fallbackAgentId(agentType) {
+  return `anon_${agentType || 'unknown'}_${Date.now()}_${process.pid}`;
+}
+
+// ---------------------------------------------------------------------------
+// WI-028 (stop-warnings): repairSession — self-heal session state that the
+// Stop gate would otherwise warn about. Every repair is guarded, idempotent,
+// and appended to workflow/repairs.jsonl. It NEVER changes a verdict
+// (validation_report.yaml, coordination_log status, pipeline_state) and NEVER
+// writes a stub. Modes: 'stop' (owned session, evidence-only repairs) and
+// 'sweep' (SessionStart, idle sessions: adds the staleness close).
+// ---------------------------------------------------------------------------
+const REPAIR_SWEEP_IDLE_MS = 24 * 60 * 60 * 1000;
+
+/** ids -> ISO ts of `event=stop` lines in the global spawn audit logs. */
+function stopTimesFromSpawnLogs(ids) {
+  const found = new Map();
+  if (!ids.length) return found;
+  const want = new Set(ids);
+  let files = [];
+  try {
+    const dir = path.join(AGENT_MEMORY_DIR, '_system', 'logs');
+    files = fs.readdirSync(dir).filter(f => /^agent_spawns.*\.log$/.test(f)).map(f => path.join(dir, f));
+  } catch { return found; }
+  for (const f of files) {
+    const raw = safeRead(f);
+    if (!raw) continue;
+    for (const line of raw.split('\n')) {
+      if (!line.includes('event=stop')) continue;
+      const m = line.match(/^(\S+) \| agent_id=([^ |]+) \|/);
+      if (m && want.has(m[2]) && !found.has(m[2])) found.set(m[2], m[1]);
+    }
+  }
+  return found;
+}
+
+function sessionLastActivityMs(sessionDir, statusContent) {
+  let t = 0;
+  const hb = statusContent && statusContent.match(/last_updated_at:\s*"?([^"\n]+)"?/);
+  if (hb) { const v = Date.parse(hb[1]); if (!isNaN(v)) t = Math.max(t, v); }
+  for (const rel of ['status.yaml', 'workflow/events.jsonl', 'workflow/agent_tree.yaml', 'workflow/coordination_log.yaml']) {
+    try { t = Math.max(t, fs.statSync(path.join(sessionDir, rel)).mtimeMs); } catch { /* absent */ }
+  }
+  return t;
+}
+
+function deriveExecutionSummary(sessionDir, statusContent, nowIso) {
+  const wf = (f) => safeRead(path.join(sessionDir, 'workflow', f)) || '';
+  const coord = wf('coordination_log.yaml');
+  const val = wf('validation_report.yaml');
+  const tree = wf('agent_tree.yaml');
+  const statusCounts = {};
+  for (const m of coord.matchAll(/\bstatus:\s*["']?([A-Za-z_]+)/g)) statusCounts[m[1]] = (statusCounts[m[1]] || 0) + 1;
+  const q = (s) => JSON.stringify(String(s == null ? '' : s));
+  return [
+    '# Derived by repairSession() from on-disk artifacts (not a stub): every value',
+    '# below is copied from the cited source file; nothing is asserted by the hook.',
+    `session_id: ${q(path.basename(sessionDir))}`,
+    `final_state: ${q(extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase'))}`,
+    'status: "completed"',
+    `validation_verdict: ${q(extractYamlValue(val, 'classification') || extractYamlValue(val, 'overall_status') || extractYamlValue(val, 'status'))}`,
+    `controller: ${q(extractYamlValue(coord, 'controller'))}`,
+    `work_item_status_counts: ${JSON.stringify(statusCounts)}`,
+    `agent_rows: ${(tree.match(/^\s*- id:/gm) || []).length}`,
+    'generated_by: repair-session-derived',
+    `generated_at: ${q(nowIso)}`,
+    'sources: [status.yaml, workflow/coordination_log.yaml, workflow/validation_report.yaml, workflow/agent_tree.yaml]',
+    ''
+  ].join('\n');
+}
+
+function repairSession(sessionDir, opts = {}) {
+  const mode = opts.mode === 'sweep' ? 'sweep' : 'stop';
+  const now = typeof opts.now === 'number' ? opts.now : Date.now();
+  const nowIso = new Date(now).toISOString();
+  const staleMs = parseInt(process.env.CAGENTS_STALE_CHILD_MS || '1800000', 10) || 1800000;
+  const repairs = [];
+  try {
+    if (!sessionDir) return repairs;
+    const statusFile = path.join(sessionDir, 'status.yaml');
+    const statusContent = safeRead(statusFile);
+    if (!statusContent) return repairs;
+    const state = extractYamlValue(statusContent, 'pipeline_state') || extractYamlValue(statusContent, 'phase')
+      || extractYamlValue(statusContent, 'current_phase');
+    const terminal = !!state && isTerminalState(state);
+    const idleMs = now - sessionLastActivityMs(sessionDir, statusContent);
+
+    // R1 + R2: agent_tree.yaml (rebuild if unparseable; close rows with terminal evidence).
+    const treeFile = path.join(sessionDir, 'workflow', 'agent_tree.yaml');
+    let yamlLib = null;
+    try { yamlLib = require('js-yaml'); } catch { /* no yaml: skip tree repairs */ }
+    if (yamlLib && fs.existsSync(treeFile)) {
+      withFileLock(treeFile, () => {
+        // Guard: rebuild an unparseable tree ONLY when events.jsonl can repopulate it;
+        // otherwise leave the bytes alone (no quarantine churn) and surface one line.
+        let parsesOk = true;
+        try { yamlLib.load(safeRead(treeFile) || ''); } catch { parsesOk = false; }
+        if (!parsesOk && !readSessionEvents(sessionDir).some(e => e && e.type === 'spawn')) {
+          repairs.push({ kind: 'agent_tree_unrepairable', needs_user: true,
+            message: `agent_tree.yaml in ${path.basename(sessionDir)} is not valid YAML and events.jsonl cannot rebuild it; fix or delete the hand-added lines.` });
+          return;
+        }
+        const { obj, recovered } = loadAgentTreeTolerant(treeFile, yamlLib);
+        if (!Array.isArray(obj.agents)) return; // non-canonical shape: not ours to rewrite
+        const before = JSON.stringify(obj.agents);
+        reconcileTreeFromEvents(obj, sessionDir);
+        if (recovered) repairs.push({ kind: 'agent_tree_rebuilt', quarantine: recovered, rows: obj.agents.length });
+        const open = obj.agents.filter(r => r && r.id && !r.stopped_at);
+        const logStops = stopTimesFromSpawnLogs(open.map(r => String(r.id)));
+        for (const row of open) {
+          const isRoot = row.depth === 0 || row.id === 'pipeline' || /-pipeline$/.test(String(row.type || ''));
+          const spawnedMs = Date.parse(row.spawned_at);
+          let reason = null; let at = null;
+          if (logStops.has(String(row.id))) { reason = 'stop_logged'; at = logStops.get(String(row.id)); }
+          else if (isRoot && terminal) { reason = 'root_of_terminal_session'; at = extractYamlValue(statusContent, 'last_updated_at') || nowIso; }
+          else if (mode === 'sweep' && idleMs > REPAIR_SWEEP_IDLE_MS
+                   && (isNaN(spawnedMs) || now - spawnedMs > staleMs)) {
+            // Sweep only: the session has been idle for 24 h, so no agent of it is running.
+            reason = 'stale_sweep'; at = nowIso;
+          }
+          if (!reason) continue;
+          row.stopped_at = at; row.stop_reason = `repaired:${reason}`;
+          repairs.push({ kind: 'agent_row_closed', id: row.id, type: row.type || null, reason, stopped_at: at });
+        }
+        if (JSON.stringify(obj.agents) !== before || recovered) {
+          if (!recovered && !repairs.some(r => r.kind === 'agent_row_closed')) repairs.push({ kind: 'agent_tree_reconciled' });
+          writeFileAtomic(treeFile, yamlLib.dump(obj, { lineWidth: -1, noRefs: true }));
+        }
+      }, { onTimeout: 'skip', maxRetries: 25 });
+    }
+
+    // R3: execution_summary.yaml derived from artifacts — ONLY for a genuinely
+    // validated session (real PASS on disk). Replaces a hook stub; never overwrites
+    // a summary the pipeline wrote itself.
+    const execFile = path.join(sessionDir, 'workflow', 'execution_summary.yaml');
+    const execRaw = safeRead(execFile);
+    const isHookStub = !!execRaw && /generated_by:\s*verify-completion-hook-safety-net/.test(execRaw);
+    if ((!execRaw || isHookStub) && sessionGenuinelyValidated(sessionDir, statusContent)) {
+      writeFileAtomic(execFile, deriveExecutionSummary(sessionDir, statusContent, nowIso));
+      repairs.push({ kind: 'execution_summary_derived', replaced_stub: isHookStub });
+    }
+
+    const applied = repairs.filter(r => !r.needs_user);
+    if (applied.length) {
+      const f = path.join(sessionDir, 'workflow', 'repairs.jsonl');
+      const lines = applied.map(r => JSON.stringify({ ts: nowIso, mode, pid: process.pid, ...r })).join('\n') + '\n';
+      withFileLock(f, () => fs.appendFileSync(f, lines), { onTimeout: 'skip', maxRetries: 25 });
+      console.error(`[repairSession] ${path.basename(sessionDir)} (${mode}): ${applied.length} repair(s): ${applied.map(r => r.kind).join(', ')}`);
+    }
+  } catch (e) {
+    console.error(`[repairSession] non-fatal: ${e && e.message}`);
+  }
+  return repairs;
+}
+
 module.exports = {
+  repairSession, // WI-028 stop-warnings self-heal
+  LOCK_SKIPPED,
+  writeFileAtomic,
+  sessionFromPromptHint,
+  sessionDirsWrittenByBash,
+  claimFromAnyWrite,
+  claimFromToolInput: claimFromAnyWrite, // wi028-B name, kept as an alias
+  resolveSession,
+  readSessionEvents,
+  loadAgentTreeTolerant,
+  updateYamlLocked,
+  agentTreeHeader,
+  reconcileTreeFromEvents,
+  fallbackAgentId,
   PROJECT_ROOT,
   PLUGIN_ROOT,
   AGENT_MEMORY_DIR,

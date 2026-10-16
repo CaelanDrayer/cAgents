@@ -200,8 +200,10 @@ describe('bash-validator.cjs', () => {
       expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
     });
 
-    it('should ASK for a benign-looking variable executed as a command (C=mycmd; $C)', () => {
-      const result = runHookSafe({ tool_input: { command: 'C=mycmd; $C' } });
+    // WI-6 (H2): `C=mycmd; $C` now resolves to the literal `mycmd` and no longer
+    // asks, so this case uses a variable with no assignment in the command.
+    it('should ASK for an unresolved variable executed as a command ($C)', () => {
+      const result = runHookSafe({ tool_input: { command: '$C' } });
       expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
     });
 
@@ -368,6 +370,53 @@ describe('bash-validator.cjs', () => {
     it('should allow rm -rf on specific subdirectory paths', () => {
       const result = runHook({ tool_input: { command: 'rm -rf /tmp/build-cache' } });
       expect(result.continue).toBe(true);
+    });
+  });
+
+  // WI-8: the hook-level face of H4, H5 and K1.
+  describe('WI-8 evaluator rules through the hook', () => {
+    const RMRF = 'rm -' + 'rf ';
+
+    it('H4: names the early heredoc terminator in the soft-fail ask', () => {
+      const cmd = "python3 - <<'EOF'\ns='''\ncat > x <<'EOF'\nit's\nEOF\n'''\nEOF";
+      const result = runHookSafe({ tool_input: { command: cmd } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('terminator "EOF"');
+    });
+
+    it('H4: a plain parse failure keeps the generic soft-fail text', () => {
+      const result = runHookSafe({ tool_input: { command: 'grep -i "a\\|`" f' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(result.hookSpecificOutput.permissionDecisionReason).not.toContain('terminator');
+    });
+
+    it('H4: a quoted heredoc with an apostrophe is allowed', () => {
+      const result = runHookSafe({ tool_input: { command: "cat > f.md <<'EOF'\nit's a note\nEOF" } });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('H5: does not ask for rm -rf of a mktemp-assigned variable', () => {
+      const result = runHookSafe({ tool_input: { command: 'T=$(mktemp -d); ' + RMRF + '"$T"' } });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('H5: still asks for rm -rf of a variable with no visible value', () => {
+      const result = runHookSafe({ tool_input: { command: RMRF + '"$T"' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
+    });
+
+    it('K1: does not ask when git push --force is only grep data', () => {
+      const result = runHookSafe({ tool_input: { command: 'grep -n "git push --force" log.txt' } });
+      expect(result.continue).toBe(true);
+      expect(result.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('K1/W1: asks for git push -f', () => {
+      const result = runHookSafe({ tool_input: { command: 'git push -f origin main' } });
+      expect(result.hookSpecificOutput.permissionDecision).toBe('ask');
+      expect(result.hookSpecificOutput.permissionDecisionReason).toContain('--force-with-lease');
     });
   });
 });

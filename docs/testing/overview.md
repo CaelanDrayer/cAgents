@@ -6,7 +6,7 @@ cAgents uses [Vitest](https://vitest.dev/) for testing. 1335+ tests across 157+ 
 
 ## Test Categories
 
-### Hook Tests (10 files, 145 tests)
+### Hook Tests (9 files, 135 tests)
 | File | Tests | Coverage |
 |------|-------|----------|
 | hook-utils.test.js | ~38 | Shared utilities, error format |
@@ -16,7 +16,6 @@ cAgents uses [Vitest](https://vitest.dev/) for testing. 1335+ tests across 157+ 
 | post-write-validator.test.js | 12 | JSON/YAML validation |
 | verify-completion.test.js | 14 | Completion criteria |
 | session-catchup.test.js | 10 | Session initialization |
-| permission-handler.test.js | 10 | Auto-approve patterns |
 | subagent-tracker.test.js | 8 | Agent spawn tracking |
 | notification.test.js | 6 | Notification logging |
 

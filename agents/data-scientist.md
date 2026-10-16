@@ -75,3 +75,6 @@ See @data-scientist/resources/perf-metrics.md for the full playbook of the `perf
 ## Worked Examples
 
 - See @docs/example-store/ex-structured-io-schema-role-contract.md. It shows a contract that holds a role, an input_schema, an output_schema, and instructions for data-transform work. It compares vague prose against a schema-constrained, checkable spec.
+- See @docs/example-store/ex-verification-blind-baseline-eval.md. Test an instruction change against a no-change baseline with a blind judge and a weighted rubric.
+- See @docs/example-store/ex-verification-measured-vs-inferred-ledger.md. Label each figure as measured or inferred, and never report an inferred figure as measured.
+- See @docs/example-store/ex-verification-preregistered-null-result.md. Write the hypotheses and the reporting rule before the run. Report a null result and its cost.

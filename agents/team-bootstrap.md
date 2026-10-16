@@ -188,6 +188,13 @@ Create the team session structure under `cagents-memory/sessions/team_{slug}_{YY
 6. **Concurrent waves.** Spawn a wave's teammates concurrently and synchronously. Collect the results, validate the gate, then proceed.
 7. **Wave ordering.** You run wave 0. The teammates run waves 1 to N-1 concurrently. You run wave N.
 
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-skill-authoring-override-precedence.md. Name the override conditions, and apply one tie-break: the harder constraint wins and the shape stays.
+- See @docs/example-store/ex-structured-io-terse-return-grammar.md. Use a fixed reply grammar: one row per hit, a zero-hit sentinel, a totals line, and canned refusals.
+
 ---
 
 **Version**: 7.0

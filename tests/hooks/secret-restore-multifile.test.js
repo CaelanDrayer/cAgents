@@ -25,16 +25,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, utimesSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
+import { createHash } from 'crypto';
+
+// WI-17 round 3: restore checks that the .orig is the sanitized file with
+// each BLOCK_<hex> put back as a token whose sha256[:8] is the hex.
+const ph = (v) => 'BLOCK_' + createHash('sha256').update(v).digest('hex').slice(0, 8);
+const TOK_A = 'token-for-file-a-0001';
+const TOK_B = 'token-for-file-b-0002';
+const PH_A = ph(TOK_A);
+const PH_B = ph(TOK_B);
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const DETECT_HOOK = join(HOOKS_DIR, 'secret-detection.cjs');
 const RESTORE_HOOK = join(HOOKS_DIR, 'secret-restore.cjs');
-// AGENT_MEMORY_DIR resolves to an absolute path from PROJECT_ROOT (not cwd).
-const BACKUP_BASE = join(process.cwd(), 'cagents-memory', '_system', 'secret-backups');
+// AGENT_MEMORY_DIR resolves from CLAUDE_PROJECT_DIR. HS-5: each test points it at
+// a mkdtemp project, so no backup dir or restore log reaches the real repo.
+let tmpProj;
+let BACKUP_BASE;
 
 // Anthropic-shaped fake secrets (split; the /fake_/i placeholder marker keeps
 // the hook from self-blocking on THIS test source). Two DISTINCT secrets.
@@ -50,7 +61,7 @@ function runHook(hookPath, input, env = {}) {
     // fed to `.hookSpecificOutput`/`.continue` assertions). Raise the budget and
     // FAIL LOUD on abnormal termination instead.
     timeout: 60000,
-    env: { ...process.env, NODE_ENV: 'test', VITEST: 'true', CAGENTS_HOOK_DEDUP_DISABLE: '1', ...env },
+    env: { ...process.env, NODE_ENV: 'test', VITEST: 'true', CAGENTS_HOOK_DEDUP_DISABLE: '1', CLAUDE_PROJECT_DIR: tmpProj, ...env },
   });
   // secret-detection.cjs / secret-restore.cjs (via createHook) ALWAYS exit 0 with
   // one JSON line on stdout (a deny verdict is exit-0 JSON too), so any abnormal
@@ -72,6 +83,8 @@ describe('P5.5: deterministic multi-file sanitize restore', { timeout: 30000 }, 
 
   beforeEach(() => {
     sessionId = `act_test-multifile_${process.pid}_${Date.now()}_001`;
+    tmpProj = mkdtempSync(join(tmpdir(), 'cagents-secret-'));
+    BACKUP_BASE = join(tmpProj, 'cagents-memory', '_system', 'secret-backups');
     tempDir = join(tmpdir(), `cagents-multifile-${process.pid}-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
     backupDir = join(BACKUP_BASE, sessionId);
@@ -80,19 +93,19 @@ describe('P5.5: deterministic multi-file sanitize restore', { timeout: 30000 }, 
 
   afterEach(() => {
     try { rmSync(tempDir, { recursive: true, force: true }); } catch { /* ignore */ }
-    try { rmSync(backupDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try { rmSync(tmpProj, { recursive: true, force: true }); } catch { /* ignore */ }
   });
 
   // ── Block A: deterministic — restore MUST use recorded orig, not mtime ──────
   it('restores each file to ITS OWN original (no mtime-driven content swap)', () => {
     const fileA = join(tempDir, 'a.json');
     const fileB = join(tempDir, 'b.json');
-    const ORIG_A = 'ORIGINAL_FILE_A_CONTENT\n';
-    const ORIG_B = 'ORIGINAL_FILE_B_CONTENT\n';
+    const ORIG_A = `SANITIZED_A ${TOK_A}\n`;
+    const ORIG_B = `SANITIZED_B ${TOK_B}\n`;
 
     // On-disk sanitized versions (what restore overwrites).
-    writeFileSync(fileA, 'SANITIZED_A BLOCK_aaaaaaaa\n');
-    writeFileSync(fileB, 'SANITIZED_B BLOCK_bbbbbbbb\n');
+    writeFileSync(fileA, `SANITIZED_A ${PH_A}\n`);
+    writeFileSync(fileB, `SANITIZED_B ${PH_B}\n`);
 
     // Two .orig backups with DISTINCT contents.
     const origAName = 'aaaa000000000000.orig';
@@ -113,18 +126,18 @@ describe('P5.5: deterministic multi-file sanitize restore', { timeout: 30000 }, 
       'schema_version: "1"',
       `session_id: "${sessionId}"`,
       'entries:',
-      '  - placeholder: "BLOCK_aaaaaaaa"',
+      `  - placeholder: "${PH_A}"`,
       `    file_path: "${fileA}"`,
       '    line_range: "1"',
-      '    hash: "aaaaaaaa"',
+      `    hash: "${PH_A.slice(6)}"`,
       '    secret_type: "Anthropic API Key"',
       '    severity: "critical"',
       '    captured_at: "2026-07-17T00:00:00Z"',
       `    orig: "${origAName}"`,
-      '  - placeholder: "BLOCK_bbbbbbbb"',
+      `  - placeholder: "${PH_B}"`,
       `    file_path: "${fileB}"`,
       '    line_range: "1"',
-      '    hash: "bbbbbbbb"',
+      `    hash: "${PH_B.slice(6)}"`,
       '    secret_type: "Anthropic API Key"',
       '    severity: "critical"',
       '    captured_at: "2026-07-17T00:00:01Z"',

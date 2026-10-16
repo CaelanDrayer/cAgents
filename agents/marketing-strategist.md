@@ -103,3 +103,4 @@ See @marketing-strategist/resources/partnership.md for the full playbook of the 
 ## Worked Examples
 
 - See @docs/example-store/ex-strategy-north-star-validator.md. First classify the business as Attention, Transaction, or Productivity. Then validate a north-star metric against the 7 criteria and against an "NSM is NOT" list.
+- See @docs/example-store/ex-verification-assert-vs-say-grounding.md. Tie each factual claim in a deliverable to a source input. A structural pass does not prove the claims.

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { spawn } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, mkdtempSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 // Regression test for the un-unref'd timer linger in hook-utils.cjs
 // (findings C5.1 / A2-01 / A7-01).
@@ -41,10 +42,13 @@ function measureExitLatency(hookName, input, env = process.env) {
   });
 }
 
-// Build an env that DISABLES the dedupGuard test-mode bypass, so the 2000ms
-// dedup cleanup timer is actually created and its .unref() is exercised.
+// Build an env that DISABLES the dedupGuard test-mode bypass, so the real
+// dedup path runs. A2 (HS-2) removed the dedup cleanup timer: the marker now
+// outlives the process for DEDUP_TTL_MS. TMPDIR points at a private temp dir,
+// so the marker does not stay behind in the shared /tmp.
 function dedupActiveEnv() {
   const env = { ...process.env };
+  env.TMPDIR = mkdtempSync(join(tmpdir(), 'cagents-exit-latency-'));
   delete env.VITEST;
   delete env.CAGENTS_HOOK_DEDUP_DISABLE;
   env.NODE_ENV = 'production';
@@ -69,8 +73,7 @@ describe('hook exit latency (no un-unref\'d timer linger)', () => {
 
   it('notification.cjs exits well under 500ms with dedupGuard ACTIVE (dedup cleanup timer is unref\'d)', async () => {
     // Unique message => not a duplicate => the non-bypassed dedupGuard path runs
-    // and creates the 2000ms cleanup timer. If that timer were NOT unref'd the
-    // process would linger ~2s and blow the budget.
+    // and writes a marker. The dedup path must not keep the process alive.
     const { ms, stdout } = await measureExitLatency(
       'notification.cjs',
       { type: 'info', message: 'dedup-active-probe-' + Date.now() + '-' + Math.random() },
@@ -90,11 +93,15 @@ describe('hook exit latency (no un-unref\'d timer linger)', () => {
     expect(ms).toBeLessThan(LINGER_BUDGET_MS);
   });
 
-  it('hook-utils.cjs calls .unref() on both fallback timers (guards against regression)', () => {
+  it('hook-utils.cjs unrefs the stdin fallback timer and dedupGuard sets no timer (guards against regression)', () => {
     const src = readFileSync(join(HOOKS_DIR, 'hook-utils.cjs'), 'utf8');
     // readStdin fallback timer
     expect(src).toMatch(/stdinFallbackTimer\.unref\(\)/);
-    // dedupGuard cleanup timer
-    expect(src).toMatch(/dedupCleanupTimer\.unref\(\)/);
+    // A2 (HS-2): dedupGuard keeps its marker for DEDUP_TTL_MS and sets no
+    // cleanup timer, so no dedup timer can hold the event loop open.
+    const guard = src.slice(src.indexOf('function dedupGuard('), src.indexOf('const DEDUP_TTL_MS'));
+    expect(guard.length).toBeGreaterThan(0);
+    expect(guard).not.toMatch(/setTimeout\(/);
+    expect(src).toMatch(/const DEDUP_TTL_MS = 5000;/);
   });
 });

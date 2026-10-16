@@ -165,7 +165,8 @@ describe('findActiveSession deterministic chain (WI-2)', () => {
  *   2. SDK-UUID session_id → falls through (not a cAgents dir name).
  *   3. CAGENTS_ACTIVE_SESSION (team_*) → wins when no usable hint.
  *   4. team_* pin whose dir is absent → null (refuses to leak to a sibling).
- *   5. No pin + no env → newest-team heuristic (back-compat last resort).
+ *   5. No pin + no env → the single live team session; with 2+ live, null
+ *      (HS-1: no newest-session guess).
  *
  * Same temp-dir isolation as the suite above so the heuristic last-resort scan
  * can never see the real shared cagents-memory/sessions and out-sort fixtures.
@@ -241,9 +242,15 @@ describe('findTeamSession deterministic chain (concurrency fix)', () => {
     expect(utils.findTeamSession({ session_id: 'cagents-thinking-400-test-xyz' })).toBeNull();
   });
 
-  it('no pin + no env → newest-team heuristic (back-compat last resort)', () => {
+  it('no pin + no env → the single live team session (last resort, one candidate only)', () => {
+    const own = makeTeamSession(TEAM_OWN);
+    makeTeamSession(TEAM_SIBLING, { terminal: true }); // terminal: not a candidate
+    expect(utils.findTeamSession({})).toBe(own);
+  });
+
+  it('no pin + no env + 2 live team sessions → null (HS-1: no newest-session guess)', () => {
     makeTeamSession(TEAM_OWN);
-    const sibling = makeTeamSession(TEAM_SIBLING); // newest non-terminal wins
-    expect(utils.findTeamSession({})).toBe(sibling);
+    makeTeamSession(TEAM_SIBLING); // used to win by newest name
+    expect(utils.findTeamSession({})).toBeNull();
   });
 });

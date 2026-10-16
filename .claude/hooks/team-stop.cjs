@@ -40,7 +40,7 @@ const { spawn } = require('child_process');
 // Defensive: js-yaml is a declared dependency but guard against missing install
 let yaml;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
-const { createHook, findTeamSession, resolveOwnedSession, isOwnedBy, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated } = require('./hook-utils.cjs');
+const { createHook, findTeamSession, resolveSession, isOwnedBy, safeRead, extractYamlValue, countPattern, withFileLock, ensureDir, AGENT_MEMORY_DIR, removeSdkPointer, sessionGenuinelyValidated, statusPhase, isTerminalState } = require('./hook-utils.cjs');
 
 // Defensive: REC-01 terminal-state normalizer (v12.46.0). Guarded in the same
 // try/catch style as the js-yaml require above so an older hook-utils.cjs without
@@ -115,20 +115,129 @@ function teamSessionActivelyWorking(sessionDir, statusContent) {
   }
 }
 
+/**
+ * HS-4 idle-lead exemption: is this /team session idle BETWEEN waves?
+ *
+ * Design: team_hook-session-fixes_261015_001 outputs/wave_3/WI-9/idle-lead-design.md
+ * section 3 (option D). A /team lead that has finished a gated wave and has not
+ * yet spawned the next one has no running child and no fresh heartbeat, so the
+ * liveness signals above say "idle". This positive predicate tells that case
+ * apart from a stalled new session by on-disk evidence a stall cannot produce:
+ * a recorded passing gate plus a declared later wave.
+ *
+ * Returns true only when ALL hold:
+ *   1. the session dir is `team_*`;
+ *   2. its phase exists and is not terminal;
+ *   3. the latest `workflow/gate_validations/wave_<K>.yaml` says
+ *      `overall: PASS | CONDITIONAL_PASS` (no gates, or FAIL/HOLD -> false);
+ *   4. a later wave is pending: `work_meta.yaml` `waves[].wave` max > K
+ *      (else `total_waves: N`, 0-based: K < N-1), else `team/task_list.yaml`
+ *      has an item with `wave:` > K and status pending/not_started/in_progress;
+ *   5. last activity (status `last_updated_at`, latest gate mtime,
+ *      `workflow/events.jsonl` mtime) is younger than CAGENTS_IDLE_LEAD_MAX_MS
+ *      (default 24 h). status.yaml / agent_tree.yaml mtimes are excluded on
+ *      purpose: hooks rewrite them, and a self-write must not refresh liveness.
+ *
+ * Fails toward "not idle" (false) on any error, which keeps today's behavior.
+ * Exported (see module.exports at the bottom) so verify-completion.cjs can share
+ * this one copy at Stop (WI-13b) instead of duplicating it.
+ *
+ * @param {string} sessionDir - resolved session directory
+ * @param {string|null} statusContent - already-read status.yaml contents
+ * @param {number} [nowMs=Date.now()] - clock injection for tests
+ * @returns {{idle: true, gate: string, lastWave: number}|false}
+ *   a truthy detail object when idle, false otherwise
+ */
+function teamIdleBetweenWaves(sessionDir, statusContent, nowMs = Date.now()) {
+  try {
+    // 1. team session
+    if (!sessionDir || !path.basename(sessionDir).startsWith('team_')) return false;
+
+    // 2. not terminal
+    const phase = statusPhase(statusContent);
+    if (!phase || isTerminalState(phase)) return false;
+
+    // 3. latest recorded gate passed. Files: wave_<int>[suffix].yaml (wave_5b
+    //    sorts after wave_5). Ordering is (int, suffix).
+    const gateDir = path.join(sessionDir, 'workflow', 'gate_validations');
+    let gates;
+    try { gates = fs.readdirSync(gateDir); } catch { return false; }
+    let latest = null;
+    for (const f of gates) {
+      const m = f.match(/^wave_(\d+)([a-z]*)\.yaml$/);
+      if (!m) continue;
+      const k = parseInt(m[1], 10);
+      if (!latest || k > latest.k || (k === latest.k && m[2] > latest.suffix)) {
+        latest = { k, suffix: m[2], file: f };
+      }
+    }
+    if (!latest) return false;
+    const gatePath = path.join(gateDir, latest.file);
+    const gateContent = safeRead(gatePath);
+    if (!gateContent || !/^\s*overall:\s*["']?(PASS|CONDITIONAL_PASS)\b/m.test(gateContent)) return false;
+    const kmax = latest.k;
+
+    // 4. a later wave is still pending
+    let lastWave = null;
+    const meta = safeRead(path.join(sessionDir, 'workflow', 'work_meta.yaml'));
+    if (meta) {
+      const waves = [...meta.matchAll(/^\s*-\s*wave:\s*["']?(\d+)/gm)].map((x) => parseInt(x[1], 10));
+      if (waves.length) {
+        lastWave = Math.max(...waves);
+      } else {
+        const tw = meta.match(/^total_waves:\s*(\d+)/m);
+        if (tw) lastWave = parseInt(tw[1], 10) - 1;
+      }
+    }
+    let pending = lastWave !== null && kmax < lastWave;
+    if (lastWave === null) {
+      const tasks = safeRead(path.join(sessionDir, 'team', 'task_list.yaml'));
+      if (tasks) {
+        for (const item of tasks.split(/^\s*-\s+/m).slice(1)) {
+          const w = item.match(/^\s*wave:\s*["']?(\d+)/m);
+          const st = item.match(/^\s*status:\s*["']?([a-z_]+)/m);
+          if (w && st && parseInt(w[1], 10) > kmax && /^(pending|not_started|in_progress)$/.test(st[1])) {
+            pending = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!pending) return false;
+
+    // 5. not abandoned
+    const mtime = (p) => { try { return fs.statSync(p).mtimeMs; } catch { return 0; } };
+    let lastActivityMs = Math.max(mtime(gatePath), mtime(path.join(sessionDir, 'workflow', 'events.jsonl')));
+    const hb = statusContent && statusContent.match(/last_updated_at:\s*["']?([^"'\n]+)["']?/);
+    if (hb) {
+      const hbMs = Date.parse(hb[1]);
+      if (!isNaN(hbMs)) lastActivityMs = Math.max(lastActivityMs, hbMs);
+    }
+    const maxIdleRaw = parseInt(process.env.CAGENTS_IDLE_LEAD_MAX_MS || '', 10);
+    const maxIdleMs = Number.isFinite(maxIdleRaw) && maxIdleRaw > 0 ? maxIdleRaw : 86400000;
+    if (!(lastActivityMs > 0) || (nowMs - lastActivityMs) >= maxIdleMs) return false;
+
+    return { idle: true, gate: latest.file.replace(/\.yaml$/, ''), lastWave: lastWave === null ? kmax + 1 : lastWave };
+  } catch (e) {
+    console.error(`[SessionStop] teamIdleBetweenWaves error (treating as not idle): ${e.message}`);
+    return false;
+  }
+}
+
 // =============================================================================
 // P1-4: Pattern Extractor Runtime Wiring (24h throttle)
 // =============================================================================
 
 /**
  * Resolve the cagents-memory root, honoring CAGENTS_TEST_ROOT for sandboxed tests.
- * Production path is repo-root/cagents-memory; this file lives at
- * .claude/hooks/team-stop.cjs so repo-root = ../../..
+ * Production path is AGENT_MEMORY_DIR (PROJECT_ROOT/cagents-memory), so a
+ * plugin install resolves the user's project, not the plugin checkout.
  */
 function resolveMemoryRoot() {
   if (process.env.CAGENTS_TEST_ROOT) {
     return path.join(process.env.CAGENTS_TEST_ROOT, 'cagents-memory');
   }
-  return path.join(__dirname, '..', '..', 'cagents-memory');
+  return AGENT_MEMORY_DIR; // HS-4 (e): one memory root (CLAUDE_PROJECT_DIR-aware), not __dirname
 }
 
 /**
@@ -509,21 +618,31 @@ function reapSdkPointer(sessionDir) {
   }
 }
 
-createHook('SessionEnd', async (input) => {
+// Standalone registration. Suppressed when another hook require()s this module
+// only to import teamIdleBetweenWaves (it sets CAGENTS_DISPATCH_IMPORT before the
+// require, as write-edit-dispatch.cjs does), so this createHook() does not also
+// read stdin. A `require.main === module` guard is not usable: under run-hook.cjs
+// require.main is the launcher.
+if (!process.env.CAGENTS_DISPATCH_IMPORT) createHook('SessionEnd', async (input) => {
   const now = new Date().toISOString();
   let summary = '';
 
   // --- Phase 1: Agent tree cleanup for ANY session type ---
   // Strict ownership. SessionEnd finalizes only the session this transcript
-  // owns. A UUID payload resolves through resolveOwnedSession (terminal
+  // owns. A UUID payload resolves through its owned pointer/marker (terminal
   // sessions allowed, since SessionEnd finalizes them). A non-UUID payload is
   // an exact cAgents session id pin, used as a dir name. There is no newest
   // session guess: with no owned session, Phase 1 is skipped.
+  // HS-1: a UUID payload uses the shared resolveSession chain, purpose 'record'
+  // (terminal-inclusive, since SessionEnd finalizes terminal sessions too), no
+  // claim side effect, and allowEnv:false: CAGENTS_ACTIVE_SESSION never stands
+  // in for ownership here, so with no owned session Phase 1 is skipped.
   const payloadUuid = SDK_UUID_RE.test(input.session_id || '') ? input.session_id : null;
   let anySession = null;
   if (payloadUuid) {
-    anySession = resolveOwnedSession(payloadUuid, { includeTerminal: true });
+    anySession = resolveSession(input, { purpose: 'record', claimHint: false, allowEnv: false });
   } else if (input.session_id && input.session_id === path.basename(input.session_id)) {
+    // Exact cAgents session id pin (legacy / test payload): the named dir.
     const direct = path.join(AGENT_MEMORY_DIR, 'sessions', input.session_id);
     if (fs.existsSync(direct)) anySession = direct;
   }
@@ -536,11 +655,13 @@ createHook('SessionEnd', async (input) => {
   // and conclude the session is idle. Pinned by
   // tests/hooks/team-stop-liveness-guard.test.js.
   let activelyWorkingAtEntry = false;
+  // HS-4 idle-lead exemption (WI-9 design section 4a): captured before Phase 1
+  // for the same ordering reason. False for every non-team / terminal session.
+  let idleBetweenWavesAtEntry = false;
   if (anySession) {
-    activelyWorkingAtEntry = teamSessionActivelyWorking(
-      anySession,
-      safeRead(path.join(anySession, 'status.yaml')),
-    );
+    const entryStatus = safeRead(path.join(anySession, 'status.yaml'));
+    activelyWorkingAtEntry = teamSessionActivelyWorking(anySession, entryStatus);
+    idleBetweenWavesAtEntry = teamIdleBetweenWaves(anySession, entryStatus);
   }
 
   if (anySession) {
@@ -553,7 +674,9 @@ createHook('SessionEnd', async (input) => {
   }
 
   // --- Phase 1b: Generate execution_summary.yaml if missing (ALL session types) ---
-  if (anySession) {
+  // Skipped for a /team lead idle between waves: the summary would say
+  // `status: incomplete`, and nothing overwrites it once the program resumes.
+  if (anySession && !idleBetweenWavesAtEntry) {
     generateExecutionSummary(anySession, now);
   }
 
@@ -574,7 +697,7 @@ createHook('SessionEnd', async (input) => {
   // pattern. Never blocks teardown.
   const gcStatus = maybeRunSessionGc();
   if (gcStatus === 'invoked') {
-    summary += 'Session GC: spawned (background)\n';
+    console.error('[SessionStop] Session GC: spawned (background)'); // HS-11: bookkeeping, stderr only
   }
 
   // --- Phase 2: Team-specific metrics and status (team_* sessions only) ---
@@ -597,7 +720,7 @@ createHook('SessionEnd', async (input) => {
   if (!teamSessionDir) {
     // No team session — return agent tree cleanup summary if any
     if (summary) {
-      return { continue: true, systemMessage: summary };
+      return { continue: true, systemMessage: summary.trimEnd() };
     }
     return null;
   }
@@ -611,6 +734,12 @@ createHook('SessionEnd', async (input) => {
   }
 
   const metricsDir = path.join(teamSessionDir, 'team', 'metrics');
+  const statusFile = path.join(teamSessionDir, 'status.yaml');
+
+  // HS-4 idle-lead exemption. Prefer the entry verdict when Phase 1 and Phase 2
+  // resolved the same session; otherwise evaluate the Phase 2 session now.
+  const idleBetweenWaves = (teamSessionDir === anySession && idleBetweenWavesAtEntry)
+    || teamIdleBetweenWaves(teamSessionDir, safeRead(statusFile));
 
   // Calculate metrics
   const metrics = { items_completed: 0, items_total: 0, duration_seconds: 0, speedup_factor: 0 };
@@ -626,7 +755,9 @@ createHook('SessionEnd', async (input) => {
   // Finalize timing
   const timingFile = path.join(metricsDir, 'timing.yaml');
   const timingContent = safeRead(timingFile);
-  if (timingContent) {
+  if (timingContent && !idleBetweenWaves) {
+    // Idle between waves: the program has not finished, so completed_at /
+    // total_duration_seconds are not written.
     const startMatch = timingContent.match(/started_at:\s*"([^"]+)"/);
     if (startMatch) {
       const startMs = new Date(startMatch[1]).getTime();
@@ -661,9 +792,17 @@ createHook('SessionEnd', async (input) => {
   }
 
   // Update status
-  const statusFile = path.join(teamSessionDir, 'status.yaml');
   let statusContent = safeRead(statusFile);
-  if (statusContent) {
+  if (statusContent && idleBetweenWaves) {
+    // HS-4 idle-lead exemption: a gated wave passed and a later wave is pending.
+    // Leave phase, pipeline_state, completed_at and result untouched and do not
+    // write status.yaml at all. Sits before the liveness and genuine-PASS
+    // branches below, which are unchanged.
+    console.error(
+      `[SessionStop] ${path.basename(teamSessionDir)} is idle between waves ` +
+      `(${idleBetweenWaves.gate} passed, last wave ${idleBetweenWaves.lastWave}); status.yaml left untouched.`,
+    );
+  } else if (statusContent) {
     const success = metrics.items_total > 0 ? (metrics.items_completed === metrics.items_total) : true;
 
     // LIVENESS GUARD: never stamp terminal state on a session that is still
@@ -686,11 +825,16 @@ createHook('SessionEnd', async (input) => {
         `(running child agent or fresh heartbeat) — leaving phase/pipeline_state untouched. ` +
         `Metrics were finalized; terminal state is not this hook's to assert on a live session.`,
       );
-      summary += `**Status**: left non-terminal — session still actively working\n`;
-    } else {
+      // HS-11: stderr above is enough; not user-actionable.
+    } else if (success && sessionGenuinelyValidated(teamSessionDir, 'pipeline_state: VALIDATED\n')) {
+      // HS-4 (e): assert VALIDATED only with a genuine validator PASS on disk.
       statusContent = statusContent
         .replace(/^phase:\s*\w+/m, 'phase: completed')
         .replace(/^pipeline_state:\s*\S+/m, 'pipeline_state: VALIDATED');
+    } else {
+      // HS-4 (e): no genuine PASS, so the terminal state is verify-completion's
+      // to decide (REC-02 honesty rule). Leave phase/pipeline_state as-is.
+      console.error(`[SessionStop] ${path.basename(teamSessionDir)}: no genuine validator PASS on disk; phase/pipeline_state left as-is`);
     }
 
     statusContent = statusContent
@@ -703,20 +847,23 @@ createHook('SessionEnd', async (input) => {
 
   console.error(`[SessionStop] Finalized ${path.basename(teamSessionDir)}: ${metrics.items_completed}/${metrics.items_total}`);
 
-  summary += `## Team Session Complete: ${path.basename(teamSessionDir)}\n\n`;
-  summary += `**Work Items**: ${metrics.items_completed}/${metrics.items_total} completed\n`;
-  summary += `**Duration**: ${metrics.duration_seconds} seconds\n`;
+  // HS-11: one line. Speedup/pattern-extraction are bookkeeping (stderr only).
+  if (idleBetweenWaves) {
+    summary += `Team ${path.basename(teamSessionDir)}: paused between waves (${idleBetweenWaves.gate} passed, last wave ${idleBetweenWaves.lastWave}).\n`;
+  } else {
+    summary += `Team ${path.basename(teamSessionDir)}: ${metrics.items_completed}/${metrics.items_total} work items completed in ${metrics.duration_seconds}s.\n`;
+  }
   if (metrics.speedup_factor > 1) {
-    summary += `**Speedup**: ${metrics.speedup_factor.toFixed(1)}x faster than sequential\n`;
+    console.error(`[SessionStop] speedup ${metrics.speedup_factor.toFixed(1)}x vs sequential`);
   }
 
   // --- Phase 3: P1-4 pattern extraction (24h throttle, fire-and-forget) ---
   const extractionStatus = maybeExtractPatterns();
-  if (extractionStatus === 'invoked') {
-    summary += `**Pattern extraction**: spawned (background)\n`;
-  } else if (extractionStatus === 'throttled') {
-    summary += `**Pattern extraction**: throttled (last run <24h ago)\n`;
+  if (extractionStatus === 'invoked' || extractionStatus === 'throttled') {
+    console.error(`[SessionStop] Pattern extraction: ${extractionStatus === 'invoked' ? 'spawned (background)' : 'throttled (last run <24h ago)'}`);
   }
 
-  return { continue: true, systemMessage: summary };
+  return { continue: true, systemMessage: summary.trimEnd() };
 });
+
+module.exports = { teamIdleBetweenWaves, teamSessionActivelyWorking };

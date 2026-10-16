@@ -368,7 +368,10 @@ When the gate is satisfied, the lead MAY instead:
    is accepted, and then it is ignored.
 2. **Coordinate by name**: `SendMessage({ to: name })` messages one specific
    teammate. A message to a stopped teammate **auto-resumes it by name**
-   (v2.1.77). Use the shared Task list for work distribution and for
+   (v2.1.77). After a compaction, use the agent ID instead of the name. Since
+   CC 2.1.299, a name given before the last compaction still needs the agent
+   ID. See `.claude/rules/core/delegation.md` § Synchronous Spawning.
+   Use the shared Task list for work distribution and for
    self-claiming. That list uses `TaskCreate`, `TaskUpdate`, and `TaskList`.
 3. **Display in panes**: `teammateMode: "tmux"` or `teammateMode: "iterm2"` puts
    each teammate in its own split pane. This needs tmux or iTerm2.

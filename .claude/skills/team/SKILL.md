@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
 metadata:
   author: CaelanDrayer
-  version: "12.74.1"
+  version: "12.76.0"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
@@ -118,7 +118,7 @@ MEM="$CAGENTS_ROOT/cagents-memory"
 SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 ```
 
-Then run `mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"`. (v12.6.0: do NOT create `workflow/events/`.) Write `instruction.yaml` and `status.yaml` with `phase: INIT`. Write the lead entry to `workflow/agent_tree.yaml`. A skill cannot set environment variables for hook subprocesses. Hooks bind this session to your transcript by claim-on-write: the first write of `instruction.yaml` or `status.yaml` claims an unclaimed session dir. Step 2a-i seeds the same binding up front. Never run `npm install` or `npm ci` with the cwd inside a session directory or a scratch directory. An install runs from `$CAGENTS_ROOT` only.
+Then run `mkdir -p "${SESSION_DIR}/workflow" "${SESSION_DIR}/outputs"`. (v12.6.0: do NOT create `workflow/events/`.) Write `instruction.yaml` and `status.yaml` with `phase: INIT`. Seed `workflow/agent_tree.yaml` with the depth-0 lead entry in a top-level `agents:` list. This is the only hand write to that file; the hooks own it after init. A skill cannot set environment variables for hook subprocesses. Hooks bind this session to your transcript by claim-on-write: the first write of `instruction.yaml` or `status.yaml` claims an unclaimed session dir. Step 2a-i seeds the same binding up front. Never run `npm install` or `npm ci` with the cwd inside a session directory or a scratch directory. An install runs from `$CAGENTS_ROOT` only.
 
 **2a-i (BEST-EFFORT, SDK-UUID map).** The session dir and `status.yaml` now exist. If `${CLAUDE_SESSION_ID}` is set and SDK-UUID-shaped, write the marker and the map pointer. The owner guard skips the write when the marker names another UUID. This step is optional. `${CLAUDE_SESSION_ID}` can be empty, or it can differ from the hook payload UUID. The robust path is claim-on-write in `post-write-validator.cjs`. `claimSession` in `subagent-tracker.cjs` and `session-init-gate.cjs` also seeds ownership.
 
@@ -164,7 +164,7 @@ For each wave K:
 
 **5b.** Write `outputs/wave-{K}/spawn_brief.md` to the schema in @reference/spawn-brief-schema.md. The brief MUST carry the report cap as a Report Contract section. That cap is at most 12 lines, with at most 15 words per line.
 
-**5c. (DEFAULT: concurrent Agent waves, which work in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls, issued in ONE assistant message. Many tool uses in a single message run concurrently. Give each call `run_in_background: false`. Synchronous spawning is required. Subagents are background-by-default since v2.1.198. So `run_in_background: false` is what makes the lead receive all of the wave results together, before it validates GATE-K. Use pointer prompts of about 80 tokens, per @reference/spawn-brief-schema.md § Short Spawn Prompt. Each wave subagent is the `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. It can recursively spawn its own subagents to depth 3, for any specialty that it needs. There is no team to create, because teams are implicit. See @reference/teammate-spawning-template.md for the self-registration and for the worktree isolation.
+**5c. (DEFAULT: concurrent Agent waves, which work in every harness).** Spawn ALL wave-K subagents as CONCURRENT `Agent()` calls, issued in ONE assistant message. Many tool uses in a single message run concurrently. Give each call `run_in_background: false`. Synchronous spawning is required. Subagents are background-by-default since v2.1.198. So `run_in_background: false` is what makes the lead receive all of the wave results together, before it validates GATE-K. Use pointer prompts of about 80 tokens, per @reference/spawn-brief-schema.md § Short Spawn Prompt. Each wave subagent is the `cagents:{CONTROLLER_TYPE}` from `plan.yaml.controller_assignment.primary`. It can recursively spawn its own subagents to depth 3, for any specialty that it needs. There is no team to create, because teams are implicit. See @reference/teammate-spawning-template.md for the hook-owned agent-tree rule and for the worktree isolation.
 
 **5c-EXPERIMENTAL (OPTIONAL: named background teammates and panes).** Two conditions gate this path. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` must be set, AND the harness must support interactive agent teams. When both conditions hold, you MAY instead spawn named background teammates with `Agent({ name, run_in_background: true })`. The team forms implicitly, and any `team_name` arg is accepted-but-ignored. Coordinate those teammates with `SendMessage({to: name})` and with the shared Task list. Since v2.1.77, `SendMessage` auto-resumes a stopped teammate by name. `teammateMode` controls the display, and its default is `in-process` since v2.1.179. The other two values are `tmux` and `iterm2`. Panes need tmux or iTerm2, and panes belong to the experimental path only. This path is harness-variable. If the experimental feature is unavailable, fall back to the DEFAULT concurrent-Agent path in 5c.
 
@@ -214,7 +214,7 @@ Read the 1-line confirmation only.
 
 1. On the DEFAULT path, the wave subagents are synchronous, with `run_in_background: false`, and they have already returned. There is nothing to shut down, and there is no team to delete. Teams are implicit, and the cleanup is automatic. Do NOT call `TeamDelete`. Only on the EXPERIMENTAL named-background-teammate path, send `SendMessage({type:"shutdown_request",...})` to any teammate that still runs.
 2. Mark the initial orchestration TaskCreate as completed.
-3. Finalize the lead entry in `agent_tree.yaml` with `stopped_at`, `completion_summary`, and `duration_seconds`.
+3. Do not edit `agent_tree.yaml` to finalize the lead entry. The hooks close it: `repairSession` at Stop for a terminal session, and `team-stop.cjs` at SessionEnd. Put the completion summary in `status.yaml`.
 4. **Task cleanup (HARD GATE).** Run `TaskList`. Mark every `in_progress` task and every `pending` task as completed. Run `TaskList` again, and make sure that zero tasks are outstanding before you stop.
 5. (v12.6.0: `state_history[].duration_ms` is no longer emitted, so skip this step.)
 6. Write `team/metrics/parallelism.yaml` with the wave_stats and the totals.

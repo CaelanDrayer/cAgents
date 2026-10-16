@@ -28,7 +28,7 @@ let yaml = null;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
 // Start and stop trackers share session discovery from hook-utils.cjs.
 // Neither guesses the newest session: no owned session means global log only.
-const { createHook, findActiveSession, resolveOwnedSession, getSessionOwner, safeRead, ensureDir, withFileLock, AGENT_MEMORY_DIR, appendSessionEvent } = require('./hook-utils.cjs');
+const { createHook, safeRead, ensureDir, AGENT_MEMORY_DIR, appendSessionEvent, resolveSession, LOCK_SKIPPED, updateYamlLocked, agentTreeHeader, reconcileTreeFromEvents, readSessionEvents } = require('./hook-utils.cjs');
 
 /**
  * LP-22: Pattern heuristics for MEMORY.md auto-append.
@@ -137,7 +137,10 @@ function buildCompletionSummary(lastMessage) {
 
 createHook('SubagentStopTracker', async (input) => {
   const subagentType = input.agent_type || 'unknown';
-  const agentId = input.agent_id || 'unknown';
+  // HS-6: one id fallback. With no agent_id the start hook filed the row as
+  // anon_<type>_<ts>_<pid> (hook-utils fallbackAgentId); this stop then closes
+  // the OLDEST open anon_<type>_ row through a stop_anon event.
+  const agentId = input.agent_id || null;
   const now = new Date().toISOString();
 
   // Capture last assistant message summary for auditability (truncated to 500 chars)
@@ -148,7 +151,7 @@ createHook('SubagentStopTracker', async (input) => {
     const logsDir = ensureDir(path.join(AGENT_MEMORY_DIR, '_system', 'logs'));
     const logFile = path.join(logsDir, 'agent_spawns.log');
     const summaryPart = lastMessage ? ` | summary=${lastMessage.slice(0, 200)}` : '';
-    fs.appendFileSync(logFile, `${now} | agent_id=${agentId} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}${summaryPart}\n`);
+    fs.appendFileSync(logFile, `${now} | agent_id=${agentId || 'unknown'} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}${summaryPart}\n`);
   } catch (err) {
     console.error(`[SubagentStopTracker] Failed to write audit log: ${err.message}`);
   }
@@ -172,23 +175,12 @@ createHook('SubagentStopTracker', async (input) => {
     return { continue: true };
   }
 
-  // Find session to update agent_tree.yaml.
-  // ENG-OBS-2 (v12.70.0): after the deterministic resolver, the OWNERSHIP pass
-  // runs, as in subagent-tracker.cjs. A stop event must land in the session that
-  // owns this transcript, even when its status.yaml reads terminal. Otherwise the
-  // start and stop could land in different sessions, leaving the entry at
-  // `stopped_at: null`. There is no newest-session guess.
-  let sessionDir = findActiveSession(input.session_id);
-  // Pointer or session.sdk_id marker; the marker alone is ownership.
-  if (!sessionDir) sessionDir = resolveOwnedSession(input.session_id, { includeTerminal: true });
-  // No newest-session guess. A dir whose marker names another UUID is foreign.
-  if (sessionDir && input.session_id) {
-    const owner = getSessionOwner(sessionDir);
-    if (owner && owner !== input.session_id) {
-      console.error(`[SubagentStopTracker] resolved session is owned by another transcript; not filing: ${path.basename(sessionDir)}`);
-      sessionDir = null;
-    }
-  }
+  // Find session to update agent_tree.yaml (HS-1). The SAME resolver and
+  // purpose as subagent-tracker.cjs, so the start and the stop land in the same
+  // session: 'record' is terminal-agnostic, because a stop must reach the
+  // session that owns this transcript even when its status.yaml reads terminal.
+  // There is no newest-session guess.
+  const sessionDir = resolveSession(input, { purpose: 'record' });
 
   if (!sessionDir) {
     console.error(`[SubagentStopTracker] No session found for agent ${agentId} stop event`);
@@ -205,87 +197,55 @@ createHook('SubagentStopTracker', async (input) => {
   let cachedParsedObj = null;
   let cachedAgentEntry = null;
 
-  // Lock the tree file for the entire read-modify-write cycle to prevent
-  // race conditions when multiple agents stop concurrently.
-  withFileLock(treeFile, () => {
-    const existingContent = safeRead(treeFile);
-
-    if (!existingContent) {
-      console.error(`[SubagentStopTracker] agent_tree.yaml not found or empty for agent ${agentId}, logging stop event only`);
+  // HS-6: events.jsonl first (append-only), then agent_tree.yaml through
+  // updateYamlLocked (lock that SKIPS on timeout, tolerant parse, tmp+rename).
+  // Every locked write reconciles stops a lock-skipped writer left in events.
+  if (!agentId) {
+    appendSessionEvent(sessionDir, { type: 'stop_anon', agent_type: subagentType });
+  }
+  const stopAlreadyLogged = (id) => readSessionEvents(sessionDir).some(e => e.type === 'stop' && e.agent_id === id);
+  const logStopOnly = () => {
+    if (agentId && !stopAlreadyLogged(agentId)) appendSessionEvent(sessionDir, { type: 'stop', agent_id: agentId, duration_seconds: null });
+  };
+  const res = updateYamlLocked(treeFile, yaml, (parsedObj, ctx) => {
+    if (!Array.isArray(parsedObj.agents)) {
+      console.error('[SubagentStopTracker] non-canonical agent_tree.yaml; stop logged to events.jsonl only');
+      ctx.write = false;
+      logStopOnly();
       return;
     }
-
-    // Parse YAML using js-yaml (matches subagent-tracker.cjs which writes via yaml.dump).
-    // This fixes the YAML matching bug: subagent-tracker writes unquoted values (e.g., id: abc123)
-    // but the old code searched for double-quoted values (e.g., id: "abc123"), always failing.
-    // js-yaml.load() handles both quoted and unquoted formats, providing backward compatibility.
-    let parsedObj;
-    try {
-      parsedObj = yaml.load(existingContent);
-    } catch (parseErr) {
-      console.error(`[SubagentStopTracker] Malformed agent_tree.yaml — cannot update: ${parseErr.message}`);
-      return;
-    }
-
-    if (!parsedObj || !Array.isArray(parsedObj.agents)) {
-      console.error(`[SubagentStopTracker] agent_tree.yaml missing agents array for agent ${agentId}, logging stop event only`);
-      return;
-    }
-
-    // Find the matching agent entry by id (works for both quoted and unquoted YAML formats)
-    const agentEntry = parsedObj.agents.find(a => a.id === agentId);
-
+    reconcileTreeFromEvents(parsedObj, sessionDir); // applies stop_anon and skipped writers
+    if (!agentId) return;
+    const agentEntry = parsedObj.agents.find(a => a && a.id === agentId);
     if (!agentEntry) {
       console.error(`[SubagentStopTracker] Agent ${agentId} not found in agent_tree.yaml, logging stop event only`);
+      logStopOnly();
+      if (!parsedObj.agents.length) ctx.write = false; // never create an empty tree
       return;
     }
-
-    // Already has a stopped_at? Skip to avoid double-recording.
-    if (agentEntry.stopped_at && agentEntry.stopped_at !== null) {
+    if (agentEntry.stopped_at) {
       console.error(`[SubagentStopTracker] Agent ${agentId} already has stopped_at, skipping`);
       return;
     }
-
-    // Update the agent entry fields
     agentEntry.stopped_at = now;
-
     // PC-12: Structured completion_summary
     const summary = buildCompletionSummary(lastMessage);
-    if (summary) {
-      agentEntry.completion_summary = summary;
-    }
-
-    // Calculate duration from spawned_at if available
+    if (summary) agentEntry.completion_summary = summary;
     if (agentEntry.spawned_at) {
-      const spawnedAt = new Date(agentEntry.spawned_at);
-      const stoppedAt = new Date(now);
-      const durationMs = stoppedAt - spawnedAt;
-      if (!isNaN(durationMs) && durationMs >= 0) {
-        agentEntry.duration_seconds = Math.round(durationMs / 1000);
-      }
+      const durationMs = new Date(now) - new Date(agentEntry.spawned_at);
+      if (!isNaN(durationMs) && durationMs >= 0) agentEntry.duration_seconds = Math.round(durationMs / 1000);
     }
-
-    // Write back using yaml.dump (consistent with subagent-tracker.cjs)
-    fs.writeFileSync(treeFile, yaml.dump(parsedObj));
+    // REC-16: one structured `stop` event, only when this call recorded the stop.
+    appendSessionEvent(sessionDir, { type: 'stop', agent_id: agentId,
+      duration_seconds: typeof agentEntry.duration_seconds === 'number' ? agentEntry.duration_seconds : null });
     console.error(`[SubagentStopTracker] Agent ${agentId} (${subagentType}) stopped`);
-
     // M-22 (v12.12.2): cache for the downstream performance-logging block.
     cachedParsedObj = parsedObj;
     cachedAgentEntry = agentEntry;
-  });
-
-  // REC-16 (v12.51.0): structured per-session `stop` lifecycle event. Emitted
-  // ONLY when this invocation actually recorded the stop (cachedAgentEntry set),
-  // so a repeated SubagentStop for an already-stopped agent does not append a
-  // duplicate stop line. Fail-open + lock-protected + session-scoped.
-  if (cachedAgentEntry) {
-    appendSessionEvent(sessionDir, {
-      type: 'stop',
-      agent_id: agentId,
-      duration_seconds: typeof cachedAgentEntry.duration_seconds === 'number'
-        ? cachedAgentEntry.duration_seconds
-        : null
-    });
+  }, { header: agentTreeHeader(sessionDir) });
+  if (res === LOCK_SKIPPED) {
+    logStopOnly();
+    console.error(`[SubagentStopTracker] agent_tree.yaml lock busy; stop ${agentId || 'stop_anon'} recorded in events.jsonl (reconciled on next write)`);
   }
 
   // --- Agent performance JSONL logging ---

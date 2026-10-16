@@ -83,3 +83,7 @@ See @wave-reviewer/resources/gate-check-protocol.md for the detailed check-by-ch
 ## Worked Examples
 
 - See @docs/example-store/ex-gates-taxonomy-four-types.md. Name each wave gate pre-flight, revision, escalation, or abort. Add a stall-detection rule for the case where the findings do not shrink between rounds.
+- See @docs/example-store/ex-verification-blind-baseline-eval.md. Test an instruction change against a no-change baseline with a blind judge and a weighted rubric.
+- See @docs/example-store/ex-verification-coverage-ledger.md. Log each unread required input as a ledger event. Report an empty category as not covered, never as passed.
+- See @docs/example-store/ex-verification-verify-and-stop.md. Map each acceptance criterion to the smallest proof. Report pass, fail, unavailable, or blocked, then stop.
+- See @docs/example-store/ex-structured-io-terse-return-grammar.md. Use a fixed reply grammar: one row per hit, a zero-hit sentinel, a totals line, and canned refusals.

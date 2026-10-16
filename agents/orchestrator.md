@@ -128,14 +128,9 @@ After you write enriched_context.yaml, return control to `/act`'s state machine.
 
 ## Agent Audit Trail
 
-When a caller spawns you as a subagent, self-register in the agent tree. To self-register, append your cAgents type to `workflow/agent_tree.yaml` in the session directory. Look for your `agent_id` in that file. Then append these lines:
+When a caller spawns you as a subagent, the hooks record you in the agent tree. `subagent-tracker.cjs` (SubagentStart) appends a `spawn` event to `workflow/events.jsonl` and writes your row to `workflow/agent_tree.yaml`. It sets `cagents_type: "cagents:orchestrator"` from the spawn. `subagent-stop-tracker.cjs` (SubagentStop) records your stop. Do not edit `agent_tree.yaml`. The hooks own it.
 
-```yaml
-    cagents_type: "cagents:orchestrator"
-    role_description: "Workflow phase conductor"
-```
-
-You spawn these subagents: router, planner, controller, executor, and validator. Make sure the delegation prompt for each one includes the session path. The session path lets each subagent self-register too.
+You spawn these subagents: router, planner, controller, executor, and validator. Put the absolute `SESSION_DIR` path in the delegation prompt for each one. The hooks use that line to file each spawn under this session.
 
 ## Context-Efficient Delegation
 

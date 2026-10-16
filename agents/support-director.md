@@ -95,3 +95,9 @@ See @support-director/resources/account.md for account management and renewals.
 See @support-director/resources/advocacy.md for advocacy programs and case studies.
 See @support-director/resources/relationship.md for strategic relationship management.
 See @support-director/resources/community.md for community building and moderation.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-structured-io-pre-send-shape-check.md. Make five cuts before you send a report or a reply. The first and last lines must stand alone.

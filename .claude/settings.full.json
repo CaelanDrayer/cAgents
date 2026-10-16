@@ -22,21 +22,37 @@
       "Bash(git commit:*)",
       "Bash(git push)",
       "Bash(git branch)",
-      "Bash(git branch:*)",
-      "Bash(git checkout:*)",
+      "Bash(git branch --list:*)",
+      "Bash(git branch --show-current)",
+      "Bash(git checkout -b:*)",
+      "Bash(git checkout main)",
       "Bash(git merge:*)",
-      "Bash(git stash:*)",
+      "Bash(git stash list)",
+      "Bash(git stash push:*)",
       "Bash(git rev-parse:*)",
       "Bash(git ls-files:*)",
       "Bash(git check-ignore:*)",
-      "Write(cagents-memory/**)"
+      "Bash(npx vitest run --config tests/vitest.config.js:*)",
+      "Bash(npm test)",
+      "Bash(npm test --:*)",
+      "Bash(bash scripts/ci/cagents-ci.sh:*)",
+      "Bash(bash scripts/ci/run-evals.sh:*)",
+      "Bash(bash scripts/ci/validate-agents.sh:*)",
+      "Bash(bash scripts/ci/validate-counts.sh:*)",
+      "Bash(bash scripts/ci/validate-ste100.sh:*)",
+      "Bash(bash scripts/ci/validate-versions.sh:*)",
+      "Bash(node scripts/ci/check-skill-session-paths.cjs:*)",
+      "Bash(node scripts/ci/run-advisory.cjs:*)",
+      "Bash(node scripts/ci/validate-planner-output.cjs:*)",
+      "Bash(node scripts/ci/validate-terminal-states.cjs:*)",
+      "Edit(/cagents-memory/**)"
     ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(sudo *)",
-      "Write(/etc/**)",
-      "Write(~/.ssh/**)"
+      "Edit(//etc/**)",
+      "Edit(~/.ssh/**)"
     ]
   },
   "hooks": {
@@ -150,17 +166,6 @@
           {
             "type": "command",
             "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" team-task-complete'",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}\"; node \"$R/.claude/hooks/run-hook.cjs\" permission-handler'",
             "timeout": 5
           }
         ]

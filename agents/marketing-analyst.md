@@ -88,3 +88,9 @@ See @marketing-analyst/resources/seo.md for the playbook of the `seo` mode. That
 - @marketing-analyst/resources/seo-on-page-audit.md
 - @marketing-analyst/resources/seo-technical-audit.md
 - @marketing-analyst/resources/seo-link-strategy.md
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-verification-measured-vs-inferred-ledger.md. Label each figure as measured or inferred, and never report an inferred figure as measured.

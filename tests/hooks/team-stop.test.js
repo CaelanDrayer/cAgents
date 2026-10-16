@@ -89,14 +89,47 @@ describe('team-stop.cjs', () => {
     expect(timing).toMatch(/completed_at: "\d{4}-\d{2}-\d{2}/);
   });
 
-  it('should update status to completed', () => {
+  // HS-4 (e), WI-10: team-stop asserts phase: completed / pipeline_state:
+  // VALIDATED only when a genuine validator PASS is on disk. Without one the
+  // terminal state is verify-completion's (REC-02 honesty rule).
+  const writeGenuinePass = () => {
+    mkdirSync(join(SESSION_DIR, 'workflow'), { recursive: true });
+    writeFileSync(join(SESSION_DIR, 'workflow', 'validation_report.yaml'),
+      'classification: PASS\noverall_status: PASS\ngenerated_by: validator\n');
+  };
+
+  it('should update status to completed when a genuine validator PASS is on disk', () => {
+    writeGenuinePass();
     runHook({ session_id: TEST_SESSION });
     const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
     expect(status).toContain('phase: completed');
   });
 
-  it('should update pipeline_state to VALIDATED when status uses pipeline_state field', () => {
+  it('should NOT stamp completed/VALIDATED without a genuine validator PASS (HS-4 e)', () => {
+    writeFileSync(join(SESSION_DIR, 'status.yaml'),
+      'phase: executing\npipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+    runHook({ session_id: TEST_SESSION });
+    const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
+    expect(status).toContain('phase: executing');
+    expect(status).toContain('pipeline_state: COORDINATED');
+    expect(status).not.toContain('VALIDATED');
+    expect(status).not.toContain('completed_at: null'); // placeholders are still filled
+  });
+
+  it('should NOT stamp VALIDATED over a hook-written safety-net stub report (HS-4 e)', () => {
+    mkdirSync(join(SESSION_DIR, 'workflow'), { recursive: true });
+    writeFileSync(join(SESSION_DIR, 'workflow', 'validation_report.yaml'),
+      'overall_status: PASS\ngenerated_by: verify-completion-hook-safety-net\n');
+    writeFileSync(join(SESSION_DIR, 'status.yaml'),
+      'pipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
+    runHook({ session_id: TEST_SESSION });
+    const status = readFileSync(join(SESSION_DIR, 'status.yaml'), 'utf8');
+    expect(status).toContain('pipeline_state: COORDINATED');
+  });
+
+  it('should update pipeline_state to VALIDATED when status uses pipeline_state field and a genuine PASS exists', () => {
     // Simulate a /act session that writes pipeline_state instead of phase
+    writeGenuinePass();
     writeFileSync(join(SESSION_DIR, 'status.yaml'),
       'pipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
     runHook({ session_id: TEST_SESSION });
@@ -104,7 +137,8 @@ describe('team-stop.cjs', () => {
     expect(status).toContain('pipeline_state: VALIDATED');
   });
 
-  it('should handle status with both phase and pipeline_state fields', () => {
+  it('should handle status with both phase and pipeline_state fields (genuine PASS)', () => {
+    writeGenuinePass();
     writeFileSync(join(SESSION_DIR, 'status.yaml'),
       'phase: executing\npipeline_state: COORDINATED\ncreated_at: "2026-03-17T10:00:00Z"\ncompleted_at: null\nresult: null\n');
     runHook({ session_id: TEST_SESSION });
@@ -125,8 +159,10 @@ describe('team-stop.cjs', () => {
   it('should return summary with work item counts', () => {
     const result = runHook({ session_id: TEST_SESSION });
     expect(result.continue).toBe(true);
-    expect(result.systemMessage).toContain('Team Session Complete');
-    expect(result.systemMessage).toContain('Duration');
+    // HS-11, WI-10: the SessionEnd summary is one line:
+    // `Team <sid>: x/y work items completed in Ns.` (no GC/pattern bookkeeping).
+    expect(result.systemMessage).toMatch(new RegExp(`^Team ${TEST_SESSION}: \\d+/\\d+ work items completed in \\d+s\\.$`));
+    expect(result.systemMessage).not.toMatch(/Session GC|Pattern extraction|\n/);
   });
 
   describe('execution_summary.yaml generation', () => {

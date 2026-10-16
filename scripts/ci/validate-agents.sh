@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.74.1
+# Version: 12.76.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -478,8 +478,50 @@ validate_hooks() {
         echo -e "  ${GREEN}All $hook_count registered hooks have matching .cjs files${NC}"
     fi
 
-    if [[ $hook_count -gt 0 ]] && [[ $hook_count -ne 24 ]]; then
-        log_warn "Hook count mismatch: found $hook_count registered hooks, expected 24"
+    # HS-9 (E16): the expected count is DERIVED, never a literal. A hardcoded
+    # constant drifted every time a hook was added (spawn-footprint v12.63.0,
+    # role-manifest-injector v12.64.0) and produced a false warning on every
+    # run. Two derived checks replace it:
+    #   1. settings.json's own "\$comment" states "N unique registered hooks";
+    #      the registrations parsed above must match that claim.
+    #   2. The plugin registration file .claude/hooks.json must register the
+    #      same set of hooks as settings.json (names, not just counts).
+    [[ $hook_count -gt 0 ]] || return 0
+
+    local expected_count
+    expected_count=$(node -e "
+        const data = JSON.parse(require('fs').readFileSync('$settings_json', 'utf8'));
+        const m = String(data['\$comment'] || '').match(/(\d+)\s+unique registered hooks/);
+        console.log(m ? m[1] : '');
+    " 2>/dev/null)
+    if [[ -z "$expected_count" ]]; then
+        log_warn "Hook count unchecked: settings.json \$comment has no 'N unique registered hooks' claim (found $hook_count registered hooks)"
+    elif [[ $hook_count -ne $expected_count ]]; then
+        log_warn "Hook count mismatch: found $hook_count registered hooks in settings.json, its \$comment claims $expected_count"
+    elif [[ $COUNT_ONLY != true ]]; then
+        echo -e "  ${GREEN}Hook count $hook_count matches settings.json \$comment claim${NC}"
+    fi
+
+    local plugin_hooks_json="$PROJECT_ROOT/.claude/hooks.json"
+    if [[ -f "$plugin_hooks_json" ]]; then
+        local plugin_hook_names drift
+        plugin_hook_names=$(node -e "
+            const data = JSON.parse(require('fs').readFileSync('$plugin_hooks_json', 'utf8'));
+            const names = new Set();
+            for (const entries of Object.values(data.hooks || {})) {
+                for (const entry of entries) {
+                    for (const hook of (entry.hooks || [])) {
+                        const match = (hook.command || '').match(/run-hook\\.cjs[\"']?\\s+([a-z][a-z0-9-]*)/);
+                        if (match) names.add(match[1]);
+                    }
+                }
+            }
+            names.forEach(n => console.log(n));
+        " 2>/dev/null)
+        drift=$(comm -3 <(sort -u <<< "$hook_names" | sed '/^$/d') <(sort -u <<< "$plugin_hook_names" | sed '/^$/d') | tr -d '\t' | tr '\n' ' ')
+        if [[ -n "${drift// /}" ]]; then
+            log_warn "Hook registration drift between settings.json and .claude/hooks.json: $drift"
+        fi
     fi
 }
 

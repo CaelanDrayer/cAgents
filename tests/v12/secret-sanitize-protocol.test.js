@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, readFileSync, mkdirSync, rmSync, statSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, mkdirSync, mkdtempSync, rmSync, statSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { spawnSync } from 'child_process';
@@ -24,6 +24,10 @@ const RESTORE_HOOK = join(HOOKS_DIR, 'secret-restore.cjs');
 // obviously not a real secret. We split to avoid push-protection false positives.
 // Pattern target: sk-ant-* (Anthropic API Key) — 40+ chars after prefix.
 const FAKE_SECRET = 'sk-' + 'ant-' + 'NOT_A_REAL_SECRET_1234567890_FAKE_TEST_VALUE_HERE_xyz';
+
+// HS-5: every hook spawn gets CLAUDE_PROJECT_DIR=<mkdtemp project>, so the
+// backups and the secret-restore log never reach the real repo cagents-memory/.
+let tmpProj;
 
 function runHook(hookPath, input, env = {}) {
   const inputJson = JSON.stringify(input);
@@ -40,6 +44,7 @@ function runHook(hookPath, input, env = {}) {
       NODE_ENV: 'test',
       VITEST: 'true',
       CAGENTS_HOOK_DEDUP_DISABLE: '1',
+      CLAUDE_PROJECT_DIR: tmpProj,
       ...env
     }
   });
@@ -71,9 +76,10 @@ describe('v12.0.4: secret sanitize-and-restore protocol', { timeout: 30000 }, ()
     tempDir = join(tmpdir(), `cagents-sanitize-test-${process.pid}-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
     tempFilePath = join(tempDir, 'config.json');
-    // Backup dir lives under the project's cagents-memory/_system/secret-backups/
+    // Backup dir lives under the temp project's cagents-memory/_system/secret-backups/
+    tmpProj = mkdtempSync(join(tmpdir(), 'cagents-secret-'));
     backupBaseDir = join(
-      process.cwd(),
+      tmpProj,
       'cagents-memory',
       '_system',
       'secret-backups',
@@ -83,7 +89,7 @@ describe('v12.0.4: secret sanitize-and-restore protocol', { timeout: 30000 }, ()
 
   afterEach(() => {
     try { rmSync(tempDir, { recursive: true, force: true }); } catch { /* ignore */ }
-    try { rmSync(backupBaseDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try { rmSync(tmpProj, { recursive: true, force: true }); } catch { /* ignore */ }
   });
 
   it('default mode (no env var) blocks secret writes (pre-v12.0.4 behavior preserved)', () => {
@@ -214,5 +220,27 @@ describe('v12.0.4: secret sanitize-and-restore protocol', { timeout: 30000 }, ()
     // File contents unchanged.
     const afterSecond = readFileSync(tempFilePath, 'utf8');
     expect(afterSecond).toBe(afterFirst);
+  });
+  // WI-17 round 4 (L3): a generic `api_key="..."` group that begins before a
+  // vendor token and stops at its `.` overlaps the vendor finding. Dropping the
+  // later span left the vendor body in clear; the spans must merge into one
+  // placeholder, and the merged token must still round-trip through restore.
+  it('sanitize merges overlapping spans (no vendor-token tail left in clear) and restores', () => {
+    const body = 'Q7rT2vX9pL4mN8sK1wE5yU3iO6aZ0cB'.repeat(3).slice(0, 90);
+    const lead = 'Ab3Cd5Ef7Gh9Ij1Kl2Mn';
+    const content = 'api_key="' + lead + 'hv' + 's.' + body + '"';
+    runHook(
+      DETECT_HOOK,
+      { session_id: sessionId, tool_name: 'Write', tool_input: { file_path: tempFilePath, content } },
+      { CAGENTS_SECRET_MODE: 'sanitize' }
+    );
+    const written = readFileSync(tempFilePath, 'utf8');
+    expect(written).toMatch(/^api_key="BLOCK_[a-f0-9]{8}"$/);
+    expect(written).not.toContain(body.slice(0, 20));
+    expect(written).not.toContain(lead);
+
+    const restoreResult = runHook(RESTORE_HOOK, { session_id: sessionId });
+    expect(restoreResult.continue).toBe(true);
+    expect(readFileSync(tempFilePath, 'utf8')).toBe(content);
   });
 });

@@ -547,7 +547,7 @@ describe('WI-10: the per-subagent context budget is ADVISORY — no gate, no thr
 
     it('5d. the deny-capable hooks deny on paths and roles, never on a token count', () => {
       // Hooks legitimately emit permissionDecision:deny (bash-validator,
-      // controller-delegation-validator, permission-handler). The invariant is
+      // controller-delegation-validator). The invariant is
       // not "no deny" but "no deny keyed to a token count" — and a file with no
       // token-count conditional at all cannot have one, which 5b establishes
       // file by file. This test pins the reasoning to the actual deny set so a

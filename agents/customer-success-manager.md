@@ -74,3 +74,9 @@ See @customer-success-manager/resources/best-practices.md for design principles 
 ## Controller Delegation Protocol
 
 See @.claude/rules/playbooks/pat-controller-coordination-protocol.md for the 8-step controller coordination protocol. Delegate all of the work through the Agent tool. Never implement the work directly.
+
+## Worked Examples
+
+Pull the matching worked example when the work calls for it:
+
+- See @docs/example-store/ex-structured-io-pre-send-shape-check.md. Make five cuts before you send a report or a reply. The first and last lines must stand alone.

@@ -104,7 +104,7 @@ describe('hook-utils.cjs', () => {
     });
 
     // WI-8 regression (run_improve-skills-hooks_260703_001): callers pass
-    // safeRead() output directly (e.g. permission-handler.cjs), which is null
+    // safeRead() output directly (e.g. the former permission-handler.cjs), which is null
     // when the file does not exist. Must return null, not throw TypeError.
     it('should return null for null/undefined content (WI-8 null guard)', () => {
       expect(hookUtils.extractYamlValue(null, 'tier')).toBe(null);
