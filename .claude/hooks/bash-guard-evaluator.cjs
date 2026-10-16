@@ -1566,7 +1566,10 @@ function localShellScriptWords(argv) {
   const sc = argv[i];
   if (!sc || wordHasExpansion(sc)) return null;
   const v = sc.canon;
-  if (v === '' || /^[-+]/.test(v) || /(^|[\/\\])scripts[\/\\]/.test(v) || /(^|[\/\\])\.\.([\/\\]|$)/.test(v)) return null;
+  // A glob character (* ? [) can match scripts/, so it fails closed, even when
+  // it is quoted. The scripts/ match ignores case for case-insensitive disks.
+  if (/[*?[]/.test(String(sc.raw || '') + v)) return null;
+  if (v === '' || /^[-+]/.test(v) || /(^|[\/\\])scripts[\/\\]/i.test(v) || /(^|[\/\\])\.\.([\/\\]|$)/.test(v)) return null;
   if (RUNNER_WORDS.has(basename(v))) return null;
   return new Set([k, i]);
 }
@@ -1575,9 +1578,10 @@ function segRunnerWords(seg, strictShell) {
   return seg.argv.some((t, i) => !(skip && skip.has(i)) && wordsOfToken(t).some(w => RUNNER_WORDS.has(w)));
 }
 function segMentionsRunner(seg) { return segRunnerWords(seg, false); }
-// BASH_ENV, ENV, SHELLOPTS, BASHOPTS and PS4 inject code into every shell, so
-// with one of them set a local `bash tap.sh` counts as a runner too.
-const SHELL_INJECT_ENV_RE = /^(BASH_ENV|ENV|SHELLOPTS|BASHOPTS|PS4)$/;
+// BASH_ENV, ENV, SHELLOPTS, BASHOPTS and PS4 inject code into every shell, and
+// the loader variables inject code into every binary. With one of them set, a
+// local `bash tap.sh` counts as a runner too. NODE_OPTIONS stays strict too.
+const SHELL_INJECT_ENV_RE = /^(BASH_ENV|ENV|SHELLOPTS|BASHOPTS|PS4|LD_PRELOAD|LD_LIBRARY_PATH|LD_AUDIT|DYLD_INSERT_LIBRARIES|NODE_OPTIONS)$/;
 function segMentionsRunnerStrict(seg) { return segRunnerWords(seg, true); }
 function envChdirTarget(argv) {
   // `env -C dir cmd` / `env --chdir=dir cmd`: returns the dir token (or a

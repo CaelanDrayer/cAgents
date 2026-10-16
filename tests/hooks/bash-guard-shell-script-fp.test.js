@@ -63,6 +63,21 @@ const ROWS = [
   ['TP', 'cd /x; bash --rcfile r tap.sh', 'ask'],
   ['TP', 'cd /x; bash tap.sh $(git rev-parse HEAD)', 'ask'],
   ['TP', 'cd /x; sh ui.sh | git apply', 'ask'],
+  ['TP', 'cd /x; bash scr?pts/ci/x.sh', 'ask'],
+  ['TP', 'cd /x; bash ./scr*/ci/x.sh', 'ask'],
+  ['TP', 'cd /x; bash [s]cripts/ci/x.sh', 'ask'],
+  ['TP', 'cd /x; bash SCRIPTS/ci/x.sh', 'ask'],
+  ['TP', 'cd /x; bash ./Scripts/ci/x.sh', 'ask'],
+  ['TP', 'export LD_PRELOAD=x; bash tap.sh', 'ask'],
+  ['TP', 'LD_PRELOAD=x bash tap.sh', 'ask'],
+  ['TP', 'export LD_LIBRARY_PATH=x; bash tap.sh', 'ask'],
+  ['TP', 'LD_LIBRARY_PATH=x bash tap.sh', 'ask'],
+  ['TP', 'export LD_AUDIT=x; bash tap.sh', 'ask'],
+  ['TP', 'LD_AUDIT=x bash tap.sh', 'ask'],
+  ['TP', 'export DYLD_INSERT_LIBRARIES=x; bash tap.sh', 'ask'],
+  ['TP', 'DYLD_INSERT_LIBRARIES=x bash tap.sh', 'ask'],
+  ['TP', 'export NODE_OPTIONS=x; bash tap.sh', 'ask'],
+  ['TP', 'NODE_OPTIONS=x bash tap.sh', 'ask'],
 ];
 
 describe('shell running a local script is not a runner', () => {

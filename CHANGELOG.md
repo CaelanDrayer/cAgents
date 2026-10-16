@@ -17,12 +17,14 @@ Each entry corresponds to one atomic tiny-bump commit. See
   that runs a literal local script, as in `cd <dir>; bash tap.sh`. In
   `bash-guard-evaluator.cjs`, `segMentionsRunner` skips the shell word and the
   script word. The shell still counts as a runner with `-c`, `-s`, stdin, an
-  rc option, an expanded word, a `scripts/` path, or a `..` path.
-  `BASH_ENV`, `ENV`, `SHELLOPTS`, `BASHOPTS`, and `PS4` still ask.
+  rc option, an expanded word, a glob character, a `scripts/` path in any
+  case, or a `..` path. `BASH_ENV`, `ENV`, `SHELLOPTS`, `BASHOPTS`, `PS4`,
+  `LD_PRELOAD`, `LD_LIBRARY_PATH`, `LD_AUDIT`, `DYLD_INSERT_LIBRARIES`, and
+  `NODE_OPTIONS` still ask.
 - `projectRoots` and `isProjectRootWord` match a Windows drive root in its
   `C:/x`, `C:\x`, and `/c/x` forms, case-insensitively. A POSIX root never
   matches a drive-form word.
-- The regression test `tests/hooks/bash-guard-shell-script-fp.test.js` has 46
+- The regression test `tests/hooks/bash-guard-shell-script-fp.test.js` has 61
   tests. 16 of them fail before the fix.
 
 ## [12.76.0] - 2026-10-16
