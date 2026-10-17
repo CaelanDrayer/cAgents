@@ -3066,7 +3066,11 @@ const CFG_READ_CMDS = new Set(['cat', 'head', 'tail', 'grep', 'egrep', 'fgrep', 
   'diff', 'jq', 'less', 'more', 'md5sum', 'sha1sum', 'sha256sum', 'echo', 'test', '[', 'realpath', 'readlink',
   'dirname', 'basename', 'cmp', 'od', 'xxd', 'hexdump', 'awk', 'sed', 'node', 'nodejs', 'git', 'npx', 'npm', 'yq',
   'find', 'tree', 'du', 'cd', 'pushd', 'popd']);
-const CFG_GIT_WRITE = new Set(['checkout', 'restore', 'reset', 'stash', 'apply', 'am', 'mv', 'rm', 'pull', 'merge', 'rebase', 'cherry-pick', 'revert', 'switch', 'clean']);
+// WI-R1 (v12.78.1): clone, init, worktree, submodule, bundle, archive,
+// checkout-index, read-tree and sparse-checkout can also write a path that a
+// word names.
+const CFG_GIT_WRITE = new Set(['checkout', 'restore', 'reset', 'stash', 'apply', 'am', 'mv', 'rm', 'pull', 'merge', 'rebase', 'cherry-pick', 'revert', 'switch', 'clean',
+  'clone', 'init', 'worktree', 'submodule', 'bundle', 'archive', 'checkout-index', 'read-tree', 'sparse-checkout']);
 const CFG_FIND_WRITE_RE = /^-(delete|exec|execdir|ok|okdir|fprint|fprint0|fprintf|fls)$/;
 const CFG_GIT_OPT_ARG = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--config-env']);
 const CFG_SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh', 'mksh', 'ash', 'busybox']);
@@ -3571,6 +3575,307 @@ function cfgInnerMessage(text, depth) {
   try { segs = tokenize(String(text)).segments; } catch (e) { return GUARD_CFG_RE_I.test(String(text)) ? GUARD_CFG_MSG : null; }
   return guardConfigWriteMessage(segs, text, depth + 1);
 }
+// WI-R1 (v12.78.1): awk, sed, git and find are on CFG_READ_CMDS. Each one has
+// a mode that writes a file or runs a command. The checks below find these
+// modes. The scan runs them for each segment, before the mention gate.
+const CFG_AWK_CMDS = new Set(['awk', 'gawk', 'mawk', 'nawk']);
+const CFG_SED_CMDS = new Set(['sed', 'gsed']);
+const CFG_ID_RE = /[A-Za-z_][A-Za-z0-9_]*/y;
+// WI-R1 (v12.78.1): true when the command text has a loose `.claude` mention.
+// Quotes, backslashes, white space and commas are removed first. Thus a path
+// that an awk or sed program splits into parts (".cl" "aude") is a mention.
+function cfgLooseMention(raw) {
+  const s = String(raw || '');
+  cfgSpend(1 + (s.length >> 3));
+  return /\.claude/i.test(s.replace(/["'\\\s,]/g, ''));
+}
+// WI-R1 (v12.78.1): true when the cwd can be in .claude. A null cwd and the
+// soft unknown cwd can be any dir. A trimmed base that is not empty starts at
+// a part that can name .claude (see cfgTrimBase).
+function cfgCwdNearCfg(cwd) {
+  return cwd === null || cwd === CFG_CWD_SOFT || (Array.isArray(cwd) && cwd.some(b => b.length > 0));
+}
+// WI-R1 (v12.78.1): the program text of an awk call. A program file (-f,
+// --file, -E, --exec, -i, --include, -l, --load, -W) gives an unknown program.
+function cfgAwkProgram(toks) {
+  const out = { scripts: [], unknown: false };
+  let explicit = false;
+  for (let k = 0; k < toks.length; k++) {
+    const s = String(toks[k].canon || '');
+    if (s === '--') { if (!explicit && !out.unknown && toks[k + 1]) out.scripts.push(String(toks[k + 1].canon || '')); break; }
+    if (/^(-[fEilW]|--(file|exec|include|load))$/.test(s)) { out.unknown = true; k++; continue; }
+    if (/^(-[fEilW].|--(file|exec|include|load)=)/.test(s)) { out.unknown = true; continue; }
+    if (s === '-e' || s === '--source') { if (toks[k + 1]) out.scripts.push(String(toks[k + 1].canon || '')); explicit = true; k++; continue; }
+    if (/^-e./.test(s)) { out.scripts.push(s.slice(2)); explicit = true; continue; }
+    if (/^--source=/.test(s)) { out.scripts.push(s.slice(9)); explicit = true; continue; }
+    if (/^-[vF]$/.test(s) || s === '--assign' || s === '--field-separator') { k++; continue; }
+    if (/^-./.test(s)) continue;
+    if (!explicit && !out.unknown) out.scripts.push(s);
+    break;
+  }
+  return out;
+}
+// WI-R1 (v12.78.1): true when an awk program writes a file or runs a command.
+// These are an output redirection (`>`, `>>` or `|`) in a print or printf
+// statement, a system() call, a `|&` pipe, a `"cmd" | getline` and an
+// @include or @load line. A `>` in a pattern or in parentheses is a compare.
+// The cost is linear in the program length.
+function cfgAwkWrites(src) {
+  src = String(src || '');
+  cfgSpend(1 + src.length);
+  const n = src.length;
+  const after = (j, word) => { while (j < n && /\s/.test(src[j])) j++; return src.startsWith(word, j); };
+  let inPrint = false;
+  let depth = 0;
+  for (let i = 0; i < n; i++) {
+    const ch = src[i];
+    if (ch === '"') { for (i++; i < n && src[i] !== '"'; i++) if (src[i] === '\\') i++; continue; }
+    if (ch === '#') { while (i < n && src[i] !== '\n') i++; inPrint = false; depth = 0; continue; }
+    if (ch === '@' && (src.startsWith('include', i + 1) || src.startsWith('load', i + 1))) return true;
+    if (/[A-Za-z_]/.test(ch) && !/[A-Za-z0-9_]/.test(src[i - 1] || '')) {
+      CFG_ID_RE.lastIndex = i;
+      const w = CFG_ID_RE.exec(src)[0];
+      if (w === 'print' || w === 'printf') { inPrint = true; depth = 0; } else if (w === 'system' && after(i + 6, '(')) return true;
+      i += w.length - 1;
+      continue;
+    }
+    if (ch === '|') {
+      if (src[i + 1] === '|') { i++; continue; }
+      if (src[i + 1] === '&' || (inPrint && depth === 0) || after(i + 1, 'getline')) return true;
+      continue;
+    }
+    if (ch === '>' && inPrint && depth === 0) return true;
+    if (ch === '(') depth++;
+    else if (ch === ')') { if (depth > 0) depth--; } else if (ch === ';' || ch === '\n' || ch === '{' || ch === '}') { inPrint = false; depth = 0; }
+  }
+  return false;
+}
+// WI-R1 (v12.78.1): the program text of a sed call. GNU sed reads options
+// after the file words too, so all the words are read. A script file (-f,
+// --file) gives an unknown program.
+function cfgSedProgram(toks) {
+  const out = { scripts: [], unknown: false };
+  let explicit = false;
+  let first = null;
+  let opts = true;
+  for (let k = 0; k < toks.length; k++) {
+    const s = String(toks[k].canon || '');
+    const next = () => (toks[k + 1] ? String(toks[k + 1].canon || '') : '');
+    if (opts && s === '--') { opts = false; continue; }
+    if (!opts || !/^-./.test(s)) { if (first === null) first = s; continue; }
+    if (s === '--expression') { out.scripts.push(next()); explicit = true; k++; continue; }
+    if (s === '--file') { out.unknown = true; explicit = true; k++; continue; }
+    if (/^--expression=/.test(s)) { out.scripts.push(s.slice(13)); explicit = true; continue; }
+    if (/^--file=/.test(s)) { out.unknown = true; explicit = true; continue; }
+    if (s === '--line-length') { k++; continue; }
+    if (/^--/.test(s)) continue;
+    for (let p = 1; p < s.length; p++) {
+      const f = s[p];
+      if (f === 'i') break;
+      if (f !== 'e' && f !== 'f' && f !== 'l') continue;
+      const rest = s.slice(p + 1);
+      const val = rest || next();
+      if (!rest) k++;
+      if (f === 'e') { out.scripts.push(val); explicit = true; } else if (f === 'f') { out.unknown = true; explicit = true; }
+      break;
+    }
+  }
+  if (!explicit && first !== null) out.scripts.push(first);
+  return out;
+}
+// WI-R1 (v12.78.1): true when a sed script writes a file or runs a command.
+// These are the w, W and e commands and the w and e flags of s. A char that is
+// not a sed command also gives true. The cost is linear in the script length.
+function cfgSedWrites(src) {
+  src = String(src || '');
+  cfgSpend(1 + src.length);
+  const n = src.length;
+  let i = 0;
+  const toEol = () => { while (i < n && src[i] !== '\n') i++; };
+  const part = d => { while (i < n && src[i] !== d) { if (src[i] === '\\') i++; i++; } i++; };
+  const addr = () => {
+    if (/[0-9]/.test(src[i] || '')) { while (i < n && /[0-9~]/.test(src[i])) i++; return true; }
+    if (src[i] === '$') { i++; return true; }
+    if (src[i] === '/') { i++; part('/'); } else if (src[i] === '\\' && i + 1 < n) { const d = src[i + 1]; i += 2; part(d); } else return false;
+    while (i < n && /[IM]/.test(src[i])) i++;
+    return true;
+  };
+  while (i < n) {
+    const ch = src[i];
+    if (/[\s;{}]/.test(ch)) { i++; continue; }
+    if (ch === '#') { toEol(); continue; }
+    if (addr()) {
+      while (i < n && /[ \t]/.test(src[i])) i++;
+      if (src[i] === ',') {
+        i++;
+        while (i < n && /[ \t]/.test(src[i])) i++;
+        if (src[i] === '+' || src[i] === '~') { i++; while (i < n && /[0-9]/.test(src[i])) i++; } else addr();
+      }
+      while (i < n && /[\s!]/.test(src[i])) i++;
+      continue;
+    }
+    i++;
+    if (ch === 'w' || ch === 'W' || ch === 'e') return true;
+    if (ch === 'a' || ch === 'i' || ch === 'c') { while (i < n && src[i] !== '\n') { if (src[i] === '\\') i++; i++; } continue; }
+    if (ch === 'r' || ch === 'R') { toEol(); continue; }
+    if (':btTv'.includes(ch)) { while (i < n && !/[;\n}]/.test(src[i])) i++; continue; }
+    if ('qQlL'.includes(ch)) { while (i < n && /[ \t0-9]/.test(src[i])) i++; continue; }
+    if ('=dDgGhHnNpPxzF'.includes(ch)) continue;
+    if (ch === 's' || ch === 'y') {
+      const d = src[i];
+      if (d === undefined || d === '\n' || d === '\\') return true;
+      i++;
+      part(d);
+      part(d);
+      if (ch === 'y') continue;
+      while (i < n && /[gpiImMe0-9w]/.test(src[i])) { if (src[i] === 'w' || src[i] === 'e') return true; i++; }
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+// WI-R1 (v12.78.1): true when a git call writes a file that an option names:
+// `config --file|-f P`, and `--output P`, `--output-directory P` or `-o P`
+// (format-patch, archive) for a sub-command. The check is true when P can
+// name a config target. It is also true when -C, --git-dir or --work-tree can
+// name .claude, or has a computed value.
+function cfgGitOptWrite(cp, ctx, cwd) {
+  const toks = cp.slice(1);
+  const hit = t => !!t && tokenMentionsCfg(t, ctx, cwd, true);
+  const odd = t => !!t && (t.varCount || t.substCount || hit(t));
+  let sub = null;
+  let base = false;
+  let k = 0;
+  for (; k < toks.length; k++) {
+    const s = String(toks[k].canon || '');
+    if (CFG_GIT_OPT_ARG.has(s)) {
+      if ((s === '-C' || s === '--git-dir' || s === '--work-tree') && odd(toks[k + 1])) base = true;
+      k++;
+      continue;
+    }
+    if (/^--(git-dir|work-tree)=/.test(s) && odd(toks[k])) base = true;
+    if (!/^-/.test(s)) { sub = s; break; }
+  }
+  if (!sub) return false;
+  for (k++; k < toks.length; k++) {
+    const t = toks[k];
+    const s = String(t.canon || '');
+    if (s === '--') break;
+    let p = null;
+    if ((sub === 'config' && (s === '--file' || s === '-f')) || s === '--output' || s === '--output-directory' ||
+      ((sub === 'format-patch' || sub === 'archive') && s === '-o')) p = toks[++k] || null;
+    else if (/^--(output|output-directory)=/.test(s) || (sub === 'config' && /^--file=/.test(s))) p = t;
+    else if ((sub === 'format-patch' || sub === 'archive') && /^-o./.test(s)) {
+      p = /^-o/.test(String(t.raw || '')) ? { raw: String(t.raw).slice(2), canon: s.slice(2), varCount: t.varCount, substCount: t.substCount } : t;
+    }
+    if (p && (base || odd(p))) return true;
+  }
+  return false;
+}
+// WI-R1 (v12.78.1): the dirs that can hold the project .claude dir: the cwd,
+// the project dir and the home dir, in lower case with a trailing slash. A
+// Windows path C:\x is also tried as /c/x and as /x.
+function cfgAnchorDirs() {
+  const out = [];
+  const add = p => {
+    if (!p) return;
+    const s = String(p).replace(/\\/g, '/').toLowerCase();
+    const m = /^([a-z]):(\/.*)?$/.exec(s);
+    if (m) { out.push('/' + m[1] + (m[2] || '')); out.push(m[2] || '/'); } else out.push(s);
+  };
+  try { add(process.cwd()); } catch (e) { /* no cwd */ }
+  add(process.env.CLAUDE_PROJECT_DIR);
+  add(process.env.HOME);
+  try { add(require('os').homedir()); } catch (e) { /* no home dir */ }
+  return out.map(s => s.replace(/\/+$/, '') + '/');
+}
+// WI-R1 (v12.78.1): true when a find call has an action that writes or runs
+// a command (-exec, -execdir, -ok, -okdir, -delete, -fprint*, -fls), and a
+// start path can hold a config target. Such a start is the cwd (no start path
+// given), `.`, a parent dir, `/`, `~`, an ancestor of the cwd, the project
+// dir or the home dir. It is also a path that can name .claude, .claude/hooks
+// or a config file. A start with a variable, a substitution or a glob counts
+// too. No word of the call needs to name the config.
+// WI-R1 (v12.78.1): an -exec, -execdir, -ok or -okdir command from this set
+// only reads. It has no write mode, so its action is not a write.
+const CFG_FIND_EXEC_READERS = new Set(['grep', 'egrep', 'fgrep', 'rg', 'cat', 'head', 'tail', 'wc', 'ls', 'stat', 'file',
+  'md5sum', 'sha1sum', 'sha256sum', 'cmp', 'diff', 'test', '[', 'echo', 'basename', 'dirname', 'realpath', 'readlink', 'du', 'printf']);
+// WI-R1 (v12.78.1): true when a find word list has an action that writes. A
+// -delete, -fprint* or -fls action writes. An -exec action writes when its
+// command is not a reader, or when its command is a variable or a substitution.
+function cfgFindWrites(toks) {
+  for (let k = 0; k < toks.length; k++) {
+    const s = String(toks[k].canon || '');
+    if (!CFG_FIND_WRITE_RE.test(s)) continue;
+    if (!/^-(exec|execdir|ok|okdir)$/.test(s)) return true;
+    const c = toks[k + 1];
+    if (!c || c.varCount || c.substCount || !CFG_FIND_EXEC_READERS.has(basename(String(c.canon || '')))) return true;
+  }
+  return false;
+}
+// WI-R1 (v12.78.1): true when a start word is one variable that the command
+// binds only to `$(mktemp ...)`, with an optional suffix that has no `..`.
+// The value is a new temp dir, which cannot hold .claude.
+function cfgMktempStart(t, ctx) {
+  const m = /^"?\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))"?(\/[^"'$`\\*?[{]*)?$/.exec(String(t.raw || ''));
+  if (!m || (m[3] && /(^|\/)\.\.(\/|$)/.test(m[3]))) return false;
+  const e = ctx.vars.get(m[1] || m[2]);
+  return !!e && !e.wild && e.vals.length > 0 && e.vals.every(v => /^"?\$\(\s*mktemp(\s[^`$;&|()<>]*)?\)"?$/.test(v));
+}
+function cfgFindReach(cp, ctx, cwd) {
+  const toks = cp.slice(1);
+  if (!cfgFindWrites(toks)) return false;
+  if (!ctx || cwd === null || cwd === CFG_CWD_SOFT) return true;
+  let k = 0;
+  while (k < toks.length && /^-([HLP]+|D|O\d*)$/.test(String(toks[k].canon || ''))) k += toks[k].canon === '-D' ? 2 : 1;
+  const starts = [];
+  for (; k < toks.length && !/^[-(!),]/.test(String(toks[k].canon || '')); k++) starts.push(toks[k]);
+  if (!starts.length) return true;
+  let anchors = null;
+  for (const t of starts) {
+    if (cfgMktempStart(t, ctx)) continue;
+    if (t.varCount || t.substCount) return true;
+    const alts = cfgLex(String(t.raw || ''), ctx, 0);
+    if (alts === null) return true;
+    for (const alt of alts) {
+      if (alt.some(x => x.t !== 'c' && x.t !== '/')) return true;
+      if (alt.length && alt[0].t === 'c' && alt[0].ch === '~') return true;
+      const abs = alt.length > 0 && alt[0].t === '/';
+      for (const b of abs ? [[]] : cwd) {
+        const comps = cfgComponents(b.length ? b.concat([{ t: '/' }], alt) : alt);
+        if (!comps.length) return true;
+        const names = comps.map(c => c.map(x => x.ch).join(''));
+        if (names[0] === '..' || cfgCompsHit(comps, ctx.dotglob)) return true;
+        if (abs) {
+          anchors = anchors || cfgAnchorDirs();
+          const p = '/' + names.join('/') + '/';
+          if (anchors.some(a => a.startsWith(p))) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+// WI-R1 (v12.78.1): true when an awk, sed, git or find call uses a mode that
+// writes a file or runs a command, and the target can be a config target. For
+// awk and sed the target is text in the program, so the test is loose. It is
+// true for a config mention in any word, for a loose `.claude` mention in the
+// command text, or for a cwd that can be in .claude. An awk program with an
+// octal or hex escape or a %c format also counts, because the program can
+// build the path from it. A program file is an unknown program.
+function cfgModeWrite(c0, cp, ctx, cwd, mentions, looseHit) {
+  if (CFG_AWK_CMDS.has(c0) || CFG_SED_CMDS.has(c0)) {
+    const awk = CFG_AWK_CMDS.has(c0);
+    const prog = awk ? cfgAwkProgram(cp.slice(1)) : cfgSedProgram(cp.slice(1));
+    if (!prog.unknown && !prog.scripts.some(s => (awk ? cfgAwkWrites(s) : cfgSedWrites(s)))) return false;
+    if (mentions || cfgCwdNearCfg(cwd) || looseHit()) return true;
+    return awk && prog.scripts.some(s => /\\[0-7xX]|%c/.test(s));
+  }
+  if (c0 === 'git') return cfgGitOptWrite(cp, ctx, cwd);
+  if (c0 === 'find') return cfgFindReach(cp, ctx, cwd);
+  return false;
+}
 // WI-01 r1: the outer call owns the step budget. The nested calls for a
 // substitution or a `-c` payload share it. A spent budget asks.
 function guardConfigWriteMessage(segments, raw, depth) {
@@ -3591,6 +3896,9 @@ function guardConfigWriteScan(segments, raw, depth) {
   try { ctx = cfgVarCtx(segments, raw); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; ctx = null; }
   let cwd = [[]];
   const stack = [];
+  // WI-R1 (v12.78.1): the loose mention test runs at most one time for each scan.
+  let loose = null;
+  const looseHit = () => (loose === null ? (loose = cfgLooseMention(raw)) : loose);
   for (const seg of segments) {
     for (const r of seg.redirects || []) {
       if (!/>/.test(r.op) || !r.target) continue;
@@ -3609,7 +3917,13 @@ function guardConfigWriteScan(segments, raw, depth) {
     // WI-01 r2: from a soft unknown cwd, a command that writes into the cwd
     // with no path word (`tar xf /tmp/p.tar`) can write .claude/hooks.
     if (cwd === CFG_CWD_SOFT && cmdTok && CFG_CWD_IMPLICIT_WRITERS.has(basename(cmdTok.canon))) return GUARD_CFG_MSG;
+    const segCwd = cwd;
     if (ctx) { try { cwd = cfgNextCwd(cp, ctx, cwd, stack); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; cwd = null; } }
+    // WI-R1 (v12.78.1): a write mode of awk, sed, git or find can reach the
+    // config with no config word, so this check runs before the mention gate.
+    // It uses the cwd of this segment, before a cd in the segment.
+    if (cp.length && !cp[0].varCount && !cp[0].substCount &&
+      cfgModeWrite(basename(cp[0].canon), cp, ctx, segCwd, mentions, looseHit)) return GUARD_CFG_MSG;
     if (!mentions) continue;
     if (!cp.length || cp[0].varCount || cp[0].substCount) return GUARD_CFG_MSG;
     const c0 = basename(cp[0].canon);

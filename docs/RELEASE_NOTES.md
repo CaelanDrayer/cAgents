@@ -1,10 +1,25 @@
 # cAgents Release Notes
 
-**Current Version**: 12.78.0
+**Current Version**: 12.78.1
 **Release Date**: October 17, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.78.1 - October 17, 2026 (guard-config write modes of awk, sed, git and find)
+
+This patch release closes guard-config write gaps. Some write modes of `awk`,
+`sed`, `git` and `find` could change the bash guard config with no word that
+names it. The tamper check now asks for them, in the default mode and under
+`CAGENTS_BASH_GUARD=off`: `awk` print and printf redirects, `system(`, `|&`,
+`| getline`, `@include` and `@load`; the `sed` `w`, `W` and `e` commands and
+the `w` and `e` flags of `s`; `git config --file`/`-f`/`--file=`; `git
+--output`, `--output-directory`, and `-o` for `format-patch` and `archive`;
+and `find` write actions with a start that can reach `.claude`. A reader
+`-exec` and a `$(mktemp ...)` start stay exempt. The git write subcommands now
+include `clone`, `init`, `worktree`, `submodule`, `bundle`, `archive`,
+`checkout-index`, `read-tree` and `sparse-checkout`. The threat model entry
+R-77.4 now agrees with the code and names the open gaps OG-1 to OG-4.
 
 ## V12.78.0 - October 17, 2026 (bash guard quoting bypass and quiet test output)
 
@@ -2680,5 +2695,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.78.0
+**Current Version**: 12.78.1
 **Release Date**: August 21, 2026

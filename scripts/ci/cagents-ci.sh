@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.78.0
+# Version: 12.78.1
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -662,7 +662,7 @@ main() {
     # Quiet mode (CAGENTS_CI_QUIET / CLAUDECODE): full output to a log, summary here.
     cagents_ci_quiet_run "$SCRIPT_DIR/cagents-ci.sh" "$@"
 
-    log_section "cAgents CI Runner v12.78.0"
+    log_section "cAgents CI Runner v12.78.1"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 
