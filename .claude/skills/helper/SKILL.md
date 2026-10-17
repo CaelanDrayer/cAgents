@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
 metadata:
   author: CaelanDrayer
-  version: "12.78.0"
+  version: "12.78.1"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion

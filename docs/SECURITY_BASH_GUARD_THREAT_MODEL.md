@@ -830,12 +830,102 @@ and is fixed in 12.77.0. The entries below are what stays open.
   A `..` path, a `bash -c` payload and a `$(..)` inner also ask. Examples are
   `echo x > .claude/../.claude/settings.json` and
   `bash -c "echo x > .cla''ude/settings.json"`.
-- Read-only commands allow. Examples are `cat`, `head`, `grep`, `ls`, `stat`,
-  `diff`, `jq`, `find`, `tree`, `du`, `cd`, `pushd` and `popd`. `find` asks
-  when it has `-delete`, `-exec`, `-fprint` or a similar flag. `git` asks for
-  this reason only with a write subcommand such as `checkout`, `reset` or
-  `clean`. The scan skips the values of `-C`, `-c`, `--git-dir` and
-  `--work-tree`. The `git -C` ask of W21-3 is separate, and `off` waives it.
+- Read-only commands (`CFG_READ_CMDS`): a command that names the guard config
+  allows only if its command word is in this set. Any other command word
+  asks. The set has these words:
+  - Readers: `cat`, `head`, `tail`, `grep`, `egrep`, `fgrep`, `rg`, `ls`,
+    `wc`, `stat`, `file`, `diff`, `jq`, `less` and `more`.
+  - Hashes and bytes: `md5sum`, `sha1sum`, `sha256sum`, `cmp`, `od`, `xxd`
+    and `hexdump`.
+  - Path and test words: `echo`, `test`, `[`, `realpath`, `readlink`,
+    `dirname` and `basename`.
+  - Tools with a write mode: `awk`, `sed`, `node`, `nodejs`, `git`, `npx`,
+    `npm`, `yq` and `find`.
+  - Tree and dir words: `tree`, `du`, `cd`, `pushd` and `popd`.
+- Write-mode exceptions: some commands in the set can also write. When a word
+  names the config, these forms ask:
+  - `sed` with `-i`, a short-flag cluster that holds `i`, or `--in-place`.
+  - `awk` with a word that holds `inplace`.
+  - `node` or `nodejs` with `-e`, `-p`, `--eval`, `--print`, `-r`,
+    `--require`, `--import` or `--input-type`.
+  - `yq` with `-i` or `--inplace`.
+  - `find` with `-delete`, `-exec`, `-execdir`, `-ok`, `-okdir`, `-fprint`,
+    `-fprint0`, `-fprintf` or `-fls`.
+  - `npm` or `npx`, unless a word is `vitest` or the first word is `test`.
+  - `git` with no subcommand, or with a write subcommand. These write
+    subcommands are from 12.78.0: `checkout`, `restore`, `reset`, `stash`,
+    `apply`, `am`, `mv`, `rm`, `pull`, `merge`, `rebase`, `cherry-pick`,
+    `revert`, `switch` and `clean`. These are new in 12.78.1: `clone`,
+    `init`, `worktree`, `submodule`, `bundle`, `archive`, `checkout-index`,
+    `read-tree` and `sparse-checkout`. The scan skips the values of `-C`,
+    `-c`, `--git-dir`, `--work-tree`, `--namespace`, `--exec-path` and `--config-env`. The
+    `git -C` ask of W21-3 is separate, and `off` waives it.
+- Write modes closed in 12.78.1 (WI-R1): `awk`, `sed`, `git` and `find` have
+  write modes. These modes can write a config file with no word that names
+  it. A new check
+  finds these write modes before the mention test. Each form below asks in
+  every mode. `CAGENTS_BASH_GUARD=off` does not waive it. Common terms:
+  - "Mentions": a word names the config under the rules above.
+  - "Near": the cwd is unknown, or it can be inside `.claude`.
+  - "Loose": the command text names `.claude` after the guard removes
+    quotes, backslashes, white space and commas. This catches
+    `".cl" "aude/x"` and an `ENVIRON["P"]` read of a variable that the same
+    command sets.
+- `awk`, `gawk`, `mawk` and `nawk`: the guard reads the program from the first
+  operand, or from `-e` and `--source`. A program file (`-f`, `--file`), an
+  include (`-i`, `--include`, `-E`, `--exec`) or a load (`-l`, `--load`,
+  `-W`) gives an unknown program. These constructs write when they are
+  outside strings and comments:
+  - A `>`, `>>` or `|` at paren depth 0 in a `print` or `printf` statement.
+  - `system(`, `|&` and `| getline`.
+  - `@include` and `@load`.
+
+  A `>` in a pattern or in parentheses is a compare, not a write. The command
+  asks when the program writes or is unknown, and it mentions, is near or is
+  loose. It also asks when the program has an octal or hex escape, or `%c`.
+  These can build the path.
+- `sed` and `gsed`: the guard reads the scripts of `-e` and `--expression`,
+  and clusters such as `-ne`. With no `-e`, it reads the first operand. A
+  script file (`-f`, `--file`) gives an unknown script. A script writes when it
+  has a `w`, `W` or `e` command, or an `s` command with the `w` or `e` flag.
+  Any other character that is not a command also counts as a write. The ask rule
+  is the same as for `awk`, with no escape test.
+- `git config --file P`, `-f P` and `--file=P` ask when `P` can name a config
+  file. They also ask when `-C`, `--git-dir` or `--work-tree` can name
+  `.claude`, or when the value comes from a substitution.
+- `git` with any subcommand: `--output P`, `--output=P` and
+  `--output-directory[=]P` ask under the same test. For `format-patch` and
+  `archive`, `-o P` and `-oP` ask too.
+- `find`: these actions write: `-delete`, `-fprint`, `-fprint0`, `-fprintf`
+  and `-fls`. An `-exec`, `-execdir`, `-ok` or `-okdir` action writes,
+  except when its command is a pure reader. A command from a variable or a
+  substitution writes. With a write action, `find` asks when a start can
+  hold `.claude`. These starts can hold it:
+  - No start, `.`, a start that begins with `..`, `/` or `~`.
+  - A glob, a variable or a substitution.
+  - An absolute dir that is the same as, or a parent of, the process cwd,
+    `CLAUDE_PROJECT_DIR` or `HOME`. A Windows drive path such as `C:\` maps
+    too.
+  - A start whose parts can name `.claude`, `.claude/hooks` or a config file.
+
+  An unknown cwd also asks. Two exemptions apply:
+  - Reader exec: an exec command from `CFG_FIND_EXEC_READERS` only reads.
+    The set is `grep`, `egrep`, `fgrep`, `rg`, `cat`, `head`, `tail`, `wc`,
+    `ls`, `stat`, `file` and `du`. It also holds `md5sum`, `sha1sum`,
+    `sha256sum`, `cmp`, `diff`, `test`, `[`, `echo`, `printf`, `basename`,
+    `dirname`, `realpath` and `readlink`. An example that allows is
+    `find . -name '*.md' -exec grep -l x {} +`.
+  - Mktemp start: a start that is one variable set only by `$(mktemp ...)`,
+    with no `..` part, does not ask. An example that allows is
+    `T=$(mktemp -d); find "$T" -delete`.
+
+  A start such as `/tmp` or `src` cannot reach `.claude`, so it gets no
+  config ask. The older default-mode `find` rules do not change.
+- Read-only forms still allow. Examples are `awk '{print $1}' f` and
+  `sed -n '1,5p' .claude/settings.json`. Others are `git log` and `git diff`
+  with no `--output`, and `git config --get` or `--list`. The form
+  `find . -name x -print` allows too.
+- Cost: each new scan is linear, and it counts against the step budget.
 - Wider asks (non-waivable): a write command with `.claude` or `.claude/hooks`
   as its argument asks. Examples are `mkdir .claude` and `rm -rf .claude/hooks`.
   Any command that is not read-only asks after `cd .claude/hooks`. A `cp`, `mv`
@@ -846,7 +936,7 @@ and is fixed in 12.77.0. The entries below are what stays open.
   The guard does not match only the destination, because that is not safe.
   `mv` and `rsync --remove-source-files` change the source, and `-t` moves the
   destination.
-- Tests: `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` holds 114 tests.
+- Tests: `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` holds 321 tests.
 - Launcher fail-closed rule (12.78.0, WI-02): `.claude/hooks/run-hook.cjs`
   loads each hook. Three hooks are guard hooks: `bash-validator`,
   `write-edit-dispatch` and `agent-dispatch`. If a guard hook file is missing,
@@ -873,6 +963,26 @@ and is fixed in 12.77.0. The entries below are what stays open.
     default mode this command asks. Under `CAGENTS_BASH_GUARD=off` it allows,
     because this ask is waivable.
   - The guard does not resolve symlinks.
+  - OG-1 data-driven targets (12.78.1): the target comes from file contents
+    or from the parent env. Two examples are `awk '{print > $1}' list.txt`
+    and `awk 'getline p < "f"; print > p'`. A program file whose path is not
+    in the command is the same. So is an inherited env var that `ENVIRON`
+    reads. One command
+    string does not show these targets. This is the same class as `xargs rm`
+    (G4).
+  - OG-2 fragment-built awk path (12.78.1): an example is
+    `a=".cl"; b="aude"; print > a b "/settings.json"`. The program has no
+    loose `.claude` text, no escape and no `%c`, so it does not ask. The
+    program builds the path at run time, as `python` and `perl` can.
+  - OG-3 find from a non-anchored absolute root (12.78.1): `find` from an
+    absolute dir that holds a different `.claude` dir does not ask. An
+    example is another project under a dir that is not a parent of the cwd,
+    the project dir or `HOME`. The rule is anchored to those three dirs on
+    purpose, so that roots such as `/tmp` do not ask.
+  - OG-4 conservative false ask after `cd /tmp` (12.78.1): after `cd /tmp`,
+    the guard sees the same trimmed cwd base as the project root. Thus
+    `cd /tmp && find . -delete` gets a config ask. This is a false ask, not
+    a bypass.
 
 **R-77.5 (2026-10-16, 12.77.0): pre-existing bypasses closed in 12.77.0.**
 

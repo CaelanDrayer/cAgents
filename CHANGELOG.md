@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.78.1] - 2026-10-17
+
+Guard-config write gaps. Some write modes of `awk`, `sed`, `git` and `find`
+could change the bash guard config with no word that names it. This release
+closes them.
+
+### Fixed
+- The guard-config tamper check now asks for these write modes. It asks in
+  the default mode and under `CAGENTS_BASH_GUARD=off`:
+  - `awk` print and printf redirects, `system(`, `|&`, `| getline`,
+    `@include` and `@load`.
+  - `sed` `w`, `W` and `e` commands, and the `w` and `e` flags of `s`.
+  - `git config --file`, `-f` and `--file=`.
+  - `git --output`, `--output-directory`, and `-o` for `format-patch` and
+    `archive`.
+  - `find` write actions with a start that can reach `.claude`. A reader
+    `-exec` and a `$(mktemp ...)` start stay exempt.
+- The git write subcommands now include `clone`, `init`, `worktree`,
+  `submodule`, `bundle`, `archive`, `checkout-index`, `read-tree` and
+  `sparse-checkout`.
+- `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` now holds 321 tests.
+
+### Docs
+- R-77.4 in `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` now agrees with the
+  code. It lists the full read-only command set, the write-mode exceptions
+  and the forms that 12.78.1 closes. It names the open gaps OG-1 to OG-4.
+- The 12.78.0 ITEM-6 line now says that quiet mode is on by default under
+  Claude Code (`CLAUDECODE=1`).
+
 ## [12.78.0] - 2026-10-17
 
 Review-finding fixes. The release closes a quoting bypass in the bash guard
@@ -50,9 +79,10 @@ ITEM-1 to ITEM-7.
 - ITEM-5: vitest uses the dot reporter under Claude Code (`CLAUDECODE=1`).
   Set `CAGENTS_TEST_REPORTER` or `CAGENTS_CI_REPORTER` to override it.
 - ITEM-6: `validate-agents.sh`, `validate-versions.sh` and `cagents-ci.sh`
-  have a quiet mode through `scripts/ci/lib/quiet.sh`. Set
-  `CAGENTS_CI_QUIET` to turn it on. Quiet mode prints the summary, the
-  failures and the log path.
+  have a quiet mode through `scripts/ci/lib/quiet.sh`. Quiet mode is on by
+  default under Claude Code (`CLAUDECODE=1`). Set `CAGENTS_CI_QUIET` to turn
+  it on in other shells. Quiet mode prints the summary, the failures and the
+  log path.
 - ITEM-7: `pat-context-budget-tiers.md` adds lever 6. Run noisy commands
   quietly. Cite the exit code, the summary line and the log path.
 
