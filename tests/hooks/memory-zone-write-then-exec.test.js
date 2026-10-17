@@ -140,10 +140,16 @@ describe('WI-17: session-catchup injects only a well-formed update-check result'
   });
 
   it('keeps the exact line that update-check.sh prints', () => {
+    // The hook keeps the line only when vFROM is the local package.json
+    // version and vTO is newer. Build the line from the repo version.
+    const local = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
+    const [maj, min, pat] = local.split('.').map(Number);
+    const next = `${maj}.${min}.${pat + 1}`;
+    const line = `cAgents update available: v${local} -> v${next}`;
     writeFileSync(join(proj, 'cagents-memory', '_system', '.update-check-result'),
-      'cAgents update available: v12.75.0 -> v12.76.0. Run: cd /opt/cagents && git pull\n');
+      `${line}. Run: cd /opt/cagents && git pull\n`);
     const { out } = runHook(CATCHUP_HOOK, { session_id: 'wi17', source: 'startup' }, proj);
-    expect(ctx(out)).toContain('cAgents update available: v12.75.0 -> v12.76.0');
+    expect(ctx(out)).toContain(line);
   });
 });
 

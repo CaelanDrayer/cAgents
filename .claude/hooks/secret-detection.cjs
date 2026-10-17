@@ -133,6 +133,91 @@ if (HOME) {
   PROTECTED_PATHS.push(path.join(HOME, '.gnupg') + '/');
 }
 
+// WI-03 (ITEM-2): no sanitize write goes to a guard config file or to a shell
+// rc file. A write there can change the hook config or run code at the
+// next shell start. The hook denies the call and writes nothing.
+const SANITIZE_DENY_PATTERNS = [
+  /(^|\/)\.claude\/settings[^/]*\.json$/,
+  /(^|\/)\.claude\/hooks\//,
+  /(^|\/)\.git\/hooks\//,
+  /(^|\/)\.(bashrc|bash_profile|bash_login|zshrc|zprofile|zshenv|profile)$/
+];
+
+function toSlash(p) {
+  return String(p).replace(/\\/g, '/');
+}
+
+// Real path of the target. If the target does not exist, use the real path of
+// the nearest existing parent dir. A symlink to a deny-list file is then caught.
+function realTarget(resolved) {
+  let dir = resolved;
+  const rest = [];
+  for (let i = 0; i < 64; i++) {
+    try { return path.join(fs.realpathSync(dir), ...rest); } catch { /* go up */ }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    rest.unshift(path.basename(dir));
+    dir = parent;
+  }
+  return resolved;
+}
+
+function isSanitizeDenied(resolved) {
+  const cands = [toSlash(resolved), toSlash(realTarget(resolved))];
+  return cands.some(c => SANITIZE_DENY_PATTERNS.some(p => p.test(c)));
+}
+
+function isProtectedPath(resolved) {
+  const cands = [resolved, realTarget(resolved)];
+  return cands.some(c => PROTECTED_PATHS.some(pp => c.startsWith(pp)));
+}
+
+// WI-03 (ITEM-2): apply one Edit the way Claude Code applies it. The match is
+// exact. Without replace_all, old_string must occur exactly once. The function
+// returns { content } or { error }. It never uses String.replace, because a
+// `$` in new_string is a replace pattern there.
+function applyOneEdit(current, edit) {
+  const oldS = typeof edit.old_string === 'string' ? edit.old_string : '';
+  const newS = typeof edit.new_string === 'string' ? edit.new_string : '';
+  if (oldS === '') {
+    if (current === '') return { content: newS };
+    return { error: 'old_string is empty and the file is not empty' };
+  }
+  const first = current.indexOf(oldS);
+  if (first < 0) return { error: 'old_string was not found in the file' };
+  if (edit.replace_all === true) return { content: current.split(oldS).join(newS) };
+  if (current.indexOf(oldS, first + oldS.length) >= 0) {
+    return { error: 'old_string occurs more than one time and replace_all is not set' };
+  }
+  return { content: current.slice(0, first) + newS + current.slice(first + oldS.length) };
+}
+
+// Build the full post-edit file for an Edit or a MultiEdit input. Returns
+// { pre, full } or { error }. `pre` is the file before the edit.
+function buildEditedContent(targetPath, toolInput) {
+  let pre = '';
+  let exists = false;
+  try {
+    pre = fs.readFileSync(targetPath, 'utf8');
+    exists = true;
+  } catch (e) {
+    if (e.code !== 'ENOENT') return { error: `cannot read the target file (${e.code || e.message})` };
+  }
+  const edits = Array.isArray(toolInput.edits)
+    ? toolInput.edits
+    : [{ old_string: toolInput.old_string, new_string: toolInput.new_string, replace_all: toolInput.replace_all }];
+  if (!exists && !(edits.length > 0 && edits[0].old_string === '')) {
+    return { error: 'the target file does not exist' };
+  }
+  let full = pre;
+  for (let i = 0; i < edits.length; i++) {
+    const r = applyOneEdit(full, edits[i] || {});
+    if (r.error) return { error: edits.length > 1 ? `edit ${i + 1}: ${r.error}` : r.error };
+    full = r.content;
+  }
+  return { pre, full, existed: exists };
+}
+
 // Sensitive file patterns (warning only — matched on filename, triggers a caution message but does NOT block).
 // Pattern-based secret scanning below (SECRET_PATTERNS) does the actual blocking on critical/high severity.
 const SENSITIVE_PATTERNS = ['.env', 'credentials', 'secrets', 'private', '.pem', '.key', 'password'];
@@ -429,16 +514,19 @@ function scanForSecrets(content, filePath) {
 async function _scanHandler(input) {
   const toolInput = input.tool_input || {};
   const filePath = toolInput.file_path || '';
-  const content = toolInput.content || toolInput.new_string || '';
+  // WI-03: a MultiEdit input carries its new text in edits[]. Scan that text too.
+  const multiText = Array.isArray(toolInput.edits)
+    ? toolInput.edits.map(e => (e && typeof e.new_string === 'string' ? e.new_string : '')).join('\n')
+    : '';
+  const content = toolInput.content || toolInput.new_string || multiText || '';
+  // WI-03: resolve the path before the protected-path check, so that
+  // `/tmp/x/../../etc/passwd` matches `/etc/`.
+  const resolvedPath = filePath ? path.resolve(filePath) : '';
 
   // 1. Check protected paths (from pre-write.sh)
-  if (filePath) {
-    for (const protectedPath of PROTECTED_PATHS) {
-      if (filePath.startsWith(protectedPath)) {
-        console.error(`[SecretDetection] BLOCKED: Write to protected path: ${filePath}`);
-        return { deny: true, reason: `Cannot write to protected system path: ${filePath}` };
-      }
-    }
+  if (filePath && isProtectedPath(resolvedPath)) {
+    console.error(`[SecretDetection] BLOCKED: Write to protected path: ${filePath}`);
+    return { deny: true, reason: `Cannot write to protected system path: ${filePath}` };
   }
 
   // 2. Warn about sensitive files
@@ -473,7 +561,36 @@ async function _scanHandler(input) {
   //      deny reason explains the substitution.
   // Restore happens at Stop time via secret-restore.cjs.
   if (mode === 'sanitize' && (allSignificant.length > 0 || findings.medium.length > 0)) {
-    const allFindings = [...findings.critical, ...findings.high, ...findings.medium];
+    //
+    // WI-03: never sanitize-write a guard config file or a shell rc file.
+    // Deny before any backup or target write.
+    if (isSanitizeDenied(resolvedPath)) {
+      console.error(`[SecretDetection] BLOCKED: sanitize mode does not write to ${filePath}`);
+      return { deny: true, reason: `[CAGENTS_SECRET_MODE=sanitize] Secret detected. Sanitize mode does not write to a guard config file or a shell rc file (${filePath}). Nothing was written. Remove the secret and try again.` };
+    }
+
+    //
+    // WI-03 (ITEM-2): an Edit input holds a fragment, not the file. Apply the
+    // edit to the current file, then sanitize the full result. If the edit
+    // cannot apply, deny and write nothing.
+    const isEdit = !toolInput.content && (typeof toolInput.old_string === 'string' || Array.isArray(toolInput.edits));
+    let fullContent = content;
+    let preEdit = null;
+    let allFindings = [...findings.critical, ...findings.high, ...findings.medium];
+    if (isEdit) {
+      const built = buildEditedContent(resolvedPath, toolInput);
+      if (built.error) {
+        console.error(`[SecretDetection] BLOCKED: sanitize mode cannot apply the edit to ${filePath}: ${built.error}`);
+        return { deny: true, reason: `[CAGENTS_SECRET_MODE=sanitize] Secret detected, and the edit cannot apply to ${filePath}: ${built.error}. Nothing was written.` };
+      }
+      fullContent = built.full;
+      preEdit = built.existed ? built.pre : null;
+      const fullFindings = scanForSecrets(fullContent, filePath);
+      allFindings = [...fullFindings.critical, ...fullFindings.high, ...fullFindings.medium];
+      if (allFindings.length === 0) {
+        return { deny: true, reason: `[CAGENTS_SECRET_MODE=sanitize] Secret detected in the edit text of ${filePath}, but it was not found in the edited file. Nothing was written.` };
+      }
+    }
     try {
       const sessionId = getSessionIdForBackup(input);
       const backupDir = ensureDir(getBackupDir(sessionId));
@@ -481,15 +598,23 @@ async function _scanHandler(input) {
 
       // Compute SHA256 of the FULL original content (used as the .orig filename).
       // This guarantees no secret value is in the filename — only its hash.
-      const contentHash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
+      const contentHash = crypto.createHash('sha256').update(fullContent).digest('hex').slice(0, 16);
       const origPath = path.join(backupDir, `${contentHash}.orig`);
 
       // Sanitize content (replace each secret with BLOCK_<hex>).
-      const { sanitized, placeholders } = sanitizeContent(content, allFindings);
+      const { sanitized, placeholders } = sanitizeContent(fullContent, allFindings);
 
       // 1. Back up original (0600 perms — owner read/write only).
-      fs.writeFileSync(origPath, content, { mode: 0o600 });
+      // WI-03: `<hash>.orig` holds the full file with the secret, which is the
+      // content that secret-restore.cjs puts back. For an Edit, the hook also
+      // writes `<hash>.pre-edit.orig`, a byte copy of the file before the edit.
+      fs.writeFileSync(origPath, fullContent, { mode: 0o600 });
       try { fs.chmodSync(origPath, 0o600); } catch { /* best-effort */ }
+      if (preEdit !== null) {
+        const prePath = path.join(backupDir, `${contentHash}.pre-edit.orig`);
+        fs.writeFileSync(prePath, preEdit, { mode: 0o600 });
+        try { fs.chmodSync(prePath, 0o600); } catch { /* best-effort */ }
+      }
 
       // 2. Write sanitized content to the target file path (use 0600 too —
       //    user can chmod up after restore if needed).
@@ -506,9 +631,9 @@ async function _scanHandler(input) {
       // the manifest written below and replaces sanitized content with
       // the .orig backup.
       try {
-        const targetDir = path.dirname(filePath);
+        const targetDir = path.dirname(resolvedPath);
         if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-        fs.writeFileSync(filePath, sanitized);
+        fs.writeFileSync(resolvedPath, sanitized);
       } catch (e) {
         console.error(`[SecretDetection] sanitize-mode: failed to write sanitized content to ${filePath}: ${e.message}`);
         // Fall through to block-mode behavior on failure.
@@ -521,7 +646,7 @@ async function _scanHandler(input) {
       for (const p of placeholders) {
         appendManifest(manifestPath, {
           placeholder: p.placeholder,
-          file_path: filePath,
+          file_path: resolvedPath,
           line_range: `${p.line}`,
           hash: p.hash,
           secret_type: p.type,

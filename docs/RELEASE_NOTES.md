@@ -1,10 +1,40 @@
 # cAgents Release Notes
 
-**Current Version**: 12.77.0
-**Release Date**: October 16, 2026
+**Current Version**: 12.78.0
+**Release Date**: October 17, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.78.0 - October 17, 2026 (bash guard quoting bypass and quiet test output)
+
+This minor release fixes review findings. The change ids are ITEM-1 to
+ITEM-7.
+
+Security (ITEM-1): the bash guard parses each write target for its guard
+config and canonicalizes it before the match. Quoting, `./` and `..`, case,
+`cd` and `pushd` (including `cd --`), unknown cwd forms, variables, globs,
+directory destinations, `bash -c` and `$(..)` no longer bypass it. A step
+budget limits the analysis, and the guard asks when the budget runs out.
+`run-hook.cjs` denies when `bash-validator`, `write-edit-dispatch` or
+`agent-dispatch` cannot load. The threat model entry R-77.4 is updated.
+
+Security (ITEM-2): sanitize mode in `secret-detection.cjs` applies an Edit or
+MultiEdit to the full file. It resolves the path before the protected-path
+check and denies sanitize writes to the guard config, git hooks and shell rc
+files. `secret-restore.cjs` restores all secrets after several sanitized
+writes to one file, keeps every backup on refusal, and has a bounded runtime.
+
+Fixes: `tests/v12/deprecated-bucket-excluded.test.js` runs in a temp project
+root through the new `CAGENTS_PROJECT_ROOT` override (ITEM-3).
+`update-check.sh` reports only a newer remote version, and `session-catchup`
+ignores a cached result for a different local version (ITEM-4). The test
+setup removes an inherited `CAGENTS_BASH_GUARD`.
+
+Quiet output: vitest uses the dot reporter under Claude Code (ITEM-5). The
+CI scripts have a quiet mode through `CAGENTS_CI_QUIET` (ITEM-6).
+`pat-context-budget-tiers.md` adds lever 6: run noisy commands quietly
+(ITEM-7).
 
 ## V12.77.0 - October 16, 2026 (bash guard opt-out and Stop-hook fixes)
 
@@ -2650,5 +2680,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.77.0
+**Current Version**: 12.78.0
 **Release Date**: August 21, 2026

@@ -64,7 +64,7 @@ different actors.
 
 ## The lever that moves the number
 
-Delegation is the lever that moves the number. These are the five levers:
+Delegation is the lever that moves the number. These are the six levers:
 
 1. Push work down. Spawn a child agent for a unit of work, instead of doing that
    work in your own context.
@@ -77,6 +77,11 @@ Delegation is the lever that moves the number. These are the five levers:
    `run_in_background: false`. A parent that backgrounds its children and then
    returns leaves their output to collapse back into its own context later. A
    spawn that is never collected is the same as work you never delegated.
+6. Run noisy commands quietly. Cite the exit code, the summary line and the log path as evidence.
+   Use `--reporter=dot` for Vitest and `CAGENTS_CI_QUIET=1` for the CI scripts.
+   If the output can pass about 50 lines, write it to `outputs/logs/<name>.log`.
+   Then read the end of the log with `tail`, not the full output.
+   A quiet CI run prints a `[full output: <path>]` line with the log path.
 
 ### Lever 2 is crash tolerance, not thrift
 

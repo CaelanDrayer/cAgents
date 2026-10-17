@@ -149,7 +149,7 @@ pre-hardening guard.**
 | **A** quote-removal token merge | **LEAKS** | `r''m -rf /`, `r\m -rf /`, `"rm" -rf /`, `rm -rf ''/` | Quotes/backslash break the `rm` adjacency the regex needs; bash quote removal restores `rm`. Baseline `rm -rf /` *is* caught. |
 | **B** `$IFS` field-splitting | **LEAKS** | `rm$IFS-rf$IFS/`, `rm${IFS}-rf${IFS}/` | `$IFS` is literal text at match time → no whitespace after `rm` → miss. Bash expands `$IFS`→space at exec. |
 | **C** command substitution | **LEAKS** | `$(echo rm) -rf /`, `echo "$(rm -rf /etc/passwd)"` | The binary is *computed* by a substitution the guard treats as inert text. |
-| **D** base64 → interpreter | **PARTIAL** | `\| base64 -d \| sh` DENY; `\| base64 --decode \| sh` ALLOW; `\| base64 -d \| python3` ALLOW | Only the single canonical `-d | sh` shape matches; `--decode`, non-sh interpreters, and redirect-then-exec evade it. |
+| **D** base64 → interpreter | **PARTIAL** | `\| base64 -d \| sh` DENY; `\| base64 --decode \| sh` ALLOW; `\| base64 -d \| python3` ALLOW | Only the single canonical `-d | sh` shape matches; `--decode`, non-sh interpreters, and redirect-then-exec evade it. Today `--decode` and `python3` deny. Redirect-then-exec (`base64 -d > f; sh f`) still allows. |
 | **E** alt-argv / destructive flags / exfil | **LEAKS** | `find / -delete`, `dd of=/dev/sda`, `install -m 4755 x /usr/local/bin/bd`, `sed -i … ~/.aws/credentials`, `cat ~/.aws/credentials \| curl --data-binary @-` | The long tail needs per-binary/per-flag reasoning the denylist lacks. |
 
 **Bonus finding (narrowness of even the "covered" case):** `rm -rf /etc` and
@@ -774,6 +774,7 @@ and is fixed in 12.77.0. The entries below are what stays open.
     resource flags (`--max-old-space-size` and similar).
   - A Bash write to the guard config (`.claude/settings*.json`,
     `.claude/hooks.json`, `.claude/hooks/`). This ask is new in block mode too.
+    Since 12.78.0 the match reads the real write target. See the list below.
 - Kept under `off` (deny class): every evaluator deny and the literal-shape
   legacy belt. `off` used to skip the whole belt, and `rm -r /` with no `-f`
   then allowed, because only the belt denies it. Only the obfuscation-class
@@ -786,8 +787,92 @@ and is fixed in 12.77.0. The entries below are what stays open.
   `CAGENTS_BASH_GUARD=block` in the `env` block of `.claude/settings.json`,
   and the env var wins over the settings key. A plugin install has no such pin.
 - Compensating control: denies hold in every mode. A Bash write to the guard
-  config asks in every mode. A Write or Edit of a settings file goes through
-  the Claude Code permission rules of the session.
+  config asks in every mode, with the open residuals below. A Write or Edit of
+  a settings file goes through the Claude Code permission rules of the session.
+- Guard config match (12.78.0, WI-01): the guard finds the path that bash
+  writes. It does not match the raw text. These rules apply:
+  - It removes quotes, backslashes and `$'..'` escapes.
+  - It ignores case, and it applies the `.` and `..` rules.
+  - It follows a literal `cd`, `pushd` or `popd` in an earlier segment.
+    It reads the target after `cd --` and `pushd --`.
+  - It expands a variable that the same command sets.
+  - It matches a glob against the config paths.
+  - A directory destination counts.
+  - It also reads `bash -c` payloads and `$(..)` text, to depth 4.
+- Unknown directory: some segments change the directory in a way that the
+  guard does not track. After such a segment, the directory is unknown. Then
+  each later relative path in a write command asks. These segments make the
+  directory unknown:
+  - `cd -`, or a target that uses `$OLDPWD`, `$PWD`, `$DIRSTACK`, `~-`,
+    `~+N` or `~N`.
+  - A bare `pushd`, a `pushd` with `+N` or `-N`, and a `popd` with an
+    argument or with an empty stack.
+  - An `eval`, `source` or `.` segment, because its text can run a `cd`.
+  - A command word that comes from a variable or a substitution.
+  - A relative `cd` when the command text names `CDPATH`.
+  - A relative `cd` from an unknown directory.
+  - A `cd` path that has more than 64 parts.
+- Step budget: the config check has a budget of 2,000,000 steps for each
+  command. If the check uses all of the budget, the command asks. This is the
+  fail-safe result.
+- Each probe below asks in every mode:
+
+  - Empty quotes: `echo x > .cla""ude/settings.local.json`
+  - Single quotes: `echo x > '.claude'/settings.json`
+  - A `./` part: `echo x > .claude/./settings.local.json`
+  - A `cd` first: `cd .claude && echo x > settings.local.json`
+  - A variable: `D=.claude; echo x > $D/settings.local.json`
+  - A glob: `echo x | tee .cl?ude/settings.local.json`
+  - A directory destination: `cp x .claude/`
+  - Upper case: `echo x > .CLAUDE/SETTINGS.LOCAL.JSON`
+  - Quotes in the hooks dir: `echo x > .claude/hook""s/x.cjs`
+
+  A `..` path, a `bash -c` payload and a `$(..)` inner also ask. Examples are
+  `echo x > .claude/../.claude/settings.json` and
+  `bash -c "echo x > .cla''ude/settings.json"`.
+- Read-only commands allow. Examples are `cat`, `head`, `grep`, `ls`, `stat`,
+  `diff`, `jq`, `find`, `tree`, `du`, `cd`, `pushd` and `popd`. `find` asks
+  when it has `-delete`, `-exec`, `-fprint` or a similar flag. `git` asks for
+  this reason only with a write subcommand such as `checkout`, `reset` or
+  `clean`. The scan skips the values of `-C`, `-c`, `--git-dir` and
+  `--work-tree`. The `git -C` ask of W21-3 is separate, and `off` waives it.
+- Wider asks (non-waivable): a write command with `.claude` or `.claude/hooks`
+  as its argument asks. Examples are `mkdir .claude` and `rm -rf .claude/hooks`.
+  Any command that is not read-only asks after `cd .claude/hooks`. A `cp`, `mv`
+  or `rm` with a variable that `read` or `$(..)` sets can ask. A brace list
+  with more than 32 alternatives asks.
+- Source-only use asks (non-waivable). Examples are `cp -r .claude /tmp/b`,
+  `tar czf b.tgz .claude` and `rsync -a .claude/ /tmp/b/`. This is by design.
+  The guard does not match only the destination, because that is not safe.
+  `mv` and `rsync --remove-source-files` change the source, and `-t` moves the
+  destination.
+- Tests: `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` holds 114 tests.
+- Launcher fail-closed rule (12.78.0, WI-02): `.claude/hooks/run-hook.cjs`
+  loads each hook. Three hooks are guard hooks: `bash-validator`,
+  `write-edit-dispatch` and `agent-dispatch`. If a guard hook file is missing,
+  the launcher denies the tool call. If the load of a guard hook throws, the
+  launcher denies the tool call. The deny is a PreToolUse deny with a reason
+  that names the hook and the repair. The launcher then exits 0.
+- Before 12.78.0, the launcher gave `{continue:true}` when a guard hook was
+  missing. A load crash
+  exited 1, which is a non-blocking error, so the tool call ran with no guard.
+  Other hooks stay fail-open, with a `systemMessage` that says the hook did not
+  run. Trade-off: on a partial plugin checkout, each Bash, Write, Edit and Agent
+  call denies until you repair the install.
+- Tests: `tests/hooks/run-hook-guard-fail-closed.test.js` holds 7 tests.
+- Open residuals of the guard config match:
+  - A variable from an earlier Bash call does not match. An example is
+    `echo x > $X/settings.json` when an earlier call set `X=.claude`.
+  - Substitution output counts as one path part with no leading dot, if the
+    substitution text does not name the config.
+  - A path that an interpreter builds at run time is not resolved. An example
+    is `python3 -c "open('.cla'+'ude/settings.json','w')"`. Only the old
+    regex for a substring applies to it.
+  - Interpreter program text after a `cd` is not read as a path. An example
+    is `cd .claude && node -e "...writeFileSync('settings.json')"`. In the
+    default mode this command asks. Under `CAGENTS_BASH_GUARD=off` it allows,
+    because this ask is waivable.
+  - The guard does not resolve symlinks.
 
 **R-77.5 (2026-10-16, 12.77.0): pre-existing bypasses closed in 12.77.0.**
 

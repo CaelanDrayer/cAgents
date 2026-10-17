@@ -25,6 +25,8 @@ function runValidateAgents() {
     cwd: REPO_ROOT,
     encoding: 'utf8',
     maxBuffer: 16 * 1024 * 1024,
+    // CAGENTS_CI_QUIET=0: the asserts read the full output, not the quiet summary.
+    env: { ...process.env, CAGENTS_CI_QUIET: '0' },
   });
   return raw.replace(/\[[0-9;]*m/g, '');
 }
