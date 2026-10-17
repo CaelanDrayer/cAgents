@@ -3064,21 +3064,553 @@ const GUARD_CFG_RE = /\.claude[\\/]+(settings(\.local)?\.json|hooks\.json|hooks[
 const GUARD_CFG_MSG = 'This command can change the bash guard configuration (.claude/settings*.json, .claude/hooks.json or .claude/hooks/). CAGENTS_BASH_GUARD=off does not waive this ask. Edit the file with the Edit tool, or confirm the change.';
 const CFG_READ_CMDS = new Set(['cat', 'head', 'tail', 'grep', 'egrep', 'fgrep', 'rg', 'ls', 'wc', 'stat', 'file',
   'diff', 'jq', 'less', 'more', 'md5sum', 'sha1sum', 'sha256sum', 'echo', 'test', '[', 'realpath', 'readlink',
-  'dirname', 'basename', 'cmp', 'od', 'xxd', 'hexdump', 'awk', 'sed', 'node', 'nodejs', 'git', 'npx', 'npm', 'yq']);
+  'dirname', 'basename', 'cmp', 'od', 'xxd', 'hexdump', 'awk', 'sed', 'node', 'nodejs', 'git', 'npx', 'npm', 'yq',
+  'find', 'tree', 'du', 'cd', 'pushd', 'popd']);
 const CFG_GIT_WRITE = new Set(['checkout', 'restore', 'reset', 'stash', 'apply', 'am', 'mv', 'rm', 'pull', 'merge', 'rebase', 'cherry-pick', 'revert', 'switch', 'clean']);
-function tokenMentionsCfg(t) {
-  return GUARD_CFG_RE.test(String(t.raw || '')) || GUARD_CFG_RE.test(String(t.canon || '')) ||
-    (t.substInners || []).some(x => GUARD_CFG_RE.test(String(x)));
+const CFG_FIND_WRITE_RE = /^-(delete|exec|execdir|ok|okdir|fprint|fprint0|fprintf|fls)$/;
+const CFG_GIT_OPT_ARG = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--config-env']);
+const CFG_SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh', 'mksh', 'ash', 'busybox']);
+const GUARD_CFG_RE_I = new RegExp(GUARD_CFG_RE.source, 'i');
+// WI-01 (v12.78.0): the guard matches the canonical write target, not the raw
+// text. A word is lexed into path components. Quotes and backslashes are
+// removed, the text is lower case, and `.` and `..` are resolved. A literal
+// cd or pushd in an earlier segment sets the base of a relative path. A
+// variable that the command assigns expands to each assigned value. A glob
+// stays a pattern, and the match is a pattern intersection. The guard cannot
+// resolve some words: a computed value, a brace list in a list, or an unknown
+// substitution that names the config. Each such word counts as a match, so the
+// guard asks. The `c` atom and the `?` atom are one char each. The `*` atom is
+// a glob run. The `S` atom is an unknown run without a slash. The `cls` atom
+// is a bracket class, and the `ph` atom is an environment value. The `W` atom
+// is any text. A W atom always counts as a match.
+const CFG_MAX_ALTS = 32;
+const CFG_MAX_DEPTH = 4;
+// WI-01 r1: the work of one check is bounded. A cd base with more than
+// CFG_MAX_CWD_COMPS components is an unknown cwd. One unit of CFG_STEP_BUDGET
+// pays for each step of a scan, for each char of a lex and for each step of a
+// pattern. When the budget is spent the
+// check stops and asks: a PreToolUse hook that times out does not block.
+const CFG_MAX_CWD_COMPS = 64;
+const CFG_STEP_BUDGET = 2000000;
+const CFG_BUDGET_SPENT = new Error('cfg step budget spent');
+let cfgBudget = null;
+function cfgSpend(n) {
+  if (cfgBudget === null) return;
+  cfgBudget.left -= n;
+  if (cfgBudget.left < 0) throw CFG_BUDGET_SPENT;
 }
-function guardConfigWriteMessage(segments, raw) {
-  if (!GUARD_CFG_RE.test(String(raw || ''))) return null;
+function cfgAtoms(text) { return Array.from(String(text)).map(ch => (ch === '/' ? { t: '/' } : { t: 'c', ch: ch.toLowerCase() })); }
+const CFG_T_CLAUDE = cfgAtoms('.claude');
+const CFG_T_SETTINGS = cfgAtoms('settings').concat([{ t: '*' }], cfgAtoms('.json'));
+const CFG_T_HOOKSJSON = cfgAtoms('hooks.json');
+const CFG_T_HOOKS = cfgAtoms('hooks');
+// The value of a variable for each name that the command binds:
+// { vals: [raw text], wild: bool }. A name that the command does not bind
+// is an environment value.
+function cfgVarCtx(segments, raw) {
+  const vars = new Map();
+  const counts = new Map();
+  const get = n => { if (!vars.has(n)) { vars.set(n, { vals: [], wild: false }); counts.set(n, 0); } return vars.get(n); };
+  for (const seg of segments) {
+    const argv = seg.argv || [];
+    if (argv.length >= 3 && argv[0].canon === 'for' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(argv[1].canon) && argv[2].canon === 'in') {
+      const e = get(argv[1].canon);
+      counts.set(argv[1].canon, counts.get(argv[1].canon) + 1);
+      for (const t of argv.slice(3)) e.vals.push(String(t.raw || ''));
+      continue;
+    }
+    for (const t of argv) {
+      const m = /^([A-Za-z_][A-Za-z0-9_]*)(\+?)=([\s\S]*)$/.exec(String(t.raw || ''));
+      if (!m) continue;
+      const e = get(m[1]);
+      counts.set(m[1], counts.get(m[1]) + 1);
+      if (m[2]) e.wild = true; else e.vals.push(m[3]);
+    }
+  }
+  const src = String(raw || '');
+  for (const [name, e] of vars) if (cfgBareMentions(src, name) > counts.get(name)) e.wild = true;
+  return { vars, raw: src, dotglob: /dotglob|GLOBIGNORE/.test(src) };
+}
+// The same count as `bareMentions`. A `${NAME[..]}`, `${#NAME}`, `${NAME:-..}`
+// or `${!NAME}` use is not a mention either.
+function cfgBareMentions(raw, name) {
+  cfgSpend(1 + (String(raw).length >> 3));
+  const stripped = String(raw).replace(new RegExp('\\$\\{[#!]?' + name + '(?![A-Za-z0-9_])', 'g'), '')
+    .replace(new RegExp('\\$' + name + '(?![A-Za-z0-9_])', 'g'), '');
+  const m = stripped.match(new RegExp('(?<![A-Za-z0-9_])' + name + '(?![A-Za-z0-9_])', 'g'));
+  return m ? m.length : 0;
+}
+// A `$NAME` inside the value of NAME (PATH=/x:$PATH) is the earlier value,
+// which is an environment value.
+function cfgVarAlts(name, ctx, depth) {
+  const e = ctx.vars.get(name);
+  if (!e) {
+    ctx.bare = ctx.bare || new Map();
+    if (!ctx.bare.has(name)) ctx.bare.set(name, cfgBareMentions(ctx.raw, name) > 0);
+    return ctx.bare.get(name) ? null : [[{ t: 'ph' }]];
+  }
+  ctx.open = ctx.open || new Set();
+  if (ctx.open.has(name)) return [[{ t: 'ph' }]];
+  if (e.wild || depth >= CFG_MAX_DEPTH) return null;
+  const out = [];
+  ctx.open.add(name);
+  try {
+    for (const v of e.vals) {
+      const a = cfgLex(v, ctx, depth + 1);
+      if (a === null) return null;
+      out.push(...a);
+      if (out.length > CFG_MAX_ALTS) return null;
+    }
+  } finally { ctx.open.delete(name); }
+  return out.length ? out : [[]];
+}
+// The end index of the balanced group that opens at raw[i] (`(` or `{`), or -1.
+function cfgGroupEnd(raw, i) {
+  const open = raw[i];
+  const close = open === '(' ? ')' : '}';
+  let d = 0;
+  let q = null;
+  for (let k = i; k < raw.length; k++) {
+    cfgSpend(1);
+    const ch = raw[k];
+    if (q) { if (ch === q) q = null; else if (ch === '\\' && q === '"') k++; continue; }
+    if (ch === '\\') { k++; continue; }
+    if (ch === "'" || ch === '"') { q = ch; continue; }
+    if (ch === open) d++;
+    else if (ch === close && --d === 0) return k;
+  }
+  return -1;
+}
+// A substitution with an output that cannot name the config is an unknown run
+// without a slash. Any sign of a computed path gives W.
+function cfgSubstAlts(inner) {
+  const s = String(inner || '');
+  if (/^\s*(pwd|mktemp(\s[^`$;&|()<>]*)?)\s*$/.test(s)) return [[{ t: 'ph' }]];
+  const flat = s.replace(/["'\\]/g, '');
+  if (/claude|hooks|settings|[$`*?[{]|\\[0-7x]/i.test(flat) || /\\/.test(s)) return null;
+  return [[{ t: 'S' }]];
+}
+function cfgAnsiC(body) {
+  let out = '';
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (ch !== '\\') { out += ch; continue; }
+    const n = body[i + 1];
+    let m;
+    if ((m = /^x([0-9A-Fa-f]{1,2})/.exec(body.slice(i + 1)))) { out += String.fromCharCode(parseInt(m[1], 16)); i += m[0].length; continue; }
+    if ((m = /^([0-7]{1,3})/.exec(body.slice(i + 1)))) { out += String.fromCharCode(parseInt(m[1], 8)); i += m[0].length; continue; }
+    if (n === undefined || /[uUc]/.test(n)) return null;
+    out += ({ n: '\n', t: '\t', r: '\r', a: '\x07', b: '\b', e: '\x1b', E: '\x1b', f: '\f', v: '\v' })[n] || n;
+    i++;
+  }
+  return out;
+}
+// Lex one shell word into path alternatives: each one is a list of atoms and
+// slash items. Returns null when the word can be any path.
+function cfgLex(raw, ctx, depth) {
+  raw = String(raw || '');
+  cfgSpend(1 + raw.length);
+  let alts = [[]];
+  const push = it => { for (const a of alts) a.push(it); };
+  const pushAlts = sub => {
+    if (sub === null) return false;
+    const out = [];
+    for (const a of alts) for (const s of sub) out.push(a.concat(s));
+    if (out.length > CFG_MAX_ALTS) return false;
+    alts = out;
+    return true;
+  };
+  const lit = text => { for (const it of cfgAtoms(text)) push(it); };
+  let i = 0;
+  let dq = false;
+  while (i < raw.length) {
+    const ch = raw[i];
+    if (!dq) {
+      if (ch === "'") { const j = raw.indexOf("'", i + 1); if (j < 0) return null; lit(raw.slice(i + 1, j)); i = j + 1; continue; }
+      if (ch === '"') { dq = true; i++; continue; }
+      if (ch === '\\') { if (i + 1 < raw.length) lit(raw[i + 1]); i += 2; continue; }
+      if (ch === '$' && raw[i + 1] === "'") {
+        const j = raw.indexOf("'", i + 2);
+        if (j < 0) return null;
+        const v = cfgAnsiC(raw.slice(i + 2, j));
+        if (v === null) return null;
+        lit(v); i = j + 1; continue;
+      }
+      if (ch === '*') { if (raw[i + 1] === '*') { push({ t: 'W' }); i += 2; } else { push({ t: '*' }); i++; } continue; }
+      if (ch === '?') { push({ t: '?' }); i++; continue; }
+      if (ch === '[') {
+        const j = raw.indexOf(']', i + 2);
+        if (j > 0 && !/[/'"\\]/.test(raw.slice(i + 1, j))) { push({ t: 'cls', body: raw.slice(i + 1, j).toLowerCase() }); i = j + 1; continue; }
+        lit(ch); i++; continue;
+      }
+      if (ch === '{') {
+        const j = cfgGroupEnd(raw, i);
+        const body = j > 0 ? raw.slice(i + 1, j) : '';
+        if (j > 0 && /^[^{}]*\.\.[^{}]*$/.test(body) && !body.includes(',')) { push({ t: '*' }); i = j + 1; continue; }
+        if (j > 0 && body.includes(',')) {
+          if (/[{}]/.test(body) || depth >= CFG_MAX_DEPTH) return null;
+          const sub = [];
+          for (const part of body.split(',')) {
+            const a = cfgLex(part, ctx, depth + 1);
+            if (a === null) return null;
+            sub.push(...a);
+          }
+          if (!pushAlts(sub)) return null;
+          i = j + 1; continue;
+        }
+      }
+    } else {
+      if (ch === '"') { dq = false; i++; continue; }
+      if (ch === '\\' && i + 1 < raw.length && /["\\$`\n]/.test(raw[i + 1])) { lit(raw[i + 1]); i += 2; continue; }
+    }
+    if (ch === '`') {
+      const j = raw.indexOf('`', i + 1);
+      if (j < 0 || !pushAlts(cfgSubstAlts(raw.slice(i + 1, j)))) return null;
+      i = j + 1; continue;
+    }
+    if (ch === '$') {
+      const n = raw[i + 1] || '';
+      if (n === '(' && raw[i + 2] === '(') {
+        const j = cfgGroupEnd(raw, i + 1);
+        if (j < 0) return null;
+        push({ t: '*' }); i = j + 1; continue;
+      }
+      if (n === '(') {
+        const j = cfgGroupEnd(raw, i + 1);
+        if (j < 0 || !pushAlts(cfgSubstAlts(raw.slice(i + 2, j)))) return null;
+        i = j + 1; continue;
+      }
+      if (n === '{') {
+        const j = cfgGroupEnd(raw, i + 1);
+        if (j < 0) return null;
+        const body = raw.slice(i + 2, j);
+        const pm = /^([A-Za-z_][A-Za-z0-9_]*)(\[[^\]]*\])?(?:(:?[-=+?])([\s\S]*)|([#%/^,][\s\S]*))?$/.exec(body);
+        if (/^([0-9]+|[@*#?$!-])$/.test(body) || /^#[A-Za-z_][A-Za-z0-9_]*(\[[^\]]*\])?$/.test(body)) push({ t: 'ph' });
+        else if (pm && pm[5] !== undefined) {
+          // For ${X#p} ${X%p} ${X/a/b}: a trim of an environment value stays one.
+          const v = cfgVarAlts(pm[1], ctx, depth);
+          if (!v || !v.every(a => a.length === 1 && a[0].t === 'ph')) return null;
+          push({ t: 'ph' });
+        } else if (pm) {
+          // For ${X:-word} and the other default forms: the value of X, or word.
+          let v = cfgVarAlts(pm[1], ctx, depth);
+          if (v && pm[3] !== undefined && !/\+/.test(pm[3])) {
+            const w = cfgLex(pm[4], ctx, depth + 1);
+            v = w === null ? null : v.concat(w);
+          } else if (v && pm[3] !== undefined) {
+            const w = cfgLex(pm[4], ctx, depth + 1);
+            v = w === null ? null : w.concat([[]]);
+          }
+          if (!pushAlts(v)) return null;
+        } else return null;
+        i = j + 1; continue;
+      }
+      const m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(raw.slice(i + 1));
+      if (m) { if (!pushAlts(cfgVarAlts(m[0], ctx, depth))) return null; i += 1 + m[0].length; continue; }
+      if (/^[0-9@*#?$!-]$/.test(n)) { push({ t: 'ph' }); i += 2; continue; }
+    }
+    lit(ch); i++;
+  }
+  if (dq) return null;
+  return alts;
+}
+function cfgIsRun(a) { return a.t === '*' || a.t === 'S'; }
+function cfgClassHas(body, ch) {
+  let neg = false;
+  let b = body;
+  if (b[0] === '!' || b[0] === '^') { neg = true; b = b.slice(1); }
+  let hit = false;
+  for (let k = 0; k < b.length; k++) {
+    if (b[k + 1] === '-' && k + 2 < b.length) { if (ch >= b[k] && ch <= b[k + 2]) hit = true; k += 2; } else if (b[k] === ch) hit = true;
+  }
+  return neg ? !hit : hit;
+}
+function cfgCharMeet(x, y) {
+  if (x.t === 'c') return x.ch === y.ch;
+  if (x.t === '?') return true;
+  if (x.t === 'cls') return cfgClassHas(x.body, y.ch);
+  return false;
+}
+// True when the pattern a of a word component and the pattern b of a config
+// name can match one name. A leading glob does not match a leading dot (no dotglob).
+function cfgMeet(a, b, dotglob) {
+  // An S run is the output of a substitution whose text does not name the
+  // config. Thus it does not supply the leading dot of .claude either.
+  if (b.length && b[0].t === 'c' && b[0].ch === '.' && a.length && (a[0].t === 'S' || (!dotglob && ['*', '?', 'cls'].includes(a[0].t)))) return false;
+  cfgSpend(1);
+  // A literal component meets a pattern only when the lengths fit.
+  if (a.every(x => x.t === 'c')) {
+    let need = 0;
+    let runs = false;
+    for (const x of b) { if (cfgIsRun(x)) runs = true; else need++; }
+    if (need > a.length || (!runs && need !== a.length)) return false;
+  }
+  const memo = new Map();
+  const go = (i, j) => {
+    const key = i + ',' + j;
+    if (memo.has(key)) return memo.get(key);
+    cfgSpend(1);
+    memo.set(key, false);
+    let r = i === a.length && j === b.length;
+    if (!r && i < a.length && cfgIsRun(a[i])) r = go(i + 1, j) || (j < b.length && go(i, j + 1));
+    if (!r && j < b.length && cfgIsRun(b[j])) r = go(i, j + 1) || (i < a.length && go(i + 1, j));
+    if (!r && i < a.length && j < b.length && !cfgIsRun(a[i]) && !cfgIsRun(b[j]) && cfgCharMeet(a[i], b[j])) r = go(i + 1, j + 1);
+    memo.set(key, r);
+    return r;
+  };
+  return go(0, 0);
+}
+// Split an alternative into components, then apply path.posix.normalize rules.
+function cfgComponents(items) {
+  cfgSpend(1 + items.length);
+  const comps = [];
+  let cur = [];
+  for (const it of items.concat([{ t: '/' }])) {
+    if (it.t !== '/') { cur.push(it); continue; }
+    const s = cur.every(x => x.t === 'c') ? cur.map(x => x.ch).join('') : null;
+    if (cur.length && s !== '.') {
+      if (s === '..' && comps.length && comps[comps.length - 1].s !== '..') comps.pop();
+      else comps.push({ atoms: cur, s });
+    }
+    cur = [];
+  }
+  return comps.map(c => c.atoms);
+}
+function cfgCompsHit(comps, dotglob) {
+  for (let i = 0; i < comps.length; i++) {
+    if (!cfgMeet(comps[i], CFG_T_CLAUDE, dotglob)) continue;
+    const tail = comps.slice(i + 1);
+    if (!tail.length) return true;
+    if (tail.length === 1 && [CFG_T_SETTINGS, CFG_T_HOOKSJSON, CFG_T_HOOKS].some(t => cfgMeet(tail[0], t, dotglob))) return true;
+    if (tail.length >= 2 && cfgMeet(tail[0], CFG_T_HOOKS, dotglob)) return true;
+  }
+  return false;
+}
+// True when the word can name a config path, after the cwd base. A config path
+// is `.claude`, `.claude/hooks`, `.claude/settings*.json`, `.claude/hooks.json`
+// or a path under `.claude/hooks/`.
+// With wHit false, a word that can be any path (W) is not a hit. An assignment
+// value uses this, because the assignment writes no file. A later use of the
+// variable is judged on its own.
+function cfgWordHits(raw, ctx, cwd, useCwd, wHit) {
+  wHit = wHit !== false;
+  const alts = cfgLex(raw, ctx, 0);
+  if (alts === null) return wHit;
+  for (const alt of alts) {
+    if (alt.some(x => x.t === 'W')) { if (wHit) return true; continue; }
+    const first = alt[0];
+    const rel = useCwd && !(first && (first.t === '/' || first.t === 'ph' || (first.t === 'c' && first.ch === '~')));
+    const bases = rel ? cwd : [[]];
+    if (bases === null) { if (wHit) return true; continue; }
+    if (bases === CFG_CWD_SOFT) { if (cfgSoftHit(alt, ctx)) return true; continue; }
+    for (const b of bases) {
+      const items = b.length ? b.concat([{ t: '/' }], alt) : alt;
+      if (items.some(x => x.t === 'W')) { if (wHit) return true; continue; }
+      if (cfgCompsHit(cfgComponents(items), ctx.dotglob)) return true;
+      const flat = items.map(x => (x.t === '/' ? '/' : x.t === 'c' ? x.ch : '')).join('');
+      if (GUARD_CFG_RE_I.test(flat)) return true;
+    }
+  }
+  return false;
+}
+function tokenMentionsCfg(t, ctx, cwd, useCwd) {
+  const raw = String(t.raw || '');
+  if (GUARD_CFG_RE_I.test(raw) || GUARD_CFG_RE_I.test(String(t.canon || '')) ||
+    (t.substInners || []).some(x => GUARD_CFG_RE_I.test(String(x)))) return true;
+  if (!ctx) return false;
+  if (t.procSubst) return false;
+  const am = /^([A-Za-z_][A-Za-z0-9_]*)\+?=/.exec(raw);
+  if (am) return cfgWordHits(raw.slice(am[0].length), ctx, cwd, useCwd, false);
+  if (cfgWordHits(raw, ctx, cwd, useCwd)) return true;
+  const eq = raw.indexOf('=');
+  if (eq > 0 && !/["'$`\\]/.test(raw.slice(0, eq)) && cfgWordHits(raw.slice(eq + 1), ctx, cwd, useCwd)) return true;
+  return false;
+}
+// The new cwd base after a cd or pushd segment, or the old one.
+// WI-01 r2: a cd state that is not tracked exactly gives the soft unknown cwd
+// (CFG_CWD_SOFT). The cwd can then be any dir, .claude/hooks too. This covers
+// eval, source and `.`, because their text can run a cd. It also covers a
+// computed command word, `cd -`, OLDPWD/PWD/DIRSTACK and the `~-` / `~+N` /
+// `~N` targets. It also covers bare pushd, pushd/popd with arguments, and popd
+// on an empty stack. It also covers a relative cd when the command text
+// mentions CDPATH. Under CFG_CWD_SOFT, a relative word is a hit only when it
+// is config-shaped (see cfgSoftHit). Thus an ordinary command such as
+// `source .venv/bin/activate && pytest tests/` still allows.
+const CFG_CWD_SOFT = 'soft-unknown-cwd';
+const CFG_CWD_UNKNOWN_CMDS = new Set(['eval', 'source', '.']);
+const CFG_CWD_VAR_RE = /OLDPWD|(?<![A-Za-z0-9_])PWD(?![A-Za-z0-9_])|DIRSTACK/;
+const CFG_CWD_TILDE_RE = /^~(?:[+-]|\d)/;
+// Commands that write files into the cwd with no path word for the file.
+const CFG_CWD_IMPLICIT_WRITERS = new Set(['tar', 'bsdtar', 'gtar', 'unzip', 'cpio', 'patch', '7z', '7za', 'ar', 'pax', 'busybox']);
+// The kinds of file that .claude/hooks holds, as glob patterns.
+// A hook file that a hook registration can load: a direct child *.cjs.
+const CFG_T_HOOK_CJS = [{ t: '*' }].concat(cfgAtoms('.cjs'));
+const CFG_T_ZZ = cfgAtoms('zz');
+// True when the normalized parts can name .claude, .claude/settings*.json,
+// .claude/hooks.json, .claude/hooks or a direct *.cjs child of .claude/hooks.
+function cfgSoftCompsHit(comps, dotglob) {
+  for (let i = 0; i < comps.length; i++) {
+    if (!cfgMeet(comps[i], CFG_T_CLAUDE, dotglob)) continue;
+    const tail = comps.slice(i + 1);
+    if (!tail.length) return true;
+    if (tail.length === 1 && [CFG_T_SETTINGS, CFG_T_HOOKSJSON, CFG_T_HOOKS].some(t => cfgMeet(tail[0], t, dotglob))) return true;
+    if (tail.length === 2 && cfgMeet(tail[0], CFG_T_HOOKS, dotglob) && cfgMeet(tail[1], CFG_T_HOOK_CJS, dotglob)) return true;
+  }
+  return false;
+}
+// True when a relative word can name a config target from a soft unknown
+// cwd. The word is tried from the project root, from .claude, from
+// .claude/hooks and from one dir below .claude/hooks for each `..` part.
+// From .claude/hooks, `.`, `*` and `x.cjs` are hits, but `src/a.cjs`,
+// `notes.txt` and `../x.py` are not.
+function cfgSoftHit(alt, ctx) {
+  if (alt.some(x => x.t === 'W')) return true;
+  for (const b of [[], CFG_T_CLAUDE]) {
+    const items = b.length ? b.concat([{ t: '/' }], alt) : alt;
+    if (cfgCompsHit(cfgComponents(items), ctx.dotglob)) return true;
+    const flat = items.map(x => (x.t === '/' ? '/' : x.t === 'c' ? x.ch : '')).join('');
+    if (GUARD_CFG_RE_I.test(flat)) return true;
+  }
+  let ups = 0;
+  let part = '';
+  let lit = true;
+  for (const x of alt.concat([{ t: '/' }])) {
+    if (x.t !== '/') { if (x.t === 'c') part += x.ch; else lit = false; continue; }
+    if (lit && part === '..') ups++;
+    part = '';
+    lit = true;
+  }
+  // A cwd deeper than the cap is not tried: so many `..` parts ask.
+  if (ups > CFG_MAX_CWD_COMPS) return true;
+  let hb = CFG_T_CLAUDE.concat([{ t: '/' }], CFG_T_HOOKS);
+  for (let n = 0; n <= ups; n++) {
+    if (cfgSoftCompsHit(cfgComponents(hb.concat([{ t: '/' }], alt)), ctx.dotglob)) return true;
+    hb = hb.concat([{ t: '/' }], CFG_T_ZZ);
+  }
+  return false;
+}
+function cfgNextCwd(cp, ctx, cwd, stack) {
+  // An assignment word is not the command (`a=$(wc -l < f)`).
+  let k = 0;
+  while (k < cp.length && /^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(String(cp[k].raw || ''))) k++;
+  if (k) cp = cp.slice(k);
+  if (cp.length && (cp[0].varCount || cp[0].substCount)) return CFG_CWD_SOFT;
+  const c0 = cp.length ? basename(cp[0].canon) : '';
+  if (CFG_CWD_UNKNOWN_CMDS.has(c0)) return CFG_CWD_SOFT;
+  if (c0 === 'popd') return stack.length && cp.length === 1 ? stack.pop() : CFG_CWD_SOFT;
+  if (c0 !== 'cd' && c0 !== 'pushd') return cwd;
+  // WI-01 r1: options end at the first `--`, which is not the target.
+  const rest = cp.slice(1);
+  const args = [];
+  let opts = true;
+  for (const t of rest) {
+    const r = String(t.raw || '');
+    if (opts && r === '--') { opts = false; continue; }
+    if (opts && r !== '-' && /^-[LPe@]*$/.test(r)) continue;
+    opts = false;
+    args.push(t);
+  }
+  const t = args[0];
+  if (c0 === 'pushd') stack.push(cwd);
+  if (!t) return c0 === 'pushd' ? CFG_CWD_SOFT : [[{ t: 'ph' }]];
+  const tr = String(t.raw || '');
+  const tc = String(t.canon || '');
+  if (tc === '-' || tr === '-' || CFG_CWD_VAR_RE.test(tr) || CFG_CWD_TILDE_RE.test(tr)) return CFG_CWD_SOFT;
+  if (c0 === 'pushd' && /^[+-]\d/.test(tc)) return CFG_CWD_SOFT;
+  if (!/^[/.~]/.test(tc) && /CDPATH/.test(String(ctx.raw || '').replace(/["'\\]/g, ''))) return CFG_CWD_SOFT;
+  const alts = cfgLex(tr, ctx, 0);
+  if (alts === null || alts.some(a => a.some(x => x.t === 'W'))) return null;
+  const out = [];
+  for (const a of alts) {
+    const f = a[0];
+    const abs = f && (f.t === '/' || f.t === 'ph' || (f.t === 'c' && f.ch === '~'));
+    // A relative cd from an unknown cwd gives an unknown cwd.
+    if (!abs && cwd === null) return null;
+    if (!abs && cwd === CFG_CWD_SOFT) return CFG_CWD_SOFT;
+    if (abs) { out.push(cfgTrimBase(a, ctx)); continue; }
+    for (const b of cwd) out.push(cfgTrimBase(b.length ? b.concat([{ t: '/' }], a) : a, ctx));
+    if (out.length > CFG_MAX_ALTS) return null;
+  }
+  if (out.some(b => b === null)) return null;
+  return out.length > CFG_MAX_ALTS ? null : out;
+}
+// WI-01 r1: a cd base in a short form. The base is normalized, and the
+// components before the first one that can name .claude are dropped. Those
+// components cannot make a hit: a `..` in a later word only removes
+// components. A base with no such component is the empty base. A base that
+// stays longer than CFG_MAX_CWD_COMPS components is unknown (null).
+function cfgTrimBase(items, ctx) {
+  const comps = cfgComponents(items);
+  let k = 0;
+  while (k < comps.length) {
+    const c = comps[k];
+    const flat = c.map(x => (x.t === 'c' ? x.ch : '')).join('');
+    if (flat.includes('.claude') || cfgMeet(c, CFG_T_CLAUDE, ctx.dotglob)) break;
+    k++;
+  }
+  const keep = comps.slice(k);
+  if (keep.length > CFG_MAX_CWD_COMPS) return null;
+  const out = [];
+  keep.forEach((c, n) => { if (n) out.push({ t: '/' }); out.push(...c); });
+  return out;
+}
+function cfgShellPayloads(argv) {
+  const out = [];
+  for (let k = 0; k < argv.length; k++) {
+    if (argv[k].varCount || argv[k].substCount || !CFG_SHELLS.has(basename(argv[k].canon))) continue;
+    for (let j = k + 1; j < argv.length - 1; j++) {
+      if (/^-[A-Za-z]*c[A-Za-z]*$/.test(String(argv[j].canon))) { out.push(String(argv[j + 1].canon || '')); break; }
+      if (!/^[-+]/.test(String(argv[j].canon))) break;
+    }
+  }
+  return out;
+}
+function cfgInnerMessage(text, depth) {
+  if (depth >= CFG_MAX_DEPTH) return GUARD_CFG_RE_I.test(String(text)) ? GUARD_CFG_MSG : null;
+  let segs;
+  try { segs = tokenize(String(text)).segments; } catch (e) { return GUARD_CFG_RE_I.test(String(text)) ? GUARD_CFG_MSG : null; }
+  return guardConfigWriteMessage(segs, text, depth + 1);
+}
+// WI-01 r1: the outer call owns the step budget. The nested calls for a
+// substitution or a `-c` payload share it. A spent budget asks.
+function guardConfigWriteMessage(segments, raw, depth) {
+  const own = cfgBudget === null;
+  if (own) cfgBudget = { left: CFG_STEP_BUDGET };
+  try {
+    return guardConfigWriteScan(segments, raw, depth);
+  } catch (e) {
+    if (e === CFG_BUDGET_SPENT) return GUARD_CFG_MSG;
+    throw e;
+  } finally {
+    if (own) cfgBudget = null;
+  }
+}
+function guardConfigWriteScan(segments, raw, depth) {
+  depth = depth || 0;
+  let ctx;
+  try { ctx = cfgVarCtx(segments, raw); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; ctx = null; }
+  let cwd = [[]];
+  const stack = [];
   for (const seg of segments) {
     for (const r of seg.redirects || []) {
       if (!/>/.test(r.op) || !r.target) continue;
-      if (tokenMentionsCfg(r.target)) return GUARD_CFG_MSG;
+      if (tokenMentionsCfg(r.target, ctx, cwd, true)) return GUARD_CFG_MSG;
     }
-    if (!seg.argv.some(tokenMentionsCfg)) continue;
+    for (const t of seg.argv) {
+      for (const inner of t.substInners || []) { const im = cfgInnerMessage(inner, depth); if (im) return im; }
+    }
+    for (const r of seg.redirects || []) {
+      for (const inner of (r.target && r.target.substInners) || []) { const im = cfgInnerMessage(inner, depth); if (im) return im; }
+    }
+    for (const p of cfgShellPayloads(seg.argv)) { const im = cfgInnerMessage(p, depth); if (im) return im; }
     const cp = commandPosition(seg.argv);
+    const cmdTok = cp.length ? cp[0] : null;
+    const mentions = seg.argv.some(t => tokenMentionsCfg(t, ctx, cwd, !(t === cmdTok && !String(t.raw || '').includes('/'))));
+    // WI-01 r2: from a soft unknown cwd, a command that writes into the cwd
+    // with no path word (`tar xf /tmp/p.tar`) can write .claude/hooks.
+    if (cwd === CFG_CWD_SOFT && cmdTok && CFG_CWD_IMPLICIT_WRITERS.has(basename(cmdTok.canon))) return GUARD_CFG_MSG;
+    if (ctx) { try { cwd = cfgNextCwd(cp, ctx, cwd, stack); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; cwd = null; } }
+    if (!mentions) continue;
     if (!cp.length || cp[0].varCount || cp[0].substCount) return GUARD_CFG_MSG;
     const c0 = basename(cp[0].canon);
     if (!CFG_READ_CMDS.has(c0)) return GUARD_CFG_MSG;
@@ -3087,7 +3619,15 @@ function guardConfigWriteMessage(segments, raw) {
     if ((c0 === 'awk') && args.some(a => /inplace/.test(a))) return GUARD_CFG_MSG;
     if ((c0 === 'node' || c0 === 'nodejs') && args.some(a => /^(-e|-p|--eval|--print|-r|--require|--import|--input-type)/.test(a))) return GUARD_CFG_MSG;
     if (c0 === 'yq' && args.some(a => /^(-i|--inplace)/.test(a))) return GUARD_CFG_MSG;
-    if (c0 === 'git') { const sub = args.find(a => !/^-/.test(a)); if (!sub || CFG_GIT_WRITE.has(sub)) return GUARD_CFG_MSG; }
+    if (c0 === 'find' && args.some(a => CFG_FIND_WRITE_RE.test(a))) return GUARD_CFG_MSG;
+    if (c0 === 'git') {
+      let sub;
+      for (let k = 0; k < args.length; k++) {
+        if (CFG_GIT_OPT_ARG.has(args[k])) { k++; continue; }
+        if (!/^-/.test(args[k])) { sub = args[k]; break; }
+      }
+      if (!sub || CFG_GIT_WRITE.has(sub)) return GUARD_CFG_MSG;
+    }
     if ((c0 === 'npm' || c0 === 'npx') && !args.includes('vitest') && args[0] !== 'test') return GUARD_CFG_MSG;
   }
   return null;
@@ -3119,9 +3659,10 @@ function nonWaivableAskReason(command) {
     const raw = String(command || '');
     const lm = loaderEnvMessage(raw);
     if (lm) return lm;
-    if (!GUARD_CFG_RE.test(raw)) return null;
+    // WI-01 (v12.78.0): no raw-text early return. Quotes, case, `./`, a cd,
+    // a variable or a glob can hide the config path from a raw match.
     let segs;
-    try { segs = tokenize(raw).segments; } catch (e) { return GUARD_CFG_MSG; }
+    try { segs = tokenize(raw).segments; } catch (e) { return /claude|\.\W*c|[*?[$`\\]/i.test(raw) ? GUARD_CFG_MSG : null; }
     return guardConfigWriteMessage(segs, raw);
   } catch (e) { return 'guard could not classify the ask (fail-closed)'; }
 }

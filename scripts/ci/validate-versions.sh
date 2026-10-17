@@ -5,7 +5,15 @@
 
 set -e
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Quiet mode (CAGENTS_CI_QUIET / CLAUDECODE): full output to a log, summary here.
+# This script prints no ANSI colors.
+# shellcheck source=lib/quiet.sh
+source "$SCRIPT_DIR/lib/quiet.sh"
+cagents_ci_quiet_run "$SCRIPT_DIR/validate-versions.sh" "$@"
+
 cd "$PROJECT_DIR"
 
 echo "Validating version consistency across 16 canonical locations..."

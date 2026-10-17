@@ -2,7 +2,7 @@
 #
 # cAgents CI Runner
 # Self-contained CI script for quality gates
-# Version: 12.77.0
+# Version: 12.78.0
 #
 # Usage:
 #   ./scripts/ci/cagents-ci.sh [command]
@@ -42,11 +42,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 AGENT_MEMORY="$PROJECT_ROOT/cagents-memory"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors and quiet mode (colors only on a terminal with NO_COLOR unset)
+# shellcheck source=lib/quiet.sh
+source "$SCRIPT_DIR/lib/quiet.sh"
+cagents_ci_colors
 
 # Counters
 ERRORS=0
@@ -352,7 +351,12 @@ run_tests() {
     fi
 
     log_info "Running Vitest test suite..."
-    if cd "$PROJECT_ROOT" && npx vitest run --config tests/vitest.config.js --reporter=verbose 2>&1; then
+    # CAGENTS_CI_REPORTER overrides; dot under Claude Code, verbose otherwise.
+    local reporter="${CAGENTS_CI_REPORTER:-}"
+    if [[ -z "$reporter" ]]; then
+        if [[ "${CLAUDECODE:-}" == "1" ]]; then reporter=dot; else reporter=verbose; fi
+    fi
+    if cd "$PROJECT_ROOT" && npx vitest run --config tests/vitest.config.js --reporter="$reporter" 2>&1; then
         log_info "All tests passed"
         return 0
     else
@@ -655,7 +659,10 @@ main() {
     local command="${1:-all}"
     local exit_code=0
 
-    log_section "cAgents CI Runner v12.77.0"
+    # Quiet mode (CAGENTS_CI_QUIET / CLAUDECODE): full output to a log, summary here.
+    cagents_ci_quiet_run "$SCRIPT_DIR/cagents-ci.sh" "$@"
+
+    log_section "cAgents CI Runner v12.78.0"
     log_info "Project root: $PROJECT_ROOT"
     log_info "Command: $command"
 

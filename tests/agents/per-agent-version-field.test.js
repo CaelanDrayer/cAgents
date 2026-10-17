@@ -93,6 +93,7 @@ describe('Phase 11: per-agent metadata.version field (V11.1.12+)', () => {
         cwd: ROOT,
         stdio: 'pipe',
         timeout: 60000,
+        env: { ...process.env, CAGENTS_CI_QUIET: '0' },
       });
     } catch (err) {
       exitCode = err.status ?? 1;

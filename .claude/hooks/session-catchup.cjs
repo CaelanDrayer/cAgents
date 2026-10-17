@@ -278,7 +278,7 @@ createHook('SessionCatchup', async (input) => {
   // skill set is /act, /team, /designer, /helper — the guidance below must
   // only ever name those four (WI-5, session run_improve-skills-hooks_260703_001).
   // Earlier history: V11.0 removed /review, /optimize, /context, /debug.
-  let cagentsContext = 'cAgents V12.77.0 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. workflow/agent_tree.yaml is hook-owned: the SubagentStart and SubagentStop hooks record every spawn and stop, so agents do not self-register. Only the skill that creates a session writes the file, once, to seed the depth-0 root entry. IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
+  let cagentsContext = 'cAgents V12.78.0 session initialized. Minimum Claude Code version: 2.1.198 (nested subagents need 2.1.172; background-by-default subagents 2.1.198). Follow the controller-centric delegation pattern. All requests minimum tier 2. Auto-proceed between phases without asking permission. Use cagents:{agent-name} namespace for all Agent tool subagent_type references. workflow/agent_tree.yaml is hook-owned: the SubagentStart and SubagentStop hooks record every spawn and stop, so agents do not self-register. Only the skill that creates a session writes the file, once, to seed the depth-0 root entry. IMPORTANT: When invoking any skill (/act, /team, /designer, /helper), your FIRST action must be creating the session directory and writing status.yaml. Do NOT explore the codebase, spawn agents, or analyze the request before session init. IMPORTANT: /act and /team NEVER handle tasks themselves. They ALWAYS delegate to subagents via Agent tool. No exceptions, no matter how simple the request. For review/optimize work, use the /act keyword router: /act review <target>, /act optimize <target>, or /act improve <target> (v12.1.2 folded the standalone improve skill into /act). For cross-domain strategic work, use /team strategic mode. Tip: use /helper for skill guidance and command selection.';
 
   // Context Auto-Check (V10.17.0; path corrected in WI-5, session
   // run_improve-skills-hooks_260703_001): the CANONICAL product-context
@@ -361,7 +361,22 @@ createHook('SessionCatchup', async (input) => {
         // write with no prompt. Inject it only when it is the one line that
         // scripts/update-check.sh prints. Any other text is data, not context.
         if (cached && cached.length <= 300 && UPDATE_RESULT_RE.test(cached)) {
-          cagentsContext = cached + '\n' + cagentsContext;
+          // ITEM-4: the cached line can be from an older local install, or a
+          // downgrade. Inject it only when vFROM is the local package.json
+          // version and vTO is a newer numeric semver.
+          const semver = (s) => {
+            const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(s || '').trim());
+            return m ? m.slice(1).map(Number) : null;
+          };
+          const pair = /^cAgents update available: v(\S+) -> v(\S+?)\. Run: /.exec(cached);
+          let localVersion = null;
+          try { localVersion = JSON.parse(fs.readFileSync(path.join(pluginRoot, 'package.json'), 'utf8')).version; } catch { /* unknown */ }
+          const from = pair && semver(pair[1]);
+          const to = pair && semver(pair[2]);
+          const newer = from && to && (to[0] - from[0] || to[1] - from[1] || to[2] - from[2]) > 0;
+          if (newer && pair[1] === localVersion) {
+            cagentsContext = cached + '\n' + cagentsContext;
+          }
         }
       }
     } catch { /* best effort */ }

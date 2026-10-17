@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.77.0
+# Version: 12.78.0
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -36,14 +36,13 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# CAGENTS_PROJECT_ROOT lets tests point the validator at a temp copy of the tree.
+PROJECT_ROOT="${CAGENTS_PROJECT_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Colors and quiet mode (colors only on a terminal with NO_COLOR unset)
+# shellcheck source=lib/quiet.sh
+source "$SCRIPT_DIR/lib/quiet.sh"
+cagents_ci_colors
 
 # Counters
 TOTAL=0
@@ -610,6 +609,7 @@ validate_domain_overrides() {
 #
 main() {
     local single_file=""
+    local -a orig_args=("$@")
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --archetype|--domain)
@@ -650,6 +650,12 @@ main() {
         else
             exit 0
         fi
+    fi
+
+    # Quiet mode (CAGENTS_CI_QUIET / CLAUDECODE): --count output is already short,
+    # so the existing COUNT_ONLY gate also skips the quiet wrapper.
+    if [[ $COUNT_ONLY != true ]]; then
+        cagents_ci_quiet_run "$SCRIPT_DIR/validate-agents.sh" "${orig_args[@]}"
     fi
 
     if [[ $COUNT_ONLY != true ]]; then

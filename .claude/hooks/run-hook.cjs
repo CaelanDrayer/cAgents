@@ -117,6 +117,31 @@ const candidates = [
   process.cwd()                        // Last resort
 ].filter(Boolean);
 
+// v12.78.0 (WI-02): the guard hooks are deny surfaces. If the launcher cannot
+// load a guard hook, the tool call is DENIED. A load fails on a missing file,
+// on a syntax error, or on a throw at module load. Before this fix the
+// launcher printed {continue:true} for a missing hook. Also, a bare require()
+// crash exited 1 (a non-blocking error), so the guard silently stopped guarding. All other hooks stay fail-open.
+// All three guard hooks are registered for PreToolUse only.
+const GUARD_HOOKS = new Set(['bash-validator', 'write-edit-dispatch', 'agent-dispatch']);
+const isGuardHook = GUARD_HOOKS.has(hookName);
+
+function denyGuardLoadFailure(detail) {
+  const reason =
+    `[run-hook] FAIL CLOSED: guard hook '${hookName}' could not be loaded, so this tool call is denied. ` +
+    `Error: ${detail}. FIX: repair or restore .claude/hooks/${hookName}.cjs ` +
+    '(for a plugin install, run `/plugin update cagents`).';
+  console.error(reason);
+  console.log(JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason
+    }
+  }));
+  process.exit(0);
+}
+
 let hookPath = null;
 
 for (const root of candidates) {
@@ -134,6 +159,9 @@ if (!hookPath) {
   // tells anyone. Emit the notice as a systemMessage so the breakage is
   // self-reporting instead of requiring a forensic dig.
   const searched = candidates.map(c => path.join(c, '.claude/hooks/')).join(', ');
+  if (isGuardHook) {
+    denyGuardLoadFailure(`HOOK NOT FOUND: '${hookName}.cjs' is not present in any search path. Searched: ${searched}`);
+  }
   const msg =
     `[run-hook] HOOK NOT FOUND: '${hookName}.cjs' is not present in any search path, so this hook ` +
     `DID NOT RUN — its checks contributed nothing to this tool call. Searched: ${searched}. ` +
@@ -145,5 +173,22 @@ if (!hookPath) {
 }
 
 // Load and execute the hook
-// The hook uses createHook() which reads stdin and writes stdout
-require(hookPath);
+// The hook uses createHook() which reads stdin and writes stdout.
+// The try/catch covers only module load (syntax error, a throw at top level,
+// a missing require). Errors inside the async handler are handled by
+// createHook() in hook-utils.cjs.
+try {
+  require(hookPath);
+} catch (err) {
+  const detail = (err && err.message) ? `${err.name || 'Error'}: ${err.message}` : String(err);
+  if (isGuardHook) {
+    denyGuardLoadFailure(`load of ${hookPath} failed: ${detail}`);
+  }
+  // Non-guard hooks stay fail-open, but say so loudly (RF-5: stderr alone is
+  // not surfaced to the model).
+  const msg = `[run-hook] HOOK LOAD FAILED: '${hookName}.cjs' threw while loading, so this hook DID NOT RUN. ` +
+    `Error: ${detail}. Path: ${hookPath}.`;
+  console.error(msg);
+  console.log(JSON.stringify({ continue: true, systemMessage: msg }));
+  process.exit(0);
+}

@@ -10,6 +10,52 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.78.0] - 2026-10-17
+
+Review-finding fixes. The release closes a quoting bypass in the bash guard
+and makes the hook launcher fail closed. It fixes the sanitize round-trip for
+Edit and MultiEdit, and it makes test and CI output quiet. The change ids are
+ITEM-1 to ITEM-7.
+
+### Security
+- ITEM-1: the bash guard now parses each write target for its guard config
+  and canonicalizes it before the match. It handles quoting, `./` and `..`,
+  case, `cd` and `pushd` (including `cd --`), unknown cwd forms, variables,
+  globs, directory destinations, `bash -c` and `$(..)`. A step budget limits
+  the analysis. When the budget runs out, the guard asks.
+- ITEM-1: `run-hook.cjs` fails closed. It denies the tool call when
+  `bash-validator`, `write-edit-dispatch` or `agent-dispatch` cannot load.
+- ITEM-1: the threat model entry R-77.4 in
+  `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` is updated.
+- ITEM-2: sanitize mode in `secret-detection.cjs` applies an Edit or
+  MultiEdit to the full file. It no longer overwrites the file with the edit
+  fragment. It resolves the path before the protected-path check. It denies
+  sanitize writes to the guard config, git hooks and shell rc files.
+- ITEM-2: `secret-restore.cjs` restores all secrets after several sanitized
+  writes to one file. It keeps every backup when it refuses a restore. Its
+  runtime is bounded.
+
+### Fixed
+- ITEM-3: `tests/v12/deprecated-bucket-excluded.test.js` runs in a temp
+  project root. A new `CAGENTS_PROJECT_ROOT` override in
+  `scripts/ci/validate-agents.sh` makes this possible. The test has a 60 s
+  timeout and always cleans up.
+- ITEM-4: `scripts/update-check.sh` reports an update only when the remote
+  version is newer. It compares numeric semver. `session-catchup.cjs` ignores
+  a cached result for a different local version.
+- The test setup removes an inherited `CAGENTS_BASH_GUARD` value
+  (`tests/setup/clean-env.js`).
+
+### Changed
+- ITEM-5: vitest uses the dot reporter under Claude Code (`CLAUDECODE=1`).
+  Set `CAGENTS_TEST_REPORTER` or `CAGENTS_CI_REPORTER` to override it.
+- ITEM-6: `validate-agents.sh`, `validate-versions.sh` and `cagents-ci.sh`
+  have a quiet mode through `scripts/ci/lib/quiet.sh`. Set
+  `CAGENTS_CI_QUIET` to turn it on. Quiet mode prints the summary, the
+  failures and the log path.
+- ITEM-7: `pat-context-budget-tiers.md` adds lever 6. Run noisy commands
+  quietly. Cite the exit code, the summary line and the log path.
+
 ## [12.77.0] - 2026-10-16
 
 Field-report fixes for false asks in the bash guard, a new guard opt-out, the

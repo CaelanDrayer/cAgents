@@ -23,7 +23,8 @@ function runGuard(env = {}) {
   for (const key of Object.keys(cleanEnv)) {
     if (key.startsWith('CAGENTS_TINY_BUMP_')) delete cleanEnv[key];
   }
-  const mergedEnv = { ...cleanEnv, ...env };
+  // CAGENTS_CI_QUIET=0: the asserts read the full stage output, not the quiet summary.
+  const mergedEnv = { ...cleanEnv, CAGENTS_CI_QUIET: '0', ...env };
   try {
     const stdout = execSync(`bash "${CI_SCRIPT}" tiny-bump`, {
       env: mergedEnv,
