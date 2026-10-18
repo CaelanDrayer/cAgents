@@ -3784,11 +3784,197 @@ function cfgAnchorDirs() {
     const m = /^([a-z]):(\/.*)?$/.exec(s);
     if (m) { out.push('/' + m[1] + (m[2] || '')); out.push(m[2] || '/'); } else out.push(s);
   };
-  try { add(process.cwd()); } catch (e) { /* no cwd */ }
-  add(process.env.CLAUDE_PROJECT_DIR);
-  add(process.env.HOME);
+  // WI-R2 (v12.78.2): the first anchor is the cwd of the command (the payload
+  // cwd), then CLAUDE_PROJECT_DIR, then the hook process cwd. The hook process
+  // cwd is not the dir where the command runs.
+  // WI-R2 r1: the physical path of each anchor is an anchor too.
+  for (const p of [cfgBaseDir(), process.env.CLAUDE_PROJECT_DIR, process.env.HOME]) {
+    add(p);
+    if (p) add(cfgPhys(String(p)));
+  }
   try { add(require('os').homedir()); } catch (e) { /* no home dir */ }
   return out.map(s => s.replace(/\/+$/, '') + '/');
+}
+// WI-R2 (v12.78.2): the cwd of the command. evaluate() and
+// nonWaivableAskReason() set it from the hook payload (input.cwd).
+let cfgPayloadCwd = null;
+function cfgSetPayloadCwd(opts) {
+  const c = opts && typeof opts.cwd === 'string' ? opts.cwd : '';
+  const prev = cfgPayloadCwd;
+  cfgPayloadCwd = c && /^\//.test(c.replace(/\\/g, '/')) ? c : null;
+  return prev;
+}
+// WI-R2 (v12.78.2): the dir where the command starts: the payload cwd, then
+// CLAUDE_PROJECT_DIR, then the hook process cwd. Null when none is known.
+function cfgBaseDir() {
+  if (cfgPayloadCwd) return cfgPayloadCwd;
+  if (process.env.CLAUDE_PROJECT_DIR) return process.env.CLAUDE_PROJECT_DIR;
+  try { return process.cwd(); } catch (e) { return null; }
+}
+function cfgHomeDir() {
+  if (process.env.HOME) return process.env.HOME;
+  try { return require('os').homedir() || null; } catch (e) { return null; }
+}
+// WI-R2 (v12.78.2): an exact cwd tracker for the find reach test. The trimmed
+// cwd base (cfgTrimBase) drops the parts above .claude, so after `cd ..` or an
+// absolute cd a relative start such as `cAgents` lost its place. This tracker
+// keeps a list of absolute dirs that the cwd can be. Null is an unknown cwd.
+// Undefined is "no start dir is known", and the tracker is not used.
+const CFG_MAX_ABS_CWDS = 8;
+// WI-R2: the abs cwd seed for a nested scan (a substitution or a -c payload).
+let cfgAbsSeed = null;
+function cfgAbsInit() {
+  const b = cfgBaseDir();
+  return b ? cfgWithPhys([require('path').posix.resolve(String(b).replace(/\\/g, '/'))]) : undefined;
+}
+// WI-R2 r1 (D4): the command text can change how cd finds its dir. The
+// flags are: home (the text binds HOME, so a bare cd and `~` are unknown),
+// cdv (the text names cdable_vars, so a relative cd can be a variable) and
+// cdpath (the text names CDPATH, so a relative cd can go to a CDPATH dir).
+// A read of $HOME or ${HOME} does not bind HOME. A nested scan keeps the
+// flags of the outer text.
+// WI-R2 r2: dyn is true when declare, typeset, export, local, readonly, read,
+// mapfile, readarray or `printf -v` gets a name with an expansion
+// (`declare "${v}ME=x"`). That name can be HOME or CDPATH. fn is true when the
+// text defines a shell function or uses alias (E2): a call can then run a cd
+// that the scan does not see, so the cwd is unknown.
+const CFG_BINDERS_RE = /^(declare|typeset|export|local|readonly|read|mapfile|readarray)$/;
+function cfgDynBind(s) {
+  for (const part of s.split(/[;&|\n(){}]/)) {
+    const w = part.trim().split(/\s+/);
+    let k = 0;
+    while (k < w.length && /^(builtin|command)$/.test(w[k])) k++;
+    if (k >= w.length) continue;
+    if (w[k] === 'printf') {
+      for (let i = k + 1; i < w.length - 1; i++) if (/^-[A-Za-z]*v$/.test(w[i]) && /[$`]/.test(w[i + 1])) return true;
+      continue;
+    }
+    if (!CFG_BINDERS_RE.test(w[k])) continue;
+    for (const x of w.slice(k + 1)) {
+      if (/^-/.test(x)) continue;
+      const name = x.split('=')[0];
+      if (/[$`]/.test(name)) return true;
+    }
+  }
+  return false;
+}
+function cfgCdFlags(raw, outer) {
+  const s = String(raw || '').replace(/["'\\]/g, '');
+  const dyn = cfgDynBind(s);
+  const f = {
+    home: dyn || /(?<![$A-Za-z0-9_{])HOME(?![A-Za-z0-9_])/.test(s) || /\$\{HOME:?[=?+-]/.test(s),
+    cdv: /cdable_vars/.test(s),
+    cdpath: dyn || /CDPATH/.test(s),
+    fn: /(^|[;&|(){}\s])function\s+[A-Za-z_][\w.:-]*/.test(s) || /(^|[;&|(){}\s])[A-Za-z_][\w.:-]*\s*\(\s*\)/.test(s) ||
+      /(^|[;&|({\s])(alias|unalias)(\s|$)/.test(s) || /expand_aliases/.test(s)
+  };
+  if (outer) { for (const k of Object.keys(f)) f[k] = f[k] || !!outer[k]; }
+  return f;
+}
+// WI-R2 r1: the physical path of p (fs.realpathSync), or null when p does not
+// exist or is the same path. A symlink start or cwd is tested both ways.
+function cfgPhys(p) {
+  // The libc realpath (.native) follows a link before a later `..`. The JS
+  // realpathSync removes `..` from the text first.
+  const fs = require('fs');
+  try {
+    const r = typeof fs.realpathSync.native === 'function' ? fs.realpathSync.native(p) : fs.realpathSync(p);
+    return r && r !== p ? r : null;
+  } catch (e) { return null; }
+}
+// WI-R2: the abs cwd list after a cd, pushd or popd, or the same list. A
+// computed target, `cd -`, OLDPWD/PWD/DIRSTACK, `~user`, `~-`, a glob, a
+// quoted `~`, eval, source and `.` give an unknown cwd (null).
+// WI-R2 r1 (D3): an option that the tracker does not know gives an unknown
+// cwd. cd takes -L, -P, -e and -@. pushd and popd take only `--`: -n, +N and
+// -N change the stack in a way that is not tracked. popd with any word is
+// unknown. (D4) see cfgCdFlags.
+function cfgAbsCdTarget(cp, flags, dirs, stack) {
+  const path = require('path').posix;
+  let k = 0;
+  while (k < cp.length && /^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(String(cp[k].raw || ''))) k++;
+  if (k) cp = cp.slice(k);
+  if (cp.length && (cp[0].varCount || cp[0].substCount)) return null;
+  const c0 = cp.length ? basename(cp[0].canon) : '';
+  if (CFG_CWD_UNKNOWN_CMDS.has(c0)) return null;
+  // WI-R2 r1: after an unknown pushd or popd form the stack is unknown too, so
+  // it is cleared, and a later popd gives an unknown cwd.
+  if (c0 === 'popd') {
+    if (stack.length && cp.length === 1) return stack.pop();
+    stack.length = 0;
+    return null;
+  }
+  if (c0 !== 'cd' && c0 !== 'pushd') return dirs;
+  const args = [];
+  let opts = true;
+  for (const t of cp.slice(1)) {
+    const r = String(t.raw || '');
+    if (opts && r === '--') { opts = false; continue; }
+    if (opts && r !== '-' && /^[-+]/.test(r)) {
+      if (c0 === 'cd' && /^-[LPe@]+$/.test(r)) continue;
+      if (c0 === 'pushd') stack.length = 0;
+      return null;
+    }
+    opts = false;
+    args.push(t);
+  }
+  const t = args[0];
+  if (c0 === 'pushd') stack.push(dirs);
+  if (args.length > 1) return null;
+  if (!t) { const h = cfgHomeDir(); return c0 === 'pushd' || !h || flags.home ? null : cfgWithPhys([path.resolve(h)]); }
+  if (t.varCount || t.substCount) return null;
+  const tr = String(t.raw || '');
+  let tc = String(t.canon || '');
+  if (tc === '-' || CFG_CWD_VAR_RE.test(tr) || CFG_CWD_TILDE_RE.test(tr) || /[*?[\]{}]/.test(tc)) return null;
+  if (tc[0] === '~') {
+    if (/^["']/.test(tr) || !/^~(\/|$)/.test(tc) || flags.home) return null;
+    const h = cfgHomeDir();
+    if (!h) return null;
+    tc = h + tc.slice(1);
+  }
+  // WI-R2 r1: realpath of the joined text, before `..` is removed, is the
+  // physical walk (`cd -P link/..`).
+  const walk = list => { const out = cfgWithPhys(list.map(x => path.resolve(x))); for (const x of list) { const r = cfgPhys(x); if (r) out.push(r); } return Array.from(new Set(out)); };
+  if (tc[0] === '/') return walk([tc]);
+  if (dirs === null || flags.cdpath || flags.cdv) return null;
+  return walk(dirs.map(d => d.replace(/\/+$/, '') + '/' + tc));
+}
+// WI-R2 r1: add the physical path of each dir. `cd -P` and a later `..` can
+// follow the physical path.
+function cfgWithPhys(list) {
+  const out = list.slice();
+  for (const d of list) { const r = cfgPhys(d); if (r) out.push(r); }
+  return Array.from(new Set(out));
+}
+// WI-R2: a cd that ends with `&&` runs the next segment only when it worked.
+// After any other end (`;`, `||`, `|`, `&`, `)`) the cwd can be the old one
+// or the new one, so the lists are joined.
+// WI-R2 r1 (D2): a cd after `||` runs only when the command before it
+// failed. A cd after `|` runs in a subshell. So the lists are joined also
+// when the end of the segment before the cd is not null, `;`, `&` or `&&`.
+function cfgNextAbsCwd(cp, flags, dirs, stack, op, prevOp) {
+  const nxt = cfgAbsCdTarget(cp, flags, dirs, stack);
+  if (nxt === dirs) return dirs;
+  let out = nxt;
+  const sure = op === '&&' && (prevOp === null || prevOp === ';' || prevOp === '&' || prevOp === '&&');
+  if (!sure) out = nxt === null || dirs === null ? null : Array.from(new Set(dirs.concat(nxt)));
+  return out && out.length > CFG_MAX_ABS_CWDS ? null : out;
+}
+// WI-R2: true when an absolute find start reaches a config target. The start
+// is an anchor dir or an ancestor of one, or it can name a config path.
+// WI-R2 r1: the physical path of the start is tested too.
+function cfgAbsReach(p, ctx, anchors, rawP) {
+  const one = q => {
+    const pl = String(q).toLowerCase().replace(/\/+$/, '') + '/';
+    if (anchors.some(a => a.startsWith(pl))) return true;
+    return cfgCompsHit(cfgComponents(cfgAtoms(q)), ctx.dotglob);
+  };
+  if (one(p)) return true;
+  const r = cfgPhys(p);
+  if (r && one(r)) return true;
+  // rawP is the path before `..` is removed: its realpath is the physical walk.
+  const w = rawP ? cfgPhys(rawP) : null;
+  return !!w && one(w);
 }
 // WI-R1 (v12.78.1): true when a find call has an action that writes or runs
 // a command (-exec, -execdir, -ok, -okdir, -delete, -fprint*, -fls), and a
@@ -3804,13 +3990,116 @@ const CFG_FIND_EXEC_READERS = new Set(['grep', 'egrep', 'fgrep', 'rg', 'cat', 'h
 // WI-R1 (v12.78.1): true when a find word list has an action that writes. A
 // -delete, -fprint* or -fls action writes. An -exec action writes when its
 // command is not a reader, or when its command is a variable or a substitution.
-function cfgFindWrites(toks) {
-  for (let k = 0; k < toks.length; k++) {
+// WI-R2 (v12.78.2): the result is { start, targets }. start is true for a
+// -delete action and for an -exec action that writes. targets holds the FILE
+// word of each -fprint, -fprint0, -fprintf and -fls action. That action
+// writes only its FILE, so cfgFindReach tests the FILE, not the start.
+// `node --check {}` and `node -c {}` only check syntax, so they read.
+// WI-R2 r2 (Q1): a reader or node is only a bare command word. A word with a
+// `/` (./node, /tmp/cat) can be any binary. `rg --pre CMD` runs CMD, so rg
+// with --pre or --pre-glob is not a reader.
+function cfgBareWord(c) {
+  return !!c && !c.varCount && !c.substCount && !String(c.raw || '').includes('/') && !String(c.canon || '').includes('/');
+}
+function cfgExecReader(toks, k, j) {
+  const c = toks[k + 1];
+  if (!cfgBareWord(c) || !CFG_FIND_EXEC_READERS.has(String(c.canon))) return false;
+  if (String(c.canon) === 'rg') {
+    for (let i = k + 2; i < Math.min(j, toks.length); i++) if (/^--pre(-glob)?(=|$)/.test(String(toks[i].canon || ''))) return false;
+  }
+  return true;
+}
+// WI-R2 r2 (E1): the e37843da rule, for a part of the expression that the
+// parser cannot follow. Any later action word is a write, except an -exec of
+// a bare reader word.
+function cfgFindWritesLoose(toks, from) {
+  for (let k = from; k < toks.length; k++) {
     const s = String(toks[k].canon || '');
     if (!CFG_FIND_WRITE_RE.test(s)) continue;
     if (!/^-(exec|execdir|ok|okdir)$/.test(s)) return true;
-    const c = toks[k + 1];
-    if (!c || c.varCount || c.substCount || !CFG_FIND_EXEC_READERS.has(basename(String(c.canon || '')))) return true;
+    if (!cfgExecReader(toks, k, toks.length)) return true;
+  }
+  return false;
+}
+// WI-R2 r2 (E1): true when the shell can turn a word of an -exec block into
+// the end word, or into many words: an expansion, a substitution, a brace
+// form (not `{}`) or an unquoted glob.
+function cfgExecWordOpen(t) {
+  if (t.varCount || t.substCount) return true;
+  const r = String(t.raw || '');
+  if (/[$`]/.test(r)) return true;
+  if (r !== '{}' && /[{}]/.test(r)) return true;
+  return /[*?[]/.test(r.replace(/'[^']*'|"[^"]*"/g, ''));
+}
+function cfgNodeCheckExec(toks, k) {
+  const c = toks[k + 1];
+  if (!cfgBareWord(c) || !/^(node|nodejs)$/.test(String(c.canon || ''))) return false;
+  const f = toks[k + 2];
+  if (!f || f.varCount || f.substCount || !/^(--check|-c)$/.test(String(f.canon))) return false;
+  let j = k + 3;
+  let n = 0;
+  for (; j < toks.length && String(toks[j].canon) === '{}' && !toks[j].varCount && !toks[j].substCount; j++) n++;
+  const e = toks[j];
+  return n > 0 && !!e && (String(e.canon) === ';' || String(e.canon) === '+');
+}
+// WI-R2 r1 (D1): a test that takes an operand (-name PATTERN) consumes the
+// next word, so `! -name -fprint` is a name test and not an -fprint action.
+// The words of an -exec command run to its `;`, or to a `+` after `{}`. A
+// FILE word that is itself an action word sets start (the fallback asks).
+const CFG_FIND_ARG1_RE = /^-(name|iname|path|ipath|wholename|iwholename|regex|iregex|lname|ilname|newer|anewer|cnewer|newer[aBcmt][aBcmt]|perm|user|group|uid|gid|type|xtype|size|mtime|atime|ctime|mmin|amin|cmin|Bmin|Btime|Bnewer|used|inum|links|samefile|fstype|maxdepth|mindepth|regextype|context|printf|files0-from|flags)$/;
+function cfgFindWrites(toks) {
+  const out = { start: false, targets: [] };
+  for (let k = 0; k < toks.length; k++) {
+    const s = String(toks[k].canon || '');
+    if (CFG_FIND_ARG1_RE.test(s) && !toks[k].varCount && !toks[k].substCount) { k++; continue; }
+    if (!CFG_FIND_WRITE_RE.test(s)) continue;
+    if (/^-(fprint|fprint0|fprintf|fls)$/.test(s)) {
+      const f = toks[k + 1] || null;
+      out.targets.push(f);
+      if (f && CFG_FIND_WRITE_RE.test(String(f.canon || ''))) { out.start = true; continue; }
+      k += s === '-fprintf' ? 2 : 1;
+      continue;
+    }
+    if (!/^-(exec|execdir|ok|okdir)$/.test(s)) { out.start = true; continue; }
+    let j = k + 1;
+    let open = false;
+    while (j < toks.length && !(String(toks[j].canon) === ';' || (String(toks[j].canon) === '+' && String(toks[j - 1].canon) === '{}' && j > k + 1))) {
+      if (cfgExecWordOpen(toks[j])) open = true;
+      j++;
+    }
+    if (j < toks.length && cfgExecWordOpen(toks[j])) open = true;
+    if (!cfgNodeCheckExec(toks, k) && !cfgExecReader(toks, k, j)) out.start = true;
+    // WI-R2 r2 (E1): a computed word in the block, or no end word, means the
+    // end of the block is not known. The rest of the expression uses the
+    // e37843da rule (cfgFindWritesLoose).
+    if (open || j >= toks.length) {
+      if (cfgFindWritesLoose(toks, k + 1)) out.start = true;
+      break;
+    }
+    k = j;
+  }
+  return out;
+}
+// WI-R2 (v12.78.2): true when the FILE word of a -fprint* or -fls action can
+// name a config target, or a path in a .claude dir. A missing word, a
+// computed word and a relative word from an unknown cwd count too.
+function cfgFindTargetHit(t, ctx, cwd, absCwd) {
+  if (!t || !ctx || t.varCount || t.substCount) return true;
+  const raw = String(t.raw || '');
+  if (/\.claude/i.test(raw.replace(/["'\\]/g, '')) || tokenMentionsCfg(t, ctx, cwd, true)) return true;
+  const alts = cfgLex(raw, ctx, 0);
+  if (alts === null) return true;
+  const path = require('path').posix;
+  for (const alt of alts) {
+    if (alt.some(x => x.t !== 'c' && x.t !== '/')) continue;
+    const lit = alts.length === 1 ? String(t.canon || '') : alt.map(x => (x.t === '/' ? '/' : x.ch)).join('');
+    if (lit[0] === '~') return true;
+    const ps = lit[0] === '/' ? [path.resolve(lit)] : absCwd === undefined ? [] : absCwd === null ? null : absCwd.map(d => path.resolve(d, lit));
+    if (ps === null) return true;
+    // WI-R2 r1: the physical path of the FILE, or of its dir, is tested too.
+    const phys = p => { const r = cfgPhys(p); if (r) return r; const d = cfgPhys(path.dirname(p)); return d ? d + '/' + path.basename(p) : null; };
+    const all = ps.concat(ps.map(phys).filter(Boolean));
+    if (all.some(p => /(^|\/)\.claude(\/|$)/i.test(p))) return true;
   }
   return false;
 }
@@ -3823,10 +4112,17 @@ function cfgMktempStart(t, ctx) {
   const e = ctx.vars.get(m[1] || m[2]);
   return !!e && !e.wild && e.vals.length > 0 && e.vals.every(v => /^"?\$\(\s*mktemp(\s[^`$;&|()<>]*)?\)"?$/.test(v));
 }
-function cfgFindReach(cp, ctx, cwd) {
+// WI-R2 (v12.78.2): absCwd is the exact cwd list (see cfgAbsInit). A relative
+// start is also resolved against each dir of the list. A start that is an
+// anchor dir, an ancestor of one, or a config path reaches the config. An
+// unknown cwd (null) makes each relative start reach. With anyStart true
+// (find under xargs), stdin can add a start, so a write action reaches.
+function cfgFindReach(cp, ctx, cwd, absCwd, anyStart) {
   const toks = cp.slice(1);
-  if (!cfgFindWrites(toks)) return false;
-  if (!ctx || cwd === null || cwd === CFG_CWD_SOFT) return true;
+  const w = cfgFindWrites(toks);
+  if (w.targets.some(t => cfgFindTargetHit(t, ctx, cwd, absCwd))) return true;
+  if (!w.start) return false;
+  if (anyStart || !ctx || cwd === null || cwd === CFG_CWD_SOFT) return true;
   let k = 0;
   while (k < toks.length && /^-([HLP]+|D|O\d*)$/.test(String(toks[k].canon || ''))) k += toks[k].canon === '-D' ? 2 : 1;
   const starts = [];
@@ -3853,9 +4149,82 @@ function cfgFindReach(cp, ctx, cwd) {
           if (anchors.some(a => a.startsWith(p))) return true;
         }
       }
+      // WI-R2 r1: the lexed parts are lower case. A one-form literal word
+      // keeps its own case for the physical path test.
+      const lit = alts.length === 1 ? String(t.canon || '') : alt.map(x => (x.t === '/' ? '/' : x.ch)).join('');
+      if (abs) {
+        anchors = anchors || cfgAnchorDirs();
+        if (cfgAbsReach(require('path').posix.resolve(lit), ctx, anchors, lit)) return true;
+      }
+      // WI-R2: resolve a relative literal start against the exact cwd list.
+      if (!abs && absCwd !== undefined) {
+        if (absCwd === null) return true;
+        anchors = anchors || cfgAnchorDirs();
+        for (const d of absCwd) {
+          if (cfgAbsReach(require('path').posix.resolve(d, lit || '.'), ctx, anchors, d.replace(/\/+$/, '') + '/' + (lit || '.'))) return true;
+        }
+      }
     }
   }
   return false;
+}
+// WI-R2 (v12.78.2): the find argv of a find call, or null. gfind is GNU find.
+// `busybox find` and `toybox find` run find. `xargs [opts] find` runs find
+// with more start words from stdin (anyStart).
+const CFG_FIND_CMDS = new Set(['find', 'gfind']);
+// WI-R2 r2 (E4): a wrapper that commandPosition does not know (taskset, chrt,
+// flock, busybox xargs, ionice, strace ...) runs find from a later word. So a
+// find or gfind word anywhere after the command word starts a find call. The
+// rule skips a command word that only reads or prints its words (the
+// CFG_READ_CMDS set and CFG_FIND_DATA_CMDS): `grep find x`, `echo find`,
+// `git log --grep find` and `man find` are not find calls. A find call with
+// no write action gets no ask, so a data word `find` with no action word is
+// harmless. An xargs or parallel word before find adds stdin start words.
+const CFG_FIND_DATA_CMDS = new Set(['printf', 'man', 'info', 'which', 'whereis', 'type', 'whatis', 'apropos', 'help',
+  'locate', 'command', 'hash', 'compgen', 'complete', 'tldr', 'ag', 'ack', 'tee', 'touch', 'mkdir', 'cp', 'mv', 'ln']);
+function cfgFindCall(c0, cp) {
+  if (CFG_FIND_CMDS.has(c0)) return { cp, anyStart: false };
+  if (CFG_READ_CMDS.has(c0) || CFG_FIND_DATA_CMDS.has(c0)) return null;
+  const isFind = t => !!t && !t.varCount && !t.substCount && CFG_FIND_CMDS.has(basename(String(t.canon || '')));
+  const j = cp.findIndex((t, n) => n > 0 && isFind(t));
+  if (j < 0) return null;
+  const anyStart = cp.slice(0, j).some(t => /^(xargs|gxargs|parallel)$/.test(basename(String(t.canon || ''))));
+  return { cp: cp.slice(j), anyStart };
+}
+// WI-R2 r2 (E3): the dir of `env -C DIR`, `env -CDIR`, `env --chdir=DIR` or
+// `env --chdir DIR` in a segment. Undefined: no such option. Null: the dir
+// is not a literal word. Otherwise the DIR word.
+function cfgEnvChdir(argv) {
+  for (let i = 0; i < argv.length; i++) {
+    const t = argv[i];
+    if (t.varCount || t.substCount || basename(String(t.canon || '')) !== 'env') continue;
+    let res;
+    for (let k = i + 1; k < argv.length; k++) {
+      const s = String(argv[k].canon || '');
+      if (s === '-C' || s === '--chdir') { res = argv[k + 1] || null; k++; continue; }
+      if (/^--chdir=/.test(s) || /^-C./.test(s)) {
+        if (argv[k].varCount || argv[k].substCount) { res = null; continue; }
+        res = { canon: s.replace(/^--chdir=|^-C/, ''), raw: s.replace(/^--chdir=|^-C/, ''), varCount: 0, substCount: 0 };
+        continue;
+      }
+      if (/^-[A-Za-z]*[uS]$/.test(s) || s === '--unset') { k++; continue; }
+      if (/^-/.test(s) || /^[A-Za-z_][A-Za-z0-9_]*=/.test(String(argv[k].raw || ''))) continue;
+      break;
+    }
+    if (res !== undefined) return res;
+  }
+  return undefined;
+}
+function cfgEnvAbs(argv, abs) {
+  const d = cfgEnvChdir(argv);
+  if (d === undefined) return abs;
+  if (!d || d.varCount || d.substCount) return null;
+  const tc = String(d.canon || '');
+  if (!tc || /[*?[\]{}~$`]/.test(tc)) return null;
+  const path = require('path').posix;
+  if (tc[0] === '/') return cfgWithPhys([path.resolve(tc)]);
+  if (!Array.isArray(abs)) return null;
+  return cfgWithPhys(abs.map(x => path.resolve(x, tc)));
 }
 // WI-R1 (v12.78.1): true when an awk, sed, git or find call uses a mode that
 // writes a file or runs a command, and the target can be a config target. For
@@ -3864,7 +4233,7 @@ function cfgFindReach(cp, ctx, cwd) {
 // command text, or for a cwd that can be in .claude. An awk program with an
 // octal or hex escape or a %c format also counts, because the program can
 // build the path from it. A program file is an unknown program.
-function cfgModeWrite(c0, cp, ctx, cwd, mentions, looseHit) {
+function cfgModeWrite(c0, cp, ctx, cwd, mentions, looseHit, absCwd) {
   if (CFG_AWK_CMDS.has(c0) || CFG_SED_CMDS.has(c0)) {
     const awk = CFG_AWK_CMDS.has(c0);
     const prog = awk ? cfgAwkProgram(cp.slice(1)) : cfgSedProgram(cp.slice(1));
@@ -3873,7 +4242,9 @@ function cfgModeWrite(c0, cp, ctx, cwd, mentions, looseHit) {
     return awk && prog.scripts.some(s => /\\[0-7xX]|%c/.test(s));
   }
   if (c0 === 'git') return cfgGitOptWrite(cp, ctx, cwd);
-  if (c0 === 'find') return cfgFindReach(cp, ctx, cwd);
+  // WI-R2 (v12.78.2): gfind, busybox find, toybox find and xargs find too.
+  const fc = cfgFindCall(c0, cp);
+  if (fc) return cfgFindReach(fc.cp, ctx, cwd, absCwd, fc.anyStart);
   return false;
 }
 // WI-01 r1: the outer call owns the step budget. The nested calls for a
@@ -3896,6 +4267,20 @@ function guardConfigWriteScan(segments, raw, depth) {
   try { ctx = cfgVarCtx(segments, raw); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; ctx = null; }
   let cwd = [[]];
   const stack = [];
+  // WI-R2 (v12.78.2): the exact cwd list. A nested scan starts from the cwd
+  // list of the outer segment (cfgAbsSeed).
+  let absCwd = depth > 0 && cfgAbsSeed ? cfgAbsSeed.v : cfgAbsInit();
+  const absStack = [];
+  // WI-R2 r1 (D4): the HOME, cdable_vars and CDPATH flags of the text.
+  const cdFlags = cfgCdFlags(raw, depth > 0 && cfgAbsSeed ? cfgAbsSeed.flags : null);
+  // WI-R2 r2 (E2): a function or an alias can hide a cd, so the cwd is unknown.
+  if (cdFlags.fn) absCwd = null;
+  let prevOp = null;
+  const innerMsg = text => {
+    const sv = cfgAbsSeed;
+    cfgAbsSeed = { v: absCwd, flags: cdFlags };
+    try { return cfgInnerMessage(text, depth); } finally { cfgAbsSeed = sv; }
+  };
   // WI-R1 (v12.78.1): the loose mention test runs at most one time for each scan.
   let loose = null;
   const looseHit = () => (loose === null ? (loose = cfgLooseMention(raw)) : loose);
@@ -3905,12 +4290,12 @@ function guardConfigWriteScan(segments, raw, depth) {
       if (tokenMentionsCfg(r.target, ctx, cwd, true)) return GUARD_CFG_MSG;
     }
     for (const t of seg.argv) {
-      for (const inner of t.substInners || []) { const im = cfgInnerMessage(inner, depth); if (im) return im; }
+      for (const inner of t.substInners || []) { const im = innerMsg(inner); if (im) return im; }
     }
     for (const r of seg.redirects || []) {
-      for (const inner of (r.target && r.target.substInners) || []) { const im = cfgInnerMessage(inner, depth); if (im) return im; }
+      for (const inner of (r.target && r.target.substInners) || []) { const im = innerMsg(inner); if (im) return im; }
     }
-    for (const p of cfgShellPayloads(seg.argv)) { const im = cfgInnerMessage(p, depth); if (im) return im; }
+    for (const p of cfgShellPayloads(seg.argv)) { const im = innerMsg(p); if (im) return im; }
     const cp = commandPosition(seg.argv);
     const cmdTok = cp.length ? cp[0] : null;
     const mentions = seg.argv.some(t => tokenMentionsCfg(t, ctx, cwd, !(t === cmdTok && !String(t.raw || '').includes('/'))));
@@ -3918,12 +4303,20 @@ function guardConfigWriteScan(segments, raw, depth) {
     // with no path word (`tar xf /tmp/p.tar`) can write .claude/hooks.
     if (cwd === CFG_CWD_SOFT && cmdTok && CFG_CWD_IMPLICIT_WRITERS.has(basename(cmdTok.canon))) return GUARD_CFG_MSG;
     const segCwd = cwd;
+    const segAbs = absCwd;
     if (ctx) { try { cwd = cfgNextCwd(cp, ctx, cwd, stack); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; cwd = null; } }
+    // WI-R2: the exact cwd list moves with the same cd, pushd or popd.
+    if (absCwd !== undefined) {
+      try { absCwd = cfgNextAbsCwd(cp, cdFlags, absCwd, absStack, seg.op, prevOp); } catch (e) { if (e === CFG_BUDGET_SPENT) throw e; absCwd = null; }
+      // WI-R2 r2 (E2): a later cd does not make the cwd known again.
+      if (cdFlags.fn) absCwd = null;
+    }
+    prevOp = seg.op || null;
     // WI-R1 (v12.78.1): a write mode of awk, sed, git or find can reach the
     // config with no config word, so this check runs before the mention gate.
     // It uses the cwd of this segment, before a cd in the segment.
     if (cp.length && !cp[0].varCount && !cp[0].substCount &&
-      cfgModeWrite(basename(cp[0].canon), cp, ctx, segCwd, mentions, looseHit)) return GUARD_CFG_MSG;
+      cfgModeWrite(basename(cp[0].canon), cp, ctx, segCwd, mentions, looseHit, cfgEnvAbs(seg.argv, segAbs))) return GUARD_CFG_MSG;
     if (!mentions) continue;
     if (!cp.length || cp[0].varCount || cp[0].substCount) return GUARD_CFG_MSG;
     const c0 = basename(cp[0].canon);
@@ -3968,7 +4361,14 @@ function loaderEnvMessage(raw) {
 // FU-12 (v12.77.0): the reason an ask must stay an ask under
 // CAGENTS_BASH_GUARD=off, or null. The validator calls it only for a command
 // that already asks, so a match in data only keeps an ask. Never throws.
-function nonWaivableAskReason(command) {
+// WI-R2 (v12.78.2): opts.cwd is the payload cwd of the command.
+function nonWaivableAskReason(command, opts) {
+  const prevCwd = cfgSetPayloadCwd(opts);
+  try {
+    return nonWaivableAskReasonCore(command);
+  } finally { cfgPayloadCwd = prevCwd; }
+}
+function nonWaivableAskReasonCore(command) {
   try {
     const raw = String(command || '');
     const lm = loaderEnvMessage(raw);
@@ -4555,10 +4955,13 @@ function evaluateInternal(command, depth) {
  * evaluate(command) — public entry. NEVER throws.
  * @returns {null | {deny:true, reason:string} | {hookSpecificOutput:{...}}}
  */
-function evaluate(command) {
+function evaluate(command, opts) {
   let res;
+  // WI-R2 (v12.78.2): opts.cwd is the payload cwd of the command.
+  const prevCwd = cfgSetPayloadCwd(opts);
   try { res = evaluateInternal(command, 0); }
   catch (e) { return { deny: true, reason: 'evaluator failure (fail-closed): ' + (e && e.message || 'unknown') }; }
+  finally { cfgPayloadCwd = prevCwd; }
 
   if (!res) return null;
   if (res.kind === 'deny') {

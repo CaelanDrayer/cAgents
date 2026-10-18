@@ -1,10 +1,30 @@
 # cAgents Release Notes
 
-**Current Version**: 12.78.1
+**Current Version**: 12.78.2
 **Release Date**: October 17, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.78.2 - October 17, 2026 (guard-config reach of find)
+
+This patch release closes `find` reach gaps in the guard-config tamper check.
+The guard now keeps a list of the dirs that the cwd can be, through `cd`,
+`pushd` and `popd` chains. A relative `find` start resolves against that
+list, as a logical path and as a real path. A start that is the project, is
+in it, or is a parent of it reaches `.claude`. Thus
+`cd .. && find cAgents -exec cp /tmp/x {} \;` now asks in every mode. `gfind`,
+`busybox find`, `toybox find` and `xargs find` follow the `find` rule. A
+`find` word after a wrapper such as `taskset` or `flock` starts a `find`
+call too. An `-exec` block with a computed word makes the rest of the
+expression loose. A function, an alias or a computed binder name makes the
+cwd unknown. `env -C DIR` resolves against the cwd list. A reader matches
+only as a bare word, and `rg --pre` is a writer. The `-fprint*` and `-fls`
+actions test their FILE, so `find . -fprint /tmp/list` allows. `node --check`
+in an `-exec` is read-only. The anchor is the payload cwd, then
+`CLAUDE_PROJECT_DIR`, then the hook process cwd. The tamper suite holds 623
+tests. R-77.4 now scopes its "asks in every mode" claim. It names the open
+gaps OG-1 to OG-9 and G4, and it lists the conservative over-asks.
 
 ## V12.78.1 - October 17, 2026 (guard-config write modes of awk, sed, git and find)
 
@@ -19,7 +39,9 @@ and `find` write actions with a start that can reach `.claude`. A reader
 `-exec` and a `$(mktemp ...)` start stay exempt. The git write subcommands now
 include `clone`, `init`, `worktree`, `submodule`, `bundle`, `archive`,
 `checkout-index`, `read-tree` and `sparse-checkout`. The threat model entry
-R-77.4 now agrees with the code and names the open gaps OG-1 to OG-4.
+R-77.4 names the open gaps OG-1 to OG-4. Correction (12.78.2): that list was
+not complete. A `cd` to a parent dir with a relative `find` start, and the
+`gfind` and `busybox find` wrappers, had no ask in 12.78.1.
 
 ## V12.78.0 - October 17, 2026 (bash guard quoting bypass and quiet test output)
 
@@ -2695,5 +2717,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.78.1
+**Current Version**: 12.78.2
 **Release Date**: August 21, 2026
