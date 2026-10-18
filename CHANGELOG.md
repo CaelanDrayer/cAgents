@@ -10,6 +10,56 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.78.2] - 2026-10-17
+
+Guard-config reach of `find`. A `cd` to a parent dir, or a `find` wrapper,
+let a `find` write action reach `.claude` with no ask. This release closes
+those gaps (WI-R2).
+
+### Security
+- `cfgFindReach` keeps a list of the dirs that the cwd can be. The list
+  follows `cd`, `pushd` and `popd` chains. A cd after `&&` replaces the list.
+  After `||`, `|`, `&`, `;` or a subshell, the guard joins the dirs.
+- A relative `find` start resolves against that list, as a logical path and
+  as a real path (`fs.realpathSync.native`). A start that is the project, is
+  in it, or is a parent of it reaches `.claude`. Thus
+  `cd .. && find cAgents -exec cp /tmp/x {} \;` now asks in every mode.
+- Text that sets `HOME` or names `CDPATH` or `cdable_vars` makes the cwd
+  unknown. So does an unknown `cd`, `pushd` or `popd` option, or a `$`
+  target.
+- `gfind`, `busybox find`, `toybox find` and `xargs find` follow the `find`
+  rule. A `find` word after any other command word starts a `find` call,
+  except after a read or data command word (E4). This catches `taskset`,
+  `flock`, `chrt` and `ionice`.
+- An `-exec` block with a computed word, a brace form other than `{}`, an
+  unquoted glob or no literal end word makes the rest of the expression
+  loose (E1). Each later action word, or exec that is not a reader, writes.
+- A function definition, `alias`, `unalias` or `expand_aliases` makes the
+  cwd unknown for the whole command (E2). So does a computed name after
+  `declare`, `export`, `read`, `printf -v` and the other binders.
+- `env -C DIR` and `env --chdir DIR` resolve DIR against the cwd list (E3).
+- A reader matches only as a bare word with no `/`. `rg --pre` and
+  `rg --pre-glob` are writers.
+
+### Fixed
+- `-fprint`, `-fprint0`, `-fprintf` and `-fls` test their FILE, not the
+  start. `find . -fprint /tmp/list` allows again.
+- A primary that takes an operand uses up its operand. `! -name -fprint` no
+  longer hides a later `-exec`.
+- `node --check {}` and `node -c {}` in an `-exec` are read-only.
+- The anchor is the payload cwd, then `CLAUDE_PROJECT_DIR`, then the hook
+  process cwd. The real path of each anchor is an anchor too.
+  `bash-validator.cjs` passes `input.cwd` to the evaluator.
+
+### Tests
+- `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` now holds 623 tests.
+
+### Docs
+- R-77.4 in `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` scopes "asks in every
+  mode" to the literal write forms of `awk`, `sed`, `git` and `find`. It names
+  the open gaps OG-1 to OG-9 and G4. OG-4 is closed. It adds a list of
+  conservative over-asks.
+
 ## [12.78.1] - 2026-10-17
 
 Guard-config write gaps. Some write modes of `awk`, `sed`, `git` and `find`
@@ -33,9 +83,12 @@ closes them.
 - `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` now holds 321 tests.
 
 ### Docs
-- R-77.4 in `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` now agrees with the
-  code. It lists the full read-only command set, the write-mode exceptions
-  and the forms that 12.78.1 closes. It names the open gaps OG-1 to OG-4.
+- R-77.4 in `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` lists the full
+  read-only command set, the write-mode exceptions and the forms that 12.78.1
+  closes. It names the open gaps OG-1 to OG-4.
+- Correction (12.78.2): the R-77.4 gap list was not complete. In 12.78.1 a
+  `cd` to a parent dir with a relative `find` start had no ask. The find
+  wrappers `gfind` and `busybox find` had none too. 12.78.2 closes both.
 - The 12.78.0 ITEM-6 line now says that quiet mode is on by default under
   Claude Code (`CLAUDECODE=1`).
 

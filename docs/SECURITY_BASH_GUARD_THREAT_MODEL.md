@@ -786,9 +786,12 @@ and is fixed in 12.77.0. The entries below are what stays open.
   and the bash guard does not see that. This repo sets
   `CAGENTS_BASH_GUARD=block` in the `env` block of `.claude/settings.json`,
   and the env var wins over the settings key. A plugin install has no such pin.
-- Compensating control: denies hold in every mode. A Bash write to the guard
-  config asks in every mode, with the open residuals below. A Write or Edit of
-  a settings file goes through the Claude Code permission rules of the session.
+- Compensating control: denies hold in every mode. A Write or Edit of a
+  settings file goes through the Claude Code permission rules of the session.
+- Scope of "asks in every mode": the claim covers a literal write form of
+  `awk`, `sed`, `git` or `find` to the guard config. It holds after a `cd`,
+  `pushd` or `popd` chain. It holds through a symlink that exists when the
+  hook runs. The OG-n items below are not in this scope.
 - Guard config match (12.78.0, WI-01): the guard finds the path that bash
   writes. It does not match the raw text. These rules apply:
   - It removes quotes, backslashes and `$'..'` escapes.
@@ -896,25 +899,69 @@ and is fixed in 12.77.0. The entries below are what stays open.
 - `git` with any subcommand: `--output P`, `--output=P` and
   `--output-directory[=]P` ask under the same test. For `format-patch` and
   `archive`, `-o P` and `-oP` ask too.
-- `find`: these actions write: `-delete`, `-fprint`, `-fprint0`, `-fprintf`
-  and `-fls`. An `-exec`, `-execdir`, `-ok` or `-okdir` action writes,
-  except when its command is a pure reader. A command from a variable or a
-  substitution writes. With a write action, `find` asks when a start can
-  hold `.claude`. These starts can hold it:
+- `find`: the rule also covers `gfind`, `busybox find`, `toybox find` and
+  `xargs find`.
+  - A `find` or `gfind` word after any other command word starts a `find`
+    call. This catches `taskset`, `flock`, `chrt`, `ionice` and
+    `busybox xargs`. The rule skips a command word in `CFG_READ_CMDS` or in
+    `CFG_FIND_DATA_CMDS`, such as `printf`, `man`, `which` or `locate`.
+  - A `-delete` action writes. An `-exec`, `-execdir`, `-ok` or `-okdir`
+    action writes, except when its command is a pure reader. A command from
+    a variable or a substitution writes.
+  - A primary that takes an operand, such as `-name PATTERN`, uses up its
+    operand. So `! -name -fprint` is a name test.
+  - Loose rule (E1): some `-exec` blocks make the rest of the expression
+    loose. Then each later action word, and each later exec that is not a
+    reader, writes. One such block has a word with `$`, a backtick, `$(` or
+    `${`. Another has a brace form other than `{}`, or an unquoted glob.
+    A block with no literal end word is loose too.
+
+  With a write action, `find` asks when a start can hold `.claude`. These
+  starts can hold it:
   - No start, `.`, a start that begins with `..`, `/` or `~`.
   - A glob, a variable or a substitution.
-  - An absolute dir that is the same as, or a parent of, the process cwd,
-    `CLAUDE_PROJECT_DIR` or `HOME`. A Windows drive path such as `C:\` maps
-    too.
+  - An anchor dir, or a parent of an anchor dir. The anchors are the payload
+    cwd, `CLAUDE_PROJECT_DIR`, `HOME` and the home dir of the OS user. The
+    real path of each anchor is an anchor too. A Windows drive path such as
+    `C:\` maps too.
   - A start whose parts can name `.claude`, `.claude/hooks` or a config file.
+- `find` cwd (12.78.2, WI-R2): the guard keeps a list of the dirs that the
+  cwd can be. The list starts at the payload cwd. If there is no payload
+  cwd, it starts at `CLAUDE_PROJECT_DIR`, and then at the hook process cwd.
+  - A `cd`, `pushd` or `popd` moves the list. A new dir replaces the list
+    when the `cd` ends with `&&` and no `||` or `|` comes before it. After
+    any other end, the guard adds the new dir to the list.
+  - A relative start resolves against each dir in the list. The guard tests
+    the logical path and the real path (`fs.realpathSync.native`).
+  - `env -C DIR`, `env -CDIR`, `env --chdir=DIR` and `env --chdir DIR`
+    resolve DIR against the list (E3). A DIR that is not literal gives an
+    unknown cwd.
 
-  An unknown cwd also asks. Two exemptions apply:
+  These forms make the cwd unknown:
+  - Text that sets `HOME` or names `CDPATH` or `cdable_vars`.
+  - A computed name after `declare`, `typeset`, `export`, `local`,
+    `readonly`, `read`, `mapfile`, `readarray` or `printf -v`. The name can
+    be `HOME` or `CDPATH`.
+  - A function definition, `alias`, `unalias` or `expand_aliases` (E2). The
+    cwd is then unknown for the whole command.
+  - A `cd`, `pushd` or `popd` option that the guard does not know.
+  - A target that is a variable or a substitution.
+- `find` file actions (12.78.2): `-fprint`, `-fprint0`, `-fprintf` and
+  `-fls` write only their FILE. The guard tests the FILE, not the start. It
+  asks when the FILE can be in a `.claude` dir, or when the FILE is unknown.
+  Thus `find . -fprint /tmp/list` allows.
+
+  An unknown cwd also asks. Three exemptions apply:
   - Reader exec: an exec command from `CFG_FIND_EXEC_READERS` only reads.
     The set is `grep`, `egrep`, `fgrep`, `rg`, `cat`, `head`, `tail`, `wc`,
     `ls`, `stat`, `file` and `du`. It also holds `md5sum`, `sha1sum`,
     `sha256sum`, `cmp`, `diff`, `test`, `[`, `echo`, `printf`, `basename`,
     `dirname`, `realpath` and `readlink`. An example that allows is
     `find . -name '*.md' -exec grep -l x {} +`.
+  - Syntax check: `node --check {}` and `node -c {}` in an exec only read.
+
+  A reader matches only as a bare word with no `/`. Thus `./node` and
+  `/tmp/cat` are writers. `rg` with `--pre` or `--pre-glob` is a writer.
   - Mktemp start: a start that is one variable set only by `$(mktemp ...)`,
     with no `..` part, does not ask. An example that allows is
     `T=$(mktemp -d); find "$T" -delete`.
@@ -936,7 +983,7 @@ and is fixed in 12.77.0. The entries below are what stays open.
   The guard does not match only the destination, because that is not safe.
   `mv` and `rsync --remove-source-files` change the source, and `-t` moves the
   destination.
-- Tests: `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` holds 321 tests.
+- Tests: `tests/hooks/bash-guard-cfg-tamper-quoting.test.js` holds 623 tests.
 - Launcher fail-closed rule (12.78.0, WI-02): `.claude/hooks/run-hook.cjs`
   loads each hook. Three hooks are guard hooks: `bash-validator`,
   `write-edit-dispatch` and `agent-dispatch`. If a guard hook file is missing,
@@ -962,27 +1009,67 @@ and is fixed in 12.77.0. The entries below are what stays open.
     is `cd .claude && node -e "...writeFileSync('settings.json')"`. In the
     default mode this command asks. Under `CAGENTS_BASH_GUARD=off` it allows,
     because this ask is waivable.
-  - The guard does not resolve symlinks.
+  - Only the `find` rule resolves symlinks. The other rules do not.
   - OG-1 data-driven targets (12.78.1): the target comes from file contents
-    or from the parent env. Two examples are `awk '{print > $1}' list.txt`
-    and `awk 'getline p < "f"; print > p'`. A program file whose path is not
-    in the command is the same. So is an inherited env var that `ENVIRON`
-    reads. One command
-    string does not show these targets. This is the same class as `xargs rm`
-    (G4).
+    or from the parent env. Examples are `awk '{print > $1}' list.txt` and
+    `awk 'getline p < "f"; print > p'`. A program file whose path is not in
+    the command is the same. So is an inherited env var that `ENVIRON`
+    reads. One command string does not show these targets.
+  - OG-1 also covers a command that comes from data. Examples are `sed e x`,
+    `sed 's/a/b/e' x` and `awk '{system($0)}' x`. These allow in every mode.
   - OG-2 fragment-built awk path (12.78.1): an example is
     `a=".cl"; b="aude"; print > a b "/settings.json"`. The program has no
     loose `.claude` text, no escape and no `%c`, so it does not ask. The
     program builds the path at run time, as `python` and `perl` can.
   - OG-3 find from a non-anchored absolute root (12.78.1): `find` from an
     absolute dir that holds a different `.claude` dir does not ask. An
-    example is another project under a dir that is not a parent of the cwd,
-    the project dir or `HOME`. The rule is anchored to those three dirs on
-    purpose, so that roots such as `/tmp` do not ask.
-  - OG-4 conservative false ask after `cd /tmp` (12.78.1): after `cd /tmp`,
-    the guard sees the same trimmed cwd base as the project root. Thus
-    `cd /tmp && find . -delete` gets a config ask. This is a false ask, not
-    a bypass.
+    example is another project under a dir that is not a parent of an
+    anchor. The rule is anchored on purpose, so that `/tmp` does not ask.
+  - OG-4 cd collapse (closed in 12.78.2): in 12.78.1, a `cd ..` or an
+    absolute `cd` reset the cwd to the project base. Thus
+    `cd .. && find cAgents -exec cp /tmp/x {} \;` allowed. The cwd list
+    closes this bypass. The false ask after `cd /tmp` stays. See the list of
+    over-asks below.
+  - OG-5 new or missing symlink (12.78.2): the guard reads a symlink only if
+    it exists when the hook runs. A link that the same command makes gets
+    only the logical path. Thus
+    `ln -s <project> /tmp/l && find /tmp/l/ -exec cp /tmp/x {} \;`
+    gets no config ask in any mode.
+  - OG-6 anchor fallback (12.78.2): with no payload cwd and no
+    `CLAUDE_PROJECT_DIR`, the guard uses the hook process cwd as the
+    anchor. If the hook runs in a different dir, the anchor is wrong.
+  - OG-7 hard link (12.78.2): a hard link can be a `find` start or an
+    `-fprint` FILE. The real path of a hard link is the link path, so the
+    guard cannot see where it goes.
+  - OG-8 computed action word (12.78.2): an action word from a variable,
+    outside an `-exec` block, is not read. An example is
+    `a=-delete; find . $a`. It allows in every mode.
+  - OG-9 data words (by design): a `find` word after a command word in
+    `CFG_READ_CMDS` or `CFG_FIND_DATA_CMDS` is data. The guard does not
+    check it as a `find` call.
+  - G4 stdin-fed paths: a path from stdin is not in the command text.
+    Examples are `xargs rm` and `find -print0 | xargs -0 rm`. See §7.2.
+    Since 12.78.2, `parallel find {} -delete ::: .` gets a config ask.
+  - `sudo find` gets no config ask. The Tier-1 `sudo` rule denies it.
+- Conservative over-asks (by design): these forms ask, but they cannot
+  write the config.
+  - A `cd` in a subshell. The guard adds its dir to the list.
+  - `xargs find` with any write action.
+  - A `-fprint` FILE in any `.claude` dir.
+  - A bare `cd`, `~` or a relative `cd` when the text names `HOME`,
+    `CDPATH` or `cdable_vars`.
+  - A `find /tmp ...` write when the payload cwd is `/tmp`. Then `/tmp` is
+    an anchor.
+  - A writer `-exec` with no `;` or `+` at the end.
+  - A `find` write after an absolute `cd`, such as
+    `cd /tmp && find . -delete`. After the trim of the cwd, the older test
+    sees the same base as the project root.
+  - A function or an alias in the command. Then the cwd is unknown.
+  - A computed name after a binder such as `declare` or `read`.
+  - A wrapper before `find` that is not a reader, such as `ssh` or
+    `docker exec`. Thus `ssh h find . -delete` asks, but `find` runs on the
+    remote host.
+  - An `-exec` block with a computed word, and an action after it.
 
 **R-77.5 (2026-10-16, 12.77.0): pre-existing bypasses closed in 12.77.0.**
 

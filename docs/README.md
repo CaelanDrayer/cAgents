@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 12.78.1
+**Version**: 12.78.2
 **Last Updated**: 2026-07-16
 
 This index groups every file under `docs/` into three explicit buckets so the

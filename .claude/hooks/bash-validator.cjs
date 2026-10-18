@@ -457,7 +457,8 @@ async function validate(input) {
   // gates in write-edit-dispatch.cjs makeDispatchHandler.
   let evalVerdict = null;
   try {
-    evalVerdict = evaluate(rawCommand);
+    // WI-R2 (v12.78.2): the payload cwd is the start dir for the find reach test.
+    evalVerdict = evaluate(rawCommand, { cwd: input && input.cwd });
   } catch (e) {
     console.error('[BashValidator] evaluator threw — fail-closed deny:', e && e.message);
     return { deny: true, reason: 'bash-guard-evaluator error (fail-closed)' };
@@ -684,7 +685,7 @@ async function decide(input) {
     // FU-12 (v12.77.0): a loader or shell-init setting (LD_PRELOAD, BASH_ENV,
     // NODE_OPTIONS ...) and a write to the guard's own config stay asks.
     let keep = null;
-    try { keep = typeof nonWaivableAskReason === 'function' ? nonWaivableAskReason((input.tool_input || {}).command) : null; }
+    try { keep = typeof nonWaivableAskReason === 'function' ? nonWaivableAskReason((input.tool_input || {}).command, { cwd: input.cwd }) : null; }
     catch (e) { keep = 'guard could not classify the ask (fail-closed)'; }
     if (!keep) {
       console.error(`[BashValidator] CAGENTS_BASH_GUARD=off: allowed a command that would ask: ${reason}`);
