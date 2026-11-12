@@ -463,7 +463,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.81.0** — Current release. A narrow Bash guard returns under the name `bash-validator`. It has two rules only: a critical or high secret literal in the command text, and a write to a protected path. It fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. The old `CAGENTS_BASH_GUARD` switches stay inert.
+- **V12.81.1** — Current release. This patch release corrects the hook counts in `.claude/rules/core/hooks.md` and removes the session URL from the corpus fixture of the guard. A new test keeps the fixture scrubbed. The guard rules do not change.
+- **V12.81.0** — A narrow Bash guard returns under the name `bash-validator`. It has two rules only: a critical or high secret literal in the command text, and a write to a protected path. It fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. The old `CAGENTS_BASH_GUARD` switches stay inert.
 - **V12.80.0** — This release removed the Bash guard hook (`bash-validator`) and its evaluator library, and made the `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` switches inert. A stale registration exited 0 through the launcher. A regression test pinned the removal.
 - **V12.79.8** — This release fixes the findings of the pre-merge review. The DB URL mask stops at whitespace, the history filter of a skills test is narrower, and a new test keeps hidden code points out of the example store.
 - **V12.79.7** — CLAUDE.md is slimmed from 28,528 to about 24,100 bytes. Every load-bearing rule stays, and no rule moved to another file.

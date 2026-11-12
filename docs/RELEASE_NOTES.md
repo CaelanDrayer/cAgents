@@ -1,10 +1,23 @@
 # cAgents Release Notes
 
-**Current Version**: 12.81.0
+**Current Version**: 12.81.1
 **Release Date**: November 12, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.81.1 - November 12, 2026 (narrow guard revision)
+
+This patch release fixes two findings of the validator on 12.81.0. The
+guard rules do not change. Line 16 of `.claude/rules/core/hooks.md`
+now gives the disk counts 32, 25, and 17. Before, it gave 31, 24,
+and 17.
+
+The corpus fixture `tests/fixtures/bash-guard/fp-corpus.json` held the
+session URL in 2 entries and the bare URL prefix in 1 entry. All 3
+entries now hold a placeholder URL. The corpus still has 496 entries. A
+new test in `tests/hooks/bash-validator-fp-corpus.test.js` keeps the
+fixture free of session URLs and long session ids.
 
 ## V12.81.0 - November 12, 2026 (narrow Bash guard)
 
@@ -2865,5 +2878,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.81.0
+**Current Version**: 12.81.1
 **Release Date**: August 21, 2026

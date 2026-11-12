@@ -10,6 +10,31 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.81.1] - 2026-11-12
+
+Narrow guard revision (session `act_streamline-cleanup-plugin_261111_001`,
+follow-up 2, revision 1). This patch release fixes two findings of the
+validator on 12.81.0. The guard rules do not change.
+
+### Fixed
+- `.claude/rules/core/hooks.md` line 16 said that the lint script
+  derives the counts 31, 24, and 17 from disk. The line now says 32,
+  25, and 17. These are the counts that `node scripts/lint-hooks.cjs`
+  prints.
+- `tests/fixtures/bash-guard/fp-corpus.json` held the session URL in
+  2 entries and the bare URL prefix in 1 entry. All 3 entries now hold
+  the placeholder `https://example.invalid/code/SESSION_PLACEHOLDER`.
+  The other 493 entries do not change. The corpus still has 496
+  entries.
+- `tests/hooks/bash-validator-fp-corpus.test.js` has a new test. The
+  test makes sure that the fixture holds no session URL and no session
+  id of 20 or more characters. On a failure it prints only the entry
+  ids.
+
+### Notes
+- Version decision: a patch bump. The release fixes a document and a
+  test fixture, and adds one test. No hook, rule, or switch changes.
+
 ## [12.81.0] - 2026-11-12
 
 Narrow Bash guard (session `act_streamline-cleanup-plugin_261111_001`,
