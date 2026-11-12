@@ -1,10 +1,10 @@
 # cAgents Documentation
 
-**Version**: 12.79.3
+**Version**: 12.79.4
 **Last Updated**: 2026-07-16
 
 This index groups every file under `docs/` into three explicit buckets so the
-~66 documents are navigable at a glance:
+documents are navigable at a glance:
 
 - **[Canonical / Living](#canonical--living)** — the current, authoritative docs you should read and keep current.
 - **[Historical / Superseded](#historical--superseded)** — tracking, implementation-summary, and migration artifacts kept for the record.
@@ -30,9 +30,7 @@ The current authoritative documentation. Read these first; keep them accurate.
 - `GETTING_STARTED.md` - Quick start guide
 - `ARCHITECTURE.md` - System architecture overview
 - `AUTOMATIC_WORKFLOW_PROGRESSION.md` - Phase transition policy (auto-proceed rules)
-- `LIFECYCLE.md` - Pipeline lifecycle and state transitions
 - `WORKFLOW_AGENT_INTERACTIONS.md` - Agent interaction patterns
-- `CONTEXT_MANAGEMENT.md` - Context handling and token management
 - `CLAUDE_CODE_HOOKS_SPECIFICATION.md` - Claude Code hooks API reference
 - `12-FACTOR-COMPLIANCE.md` - Twelve-factor design compliance notes
 - `MULTI_TOOL_DEPLOYMENT.md` - Deploying across multiple tool surfaces
@@ -68,16 +66,11 @@ These describe past work or planned/future work; they are not the live spec.
 - `RELEASE_NOTES.md` - Version history (per-release notes)
 - `OPTIMIZATION_PROGRESS.md` - Performance-optimization tracking
 - `REMAINING_OPTIMIZATIONS.md` - Planned/queued optimizations
-- `TASK_COMPLETION_ENFORCEMENT_SUMMARY.md` - Task completion protocol summary
-- `TASK_CONSOLIDATION.md` - Task consolidation strategies (40-88% reduction)
-- `WORKFLOW_EVALUATION_FIXES.md` - Historical workflow issue resolutions
 - `FUTURE_VALIDATION_FRAMEWORK.md` - Deferred validation-framework roadmap (the 24 aspirational checks)
 - `DESIGN_NOTES.md` - Aspirational/design-note patterns (not runtime-enforced)
 - `VERSION_REGISTRY_HISTORY.md` - Historical version-registry locations (V10.x)
 - `MIGRATION_GUIDE.md` - General migration guide
 - `MIGRATION-V11.md` - Migration guide for users of removed skills (`/review`, `/optimize`, `/context`, `/debug` → `/act`); v12.1.2 further folded `/improve` into `/act` via keyword router (see CHANGELOG)
-- `PLUGIN_DATA_MIGRATION.md` - Plugin data-directory migration notes
-- `migration/v11.1.0-followups.md` - v11.1.0 archetype-tree follow-up items
 - `migration/v9-to-v10.md` - V9 → V10 migration record
 
 ---
@@ -111,7 +104,7 @@ canonical; consult it first**:
 
 ## Subdirectories
 
-- `agents/` - Agent authoring docs (`agents/index.md`, `agents/creating-agents.md`, `agents/agent-template.md`)
+- `agents/` - Agent catalog index (`agents/index.md`). For agent authoring, see `templates/` and `.claude/rules/core/skill-format.md`.
 - `architecture/` - Architecture diagrams and details
 - `commands/` - Per-command deep dives (4 live: `act`, `team`, `designer`, `helper`) + 3 redirect tombstones (`org`, `optimize`, `review`)
 - `config/` - Configuration reference
@@ -119,10 +112,6 @@ canonical; consult it first**:
 - `migration/` - Migration records (see Historical / Superseded)
 - `templates/` - Document templates (10 files)
 - `testing/` - Test documentation
-
-> **Known sub-sprawl (deferred):** `templates/` (10 files) overlaps with
-> `agents/agent-template.md`; this duplication is a known follow-up and is **not**
-> consolidated in this pass.
 
 ---
 

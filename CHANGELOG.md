@@ -10,6 +10,35 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.4] - 2026-11-11
+
+Cleanup release. It removes unreachable resources, Python leftovers, and
+stale documents (WI-38, WI-39, WI-40, landed by WI-41). The commit holds
+81 file deletions, so one revert restores all of the files.
+
+### Removed
+- 62 agent resource files under `agents/*/resources/` (WI-38). Each file
+  was unreachable or was a duplicate of a kept file. The per-file proof is
+  in the session cleanup table `dedupe.tsv`.
+- 9 Python leftovers under `scripts/` (WI-39). No live consumer used them,
+  and `scripts/ci/validate-agents.sh` covers their checks.
+- The `validate:configs` npm script (WI-39). The `lint` script now runs
+  `validate:agents`.
+- 10 stale documents under `docs/` (WI-40), including `docs/LIFECYCLE.md`.
+
+### Changed
+- 20 stale documents were resolved (WI-40). 10 were deleted, and the
+  others were refreshed against their source of truth or kept. Links that
+  pointed to the deleted documents were fixed, including two links in
+  `CLAUDE.md`.
+- 9 links in three `partnership-*.md` resources of `marketing-strategist`
+  now point to the kept files (WI-38).
+- `scripts/ste100/in-scope.txt` was regenerated for the new file set.
+- In the `paths` frontmatter of 5 rule files, the dead `agents/reviewer/**`
+  glob was replaced with `agents/reviewer.md` or removed. In
+  `.claude/rules/core/skill-format.md`, the dead `tests/agent_linting/**`
+  glob was removed.
+
 ## [12.79.3] - 2026-11-11
 
 Three skill defect fixes from the 2026-10-15 skill review (WI-37).

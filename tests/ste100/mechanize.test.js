@@ -844,6 +844,7 @@ describe('WI-041b regressions', () => {
     expect(lead.split(':').length - 1).toBe(1);
     expect(lead).toContain('feature?") — introduces');
     // agents/team-lead/resources/best-practices.md:76, the same shape.
+    // That source file was removed in v12.79.x. The fixture line stays.
     const tl = run('a.md', '- **With domain controllers (as teammates)**: Each teammate IS a controller agent (tech-lead, narrative-director, etc.) spawned by the lead — the lead coordinates controllers, and controllers coordinate execution agents\n');
     expect(tl.split(':').length - 1).toBe(1);
     // POSITIVE CONTROL: the same introducer shape on a colon-free line still
@@ -884,7 +885,7 @@ describe('WI-041b regressions', () => {
     const lines = [
       // agents/operations-manager/resources/supply-chain-best-practices.md:109
       '- **Forecast Accuracy (at Planning Horizon)**: MAPE of demand forecasts vs. actuals at the lead time horizon — directly determines required safety stock levels.\n',
-      // agents/team-lead/resources/best-practices.md:47
+      // agents/team-lead/resources/best-practices.md:47 (source file removed in v12.79.x)
       '- **Parallelism Score**: The fraction of work items that executed in parallel vs. sequentially — measures how well the wave structure utilized available concurrency\n'
     ];
     for (const src of lines) {

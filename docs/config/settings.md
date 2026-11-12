@@ -6,26 +6,50 @@
 
 ## Purpose
 
-Registers hooks, sets permissions, configures environment variables, and defines agent defaults.
+The file registers the hooks, sets the permissions, sets the environment variables, and sets the display and worktree options.
 
 ## Key Sections
 
 ### hooks
-Registers all 15 CJS hooks across 13 event types. Each hook is invoked via:
+
+The file registers every cAgents hook. Each hook runs through the `run-hook.cjs` launcher:
+
 ```
 bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'
 ```
 
+For the list of hooks and their events, see `docs/hooks/overview.md` and `.claude/rules/core/hooks.md`.
+
 ### env
-Environment variables set for all hook and agent executions:
-- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` - Enable Agent Teams
-- Other project-specific variables
+
+The environment variables for all hook and agent executions:
+
+| Variable | Purpose |
+|----------|---------|
+| `CAGENTS_VERSION` | The plugin version. `scripts/sync-versions.sh` sets it. |
+| `CAGENTS_DELEGATION_ENFORCEMENT` | The mode of the delegation guard. |
+| `CAGENTS_BASH_GUARD` | The mode of the Bash guard. |
+| `CLAUDE_CODE_ENABLE_TODO_TOOLS` | Turns on the task tools on models that do not offer them by default. |
+
+The file does not set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. The default `/team` path uses concurrent `Agent` waves and does not need that flag.
+
+For the opt-out values of the guards, see `docs/HOOK_OPT_OUTS.md`.
 
 ### permissions
-Default permission settings for tools.
 
-### agent
-Default settings applied to subagents spawned by the plugin.
+The `allow` list and the `deny` list for tools. The `deny` list blocks some destructive commands, `sudo`, and edits to system and SSH paths.
+
+### teammateMode
+
+Controls how team teammates are displayed. cAgents sets `in-process`, the Claude Code default. Other values are `auto` and `tmux`.
+
+### worktree
+
+`worktree.sparsePaths` lists the paths that a worktree-isolated subagent checks out.
+
+### displayOrigin and trustProjectMdFiles
+
+`displayOrigin` sets the origin label `cAgents`. `trustProjectMdFiles` is `true`.
 
 ## Hook Registration Format
 
@@ -47,10 +71,3 @@ Default settings applied to subagents spawned by the plugin.
   }
 }
 ```
-
-## teammateMode
-
-Controls how team teammates are displayed:
-- `auto` (default): Automatic selection
-- `tmux`: Split terminal panes
-- `in-process`: Main terminal output

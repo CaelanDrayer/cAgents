@@ -6,7 +6,7 @@ paths:
   - ".claude/rules/playbooks/pat-evidence-first-execution.md"
   - "agents/validator/**"
   - "agents/planner/**"
-  - "agents/reviewer/**"
+  - "agents/reviewer.md"
   - "agents/wave-reviewer/**"
   - ".claude/skills/act/SKILL.md"
   - ".claude/hooks/verify-completion.cjs"

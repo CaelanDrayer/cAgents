@@ -63,7 +63,7 @@ Delegate questions to execution agents:
 |---------------|-------------|
 | Implementation details | backend-developer |
 | Architecture decisions | architect |
-| Security concerns | security-specialist |
+| Security concerns | security-engineer |
 | Quality requirements | qa-lead |
 
 ### Phase 3: Synthesis
@@ -99,14 +99,15 @@ This controller typically delegates to:
 - **backend-developer**: Implementation questions
 - **architect**: Design decisions
 - **qa-lead**: Testing strategy
-- **security-specialist**: Security review
-- **infrastructure-lead**: Deployment concerns
+- **security-engineer**: Security review
+- **devops-engineer**: Deployment concerns
 
 ## Outputs
 
 ### coordination_log.yaml
 
 ```yaml
+schema_version: "1"
 controller: cagents:controller-name
 objectives: [...]
 questions_asked:
@@ -131,7 +132,7 @@ status: completed
 **Questions**:
 1. "What is the current auth implementation?" -> backend-developer
 2. "What OAuth2 library should we use?" -> architect
-3. "What security considerations apply?" -> security-specialist
+3. "What security considerations apply?" -> security-engineer
 4. "What testing approach for OAuth2?" -> qa-lead
 
 **Synthesis**: "Add passport-oauth2 alongside existing passport-local for backward compatibility..."

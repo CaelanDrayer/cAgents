@@ -48,6 +48,6 @@ Use when building affiliate programs, recruiting partners, managing commission s
 
 ## Related modes
 
-- **Channel partner work** -> see @channel-partner.md (resellers/VARs/SIs, indirect sales)
-- **Influencer/creator work** -> see @influencer-marketing.md
-- **Strategic co-marketing partnerships** -> see SKILL.md body and @partner-templates.md
+- **Channel partner work** -> see @resources/partnership-channel-partner.md (resellers/VARs/SIs, indirect sales)
+- **Influencer/creator work** -> see @resources/partnership-influencer-marketing.md
+- **Strategic co-marketing partnerships** -> see SKILL.md body and @resources/partnership-partner-templates.md

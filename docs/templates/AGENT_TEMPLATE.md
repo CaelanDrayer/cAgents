@@ -100,19 +100,16 @@ metadata:
 ### Configuration
 
 **Config Files**:
-- `{domain}/config/planner_config.yaml` - Controller catalog entry
-- `{domain}/config/executor_config.yaml` - Execution monitoring
-- `{domain}/config/validator_config.yaml` - Quality gates
+- `cagents-memory/_system/config/routing.yaml` - Controller catalog entry under `domains.{domain}.planner.controller_catalog`
+- `agents/_overlay/{people|shared}/config/domain_overrides.yaml` - Controller catalog entry for the people and shared domains
+- `cagents-memory/_system/config/pipeline_config.yaml` - Revision cycles and reviewer rounds
 
 **Key Settings**:
 ```yaml
-# Example from planner_config.yaml
+# Example from routing.yaml, under domains.{domain}.planner
 controller_catalog:
-  tier_2:
-    - name: {agent-name}
-      domain: {domain}
-      coordination_style: question_based
-      typical_questions: [...]
+  tier_2: [{agent-name}]
+  tier_3: [{agent-name}, {supporting-agent}]
 ```
 
 ### Advanced Usage
@@ -215,10 +212,9 @@ Note: Pre-v11.1.0 templates included a top-level `domain:` field. That field was
 
 ### Configuration Files
 
-- `{domain}/config/planner_config.yaml`
-- `{domain}/config/executor_config.yaml`
-- `{domain}/config/validator_config.yaml`
-- `{domain}/config/self_correct_config.yaml`
+- `cagents-memory/_system/config/routing.yaml` (under `domains.{domain}`)
+- `agents/_overlay/{people|shared}/config/domain_overrides.yaml` (people and shared domains only)
+- `cagents-memory/_system/config/pipeline_config.yaml`
 
 ### Success Metrics
 

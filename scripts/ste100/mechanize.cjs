@@ -1223,6 +1223,7 @@ const MAX_SWEEPS = 8;
 //   determines -> finds   agents/operations-manager/resources/
 //                         supply-chain-best-practices.md:109
 //   utilized   -> used    agents/team-lead/resources/best-practices.md:47
+//                         (that source file was removed in v12.79.x)
 //
 // The first run left the dash, the NEXT run replaced it, and the corpus was not
 // idempotent. Repeating the sequence until the text stops moving settles that

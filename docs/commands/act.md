@@ -49,4 +49,4 @@ Written to `cagents-memory/sessions/act_{timestamp}/`:
 
 ## See Also
 - [Pipeline Architecture](../architecture/pipeline.md)
-- [Controller Architecture](../architecture/controllers.md)
+- [Controller Architecture](../../.claude/rules/core/controllers.md)

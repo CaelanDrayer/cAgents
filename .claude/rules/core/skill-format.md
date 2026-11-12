@@ -11,7 +11,6 @@ paths:
   - "scripts/ci/validate-agents.sh"
   - "tests/skills/skill-structure.test.js"
   - "tests/agents/**"
-  - "tests/agent_linting/**"
 ---
 
 # SKILL.md Agent and Skill Format Specification

@@ -5,7 +5,7 @@ paths:
   - ".claude/rules/quality/validation-framework.md"
   - ".claude/rules/core/controllers.md"
   - "agents/validator/**"
-  - "agents/reviewer/**"
+  - "agents/reviewer.md"
   - "agents/wave-reviewer/**"
   - "agents/planner/**"
   - ".claude/skills/act/**"

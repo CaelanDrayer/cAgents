@@ -36,7 +36,7 @@ paths:
   - "agents/game-designer/**"
   - "agents/ai-writing-editor/**"
   - "agents/worldbuilder/**"
-  - "agents/reviewer/**"
+  - "agents/reviewer.md"
   - "agents/wave-reviewer/**"
   - "agents/coord-log-writer.md"
   - "cagents-memory/sessions/**/workflow/work_items.yaml"

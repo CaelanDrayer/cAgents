@@ -1,10 +1,21 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.3
+**Current Version**: 12.79.4
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.4 - November 11, 2026 (cleanup)
+
+This patch release removes files that nothing reaches. It removes 62
+unreachable or duplicate agent resource files, with a per-file proof for
+each file. It removes 9 Python leftovers and the `validate:configs` npm
+script, and the `lint` script now runs `validate:agents`. It resolves 20
+stale documents: 10 are deleted, and the others are refreshed or kept. It
+repoints 9 partnership links, regenerates the STE-100 scope list, and
+replaces the dead `agents/reviewer/**` and `tests/agent_linting/**` rule
+globs.
 
 ## V12.79.3 - November 11, 2026 (skill defect fixes)
 
@@ -2771,5 +2782,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.3
+**Current Version**: 12.79.4
 **Release Date**: August 21, 2026

@@ -35,6 +35,6 @@ Use when managing channel partnerships, developing partner programs, coordinatin
 
 ## Related modes
 
-- **Affiliate/commission programs** -> see @affiliate-marketing.md
-- **Influencer/creator partnerships** -> see @influencer-marketing.md
-- **Co-marketing campaign frameworks** -> see @partner-templates.md
+- **Affiliate/commission programs** -> see @resources/partnership-affiliate-marketing.md
+- **Influencer/creator partnerships** -> see @resources/partnership-influencer-marketing.md
+- **Co-marketing campaign frameworks** -> see @resources/partnership-partner-templates.md
