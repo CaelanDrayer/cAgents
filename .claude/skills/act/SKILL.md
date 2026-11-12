@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.2"
+  version: "12.79.3"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -173,12 +173,10 @@ fi
 When NOT opted out, surface this Bash invocation as an optional setup step:
 
 ```bash
-claude /goal "cagents-memory/sessions/{SESSION_ID}/workflow/completion_summary.yaml exists with status: COMPLETED AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 3 revision cycles"
+claude /goal "cagents-memory/sessions/{SESSION_ID}/completion_summary.yaml exists with status: completed AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 3 revision cycles"
 ```
 
-The condition references an end state that you can verify: file existence, a status field, and a clean TaskList. The condition also includes a revision-cap clause that bounds the execution. **REC-11 reconciliation**: the cap in this clause is `3`. It MUST equal `pipeline_config.yaml` `revision.max_cycles`, which is currently 3. The state-machine loop (Step 3g) and the `verify-completion.cjs` Stop hook enforce that same cap.
-
-This is deliberately ONE knob, not two. The pre-REC-11 hard-coded "8" contradicted the config cap of 3, and that was a defect. The pipeline escalates to HITL at 3, so a `/goal` clause of 8 could never fire. If `revision.max_cycles` changes, update this literal to match. The `.claude/hooks/goal-evaluator-logger.cjs` hook captures the goal evaluator reasons, and `cagents:self-correct` consumes them as an additional revision signal. Proceed to Step 3.
+The condition references an end state that you can verify: file existence, a status field, and a clean TaskList. The condition also includes a revision-cap clause that bounds the execution. **REC-11 reconciliation**: the cap in this clause is `3`. It MUST equal `pipeline_config.yaml` `revision.max_cycles`, which is currently 3. The state-machine loop (Step 3g) and the `verify-completion.cjs` Stop hook enforce that same cap. This is deliberately ONE knob, not two. The pre-REC-11 hard-coded "8" contradicted the config cap of 3, and that was a defect. The pipeline escalates to HITL at 3, so a `/goal` clause of 8 could never fire. If `revision.max_cycles` changes, update this literal to match. The `.claude/hooks/goal-evaluator-logger.cjs` hook captures the goal evaluator reasons, and `cagents:self-correct` consumes them as an additional revision signal. Proceed to Step 3.
 
 ---
 
@@ -251,8 +249,9 @@ Honour order: STOP wins over PAUSE. The canonical protocol lives in `.claude/rul
 
 ```
 Agent({
-  subagent_type: "cagents:{agent_from_pipeline_config}",
+  subagent_type: "{agent_subagent_type}",
   description: "{state}: {brief_description}",
+  run_in_background: false,
   prompt: `You are the {agent_name} in the event-driven pipeline.
 
 REQUEST: {user_request}
@@ -267,7 +266,7 @@ INSTRUCTIONS:
 })
 ```
 
-For the **PLANNED state (controller)**, the controller is dynamic -- resolved from `plan.yaml` `controller_assignment.primary`. (v12.0.0: PROMPTS_READY removed; planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
+Spawn each state agent unnamed and synchronously. Do not add a `name` key, because `name` makes the spawn run in the background. The skill never yields while a child that it must collect is still running. Set `{agent_subagent_type}` to the whole agent name from `pipeline_config.yaml`. For the **PLANNED state (controller)**, the controller is dynamic: use `plan.yaml` `controller_assignment.primary`. In both cases the value carries exactly one `cagents:` prefix (add the prefix only if it is absent). (v12.0.0: PROMPTS_READY removed; planner produces work_items.yaml inline and controllers fall back to standard delegation prompts.)
 
 **Debug-mode prefix injection (V10.26.13+)**: If `flags.mode === "debug"`, read `.claude/skills/act/reference/debug-mode-prompt.md` and PREPEND its prefix text to the controller spawn prompt. See @reference/debug-mode-prompt.md.
 

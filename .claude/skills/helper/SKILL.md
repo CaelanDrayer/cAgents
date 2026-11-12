@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<command>|<question>] [--compare] [--flags <command>] [--examples] [--quick] [--all] [--topic <topic>] [--troubleshoot <command>]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.2"
+  version: "12.79.3"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
@@ -47,7 +47,12 @@ When the user runs `/helper` with no arguments, run an interactive decision tree
 
 Use `AskUserQuestion` with:
 - prompt: `"What do you want to do? I'll recommend the right cAgents command."`
-- options: `["Build or implement something", "Fix a bug or error", "Review or improve existing work", "Plan or design before building", "Debug a stubborn problem (2+ failed fixes)", "Learn about cAgents commands", "Show me everything"]`
+- options: `["Build, fix, or debug something", "Review or improve existing work", "Plan or design before building", "Learn about cAgents commands"]`
+
+`AskUserQuestion` accepts at most 4 options in one question. Thus Step 1 groups the 7 intents into 4 choices. Two choices need one follow-up question:
+
+- "Build, fix, or debug something": ask the prompt `"Which one?"` with options: `["Build or implement something", "Fix a bug or error", "Debug a stubborn problem (2+ failed fixes)"]`
+- "Learn about cAgents commands": ask the prompt `"How much do you want to see?"` with options: `["Explore one command", "Show me everything"]`. "Explore one command" is the learn intent. "Show me everything" is the show all intent.
 
 **Intent detection from free text** (if user types instead of selecting):
 - `build`, `create`, `implement`, `add`, `make` -> build intent
@@ -332,7 +337,7 @@ Auto-mode is orthogonal to `/goal`. Auto-mode removes the per-tool approval prom
 ### Headless Example
 
 ```bash
-claude -p "/goal 'cagents-memory/sessions/act_*/workflow/completion_summary.yaml exists with status: COMPLETED and all TaskList session tasks completed/deleted; or stop after 3 revision cycles'"
+claude -p "/goal 'cagents-memory/sessions/act_*/completion_summary.yaml exists with status: completed and all TaskList session tasks completed/deleted; or stop after 3 revision cycles'"
 ```
 
 This is a single-shot non-interactive run. The session runs to completion, or until it hits the revision cap. Then it exits.

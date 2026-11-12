@@ -1,10 +1,21 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.2
+**Current Version**: 12.79.3
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.3 - November 11, 2026 (skill defect fixes)
+
+This patch release fixes three skill defects (WI-37). The `/helper` Mode 1
+first question now fits the 4-option cap of AskUserQuestion, and two
+follow-up questions select the exact intent. The `/act` `/goal` condition
+names `completion_summary.yaml` with `status: completed`, which is what
+`verify-completion.cjs` writes. The `/act` controller spawn template is
+synchronous and unnamed, and it adds the `cagents:` prefix only when it is
+missing. The delegation patterns reference states the reviewer loop cap as 2
+rounds. Four new regression tests pin these fixes.
 
 ## V12.79.2 - November 11, 2026 (stale-name sweeps)
 
@@ -2760,5 +2771,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.2
+**Current Version**: 12.79.3
 **Release Date**: August 21, 2026

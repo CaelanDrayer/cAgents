@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.3] - 2026-11-11
+
+Three skill defect fixes from the 2026-10-15 skill review (WI-37).
+
+### Fixed
+- `/helper` Mode 1 (HLP-H1): the first question had 7 options, but
+  AskUserQuestion takes at most 4. The first question now groups the 7
+  intents into 4 choices. Two follow-up questions (3 options and 2 options)
+  select the exact intent.
+- `/act` `/goal` condition (ACT-01): the condition now names
+  `completion_summary.yaml` with `status: completed`. This is the file and
+  the value that `verify-completion.cjs` writes.
+- `/act` controller spawn template (ACT-04): the template in `SKILL.md` and
+  in `reference/delegation-patterns.md` is synchronous and unnamed
+  (`run_in_background: false`, no `name` key). The skill never yields while
+  the controller is still running. The template adds the `cagents:` prefix
+  to `controller_assignment.primary` only when the prefix is missing.
+- `reference/delegation-patterns.md` states the reviewer loop cap as 2
+  rounds. This matches `max_internal_rounds: 2` in `pipeline_config.yaml`.
+  An item that is still REVISE after round 2 goes to dead_letter.
+
+### Added
+- Four regression tests: `helper-mode1-option-cap.test.js`,
+  `act-goal-condition-file.test.js`, `act-spawn-template-sync.test.js` and
+  `act-controller-prefix.test.js` in `tests/regressions/`.
+
 ## [12.79.2] - 2026-11-11
 
 Stale-name sweeps and a drift guard (WI-32 to WI-35, committed by WI-36).
