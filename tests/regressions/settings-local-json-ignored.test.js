@@ -1,9 +1,9 @@
 /**
  * settings-local-json-ignored.test.js: UD-2 (v12.79.0), SEC-UD2-1.
  *
- * .claude/settings.local.json can hold CAGENTS_BASH_GUARD_DISABLED, which
- * turns the whole bash guard off. The file must never ship. The repo's own
- * .gitignore must ignore it, without help from a user's global excludes file.
+ * .claude/settings.local.json holds local overrides for one developer. The
+ * file must never ship. The repo's own .gitignore must ignore it, without
+ * help from a user's global excludes file.
  */
 
 import { describe, it, expect } from 'vitest';

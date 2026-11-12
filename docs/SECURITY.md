@@ -26,7 +26,7 @@ Please include:
 
 ## What Qualifies
 
-- Hook bypass or privilege escalation (e.g., circumventing `bash-validator.cjs` or `secret-detection.cjs`)
+- Hook bypass or privilege escalation (e.g., circumventing `secret-detection.cjs` or `write-edit-dispatch.cjs`)
 - Secret leakage through agent outputs or session files
 - Path traversal allowing reads/writes outside the project directory
 - Agent prompt injection that causes unintended system modifications
@@ -57,7 +57,7 @@ We ask that you:
 cAgents includes several built-in security mechanisms:
 
 - **Secret detection** (`secret-detection.cjs`): Blocks writes containing API keys, tokens, and credentials
-- **Bash validation** (`bash-validator.cjs`): Blocks dangerous shell commands (`rm -rf /`, fork bombs, `sudo`). **GuardFall hardening (v12.34.0):** the validator now delegates to a fail-closed tokenize-and-canonicalize evaluator (`.claude/hooks/bash-guard-evaluator.cjs`) that closes the named single-command GuardFall bypass shapes in Classes A–E — quote-removal (`r''m`), `$IFS` splitting, command substitution (including inside quotes), decoder/fetch→interpreter pipes, and alternative destructive argv + sensitive-path exfiltration — gated by a 35-probe A–E regression corpus. **Honest residuals (still OPEN):** cross-Bash-call sequential payloads, heredoc-built payloads, runtime-constructed indirection, and not-a-sandbox interiors remain out of scope for a single-command evaluator — see [`SECURITY_BASH_GUARD_THREAT_MODEL.md`](SECURITY_BASH_GUARD_THREAT_MODEL.md) for the full threat model and residual list.
+- **No Bash command hook (removed in v12.80.0)**: v12.80.0 removed the bash guard hook and its evaluator library. No cAgents hook checks Bash commands now. Claude Code asks for permission as usual, and the `permissions.deny` patterns in `.claude/settings.json` block `rm -rf /`, `rm -rf ~`, and `sudo`. On every Write and Edit, `write-edit-dispatch.cjs` still checks for secrets, blocks protected paths, and runs the delegation check. On every Agent call, `agent-dispatch.cjs` still runs the session-presence gate.
 - **Protected paths**: Prevents writes to system directories (`/etc/`, `/usr/`, `~/.ssh/`)
 - **Opt-outs**: To relax a guard hook, use a switch from [`HOOK_OPT_OUTS.md`](HOOK_OPT_OUTS.md). Do not disable the hook, because `write-edit-dispatch.cjs` also runs secret detection.
 - **Session isolation**: Each workflow session is scoped to `cagents-memory/sessions/`

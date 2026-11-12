@@ -10,23 +10,24 @@ paths:
 
 # cAgents Hook System
 
-33 .cjs files = 25 unique registered hooks across 17 event types.
-cAgents also has 5 dispatched sub-validators and 3 non-hook utilities. See the Architecture section below. See @resources/hook-catalog.md for the detail of each hook.
+31 .cjs files = 24 unique registered hooks across 17 event types.
+cAgents also has 5 dispatched sub-validators and 2 non-hook utilities. See the Architecture section below. See @resources/hook-catalog.md for the detail of each hook.
 
-> **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 33, 25, and 17 from disk. It counts the `.cjs` files, and it parses
+> **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 31, 24, and 17 from disk. It counts the `.cjs` files, and it parses
 > `.claude/settings.json` for the unique registered hook names and the event keys. It then asserts that the inventory is internally consistent, with
 > `hook_files === registered + dispatched + utilities`. Run `node scripts/lint-hooks.cjs` after you add a hook or remove one. Then update the hardcoded
 > counts in this doc, in `CLAUDE.md`, and in the `$comment` of `settings.json`. `tests/hooks/lint-hooks.test.js` guards the script.
 > Since v12.76.0 (HS-9, WI-11) `scripts/ci/validate-agents.sh` reads the "N unique registered hooks" claim from the `$comment` of `settings.json`. It also compares the hook names in `settings.json` with the names in `.claude/hooks.json`, so update both files together.
+>
 > D1 (WI-15, v12.76.0) deleted `permission-handler.cjs`, so the counts went from 34, 26, and 18 to 33, 25, and 17.
+> v12.80.0 removed the PreToolUse[Bash] hook and its evaluator library, so the counts went from 33 and 25 to 31 and 24.
 
 ## Architecture
 
 cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
 
-- **CJS hooks** (`.claude/hooks/`): 25 unique registered hooks, plus 5 dispatched sub-validators, plus 3 non-hook utilities. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the sub-validators in process. The
-  3 utilities are `hook-utils.cjs`, the `run-hook.cjs` launcher, and `bash-guard-evaluator.cjs`, a pure GuardFall evaluator library that `bash-validator.cjs` requires and that is neither registered nor dispatched
-  (v12.34.0). Every hook uses the `createHook()` factory from `hook-utils.cjs`, which removes the boilerplate: the stdin reading, the try-catch, and the JSON output. `eval-runner.cjs` is
+- **CJS hooks** (`.claude/hooks/`): 24 unique registered hooks, plus 5 dispatched sub-validators, plus 2 non-hook utilities. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the sub-validators in process. The
+  2 utilities are `hook-utils.cjs` and the `run-hook.cjs` launcher. Every hook uses the `createHook()` factory from `hook-utils.cjs`, which removes the boilerplate: the stdin reading, the try-catch, and the JSON output. `eval-runner.cjs` is
   a standalone CLI that A2-10 moved to `scripts/`, so it no longer counts under `.claude/hooks/`.
 - **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0, D1b): one deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in process: `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED.
   This entry replaced three separate `Write|Edit` registrations, and it cut the cold-start node spawns per Write|Edit from 3 to 1.
@@ -38,15 +39,15 @@ cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
   hook gives the equivalent file-based verification.
 - **Self-contained invocation with run-hook.cjs**: Claude Code calls every hook with `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'`. That bash wrapper holds a 3-tier fallback chain
   which resolves the plugin root: `CLAUDE_PLUGIN_ROOT`, then `CLAUDE_PROJECT_DIR`, then `pwd`. The wrapper then launches `run-hook.cjs`, which resolves the target hook path with `__dirname`.
-- **Windows needs Git for Windows**: no registration sets a `shell` field, so each hook needs bash. Since Claude Code 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` blocks the call when Git for Windows is missing. It no longer fails open. The guard hooks then deny every Bash, Write, Edit, and Agent call. Install Git for Windows (Git Bash) before you use cAgents on Windows.
+- **Windows needs Git for Windows**: no registration sets a `shell` field, so each hook needs bash. Since Claude Code 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` blocks the call when Git for Windows is missing. It no longer fails open. The guard hooks then deny every Write, Edit, and Agent call. Install Git for Windows (Git Bash) before you use cAgents on Windows.
 
 ### V9.5 Changes
 
-The V9.5 refactoring removed the dual shell and JS architecture. That architecture caused recurring bugs: a duplicate output from the ERR EXIT trap, `set -euo pipefail` propagation, fd-redirection fragility, and a double JSON output from the dispatch. The `createHook()` factory, the `bash-validator.cjs` CJS hook, and the `findTeamSession()` helper replaced it. The matching CJS hooks absorbed the logic of `on-session-start.sh`, `on-session-end.sh`, `stop-workflow.sh`, `pre-write.sh`, and `pre-bash.sh`.
+The V9.5 refactoring removed the dual shell and JS architecture. That architecture caused recurring bugs: a duplicate output from the ERR EXIT trap, `set -euo pipefail` propagation, fd-redirection fragility, and a double JSON output from the dispatch. The `createHook()` factory, the CJS hooks, and the `findTeamSession()` helper replaced it. The matching CJS hooks absorbed the logic of `on-session-start.sh`, `on-session-end.sh`, `stop-workflow.sh`, and `pre-write.sh`. v12.80.0 removed the CJS hook that replaced `pre-bash.sh`.
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 25 unique registered hooks across 17 of those events. cAgents also dispatches 5 sub-validators in
+Claude Code supports 24 hook event types. cAgents implements 24 unique registered hooks across 17 of those events. cAgents also dispatches 5 sub-validators in
 process: `write-edit-dispatch.cjs` dispatches 3, and `agent-dispatch.cjs` dispatches 2. Seven events have no cAgents hook, and they stay available for custom use: `PermissionRequest`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`,
 `FileChanged`, `Elicitation`, and `ElicitationResult`. WI-15 (v12.76.0) unregistered the no-op `permission-handler.cjs` from `PermissionRequest`. LP-17 wired `ConfigChange` in v12.7.0.
 
@@ -55,7 +56,7 @@ process: `write-edit-dispatch.cjs` dispatches 3, and `agent-dispatch.cjs` dispat
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `UserPromptSubmit` | User submits prompt | `prompt-router.cjs` | Enforce delegation rules + suggest routing (P1-7: consolidated the former `delegation-enforcer.cjs` + `magic-keywords.cjs`) |
-| `PreToolUse` | Before tool execution | `bash-validator.cjs` (Bash), `write-edit-dispatch.cjs` (Write\|Edit: dispatches secret-detection, controller-delegation-validator, and skill-size-monitor in process), `agent-dispatch.cjs` (Agent: dispatches session-init-gate and model-routing-advisor in process). See the catalog. | Validate, block dangerous ops, enforce session-presence gate |
+| `PreToolUse` | Before tool execution | `write-edit-dispatch.cjs` (Write\|Edit: dispatches secret-detection, controller-delegation-validator, and skill-size-monitor in process), `agent-dispatch.cjs` (Agent: dispatches session-init-gate and model-routing-advisor in process). See the catalog. | Block secrets and governance violations in writes, enforce session-presence gate |
 | `ConfigChange` | Config file changed | `config-change-logger.cjs` | Log config changes (LP-17, v12.7.0) |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs`, `validator-evidence-recheck.cjs`, `spawn-footprint.cjs` (Agent) | Validate JSON/YAML syntax, audit file changes, re-verify cited evidence, record spawn token footprints (diagnostic only) |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |
@@ -138,7 +139,7 @@ createHook('MyHook', async (input) => {
   `tests/hooks/stdin-fallback-below-hook-timeout.test.js` pins the deadline.
 - JSON parsing with graceful fallback to `{}`
 - Early verdict and exit (HS-3, WI-2): the reader parses a complete JSON object before EOF. After the verdict the factory destroys stdin. A 1.5 s unref'd backstop then calls `process.exit`.
-- Payload policy (HS-3, W5, HS-7, WI-19 F1): a guard hook (`BashValidator`, `WriteEditDispatch`, `AgentDispatch`) denies a truncated payload. It allows an empty payload, at EOF or at the deadline, with one `[FAIL-OPEN]` systemMessage. See @resources/hook-catalog.md § Payload Policy for the Guard Hooks.
+- Payload policy (HS-3, W5, HS-7, WI-19 F1): a guard hook (`WriteEditDispatch`, `AgentDispatch`) denies a truncated payload. It allows an empty payload, at EOF or at the deadline, with one `[FAIL-OPEN]` systemMessage. See @resources/hook-catalog.md § Payload Policy for the Guard Hooks.
 - Dedup backstop (HS-2, WI-4): an identical payload inside 5 s (`DEDUP_TTL_MS`) replays the first verdict. See @resources/hook-catalog.md § Cross-Cutting Contracts.
 - Try-catch wrapping (errors produce `{"continue": true}`)
 - Result transformation (`deny` shorthand -> full hookSpecificOutput)
@@ -362,7 +363,7 @@ dir of the user, then `$(pwd)` as the last resort.
 
 ### Hook blocks unexpectedly
 
-- On Windows, if every Bash, Write, Edit, and Agent call is denied, install Git for Windows (see § Architecture).
+- On Windows, if every Write, Edit, and Agent call is denied, install Git for Windows (see § Architecture).
 - Check `permissionDecisionReason` in the output.
 - Check the matcher pattern for PreToolUse.
 - Do a manual test of the hook: `echo '{}' | node .claude/hooks/<name>.cjs`

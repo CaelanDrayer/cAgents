@@ -16,8 +16,7 @@
  * and the 15 explicit safe verbs are present → assertions PASS.
  *
  * WI-15 W2: checkout/stash/branch wildcards were narrowed to their safe forms
- * (18 entries). The discard forms now fall through to a prompt, and the
- * bash-guard evaluator asks for them in every permission mode.
+ * (18 entries). The discard forms now fall through to a prompt.
  */
 
 import { describe, it, expect } from 'vitest';

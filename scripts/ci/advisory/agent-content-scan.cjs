@@ -287,8 +287,6 @@ const ATTACK_MARKER_RE =
 // Filenames of hooks that legitimately carry attack patterns as detection
 // material (they ARE the security scanners). Whole-file skip.
 const SECURITY_HOOK_BASENAMES = new Set([
-  'bash-validator.cjs',
-  'bash-guard-evaluator.cjs',
   'secret-detection.cjs',
   'secret-restore.cjs',
   'controller-delegation-validator.cjs',

@@ -28,7 +28,6 @@ The environment variables for all hook and agent executions:
 |----------|---------|
 | `CAGENTS_VERSION` | The plugin version. `scripts/sync-versions.sh` sets it. |
 | `CAGENTS_DELEGATION_ENFORCEMENT` | The mode of the delegation guard. |
-| `CAGENTS_BASH_GUARD` | The mode of the Bash guard. |
 | `CLAUDE_CODE_ENABLE_TODO_TOOLS` | Turns on the task tools on models that do not offer them by default. |
 
 The file does not set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. The default `/team` path uses concurrent `Agent` waves and does not need that flag.
@@ -58,11 +57,11 @@ Controls how team teammates are displayed. cAgents sets `in-process`, the Claude
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Write|Edit|NotebookEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-...}\"; node \"$R/.claude/hooks/run-hook.cjs\" bash-validator'",
+            "command": "bash -c 'R=\"${CLAUDE_PLUGIN_ROOT:-...}\"; node \"$R/.claude/hooks/run-hook.cjs\" write-edit-dispatch'",
             "timeout": 5
           }
         ]

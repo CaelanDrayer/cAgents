@@ -10,6 +10,88 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.80.0] - 2026-11-12
+
+Bash guard removal (session `act_streamline-cleanup-plugin_261111_001`,
+follow-up 1). This release removes the PreToolUse[Bash] guard hook and
+all of its code, tests, and docs. Bash commands now go through the
+normal Claude Code permission flow only.
+
+### Removed (behavior change)
+- The `bash-validator` hook (`.claude/hooks/bash-validator.cjs`). Its
+  PreToolUse[Bash] registration is gone from `.claude/settings.json`,
+  `.claude/settings.full.json`, and `.claude/hooks.json`. No cAgents
+  hook checks Bash commands now.
+- The GuardFall evaluator library
+  (`.claude/hooks/bash-guard-evaluator.cjs`).
+- The env switches `CAGENTS_BASH_GUARD` and
+  `CAGENTS_BASH_GUARD_DISABLED`, and the settings key
+  `cagents.bash_guard`. They are now inert. Nothing reads them. You can
+  delete them from your settings files.
+- 13 guard test files under `tests/hooks/` (`bash-guard-*.test.js` and
+  `bash-validator*.test.js`), the GuardFall fixture
+  `tests/hooks/fixtures/guardfall-corpus.json`, and the test setup file
+  `tests/setup/clean-env.js`, which cleared the guard env switches.
+- The threat model `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md`.
+
+### Changed
+- `.claude/hooks/run-hook.cjs`: a new `RETIRED_HOOKS` set holds
+  `bash-validator`. A stale registration that still calls
+  `run-hook.cjs bash-validator` exits 0 with no output. The call does
+  not block and does not warn. `bash-validator` is no longer in
+  `GUARD_HOOKS`.
+- `.claude/hooks/hook-utils.cjs`: `NO_PAYLOAD_FAIL_CLOSED` keeps only
+  `WriteEditDispatch` and `AgentDispatch`. Those two dispatchers stay
+  fail-closed.
+- Hook counts: 33 .cjs files and 25 unique registered hooks became 31
+  .cjs files and 24 unique registered hooks. `CLAUDE.md`, `README.md`,
+  `.claude/rules/core/hooks.md`, the hook catalog, and the count tests
+  agree with the disk.
+- Docs: the guard text is removed or rewritten in the rules, the hook
+  docs, `docs/HOOK_OPT_OUTS.md`, `docs/SECURITY.md`,
+  `docs/MIGRATION_GUIDE.md`, `docs/config/settings.md`, the testing
+  docs, and the example store. History entries are unchanged.
+- Scripts: `scripts/lint-hooks.cjs`, two advisory scanners, and
+  `scripts/ste100/in-scope.txt` no longer name the guard files.
+
+### Added
+- `tests/regressions/bash-guard-removed.test.js`: pins the removal. It
+  checks that no settings file or `hooks.json` registers
+  `bash-validator`, that both guard files are absent, that
+  `run-hook.cjs` keeps `bash-validator` in `RETIRED_HOOKS` and not in
+  `GUARD_HOOKS`, that the launcher run with `bash-validator` exits 0
+  with empty stdout, and that `.claude/settings.json` has no
+  `CAGENTS_BASH_GUARD` env key.
+
+### Security
+- SR-01 is resolved by elimination. No hook, script, or test helper
+  outside the guard's own tests required the guard files, so no guard
+  code stays. The new `RETIRED_HOOKS` exit reads no settings file.
+- The protection that remains:
+  - `permissions.deny` in `.claude/settings.json` blocks
+    `rm -rf /`, `rm -rf ~`, and `sudo`.
+  - `write-edit-dispatch.cjs` runs secret detection on every Write and
+    Edit, blocks protected paths, and runs the delegation check.
+  - `agent-dispatch.cjs` runs the session-presence gate on every Agent
+    call.
+  - The Claude Code permission prompt applies to every other Bash
+    command.
+
+### Notes
+- Version decision CD-FU1-01: a minor bump. `version-registry.md` says
+  that a removal needs a minor bump or a major bump, and that an audit
+  or consolidation session takes a minor bump. v12.2.0 set the
+  precedent when it removed `/org` in a minor. No hook event type is
+  removed. The controller recorded the decision before the bump.
+- v12.79.8 was an oversize patch. It touched 39 files in all, and 23
+  of them are outside the 16 version-sync locations. That is against
+  the 5-file patch rule, and it should have been a minor bump. History
+  is not re-versioned.
+- The commit messages of the 10 v12.79.8 commits (9 work-item commits
+  and the merge) were rewritten locally. Only the `Co-Authored-By`
+  trailer changed, and the merge message names the new short hashes.
+  The trees, authors, and dates are unchanged.
+
 ## [12.79.8] - 2026-11-11
 
 Pre-merge review fixes (WI-48). This release fixes the findings of the

@@ -468,8 +468,6 @@ cagents-memory/_system/templates/repo-bootstrap/agent-infrastructure.md
 cagents-memory/_system/templates/repo-bootstrap/agent-shared.md
 cagents-memory/_system/templates/repo-bootstrap/DOMAIN_CHECKLIST.md
 .claude/hooks/agent-dispatch.cjs
-.claude/hooks/bash-guard-evaluator.cjs
-.claude/hooks/bash-validator.cjs
 .claude/hooks/config-change-logger.cjs
 .claude/hooks/controller-delegation-validator.cjs
 .claude/hooks/goal-evaluator-logger.cjs
@@ -706,7 +704,6 @@ docs/MULTI_TOOL_DEPLOYMENT.md
 docs/OPTIMIZATION_PROGRESS.md
 docs/README.md
 docs/REMAINING_OPTIMIZATIONS.md
-docs/SECURITY_BASH_GUARD_THREAT_MODEL.md
 docs/SECURITY.md
 docs/SKILLS.md
 docs/SKILLS_REFERENCE.md
@@ -781,19 +778,6 @@ tests/helpers/agent-catalog.js
 tests/hooks/agent-dispatch.test.js
 tests/hooks/agent-tree-concurrent-burst.test.js
 tests/hooks/agent-tree-schema-contract.test.js
-tests/hooks/bash-guard-brace-expansion.test.js
-tests/hooks/bash-guard-cfg-tamper-quoting.test.js
-tests/hooks/bash-guard-field-report-fp.test.js
-tests/hooks/bash-guard-fu12-adversarial.test.js
-tests/hooks/bash-guard-full-off-switch.test.js
-tests/hooks/bash-guard-guardfall.test.js
-tests/hooks/bash-guard-heredoc.test.js
-tests/hooks/bash-guard-optout.test.js
-tests/hooks/bash-guard-shell-script-fp.test.js
-tests/hooks/bash-guard-wi21.test.js
-tests/hooks/bash-validator-fail-closed.test.js
-tests/hooks/bash-validator-safety.test.js
-tests/hooks/bash-validator.test.js
 tests/hooks/claim-on-write.test.js
 tests/hooks/claim-verification.test.js
 tests/hooks/concurrent-appends.test.js
@@ -946,7 +930,6 @@ tests/regressions/version-registry-canonical.test.js
 tests/regressions/vitest-quiet-reporter.test.js
 tests/repo/no-dead-scripts.test.js
 tests/rules/version-registry-structure.test.js
-tests/setup/clean-env.js
 tests/skills/act-context-passthrough.test.js
 tests/skills/act-debug-prompt.test.js
 tests/skills/act-debug-wiring.test.js

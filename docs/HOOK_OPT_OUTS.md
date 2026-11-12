@@ -18,8 +18,6 @@ does not know falls back to the default.
 
 | Hook | What it guards | Env var or settings key | Values | What stays on |
 |---|---|---|---|---|
-| `bash-validator.cjs` | Bash commands: denies for catastrophic shapes, asks for risky ones | `CAGENTS_BASH_GUARD`, or the settings key `cagents.bash_guard`. The env var wins. | `block` (default), `warn`, `off`. An unknown value gives `block`. | Under `warn`, an obfuscation-class deny becomes an ask. Under `off`, an ask becomes an allow, with one stderr line. Every deny stays a deny, except the legacy obfuscation-class belt denies (for example `python3 -c os.system`), which `off` skips. Under `off` these still ask: a parse-failure ask; a loader env var (`LD_*`, `DYLD_*`, `BASH_ENV`, `BASH_FUNC_*`, `SHELLOPTS`, `BASHOPTS`, `PS4`, and `NODE_OPTIONS` beyond resource flags); and a Bash write to `.claude/settings*.json` or `.claude/hooks/`. See `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §7.3. |
-| `bash-validator.cjs` (full off) | The whole bash guard | `CAGENTS_BASH_GUARD_DISABLED`, or the same key in the `env` object of `.claude/settings.local.json`. The env var wins. | `1` or `true` turns the guard off. Any other value keeps it on. | Nothing in this hook. It allows every command before any check, the Stage-1 denies included. `CAGENTS_BASH_GUARD` keeps its meaning. The hook reads the local file directly, so the switch works in a session that already runs. A file that does not parse, a file over 64 KiB, or a path that is not a regular file keeps the guard on. The hook reads the file of the opened project. A repo's own `.claude/settings.local.json` can already turn off all hooks, so open an untrusted repo with care. |
 | `secret-detection.cjs`, run by `write-edit-dispatch.cjs` | Secrets in written files | `CAGENTS_SECRET_MODE` | `block` (default), `sanitize`. Any other value gives `block`. | There is no `off`. `sanitize` replaces each secret with a `BLOCK_<hex>` placeholder, and `secret-restore.cjs` restores the file at Stop. The protected-path block (`/etc/`, `/usr/`, `~/.ssh/` and more) stays on in both modes. |
 | `controller-delegation-validator.cjs`, run by `write-edit-dispatch.cjs` | A controller that writes to `src/`, `lib/`, `components/`, `app/`, `services/`, or `middleware/` | `CAGENTS_DELEGATION_ENFORCEMENT`, or the key `delegation_enforcement` in the plugin `.claude/settings.json`. The env var wins. | `block` (default), `warn`, `off` | Secret detection and the skill-size check in the same dispatcher. The check fires only while a cAgents controller is active, so a direct user edit is never denied. |
 | `skill-size-monitor.cjs`, run by `write-edit-dispatch.cjs` | `SKILL.md` size | `CAGENTS_SKILL_WARN_LINES`, `CAGENTS_SKILL_BLOCK_LINES` | Line counts. The defaults are 600 (warn) and 900 (block). | Secret detection and the delegation check. Set the block value higher for a one-off large write, then set it back. |
@@ -38,7 +36,7 @@ passes the block to each hook. Use a string value, also for a number.
 ```json
 {
   "env": {
-    "CAGENTS_BASH_GUARD": "warn",
+    "CAGENTS_DELEGATION_ENFORCEMENT": "warn",
     "CAGENTS_STALE_CHILD_MS": "3600000"
   }
 }
@@ -50,20 +48,6 @@ Use one of these files:
 - `.claude/settings.json` in the project, to share the value with your team.
 - `.claude/settings.local.json` in the project, for your machine only.
 
-For the bash guard you can also use the settings key in place of the env var:
-
-```json
-{
-  "cagents": { "bash_guard": "warn" }
-}
-```
-
-The hook reads that key from the project `.claude/settings.local.json`, then
-from the project `.claude/settings.json`, then from the plugin
-`settings.json`. If an `env` block also sets `CAGENTS_BASH_GUARD`, the env var
-wins. The cAgents repo itself sets `CAGENTS_BASH_GUARD` to `block` in its
-`.claude/settings.json` `env` block.
-
 ### Windows and Git Bash
 
 The `env` block works the same on Windows. Use it in preference to a shell
@@ -73,14 +57,10 @@ shell. Write paths in a settings file with forward slashes, such as
 
 If you set a var in the shell, start Claude Code from that same shell:
 
-- Git Bash: add `export CAGENTS_BASH_GUARD=warn` to `~/.bashrc`.
-- PowerShell: run `$env:CAGENTS_BASH_GUARD = "warn"` for the current window,
-  or `setx CAGENTS_BASH_GUARD warn` for new windows.
+- Git Bash: add `export CAGENTS_DELEGATION_ENFORCEMENT=warn` to `~/.bashrc`.
+- PowerShell: run `$env:CAGENTS_DELEGATION_ENFORCEMENT = "warn"` for the
+  current window, or `setx CAGENTS_DELEGATION_ENFORCEMENT warn` for new windows.
 
 ## See also
 
-- `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md`: what the bash guard catches,
-  and the residuals in §7.
 - `.claude/rules/core/resources/hook-catalog.md`: the detail of each hook.
-- `.claude/rules/playbooks/pat-concurrent-session-hooks.md` § Writing commands
-  that pass the bash guard: command shapes that do not ask.

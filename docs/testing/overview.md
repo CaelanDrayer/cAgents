@@ -2,15 +2,14 @@
 
 ## Test Infrastructure
 
-cAgents uses [Vitest](https://vitest.dev/) for testing. 1335+ tests across 157+ test files (159 test files on disk) covering hooks and configuration validation.
+cAgents uses [Vitest](https://vitest.dev/) for testing. 2371+ tests across 286+ test files (286 test files on disk) covering hooks and configuration validation.
 
 ## Test Categories
 
-### Hook Tests (9 files, 135 tests)
+### Hook Tests (8 files, 121 tests)
 | File | Tests | Coverage |
 |------|-------|----------|
 | hook-utils.test.js | ~38 | Shared utilities, error format |
-| bash-validator.test.js | 14 | Blocked/warned/safe commands |
 | secret-detection.test.js | 24 | Secrets, protected paths, false positives |
 | tool-failure-tracker.test.js | 12 | Failure tracking, alternatives |
 | post-write-validator.test.js | 12 | JSON/YAML validation |

@@ -704,8 +704,8 @@ async function handler(input) {
   }
 }
 
-// Register the hook at top level (same pattern as the sibling deny hooks
-// bash-validator.cjs and post-write-validator.cjs). createHook's readStdin handles
+// Register the hook at top level (same pattern as the sibling hook
+// post-write-validator.cjs). createHook's readStdin handles
 // the no-stdin / isTTY case gracefully, so require()-only unit tests that import
 // scanForSecrets but never pipe stdin are unaffected. A previous
 // `require.main === module` guard here silently disabled the deny-gate under the

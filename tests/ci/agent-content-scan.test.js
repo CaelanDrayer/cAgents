@@ -207,9 +207,7 @@ describe('F4 — false-positive controls', () => {
   });
 
   it('the security hook sources are whole-file skipped', () => {
-    expect(isSecurityContextPath('.claude/hooks/bash-validator.cjs')).toBe(true);
     expect(isSecurityContextPath('.claude/hooks/secret-detection.cjs')).toBe(true);
-    expect(isSecurityContextPath('.claude/hooks/bash-guard-evaluator.cjs')).toBe(true);
     // an ordinary hook is not skipped
     expect(isSecurityContextPath('.claude/hooks/notification.cjs')).toBe(false);
   });

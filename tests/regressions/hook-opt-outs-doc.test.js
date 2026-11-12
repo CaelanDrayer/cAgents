@@ -3,8 +3,7 @@
  *
  * docs/HOOK_OPT_OUTS.md names env vars that relax the guard hooks. Each name
  * must exist in a hook, so the doc cannot point users at a switch that does
- * nothing. The bash-validator ask suffix names the doc path, so that path
- * must exist.
+ * nothing.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -27,7 +26,7 @@ describe('FU-11: docs/HOOK_OPT_OUTS.md', () => {
   const names = [...new Set(doc.match(/CAGENTS_[A-Z_]+/g) || [])];
 
   it('names at least the core opt-out vars', () => {
-    for (const v of ['CAGENTS_BASH_GUARD', 'CAGENTS_SECRET_MODE', 'CAGENTS_DELEGATION_ENFORCEMENT',
+    for (const v of ['CAGENTS_SECRET_MODE', 'CAGENTS_DELEGATION_ENFORCEMENT',
       'CAGENTS_STALE_CHILD_MS', 'CAGENTS_HOOK_DEDUP_DISABLE']) {
       expect(names).toContain(v);
     }
@@ -35,13 +34,5 @@ describe('FU-11: docs/HOOK_OPT_OUTS.md', () => {
 
   it.each(names)('%s appears in .claude/hooks/*.cjs', (name) => {
     expect(new RegExp(`\\b${name}\\b`).test(hookSource)).toBe(true);
-  });
-
-  it('the bash-validator ask suffix names a doc path that exists', () => {
-    const src = fs.readFileSync(path.join(HOOKS, 'bash-validator.cjs'), 'utf8');
-    const m = src.match(/const OPT_OUT_SUFFIX = '[^']*see (docs\/[A-Za-z0-9_.-]+\.md)'/);
-    expect(m).not.toBeNull();
-    expect(m[1]).toBe('docs/HOOK_OPT_OUTS.md');
-    expect(fs.existsSync(path.join(ROOT, m[1]))).toBe(true);
   });
 });

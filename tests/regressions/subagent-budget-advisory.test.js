@@ -153,8 +153,6 @@ const lineOf = (src, index) => src.slice(0, index).split('\n').length;
 //
 // Calibrated empirically against all 34 hooks so it has ZERO false positives on
 // the tree as it stands. The near-misses it must NOT fire on, all real:
-//   - bash-guard-evaluator.cjs  — a shell LEXER whose `tokens` are argv words,
-//     compared all over the place, plus `MAX_LEN = 20000` (an input length cap).
 //   - secret-detection.cjs      — `tokenStart` / `tokenEnd` CHARACTER OFFSETS
 //     compared against each other, plus `512 * 1024` byte caps.
 //   - validator-evidence-recheck.cjs — `tokens` are whitespace-split WORDS,
@@ -546,7 +544,7 @@ describe('WI-10: the per-subagent context budget is ADVISORY — no gate, no thr
     });
 
     it('5d. the deny-capable hooks deny on paths and roles, never on a token count', () => {
-      // Hooks legitimately emit permissionDecision:deny (bash-validator,
+      // Hooks legitimately emit permissionDecision:deny (secret-detection,
       // controller-delegation-validator). The invariant is
       // not "no deny" but "no deny keyed to a token count" — and a file with no
       // token-count conditional at all cannot have one, which 5b establishes

@@ -14,8 +14,8 @@ import { join } from 'path';
 //
 // The contract that these tests pin:
 //   1. A complete payload on a held-open stdin gives a verdict and an exit < 3 s.
-//   2. A truncated payload DENIES for the real guards (BashValidator,
-//      WriteEditDispatch, AgentDispatch).
+//   2. A truncated payload DENIES for the real guards (WriteEditDispatch,
+//      AgentDispatch). v12.80.0 removed the bash guard (BashValidator).
 //   3. A truncated payload does NOT deny for SessionInitGate (advisory, HS-7).
 //   4. An empty payload ALLOWS with exactly one systemMessage (W5).
 //   5. Advisory hooks fail open on a truncated payload.
@@ -28,7 +28,7 @@ import { join } from 'path';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
 const EXIT_BUDGET_MS = 3000;
-const GUARDS = ['bash-validator.cjs', 'write-edit-dispatch.cjs', 'agent-dispatch.cjs'];
+const GUARDS = ['write-edit-dispatch.cjs', 'agent-dispatch.cjs'];
 
 let proj;
 let errorPreload;
@@ -56,11 +56,14 @@ const poll = setInterval(() => {
 
 function payload(kind) {
   const base = { session_id: 's-a1', hook_event_name: 'PreToolUse', cwd: proj };
-  if (kind === 'bash-allow') {
-    return JSON.stringify({ ...base, tool_name: 'Bash', tool_use_id: 'tu-allow-1', tool_input: { command: 'ls -la' } });
+  if (kind === 'write-allow') {
+    return JSON.stringify({ ...base, tool_name: 'Write', tool_use_id: 'tu-allow-1',
+      tool_input: { file_path: join(proj, 'notes.txt'), content: 'hello' } });
   }
-  if (kind === 'bash-deny') {
-    return JSON.stringify({ ...base, tool_name: 'Bash', tool_use_id: 'tu-deny-1', tool_input: { command: 'rm -rf /' } });
+  if (kind === 'write-deny') {
+    // secret-detection denies a write to a protected system path.
+    return JSON.stringify({ ...base, tool_name: 'Write', tool_use_id: 'tu-deny-1',
+      tool_input: { file_path: '/etc/cagents-stdin-probe.conf', content: 'x' } });
   }
   // The first 60 bytes of a real PreToolUse payload: it stops inside a key.
   if (kind === 'truncated') return '{"session_id":"s-a1","hook_event_name":"PreToolUse","tool_na';
@@ -115,14 +118,14 @@ afterAll(() => { rmSync(proj, { recursive: true, force: true }); });
 
 describe('hook stdin contract (HS-3 / H6 / W5 / HS-7)', () => {
   it('a complete payload on a held-open stdin gives a verdict and exits in < 3 s', async () => {
-    const allow = await runHook('bash-validator.cjs', payload('bash-allow'), { holdOpen: true });
+    const allow = await runHook('write-edit-dispatch.cjs', payload('write-allow'), { holdOpen: true });
     expect(allow.signal, allow.stderr).toBeNull();
     expect(allow.code).toBe(0);
     expect(allow.ms).toBeLessThan(EXIT_BUDGET_MS);
     expect(isDeny(parseSingle(allow.stdout))).toBe(false);
 
     // The early parse must not turn a deny into an allow.
-    const deny = await runHook('bash-validator.cjs', payload('bash-deny'), { holdOpen: true });
+    const deny = await runHook('write-edit-dispatch.cjs', payload('write-deny'), { holdOpen: true });
     expect(deny.signal, deny.stderr).toBeNull();
     expect(deny.ms).toBeLessThan(EXIT_BUDGET_MS);
     expect(isDeny(parseSingle(deny.stdout))).toBe(true);
@@ -137,7 +140,7 @@ describe('hook stdin contract (HS-3 / H6 / W5 / HS-7)', () => {
   }, 30000);
 
   it('a truncated payload DENIES on a held-open stdin and still exits in < 3 s', async () => {
-    const r = await runHook('bash-validator.cjs', payload('truncated'), { holdOpen: true });
+    const r = await runHook('write-edit-dispatch.cjs', payload('truncated'), { holdOpen: true });
     expect(r.signal, r.stderr).toBeNull();
     expect(r.ms).toBeLessThan(EXIT_BUDGET_MS);
     expect(isDeny(parseSingle(r.stdout))).toBe(true);

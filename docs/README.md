@@ -1,6 +1,6 @@
 # cAgents Documentation
 
-**Version**: 12.79.8
+**Version**: 12.80.0
 **Last Updated**: 2026-07-16
 
 This index groups every file under `docs/` into three explicit buckets so the
@@ -49,7 +49,6 @@ The current authoritative documentation. Read these first; keep them accurate.
 
 ### Security
 - `SECURITY.md` - Vulnerability-reporting policy and security architecture
-- `SECURITY_BASH_GUARD_THREAT_MODEL.md` - Bash guard threat model + GuardFall hardening (tokenize-and-canonicalize evaluator implemented in v12.34.0 as `.claude/hooks/bash-guard-evaluator.cjs`, closing the named Class A–E single-command bypass shapes; §7 residuals remain open)
 
 ### Standards and Contribution
 - `DOCUMENTATION_STANDARDS.md` - Documentation conventions

@@ -235,7 +235,7 @@ function releaseProcess() {
 // allow + exactly one systemMessage). Only the real guards are listed.
 // SessionInitGate is advisory and fails open (HS-7); it runs inside
 // AgentDispatch, which is listed here.
-const NO_PAYLOAD_FAIL_CLOSED = new Set(['BashValidator', 'WriteEditDispatch', 'AgentDispatch']);
+const NO_PAYLOAD_FAIL_CLOSED = new Set(['WriteEditDispatch', 'AgentDispatch']);
 
 /**
  * Read a file safely, returning null on any error.

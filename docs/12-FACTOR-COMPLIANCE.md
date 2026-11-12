@@ -78,7 +78,7 @@ cAgents intentionally **separates** the two:
 
 cAgents has a dedicated `core/hitl` agent and an `approval-gate.cjs` `PreToolUse` hook that surfaces structured approval prompts before sensitive operations. Tier-4 workflows route to HITL by design. What's missing: out-of-band channels (Slack, email, SMS) — humans must be at the Claude Code terminal to respond.
 
-**cAgents implementation**: `core/hitl/SKILL.md`, `.claude/hooks/approval-gate.cjs`, `.claude/hooks/bash-validator.cjs` (Tier-2 HITL prompts).
+**cAgents implementation**: `core/hitl/SKILL.md`, `.claude/hooks/approval-gate.cjs`.
 
 ### Factor 8: Own Your Control Flow — YES
 

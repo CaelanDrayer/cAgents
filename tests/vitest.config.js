@@ -16,8 +16,6 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     exclude: ['node_modules', 'archive', 'example', 'vendor_repos', '_archive/**', '**/_archive/**'],
     testTimeout: 10000,
-    // Remove developer opt-out env vars that would change hook behavior under test.
-    setupFiles: ['tests/setup/clean-env.js'],
     reporters,
     coverage: {
       provider: 'v8',

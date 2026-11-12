@@ -182,17 +182,17 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // A2-12: agent-dispatch.cjs consolidated the PreToolUse[Agent] hooks
     // (session-init-gate + model-routing-advisor) into one dispatcher; approval-gate.cjs
     // was deleted (A2-02) and eval-runner.cjs relocated to scripts/ (A2-10).
-    // v12.34.0 added bash-guard-evaluator.cjs, a pure require'd library (3rd utility).
     // WO-03 surface (d) added role-manifest-injector.cjs (SubagentStart role-bundle
     // injection — the restoration half of the rules load cut). Net:
     // WI-15 D1 deleted the no-op permission-handler.cjs (26 -> 25 registered).
-    // 33 .cjs files = 25 unique registered + 5 dispatched sub-validators + 3 utilities
-    // (hook-utils.cjs, run-hook.cjs, bash-guard-evaluator.cjs).
-    expect(output, 'derive-only should print hook_files=33').toMatch(
-      /hook_files[=:]\s*33/
+    // v12.80.0 removed the bash guard hook and its evaluator library (25 -> 24).
+    // 31 .cjs files = 24 unique registered + 5 dispatched sub-validators + 2 utilities
+    // (hook-utils.cjs, run-hook.cjs).
+    expect(output, 'derive-only should print hook_files=31').toMatch(
+      /hook_files[=:]\s*31/
     );
-    expect(output, 'derive-only should print registered_hooks=25').toMatch(
-      /registered_hooks[=:]\s*25/
+    expect(output, 'derive-only should print registered_hooks=24').toMatch(
+      /registered_hooks[=:]\s*24/
     );
   });
 });

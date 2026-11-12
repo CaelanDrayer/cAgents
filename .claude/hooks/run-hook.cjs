@@ -43,6 +43,15 @@ if (!hookName) {
   process.exit(0);
 }
 
+// v12.80.0 removed the bash guard hook (bash-validator.cjs). A session or an
+// install with a stale registration still calls `run-hook.cjs bash-validator`.
+// That call must not block a tool call and must not warn. So a retired name
+// exits 0 with no output, before the stand-down check and the file lookup.
+const RETIRED_HOOKS = new Set(['bash-validator']);
+if (RETIRED_HOOKS.has(hookName)) {
+  process.exit(0);
+}
+
 // F5 (v12.74.0): one copy of each hook in the cAgents source repo.
 // Claude Code dedupes an identical handler across settings files, but "a
 // plugin's or skill's copy of the same handler stays separate". So in this
@@ -122,8 +131,8 @@ const candidates = [
 // on a syntax error, or on a throw at module load. Before this fix the
 // launcher printed {continue:true} for a missing hook. Also, a bare require()
 // crash exited 1 (a non-blocking error), so the guard silently stopped guarding. All other hooks stay fail-open.
-// All three guard hooks are registered for PreToolUse only.
-const GUARD_HOOKS = new Set(['bash-validator', 'write-edit-dispatch', 'agent-dispatch']);
+// Both guard hooks are registered for PreToolUse only.
+const GUARD_HOOKS = new Set(['write-edit-dispatch', 'agent-dispatch']);
 const isGuardHook = GUARD_HOOKS.has(hookName);
 
 function denyGuardLoadFailure(detail) {
