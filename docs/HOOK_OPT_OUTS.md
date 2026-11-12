@@ -19,6 +19,7 @@ does not know falls back to the default.
 | Hook | What it guards | Env var or settings key | Values | What stays on |
 |---|---|---|---|---|
 | `secret-detection.cjs`, run by `write-edit-dispatch.cjs` | Secrets in written files | `CAGENTS_SECRET_MODE` | `block` (default), `sanitize`. Any other value gives `block`. | There is no `off`. `sanitize` replaces each secret with a `BLOCK_<hex>` placeholder, and `secret-restore.cjs` restores the file at Stop. The protected-path block (`/etc/`, `/usr/`, `~/.ssh/` and more) stays on in both modes. |
+| `bash-validator.cjs` | Secret literals and protected-path writes in Bash commands. It is a tripwire for agent mistakes and plain injections, not a sandbox. | `CAGENTS_BASH_NARROW_GUARD` | `off` (any case) turns the guard off. Any other value keeps it on. | Nothing in this hook. Secret detection and the protected-path block on every Write and Edit stay on. The old `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` keys are inert: no hook reads them. |
 | `controller-delegation-validator.cjs`, run by `write-edit-dispatch.cjs` | A controller that writes to `src/`, `lib/`, `components/`, `app/`, `services/`, or `middleware/` | `CAGENTS_DELEGATION_ENFORCEMENT`, or the key `delegation_enforcement` in the plugin `.claude/settings.json`. The env var wins. | `block` (default), `warn`, `off` | Secret detection and the skill-size check in the same dispatcher. The check fires only while a cAgents controller is active, so a direct user edit is never denied. |
 | `skill-size-monitor.cjs`, run by `write-edit-dispatch.cjs` | `SKILL.md` size | `CAGENTS_SKILL_WARN_LINES`, `CAGENTS_SKILL_BLOCK_LINES` | Line counts. The defaults are 600 (warn) and 900 (block). | Secret detection and the delegation check. Set the block value higher for a one-off large write, then set it back. |
 | `verify-completion.cjs` (Stop) | A stop in the middle of a pipeline | `CAGENTS_STALE_CHILD_MS` | Milliseconds. The default is 1800000 (30 min). | A child agent with `stopped_at: null` that is younger than this value counts as live, so Stop allows and writes nothing. An older child counts as stale, and the normal checks run. |
@@ -27,6 +28,13 @@ does not know falls back to the default.
 | `team-stop.cjs` | A `/team` lead that is idle between waves | `CAGENTS_IDLE_LEAD_MAX_MS` | Milliseconds. The default is 24 h. | All checks. An idle lead older than this value gets the normal teardown. |
 | `hook-utils.cjs` (all hooks) | Duplicate runs of one event when the plugin and the project both register a hook | `CAGENTS_HOOK_DEDUP_DISABLE` | `1` turns dedup off. Any other value keeps it on. | Every hook still runs. A duplicate event runs twice, so you can see two messages. |
 | `prompt-router.cjs` | Routing suggestions on a plain-language prompt | `CAGENTS_ROUTING_SUGGESTIONS` | Off by default. `1`, `true`, `on`, or `yes` turns it on. | The delegation reminder for `/act` and `/team` is always on. |
+
+### The old bash guard keys are inert
+
+v12.80.0 removed the old bash guard. Its keys, `CAGENTS_BASH_GUARD` and
+`CAGENTS_BASH_GUARD_DISABLED`, are inert. No hook reads them, so they do not
+change the narrow guard. Use `CAGENTS_BASH_NARROW_GUARD=off` to turn the
+narrow guard off. You can remove the old keys from your settings files.
 
 ## Set an env var
 

@@ -1,10 +1,34 @@
 # cAgents Release Notes
 
-**Current Version**: 12.80.0
+**Current Version**: 12.81.0
 **Release Date**: November 12, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.81.0 - November 12, 2026 (narrow Bash guard)
+
+This minor release restores a narrow Bash guard. v12.80.0 removed the
+Bash guard. The new guard keeps the name `bash-validator` and has two
+rules only. The `secret-literal` rule denies a critical or high secret
+literal in the command text, heredoc bodies included. The
+`protected-path-write` rule denies a write, a delete, a move, or a mode
+or owner change on the shared protected list. Reads and mentions pass.
+The guard fails open. The secret scan runs first. An unbalanced quote
+or an error in the path rule skips only the path rule, so a secret deny
+still stands. A command over 256 KB skips both rules, and the guard
+allows the call. Each fail-open event writes one line to the guard log.
+`CAGENTS_BASH_NARROW_GUARD=off` turns it off. The
+old `CAGENTS_BASH_GUARD` switches stay inert. A corpus of 496 real
+session commands gives zero denies. The hook counts went from 31 files
+and 24 hooks to 32 files and 25 hooks. The guard is a tripwire, not a
+sandbox. The path rule expands `~` and `$HOME` and parses `bash -c` and
+`sh -c` strings at one level. It does not check script files, other
+variables, `eval`, other interpreter code, `find -delete`, or the
+hook-config paths. The secret rule still scans the whole command text,
+including the text inside `eval`, `python -c`, `node -e`, and `$(...)`.
+Corrected: the v12.79.8 commit messages were rewritten and then pushed
+once to `origin main` with a lease pinned to `c2455891`.
 
 ## V12.80.0 - November 12, 2026 (bash guard removal)
 
@@ -22,7 +46,8 @@ went from 33 files and 25 hooks to 31 files and 24 hooks. The
 files in all, 23 of them outside the 16 version-sync locations, against
 the 5-file patch rule). History is not re-versioned. The
 v12.79.8 commit messages got a new trailer, and their content is
-unchanged.
+unchanged. The rewritten commits were pushed once to `origin main`
+with a lease pinned to `c2455891`.
 
 ## V12.79.8 - November 11, 2026 (pre-merge review fixes)
 
@@ -2840,5 +2865,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.80.0
+**Current Version**: 12.81.0
 **Release Date**: August 21, 2026

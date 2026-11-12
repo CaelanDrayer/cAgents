@@ -10,7 +10,7 @@ paths:
 
 # cAgents Hook System
 
-31 .cjs files = 24 unique registered hooks across 17 event types.
+32 .cjs files = 25 unique registered hooks across 17 event types.
 cAgents also has 5 dispatched sub-validators and 2 non-hook utilities. See the Architecture section below. See @resources/hook-catalog.md for the detail of each hook.
 
 > **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 31, 24, and 17 from disk. It counts the `.cjs` files, and it parses
@@ -20,13 +20,13 @@ cAgents also has 5 dispatched sub-validators and 2 non-hook utilities. See the A
 > Since v12.76.0 (HS-9, WI-11) `scripts/ci/validate-agents.sh` reads the "N unique registered hooks" claim from the `$comment` of `settings.json`. It also compares the hook names in `settings.json` with the names in `.claude/hooks.json`, so update both files together.
 >
 > D1 (WI-15, v12.76.0) deleted `permission-handler.cjs`, so the counts went from 34, 26, and 18 to 33, 25, and 17.
-> v12.80.0 removed the PreToolUse[Bash] hook and its evaluator library, so the counts went from 33 and 25 to 31 and 24.
+> v12.80.0 removed the PreToolUse[Bash] hook and its evaluator library, so the counts went from 33 and 25 to 31 and 24. v12.81.0 added the narrow `bash-validator.cjs` guard, so the counts went from 31 and 24 to 32 and 25.
 
 ## Architecture
 
 cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
 
-- **CJS hooks** (`.claude/hooks/`): 24 unique registered hooks, plus 5 dispatched sub-validators, plus 2 non-hook utilities. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the sub-validators in process. The
+- **CJS hooks** (`.claude/hooks/`): 25 unique registered hooks, plus 5 dispatched sub-validators, plus 2 non-hook utilities. `write-edit-dispatch.cjs` and `agent-dispatch.cjs` run the sub-validators in process. The
   2 utilities are `hook-utils.cjs` and the `run-hook.cjs` launcher. Every hook uses the `createHook()` factory from `hook-utils.cjs`, which removes the boilerplate: the stdin reading, the try-catch, and the JSON output. `eval-runner.cjs` is
   a standalone CLI that A2-10 moved to `scripts/`, so it no longer counts under `.claude/hooks/`.
 - **Write|Edit dispatcher** (`write-edit-dispatch.cjs`, v12.19.0, D1b): one deny-first PreToolUse[Write|Edit] entry that runs three sub-validators in process: `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The security sub-validators fail CLOSED.
@@ -35,6 +35,7 @@ cAgents uses one CJS hook system, and `.claude/settings.json` configures it:
   The session-init-gate allows when no owned session exists. Since v12.76.0 (HS-7, WI-19 F2) a logic throw inside it also allows, with one `[FAIL-OPEN]` systemMessage and one stderr line. An I/O error allows too. `AgentDispatch` itself stays fail-closed: a fault in the dispatcher outside the sub-gate try/catch denies. This entry replaced three separate `Agent` registrations, and it cut the cold-start node spawns per Agent spawn from
   3 to 1. A2-04 dropped the former `prompt-router.cjs` PreToolUse[Agent] `return null` no-op. A2-02 deleted `approval-gate.cjs`, because that hook was structurally dead: its `_data/policies/` dir
   and its `AGENT_MEMORY_DIR` env var never existed in production.
+- **Bash guard** (`bash-validator.cjs`, v12.81.0): one narrow PreToolUse[Bash] entry with two rule families. `secret-literal` denies a critical or high secret literal in the command text, heredoc bodies included. `protected-path-write` denies a write, a delete, a move, or a mode or owner change on the shared protected-path list that the Write path uses. A read or a mention passes. The guard fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. The old `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` keys are inert. The path rule expands `~` and `$HOME` and parses `bash -c` and `sh -c` strings at one level. It does not check script file contents, other variables, command substitution, `eval`, other interpreter code, `find -delete`, or hook-config paths. The secret rule still scans the whole command text, including the text inside `eval`, `python -c`, `node -e`, and `$(...)`. It is a tripwire for agent mistakes and plain injections, not a sandbox. See the catalog.
 - **Prompt hooks**: None is active now. V9.6.2 removed the Stop prompt hook, because unreliable LLM JSON responses caused recurring validation failures. The `verify-completion.cjs` command
   hook gives the equivalent file-based verification.
 - **Self-contained invocation with run-hook.cjs**: Claude Code calls every hook with `bash -c 'R="${CLAUDE_PLUGIN_ROOT:-${CLAUDE_PROJECT_DIR:-$(pwd)}}"; node "$R/.claude/hooks/run-hook.cjs" <hook-name>'`. That bash wrapper holds a 3-tier fallback chain
@@ -47,7 +48,7 @@ The V9.5 refactoring removed the dual shell and JS architecture. That architectu
 
 ## Hook Types Overview
 
-Claude Code supports 24 hook event types. cAgents implements 24 unique registered hooks across 17 of those events. cAgents also dispatches 5 sub-validators in
+Claude Code supports 24 hook event types. cAgents implements 25 unique registered hooks across 17 of those events. cAgents also dispatches 5 sub-validators in
 process: `write-edit-dispatch.cjs` dispatches 3, and `agent-dispatch.cjs` dispatches 2. Seven events have no cAgents hook, and they stay available for custom use: `PermissionRequest`, `WorktreeCreate`, `WorktreeRemove`, `CwdChanged`,
 `FileChanged`, `Elicitation`, and `ElicitationResult`. WI-15 (v12.76.0) unregistered the no-op `permission-handler.cjs` from `PermissionRequest`. LP-17 wired `ConfigChange` in v12.7.0.
 
@@ -56,7 +57,7 @@ process: `write-edit-dispatch.cjs` dispatches 3, and `agent-dispatch.cjs` dispat
 | `SessionStart` | Session begins/resumes | `session-catchup.cjs` | Initialize state, detect incomplete sessions, inject cAgents context |
 | `SessionEnd` | Session ends | `team-stop.cjs` | Finalize metrics, update status |
 | `UserPromptSubmit` | User submits prompt | `prompt-router.cjs` | Enforce delegation rules + suggest routing (P1-7: consolidated the former `delegation-enforcer.cjs` + `magic-keywords.cjs`) |
-| `PreToolUse` | Before tool execution | `write-edit-dispatch.cjs` (Write\|Edit: dispatches secret-detection, controller-delegation-validator, and skill-size-monitor in process), `agent-dispatch.cjs` (Agent: dispatches session-init-gate and model-routing-advisor in process). See the catalog. | Block secrets and governance violations in writes, enforce session-presence gate |
+| `PreToolUse` | Before tool execution | `bash-validator.cjs` (Bash: the narrow guard for secret literals and protected-path writes), `write-edit-dispatch.cjs` (Write\|Edit: dispatches secret-detection, controller-delegation-validator, and skill-size-monitor in process), `agent-dispatch.cjs` (Agent: dispatches session-init-gate and model-routing-advisor in process). See the catalog. | Block secrets and protected-path writes in Bash commands, block secrets and governance violations in writes, enforce session-presence gate |
 | `ConfigChange` | Config file changed | `config-change-logger.cjs` | Log config changes (LP-17, v12.7.0) |
 | `PostToolUse` | After tool execution | `post-write-validator.cjs`, `validator-evidence-recheck.cjs`, `spawn-footprint.cjs` (Agent) | Validate JSON/YAML syntax, audit file changes, re-verify cited evidence, record spawn token footprints (diagnostic only) |
 | `PostToolUseFailure` | Tool execution fails | `tool-failure-tracker.cjs` | Track failures, detect patterns, suggest recovery |

@@ -32,7 +32,7 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     expect(content).toContain('skill-size-monitor.cjs');
   });
 
-  it('hooks.md count claim is current (31 .cjs / 24 unique registered + 5 dispatched)', () => {
+  it('hooks.md count claim is current (32 .cjs / 25 unique registered + 5 dispatched)', () => {
     // A2-12 added agent-dispatch.cjs (consolidating the PreToolUse[Agent] hooks
     // session-init-gate + model-routing-advisor into 2 dispatched sub-validators),
     // A2-02 deleted approval-gate.cjs, and A2-10 relocated eval-runner.cjs to scripts/.
@@ -40,14 +40,15 @@ describe('hooks.md documents skill-size-monitor.cjs', () => {
     // WO-03 surface (d) added role-manifest-injector.cjs (SubagentStart role bundle),
     // both registered (26). WI-15 D1 then unregistered and deleted the no-op
     // permission-handler.cjs, so the count was 25 unique registered. v12.80.0
-    // removed the bash guard hook and its evaluator library.
-    // Count: 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators
+    // removed the bash guard hook and its evaluator library (25 -> 24). v12.81.0
+    // added the narrow bash-validator.cjs (24 -> 25).
+    // Count: 32 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators
     // (3 Write|Edit via write-edit-dispatch + 2 Agent via agent-dispatch) + hook-utils.cjs
     // + run-hook.cjs.
     // Disk-derivable: `node scripts/lint-hooks.cjs` must report the same triple.
     const content = readFileSync(HOOKS_MD, 'utf8');
-    expect(content).toContain('31 .cjs files');
-    expect(content).toContain('24 unique');
+    expect(content).toContain('32 .cjs files');
+    expect(content).toContain('25 unique');
   });
 
   it('every .cjs hook in .claude/hooks/ is mentioned in hooks.md', () => {

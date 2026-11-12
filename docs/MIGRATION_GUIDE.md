@@ -1,6 +1,6 @@
 # Migration Guide
 
-> **Applies to cAgents v12.x** — 60 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/act`, `/team`, `/designer`, `/helper`). The skill was called `/run` until v12.66.0 renamed it to `/act`; every example below uses `/act`, and the v12.66.0 section at the end of this guide explains the rename. V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` (now `/act`) via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
+> **Applies to cAgents v12.x**: 60 agents across 9 builder-role archetypes (developer, operator, advisor, analyst, creator, writer, strategist, core, leadership), 4 in-terminal skills (`/act`, `/team`, `/designer`, `/helper`). The skill was called `/run` until v12.66.0 renamed it to `/act`; every example below uses `/act`, and the v12.66.0 section at the end of this guide explains the rename. V10.x commands `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0; `/improve` was folded into `/run` (now `/act`) via the keyword router in v12.1.2; `/org` was removed in v12.2.0 and folded into `/team` strategic mode.
 
 How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgents v12.x.
 
@@ -8,7 +8,7 @@ How to move from single-purpose plugins (`feature-dev`, `code-review`) to cAgent
 
 ## Why Migrate?
 
-Single-purpose plugins handle one domain with a linear workflow. cAgents handles work across 9 builder-role archetypes with a config-driven state machine that routes, plans, decomposes, reviews, and revises — automatically.
+Single-purpose plugins handle one domain with a linear workflow. cAgents handles work across 9 builder-role archetypes with a config-driven state machine that routes, plans, decomposes, reviews, and revises automatically.
 
 | Dimension | feature-dev | code-review | cAgents |
 |-----------|------------|------------|---------|
@@ -17,8 +17,8 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 | **Workflow** | Linear, single-pass | Linear, single-pass | State machine: INIT → ORCHESTRATED → PLANNED → COORDINATED → VALIDATED |
 | **Revision loops** | None | None | Executor → Reviewer (max 2 rounds per work item), PASS/FAIL/REVISE routing (max 3 cycles) |
 | **Parallel execution** | No | No | N-wave parallel teams with per-wave quality gates (40-60% faster) |
-| **Cross-domain** | No | No | Yes — single command spans engineering + business + creative |
-| **Hook lifecycle** | 1-4 hooks | 1-4 hooks | 24 registered hooks (session init, secret detection, attention injection, team lifecycle, completion verification) |
+| **Cross-domain** | No | No | Yes. One command spans engineering + business + creative |
+| **Hook lifecycle** | 1-4 hooks | 1-4 hooks | 25 registered hooks (session init, secret detection, attention injection, team lifecycle, completion verification) |
 
 ## Command Equivalents
 
@@ -35,7 +35,7 @@ Single-purpose plugins handle one domain with a linear workflow. cAgents handles
 ```
 
 What changes:
-- cAgents auto-detects the engineering domain — no manual domain selection
+- cAgents auto-detects the engineering domain. You do not select a domain manually
 - A `tech-lead` controller coordinates the work via question-based delegation instead of direct invocation
 - A reviewer validates spec compliance then code quality before the work is marked done
 - If validation fails, the pipeline re-runs the controller (up to 3 cycles) instead of stopping
@@ -80,7 +80,7 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 /act Add a referral program            # engineering + growth in one request
 ```
 
-**Parallel execution**: feature-dev runs agents sequentially. `/team` runs them in waves with quality gates — 40-60% faster for complex features.
+**Parallel execution**: feature-dev runs agents sequentially. `/team` runs them in waves with quality gates. That is 40-60% faster for complex features.
 
 ```bash
 /team Implement the checkout flow      # frontend + backend + tests in parallel waves
@@ -94,7 +94,7 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 **Parallel specialist review**: `/act review` runs security, quality, and performance reviewers simultaneously instead of one reviewer making all calls.
 
-**Apply-and-measure pipeline**: `/act optimize` (or `/act improve` = `--mode full`) carries findings through into atomic, rollback-safe changes with before/after metrics — not just a report.
+**Apply-and-measure pipeline**: `/act optimize` (or `/act improve` = `--mode full`) carries findings through into atomic, rollback-safe changes with before and after metrics. It does more than write a report.
 
 **Review baselines**: `/act review --baseline` records known issues so repeat runs only surface new findings (use `--suppress` to silence baselined findings).
 
@@ -104,7 +104,7 @@ These have no feature-dev or code-review counterpart. Use them when you need:
 
 ### 1. Start with /act for single tasks
 
-Replace your `/feature-dev` invocations one-for-one with `/act`. The routing is automatic — you don't need to specify agents, domains, or controllers.
+Replace your `/feature-dev` invocations one-for-one with `/act`. The routing is automatic. You don't need to specify agents, domains, or controllers.
 
 ```bash
 /act Fix the login page redirect bug
@@ -130,7 +130,7 @@ When work spans engineering + business + people or needs executive-level analysi
 /team Decide on our API versioning strategy --strategic
 ```
 
-(Pre-v12.2.0 this was `/org Plan ...` — the `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode.)
+(Pre-v12.2.0 this was `/org Plan ...`. The `/org` skill was removed in v12.2.0 and absorbed into `/team` strategic mode.)
 
 ### 4. Replace code-review with /act review
 
@@ -141,7 +141,7 @@ When work spans engineering + business + people or needs executive-level analysi
 /act review src/ --baseline --suppress    # Subsequent runs: suppress known issues
 ```
 
-(Pre-v12.1.2 this was `/improve --mode review|optimize|full` — the `/improve` skill was folded into `/run` (now `/act`) in v12.1.2 via the first-word keyword router; all original flags carried over.)
+(Pre-v12.1.2 this was `/improve --mode review|optimize|full`. The `/improve` skill was folded into `/run` (now `/act`) in v12.1.2 via the first-word keyword router; all original flags carried over.)
 
 ## Token Usage
 
@@ -154,7 +154,7 @@ cAgents uses more tokens than single-purpose plugins. Each subagent in the pipel
 | `/team` (standard) | 30-60x |
 | `/team --strategic` (cross-domain; auto-enables for multi-domain requests, replaces removed `/org`) | 50-100x |
 
-This overhead buys automatic routing, reviewer loops, revision routing, and quality-gated execution. For small single-file fixes, use Claude Code directly — cAgents is optimized for multi-step work that benefits from coordination.
+This overhead buys automatic routing, reviewer loops, revision routing, and quality-gated execution. For small single-file fixes, use Claude Code directly. cAgents is optimized for multi-step work that benefits from coordination.
 
 ## Troubleshooting
 
@@ -166,7 +166,7 @@ This overhead buys automatic routing, reviewer loops, revision routing, and qual
 
 **Pipeline stalls in coordinating phase**: The controller is waiting for execution agents. Check that the session directory exists under `cagents-memory/sessions/` and that `coordination_log.yaml` is being written.
 
-## v12.66.0 — `/run` is now `/act`
+## v12.66.0: `/run` is now `/act`
 
 Claude Code now ships a **built-in `run` skill**, and the two names collide.
 cAgents renamed its own skill to `/act` in v12.66.0.

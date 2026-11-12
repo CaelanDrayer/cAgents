@@ -84,8 +84,8 @@ describe('hook exit latency (no un-unref\'d timer linger)', () => {
   });
 
   it('write-edit-dispatch.cjs exits well under 500ms on a benign write', async () => {
-    // Second representative hook. v12.80.0 removed the bash guard, so the
-    // Write|Edit guard takes its place. A plain text write to a temp path is
+    // Second representative hook: the Write|Edit guard. It took the place of
+    // the bash guard in v12.80.0 and stays here. A plain text write to a temp path is
     // allowed quickly; the assertion proves the hook does not linger afterward.
     const { ms } = await measureExitLatency('write-edit-dispatch.cjs', {
       tool_name: 'Write',

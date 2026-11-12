@@ -50,7 +50,7 @@ This file is a discoverability surface, not a behavioral contract.
   explicitly. Resource files under `agents/<name>/resources/` are therefore not
   registered. The 9 builder-role archetypes live in `archetype:` frontmatter.
 - Skill discovery: `.claude/skills/<name>/SKILL.md` — these are the 4 user-facing entry points.
-- Plugin manifest: `.claude-plugin/plugin.json` — registers 60 agents + 4 skills + 24 registered hooks (32 .cjs files total).
+- Plugin manifest: `.claude-plugin/plugin.json`: registers 60 agents + 4 skills + 25 registered hooks (32 .cjs files total).
 
 ## Authoritative References
 

@@ -163,7 +163,7 @@ if [ -n "$stale_totals" ]; then
 fi
 
 # Check 3: .claude/settings.json $comment field hook counts.
-# Pattern: "32 .cjs files = 24 unique registered hooks ... 18 event types"
+# Pattern: "32 .cjs files = 25 unique registered hooks ... 17 event types"
 SETTINGS_COMMENT=$(jq -r '."$comment" // empty' .claude/settings.json)
 if [ -n "$SETTINGS_COMMENT" ]; then
   if ! echo "$SETTINGS_COMMENT" | grep -qE "\b${HOOK_FILES}\b.*\b${REGISTERED_HOOKS}\b"; then
@@ -172,7 +172,7 @@ if [ -n "$SETTINGS_COMMENT" ]; then
   fi
 fi
 
-# Check 4: .claude/rules/core/hooks.md mentions both 32 .cjs and 24 unique.
+# Check 4: .claude/rules/core/hooks.md mentions both 32 .cjs and 25 unique.
 if ! grep -qE "${HOOK_FILES} .cjs files? .*${REGISTERED_HOOKS} unique" .claude/rules/core/hooks.md; then
   # Fallback: looser check
   if ! grep -qE "\b${HOOK_FILES}\b" .claude/rules/core/hooks.md \

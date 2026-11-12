@@ -43,11 +43,12 @@ if (!hookName) {
   process.exit(0);
 }
 
-// v12.80.0 removed the bash guard hook (bash-validator.cjs). A session or an
-// install with a stale registration still calls `run-hook.cjs bash-validator`.
-// That call must not block a tool call and must not warn. So a retired name
-// exits 0 with no output, before the stand-down check and the file lookup.
-const RETIRED_HOOKS = new Set(['bash-validator']);
+// v12.80.0 retired the bash guard hook (bash-validator.cjs). v12.81.0 restores
+// bash-validator as a narrow guard that checks secrets and protected paths
+// only. So the name is live again, and the set is empty. The set stays for a
+// later retirement. A retired name exits 0 with no output, before the
+// stand-down check and the file lookup.
+const RETIRED_HOOKS = new Set();
 if (RETIRED_HOOKS.has(hookName)) {
   process.exit(0);
 }

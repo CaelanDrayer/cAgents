@@ -10,6 +10,95 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.81.0] - 2026-11-12
+
+Narrow Bash guard (session `act_streamline-cleanup-plugin_261111_001`,
+follow-up 2). v12.80.0 removed the Bash guard. This release restores a
+narrow guard under the same name, `bash-validator`. It has two rule
+families only. The old command-pattern rules and the GuardFall
+evaluator do not return.
+
+### Added (behavior change)
+- `.claude/hooks/bash-validator.cjs`, registered as a PreToolUse
+  matcher Bash hook in `.claude/settings.json`,
+  `.claude/settings.full.json`, and `.claude/hooks.json`. The guard
+  has two rule families:
+  - `secret-literal`: the command text holds a literal that the shared
+    scanner `scanForSecrets()` reports at critical or high. The scan
+    includes heredoc bodies. A shell expansion such as `$VAR` and a
+    loopback database URL do not count.
+  - `protected-path-write`: a simple command writes, deletes, or moves
+    a path on the shared protected list, or changes its mode or owner.
+    A read or a mention of a protected path passes.
+- The guard fails open. The secret scan runs first. An unbalanced quote
+  or an error in the path rule skips only the path rule, so a secret
+  deny still stands. A command over 256 KB skips both rules, and the
+  guard allows the call. Each fail-open event writes one line to
+  `cagents-memory/_system/logs/bash_guard.log`, never the command text.
+- A missing `bash-validator.cjs` allows the call with a message. The
+  launcher does not deny it. `bash-validator` is not in `GUARD_HOOKS`.
+- A new off switch: `CAGENTS_BASH_NARROW_GUARD=off` (any case) turns
+  the guard off.
+- New tests:
+  - `tests/hooks/bash-validator.test.js` (unit tests for the two rule
+    families, the fail-open paths, and the switches).
+  - `tests/hooks/bash-validator-fp-corpus.test.js` with the fixture
+    `tests/fixtures/bash-guard/fp-corpus.json`. The fixture holds 496
+    scrubbed real session commands and constructs. The guard gives
+    zero denies on them.
+  - `tests/regressions/bash-guard-narrow-scope.test.js`. It replaces
+    `bash-guard-removed.test.js` and pins the two rule families. It
+    also keeps the old rule set and `bash-guard-evaluator.cjs` out.
+
+### Changed
+- `.claude/hooks/secret-detection.cjs` now exports `isProtectedPath`
+  and `PROTECTED_PATHS`. The guard uses these shared detectors. It has
+  no copy of the list.
+- `.claude/hooks/run-hook.cjs`: `RETIRED_HOOKS` is now empty, so the
+  launcher runs `bash-validator` again.
+- The launcher and stdin tests (`run-hook-guard-fail-closed.test.js`,
+  `hook-stdin-truncated-payload.test.js`, `hook-exit-latency.test.js`)
+  now treat `bash-validator` as a fail-open hook.
+- Hook counts: 31 .cjs files and 24 unique registered hooks became 32
+  .cjs files and 25 unique registered hooks. The hooks fire across 17
+  event types, as before. The docs and the count tests agree with the
+  disk.
+- The old switches `CAGENTS_BASH_GUARD` and
+  `CAGENTS_BASH_GUARD_DISABLED` stay inert. Nothing reads them.
+
+### Fixed
+- Corrected: the 12.80.0 Notes said that the v12.79.8 commit messages
+  were rewritten only on the local branch. That was not complete. The
+  messages were rewritten and then pushed once to `origin main` with a
+  lease pinned to `c2455891`. The 12.80.0 sentence is fixed in place.
+
+### Security
+- The guard is a tripwire for agent mistakes and plain injections. It
+  is not a sandbox. The path rule expands `~` and `$HOME` and parses
+  `bash -c` and `sh -c` strings at one level. The secret rule still scans
+  the whole command text, including the text inside `eval`, `python -c`,
+  `node -e`, and `$(...)`. The path rule does not check these on purpose:
+  - the contents of a script file that a command runs;
+  - other variables and command substitution (`$(...)`, backticks,
+    process substitution);
+  - `eval`, and other interpreter code such as `python -c` and `node -e`;
+  - `find -delete`;
+  - the hook-config paths (`.claude/settings*.json`, `.claude/hooks/`).
+- The user decisions U-1 to U-5 use their defaults:
+  - U-1: a read of a secret file is out of scope.
+  - U-2: a loopback database URL on the Bash path passes.
+  - U-3: the hook-config paths are not on the protected list.
+  - U-4: a missing guard file allows the call with a message. It does
+    not fail closed.
+  - U-5: the hook keeps the name `bash-validator`.
+- Known open point: the shared Database Credentials pattern in
+  `secret-detection.cjs` still matches across spaces on the Write
+  path. This release does not change it.
+
+### Notes
+- Version decision CD-FU2-01: a minor bump. The release restores a
+  hook and adds a switch. No hook event type changes.
+
 ## [12.80.0] - 2026-11-12
 
 Bash guard removal (session `act_streamline-cleanup-plugin_261111_001`,
@@ -88,7 +177,8 @@ normal Claude Code permission flow only.
   the 5-file patch rule, and it should have been a minor bump. History
   is not re-versioned.
 - The commit messages of the 10 v12.79.8 commits (9 work-item commits
-  and the merge) were rewritten locally. Only the `Co-Authored-By`
+  and the merge) were rewritten and then pushed once to `origin main`
+  with a lease pinned to `c2455891`. Only the `Co-Authored-By`
   trailer changed, and the merge message names the new short hashes.
   The trees, authors, and dates are unchanged.
 

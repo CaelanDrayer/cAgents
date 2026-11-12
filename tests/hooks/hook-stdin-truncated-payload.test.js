@@ -15,7 +15,8 @@ import { join } from 'path';
 // The contract that these tests pin:
 //   1. A complete payload on a held-open stdin gives a verdict and an exit < 3 s.
 //   2. A truncated payload DENIES for the real guards (WriteEditDispatch,
-//      AgentDispatch). v12.80.0 removed the bash guard (BashValidator).
+//      AgentDispatch). The narrow bash guard (BashValidator) is not in
+//      NO_PAYLOAD_FAIL_CLOSED, so a truncated payload ALLOWS for it.
 //   3. A truncated payload does NOT deny for SessionInitGate (advisory, HS-7).
 //   4. An empty payload ALLOWS with exactly one systemMessage (W5).
 //   5. Advisory hooks fail open on a truncated payload.
@@ -144,6 +145,16 @@ describe('hook stdin contract (HS-3 / H6 / W5 / HS-7)', () => {
     expect(r.signal, r.stderr).toBeNull();
     expect(r.ms).toBeLessThan(EXIT_BUDGET_MS);
     expect(isDeny(parseSingle(r.stdout))).toBe(true);
+  }, 30000);
+
+  it('a truncated payload ALLOWS for BashValidator and exits in < 3 s', async () => {
+    const r = await runHook('bash-validator.cjs', payload('truncated'), { holdOpen: false });
+    expect(r.signal, r.stderr).toBeNull();
+    expect(r.code, r.stderr).toBe(0);
+    expect(r.ms).toBeLessThan(EXIT_BUDGET_MS);
+    const v = parseSingle(r.stdout);
+    expect(isDeny(v), r.stdout).toBe(false);
+    expect(v.continue).toBe(true);
   }, 30000);
 
   it('a truncated payload does NOT deny for SessionInitGate (advisory, HS-7)', async () => {

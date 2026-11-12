@@ -6,7 +6,8 @@
  * spawn and a "Checking permissions..." flash to every permission dialog, and
  * it changed nothing. WI-15 unregistered it from every hook config and deleted
  * the file. The $comment hook count went from 26 to 25 unique registered hooks.
- * v12.80.0 removed bash-validator, so the count is now 24.
+ * v12.80.0 removed bash-validator, so the count went to 24. v12.81.0 added the
+ * narrow bash-validator back, so the count is now 25.
  *
  * A1: the approve-always clicks for the test runner and the CI scripts moved
  * into the shipped permissions.allow block. The broad interpreter wildcards
@@ -45,13 +46,14 @@ describe('WI-15 D1: the no-op permission-handler hook is gone', () => {
     expect(registeredHookNames(cfg).has('permission-handler')).toBe(false);
   });
 
-  it('settings.json $comment hook count matches the registered hooks (24)', () => {
+  it('settings.json $comment hook count matches the registered hooks (25)', () => {
     const cfg = readJson('.claude/settings.json');
     const m = String(cfg.$comment || '').match(/(\d+)\s+unique registered hooks/);
     expect(m, '$comment must state "N unique registered hooks"').not.toBeNull();
     expect(Number(m[1])).toBe(registeredHookNames(cfg).size);
     // v12.80.0 removed the bash guard hook, so the count went from 25 to 24.
-    expect(Number(m[1])).toBe(24);
+    // v12.81.0 added the narrow bash-validator, so the count went from 24 to 25.
+    expect(Number(m[1])).toBe(25);
   });
 
   it('settings.json and hooks.json register the same hook names', () => {

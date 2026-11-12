@@ -468,6 +468,7 @@ cagents-memory/_system/templates/repo-bootstrap/agent-infrastructure.md
 cagents-memory/_system/templates/repo-bootstrap/agent-shared.md
 cagents-memory/_system/templates/repo-bootstrap/DOMAIN_CHECKLIST.md
 .claude/hooks/agent-dispatch.cjs
+.claude/hooks/bash-validator.cjs
 .claude/hooks/config-change-logger.cjs
 .claude/hooks/controller-delegation-validator.cjs
 .claude/hooks/goal-evaluator-logger.cjs

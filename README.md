@@ -12,7 +12,7 @@ Deploy 60 specialized agents across 9 builder-role archetypes. An intelligent pi
 |------|-------|
 | Agents | 60 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /act) |
-| Hooks | 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher, across 17 event types |
+| Hooks | 32 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher, across 17 event types |
 | Models | Each agent records an advisory model in `metadata.model` (27 sonnet, 23 opusplan, 7 opus, 3 fable). Claude Code does not read that field, so every subagent inherits the session model unless the spawn passes `model`. The catalog uses no `model: haiku` or `tier: support`; both remain available via `model_routing.yaml` |
 
 ---
@@ -43,7 +43,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 
 - **Claude Code 2.1.198+** (required). Nested subagents need 2.1.172 or later. The synchronous-spawn rules assume the background-by-default subagents of 2.1.198. On 2.1.217 and 2.1.218 nesting is off by default, so set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` on those versions.
 - **Bash** (required on Windows). Every hook runs through `bash -c`. On Windows, install Git for Windows, which supplies Git Bash. Since Claude Code 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` blocks the call when Git for Windows is missing. Without Git Bash, every Bash, Write, Edit, and Agent call is denied. Linux and macOS have bash already.
-- **Node.js** (recommended). It powers 24 unique registered hooks + 5 dispatched sub-validators (31 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher). Those hooks handle session management, secret detection, team coordination, and completion verification.
+- **Node.js** (recommended). It powers 25 unique registered hooks + 5 dispatched sub-validators (32 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher). Those hooks handle session management, secret detection, team coordination, and completion verification.
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -298,9 +298,9 @@ This fires automatically, and it requires no prompt engineering. It is a no-op w
 
 ### Lifecycle Hooks
 
-cAgents ships 31 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. No cAgents hook checks Bash commands. The `permissions.deny` patterns in `.claude/settings.json` still block a small set of Bash commands. The hooks fire across 17 of Claude Code's 24 event types:
+cAgents ships 32 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. `bash-validator.cjs` is a narrow PreToolUse[Bash] guard. It denies a critical or high secret literal in the command text. It also denies a write, a delete, a move, or a mode or owner change on a protected path. It fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. It is a tripwire for agent mistakes and plain injections, not a sandbox. In the source repo, the `permissions.deny` patterns in `.claude/settings.json` also block a small set of Bash commands. A plugin install has no such block. The hooks fire across 17 of Claude Code's 24 event types:
 
-The table lists all 24 registered hooks from `.claude/hooks.json`. Rows marked "via" are dispatched sub-validators. They run inside the named dispatcher and have no registration of their own.
+The table lists all 25 registered hooks from `.claude/hooks.json`. Rows marked "via" are dispatched sub-validators. They run inside the named dispatcher and have no registration of their own.
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -320,6 +320,7 @@ The table lists all 24 registered hooks from `.claude/hooks.json`. Rows marked "
 | PreToolUse[Agent] | agent-dispatch.cjs | Run the 2 Agent sub-validators in one process |
 | (via agent-dispatch) | session-init-gate.cjs | Ensure session init complete before agent spawns |
 | (via agent-dispatch) | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
+| PreToolUse[Bash] | bash-validator.cjs | Narrow guard: deny secret literals and writes to protected paths (fail-open) |
 | PostToolUse[Agent\|Task] | spawn-footprint.cjs | Record spawn size numbers (diagnostic only, never blocks) |
 | PostToolUse[Bash], PostToolUse[Write\|Edit\|NotebookEdit] | post-write-validator.cjs | Validate JSON/YAML syntax after writes |
 | PostToolUse[Write\|Edit\|NotebookEdit] | validator-evidence-recheck.cjs | Re-run the evidence of a validator PASS report |
@@ -392,7 +393,7 @@ Use `/team` for cross-domain work that spans multiple areas. Launching a product
 | **Parallel team execution** | Yes: N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes: executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes: spec compliance then code quality | No | No |
-| **Hook lifecycle** | 24 unique registered hooks + 5 dispatched sub-validators across 17 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 25 unique registered hooks + 5 dispatched sub-validators across 17 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes: attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes: 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes: `/team` strategic mode fires the full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
@@ -462,7 +463,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.80.0** — Current release. The bash guard hook (`bash-validator`) and its evaluator library are removed. No cAgents hook checks Bash commands now, and the `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` switches are inert. A stale registration exits 0 through the launcher. A regression test now pins the removal.
+- **V12.81.0** — Current release. A narrow Bash guard returns under the name `bash-validator`. It has two rules only: a critical or high secret literal in the command text, and a write to a protected path. It fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. The old `CAGENTS_BASH_GUARD` switches stay inert.
+- **V12.80.0** — This release removed the Bash guard hook (`bash-validator`) and its evaluator library, and made the `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` switches inert. A stale registration exited 0 through the launcher. A regression test pinned the removal.
 - **V12.79.8** — This release fixes the findings of the pre-merge review. The DB URL mask stops at whitespace, the history filter of a skills test is narrower, and a new test keeps hidden code points out of the example store.
 - **V12.79.7** — CLAUDE.md is slimmed from 28,528 to about 24,100 bytes. Every load-bearing rule stays, and no rule moved to another file.
 - **V12.79.6** — The rules and agents surface lowers 143 ALL-CAPS emphasis tokens to sentence case. Every obligation stays. Three headings lose their emphasis prefix, and every citer names the new heading.
