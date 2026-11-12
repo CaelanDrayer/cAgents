@@ -18,13 +18,13 @@ acceptable for SAFE / LOW / MEDIUM risk findings:
      untracked additions.
    - **File backup** (fallback when git unavailable or in a non-repo
      working tree): copy the target file(s) to `cagents-memory/sessions/{id}/snapshots/improve-{N}/`.
-2. **Apply**: Make the change (Edit/Write/Bash). The change MUST be
+2. **Apply**: Make the change (Edit/Write/Bash). The change must be
    confined to the files declared in the finding's `affected_files`
    list — broader edits trigger an automatic rollback before the
    verification step.
 3. **Test**: Run the verification chain appropriate to the risk tier
    (see the Validation Required column in the Risk Levels table below).
-   The verification command MUST complete without errors AND produce
+   The verification command must complete without errors AND produce
    evidence (exit code 0 + matching output for `metric_check` /
    `test_result` verifications).
 4. **Keep-or-rollback**: If verification PASSES, commit the change
@@ -35,7 +35,7 @@ acceptable for SAFE / LOW / MEDIUM risk findings:
    command's output appended.
 
 The primitive is invoked once per finding. Multiple findings batched into
-one apply step are NOT supported — each finding gets its own snapshot
+one apply step are not supported — each finding gets its own snapshot
 and its own keep-or-rollback decision, so a single failing change does
 not block the remaining queue.
 

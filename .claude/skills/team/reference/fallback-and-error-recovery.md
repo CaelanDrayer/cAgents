@@ -4,10 +4,10 @@ This file gives the mandatory /act fallback for a request that does not suit a
 team. It also gives the automatic recovery from a subagent failure, and the
 decision between /act and /team.
 
-## Fallback (MANDATORY)
+## Fallback (required)
 
-If the request has fewer than 3 work items, you **MUST** pass it to /act. If
-the request has no parallel work, you **MUST** also pass it to /act. Never fail
+If the request has fewer than 3 work items, you **must** pass it to /act. If
+the request has no parallel work, you **must** also pass it to /act. Never fail
 in silence. Never leave a request unhandled:
 
 ```
@@ -25,7 +25,7 @@ from the team execution, or it comes from the /act delegation.
 | All items strictly sequential (no parallelism) | `Skill({ skill: "act", args: "..." })` |
 | Tier 2 with < 4 items | Prefer `/act` over `/team` |
 
-The /team skill MUST do one of two things. It executes the work as a team, or
+The /team skill must do one of two things. It executes the work as a team, or
 it delegates the work to /act. There is no third option.
 
 ## Automatic Subagent Failure Recovery
@@ -42,8 +42,8 @@ gets 2 retries at most.
 Agent({
   description: "RETRY Wave {K} - TASK-{N}: <description>",
   prompt: "Previous attempt failed with: {error_context}. Avoid: {failure_cause}.
-          CRITICAL: You are a controller agent. Spawn the assigned execution agent via Agent tool to implement.
-          Do NOT implement directly. Delegate to cagents:{agent_from_work_items} and spawn cagents:reviewer to validate.
+          You are a controller agent. Spawn the assigned execution agent via Agent tool to implement.
+          Do not implement directly. Delegate to cagents:{agent_from_work_items} and spawn cagents:reviewer to validate.
           ...",
   team_name: "{team_name}",
   name: "w{K}-task-{N}-{controller_type}-retry-{R}",

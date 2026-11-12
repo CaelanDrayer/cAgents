@@ -10,6 +10,30 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.5] - 2026-11-11
+
+Emphasis release for the skills surface (WI-43). It changes how strongly
+the model weighs each rule, so it lands as its own commit. One revert
+restores the old emphasis.
+
+### Changed
+- 176 ALL-CAPS emphasis tokens in 11 files under `.claude/skills/` are now
+  sentence case. The WI-42 ledger gives the new text for each row. Every
+  obligation is kept: a `MUST` became "must", a `NEVER` became "never", or
+  the sentence became an imperative. Where a rule had no reason, the same
+  sentence now states one. No rule was added, removed, reordered, or merged.
+- The emphasis count on the skills surface fell from 361 to 185. The
+  ledger keeps the other tokens or does not list them for this item. Kept
+  tokens include identifiers (such as `PASS`, `FAIL`, and `REVISE`), one
+  safety rule in `act/SKILL.md`, and one quote of `CLAUDE.md` that WI-45
+  owns.
+- `/designer` still stops and waits for the user. The wait rule now states
+  its reason.
+- `act/reference/state-machine-detail.md` and
+  `team/reference/teammate-spawning-template.md` now state the reviewer
+  loop cap as 2 rounds. This matches `max_internal_rounds: 2` in
+  `pipeline_config.yaml`. The outer validator loop keeps its cap of 3.
+
 ## [12.79.4] - 2026-11-11
 
 Cleanup release. It removes unreachable resources, Python leftovers, and

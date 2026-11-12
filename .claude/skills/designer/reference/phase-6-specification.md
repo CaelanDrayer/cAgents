@@ -3,15 +3,15 @@
 **Goal**: Generate production-ready artifacts from all of the design
 information that you gathered.
 
-**Research agents**: The designer ALWAYS spawns them. The `--deep` flag is not
+**Research agents**: The designer always spawns them. The `--deep` flag is not
 needed.
 
 ## Continuation Gate Cascade (refinement-first)
 
 Refinement is the default state of the designer. The artifacts that you
-generate are NOT the end of the session. They are the start of the next
-refinement pass. The designer NEVER self-terminates. A build option, an export
-option, or a stop option appears ONLY after the user explicitly says that they
+generate are not the end of the session. They are the start of the next
+refinement pass. The designer never self-terminates. A build option, an export
+option, or a stop option appears only after the user explicitly says that they
 are done. `AskUserQuestion` allows at most 4 options in one call, so the gate
 is a cascade:
 
@@ -22,13 +22,13 @@ Call 1 (continuation gate — refinement-first):
   I'm done refining — show build / export options |
   Save & pause
 
-Call 2 (ONLY if user picks "I'm done refining"):
+Call 2 (only if user picks "I'm done refining"):
   Build now (/act) |
   Build with team (/team) |
   Build with team strategic mode (/team --strategic, cross-domain) |
   Export / Share / Manual (non-implementation exits)
 
-Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
+Call 3 (only if user picks "Export / Share / Manual" in Call 2):
   Export design (PDF/Markdown) |
   Share design (read-only link) |
   Manual execute (printable checklist) |
@@ -38,7 +38,7 @@ Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
 ### Rules for the cascade
 
 1. **Call 1 defaults to refinement.** The recommended option is "Refine a
-   specific area". A build option or an export option NEVER appears in Call 1.
+   specific area". A build option or an export option never appears in Call 1.
    If the user selects either refinement option, re-enter Refinement for the
    chosen scope and return to this same gate. The loop does not exit on its
    own. The build-handoff strings are `Build now (/act`, `Build with team
@@ -57,7 +57,7 @@ Call 3 (ONLY if user picks "Export / Share / Manual" in Call 2):
    curriculum, a research-study protocol, and a personal routine. The user gets
    a terminal action, and no `/act` invocation is forced.
 5. The user explicitly chooses a build option, an export option, or a
-   save-and-stop option. ONLY after that choice, write `phase: completed` to
+   save-and-stop option. Only after that choice, write `phase: completed` to
    `status.yaml` and clean up the tasks. Never write it on your own initiative
    because some artifacts exist.
 
@@ -205,9 +205,9 @@ ${recommendation}`,
 
 ## Continuation Gate Offer
 
-**CRITICAL**: The artifacts that you generate are NOT "complete." Present the
-continuation gate with refinement first. Do NOT lead with the build options. Do
-NOT advance to build or to export on your own, because the designer never
+The artifacts that you generate are not "complete." Present the
+continuation gate with refinement first. Do not lead with the build options. Do
+not advance to build or to export on your own, because the designer never
 self-terminates.
 
 ```javascript
@@ -275,7 +275,7 @@ Enter continuous refinement mode:
 3. Targeted refinement with research agent
 4. Show diff of what changed
 5. Loop back to step 1
-6. Exit ONLY when the user explicitly selects "I'm done refining" —
+6. Exit only when the user explicitly selects "I'm done refining",
    never on a turn count, artifact count, or your own judgment
 ```
 
@@ -293,4 +293,4 @@ To implement later:
 
 ### Terminal Phase Value
 
-Write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml` ONLY after the user explicitly chooses a build option, an export option, or a save-and-stop option. The verify-completion.cjs Stop hook recognizes three terminal phase values, which are `complete`, `completed`, and `validating`. Any other value triggers a non-blocking warning. Do NOT write a terminal phase value while the user is still refining. Do NOT write one while the user can refine again, because refinement is the default state. If you mark the session complete on your own initiative, that is the self-termination bug that this contract exists to prevent.
+Write `phase: completed` to `cagents-memory/sessions/{session_id}/status.yaml` only after the user explicitly chooses a build option, an export option, or a save-and-stop option. The verify-completion.cjs Stop hook recognizes three terminal phase values, which are `complete`, `completed`, and `validating`. Any other value triggers a non-blocking warning. Do not write a terminal phase value while the user is still refining. Do not write one while the user can refine again, because refinement is the default state. If you mark the session complete on your own initiative, that is the self-termination bug that this contract exists to prevent.

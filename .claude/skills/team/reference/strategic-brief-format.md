@@ -26,7 +26,7 @@ strategic_brief:
       work_required: ["{summary work item 1}", "{summary work item 2}"]
       estimated_complexity: simple|moderate|complex
       dependency_type: independent | dependent_on    # NEW (v12.2.0)
-      dependent_on: ["{upstream_domain_key_1}", ...] # NEW (v12.2.0) — present ONLY when dependency_type == dependent_on
+      dependent_on: ["{upstream_domain_key_1}", ...] # NEW (v12.2.0): present only when dependency_type == dependent_on
   cross_domain_dependencies:
     - from: {domain}.{WI}
       to: {domain}.{WI}
@@ -68,8 +68,8 @@ If an entry has no `dependency_type` field, the planner SHOULD treat that entry 
 Allowed value: an array of `domain_key` strings. Each string names an upstream domain. The dependent domain needs the outputs of that upstream domain.
 
 - When `dependency_type` is `dependent_on`, the array must hold one entry or more.
-- Each `domain_key` in the list MUST exist as another entry in `domain_assignments`. That entry MUST be `independent`, or it MUST be upstream of this entry in the dependency graph. The graph must hold no cycle.
-- The `dependent_on` arrays form a dependency graph. That graph MUST be acyclic. Validation Point 3 does the cycle detection with the `dependency_graph_acyclic` check below.
+- Each `domain_key` in the list must exist as another entry in `domain_assignments`. That entry must be `independent`, or it must be upstream of this entry in the dependency graph. The graph must hold no cycle.
+- The `dependent_on` arrays form a dependency graph. That graph must be acyclic. Validation Point 3 does the cycle detection with the `dependency_graph_acyclic` check below.
 
 Example:
 ```yaml
@@ -102,7 +102,7 @@ In this example, `engineering` and `creative` dispatch in parallel during the fi
 
 ## Cross-Domain Validation Protocol (V10.23.0)
 
-Every state transition in the `/team` strategic-mode pipeline MUST include a structured validation. The strategic-mode lead validates the outputs at 5 checkpoints. That role was the CEO role before. The checkpoints make sure that the work is consistent across the domains, and that the work is complete.
+Every state transition in the `/team` strategic-mode pipeline must include a structured validation. The strategic-mode lead validates the outputs at 5 checkpoints. That role was the CEO role before. The checkpoints make sure that the work is consistent across the domains, and that the work is complete.
 
 ### Validation Point 1: Pre-Deliberation (after ANALYZED)
 
@@ -180,7 +180,7 @@ strategic_brief_validation:
     domain_dependency_type_declared:        # NEW (v12.2.0)
       entries_total: {N}
       entries_with_dependency_type: {N}
-      entries_missing_dependency_type: []   # MUST be empty for PASS in v12.3.0+
+      entries_missing_dependency_type: []   # must be empty for PASS in v12.3.0+
       passed: true
     dependent_on_well_formed:                # NEW (v12.2.0)
       entries_with_dependency_type_dependent_on: {N}

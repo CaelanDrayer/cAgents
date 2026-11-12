@@ -1,10 +1,19 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.4
+**Current Version**: 12.79.5
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.5 - November 11, 2026 (skills emphasis)
+
+This patch release lowers 176 ALL-CAPS emphasis tokens on the skills
+surface to sentence case. A ledger row gives the new text for each token.
+Every obligation is kept, and a rule that had no reason now states one.
+The emphasis count under `.claude/skills/` fell from 361 to 185. Two
+skills references now state the reviewer loop cap as 2 rounds, which
+matches the pipeline config.
 
 ## V12.79.4 - November 11, 2026 (cleanup)
 
@@ -2782,5 +2791,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.4
+**Current Version**: 12.79.5
 **Release Date**: August 21, 2026

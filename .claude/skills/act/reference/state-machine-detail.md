@@ -15,7 +15,7 @@ This file gives the state-by-state semantics of the /act event-driven pipeline. 
   +-> controller (level 1)
        +-> executor (level 2)        -> implementation
        +-> reviewer (level 2)        -> review_report.yaml
-       +-> revision loop (level 2, max 3 rounds)
+       +-> revision loop (level 2, max 2 rounds)
   |
   Phase 3: Validation (level 1)
   +-> validator (level 1)            -> validation_report.yaml
@@ -46,10 +46,10 @@ while current_state is not terminal (VALIDATED):
   3. Spawn agent at level 1 via Agent tool
   4. After agent returns, read the agent's primary output file
      (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml)
-  5. MANDATORY: Update status.yaml with new state
+  5. Required: update status.yaml with new state
      a. Set pipeline_state to next_state
      b. Append new state_history entry with entered_at=now
-        (v12.6.0: duration_ms is NO LONGER emitted — drop the field)
+        (v12.6.0: duration_ms is no longer emitted; drop the field)
      c. If the state was skipped (orchestrator-skip enumerated allowlist),
         also write `skipped: true` and `skipped_reason: <enum>` to the entry.
         See `state_history Skip Fields (v12.7.0)` below.
@@ -101,13 +101,13 @@ This rule stops an infinite revision loop on a debug session that is stuck at it
 
 ```yaml
 pipeline_state: PLANNED     # both FAIL and REVISE route here in v12.0.0+
-# v12.6.0: revision_round and validation_cycles fields are NO LONGER written to status.yaml.
+# v12.6.0: revision_round and validation_cycles fields are no longer written to status.yaml.
 # Track revision count in /act's working state; enforce the 3-cycle cap there.
 ```
 
 ## Loop Exit Contract
 
-The loop can exit at any terminal state. Those states are VALIDATED, COORDINATED on the minimal path, and any other terminal state. When the loop exits, execute Step 4 in SKILL.md before you stop. Step 4 is MANDATORY. The verify-completion.cjs Stop hook blocks the stop when execution_summary.yaml is missing, and when that file is auto-generated. A stop after the loop exits, with Step 4 incomplete, is the #1 cause of an incomplete pipeline run.
+The loop can exit at any terminal state. Those states are VALIDATED, COORDINATED on the minimal path, and any other terminal state. When the loop exits, execute Step 4 in SKILL.md before you stop. Step 4 is required. The verify-completion.cjs Stop hook blocks the stop when execution_summary.yaml is missing, and when that file is auto-generated. A stop after the loop exits, with Step 4 incomplete, is the #1 cause of an incomplete pipeline run.
 
 ## Event File Format (REMOVED in v12.6.0)
 
@@ -119,7 +119,7 @@ An archived pre-v12.6 session keeps `workflow/events/` on disk for the record.
 
 Sometimes the orchestrator-skip enumerated allowlist skips a pipeline state.
 That allowlist is in `.claude/skills/act/SKILL.md` Step 3c and in
-`reference/adaptive-pipeline.md`. In that case the state_history entry MUST
+`reference/adaptive-pipeline.md`. In that case the state_history entry must
 record the skip with these two fields:
 
 ```yaml
@@ -139,7 +139,7 @@ state_history:
 | `disabled-by-flag` | Skip driven by an explicit CLI flag or env override. |
 
 The pre-v12.7 freeform `note` field on a state_history entry is
-**deprecated**. New code MUST emit `skipped_reason`. A reader SHOULD accept
+**deprecated**. New code must emit `skipped_reason`. A reader SHOULD accept
 either field for back-compat, and it SHOULD prefer `skipped_reason` when both
 fields are present. Any value of `skipped_reason` outside the three values
 above is a schema violation.

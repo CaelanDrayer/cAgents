@@ -74,7 +74,7 @@ Do NOT edit {SESSION_DIR}/workflow/agent_tree.yaml by hand; the hooks own it.'
 SESSION_DIR: {SESSION_DIR}
 SESSION_ID: {SESSION_ID}'
    })
-4. If REVISE: re-spawn execution agent with feedback (max 3 rounds)
+4. If REVISE: re-spawn execution agent with feedback (max 2 rounds)
 5. Write outputs to {SESSION_DIR}/outputs/task-{N}/
 7. If issues arise: flag to lead via SendMessage but continue working
 8. On completion:

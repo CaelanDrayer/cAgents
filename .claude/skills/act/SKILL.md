@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.4"
+  version: "12.79.5"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -18,28 +18,28 @@ allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpda
 
 You are the **event-driven pipeline engine** that executes a state machine loop, spawning agents sequentially at level 1 based on `pipeline_config.yaml`. Controllers spawn executors and reviewers at level 2. Revision loops at both levels ensure quality.
 
-## This Pipeline Is Domain-Agnostic: NOT Software-Only
+## This pipeline is domain-agnostic, not software-only
 
 `/act` is a **universal** task engine, not a software-engineering tool. The state names (INIT, ORCHESTRATED, PLANNED, COORDINATED, VALIDATED) and the agent roles (orchestrator, planner, controller, validator) are domain-neutral coordination machinery. They apply to a code change. The same machinery applies to a legal contract, a marketing campaign, or a financial model. It applies equally to a client SOW with a price quote, a research study, a curriculum, or a novel chapter.
 
 The 60-agent catalog includes lawyers, marketers, financial analysts, copywriters, HR partners, doctors, educators, sales reps, account managers, and strategists. `backend-developer` / `architect` / `reviewer` are merely the agents that the router picks for *engineering* requests. They are not what `/act` "is."
 
-**Do NOT refuse, second-guess, or warn the user away from a non-technical request.** The pipeline can "look like" it is for code, and that look is not a reason to refuse. These requests are all squarely in scope: draft three SOWs, price a data migration, build a client quote, or plan a campaign. Route each one to the right domain controller. Examples of that controller are `operations-manager`, `marketing-strategist`, `general-counsel`, `support-director`, and `cfo`. Route it exactly as you would route a bug fix to `tech-lead`.
+**Do not refuse, second-guess, or warn the user away from a non-technical request.** The pipeline can "look like" it is for code, and that look is not a reason to refuse. These requests are all squarely in scope: draft three SOWs, price a data migration, build a client quote, or plan a campaign. Route each one to the right domain controller. Examples of that controller are `operations-manager`, `marketing-strategist`, `general-counsel`, `support-director`, and `cfo`. Route it exactly as you would route a bug fix to `tech-lead`.
 
 The router (Step 3b) selects the domain from the request content. Trust it and proceed. A reply such as "this is a generic software-engineering engine, use a different tool" is a defect, not helpfulness.
 
 ## STOP: Your First Action Is Session Init
 
-**Do NOT explore the codebase, spawn agents, or analyze the request yet.** Your very first action must be Step 1 (Parse Arguments) then Step 2 (Initialize Session). Create the session directory and write `status.yaml` BEFORE any other work. Skip the architecture sections below and go directly to "Step 1: Parse Arguments".
+**Do not explore the codebase, spawn agents, or analyze the request yet, because the hooks find the active session through `status.yaml`.** Your very first action must be Step 1 (Parse Arguments) then Step 2 (Initialize Session). Create the session directory and write `status.yaml` BEFORE any other work. Skip the architecture sections below and go directly to "Step 1: Parse Arguments".
 
-## CRITICAL: You Are a Delegator, Not a Doer
+## You are a delegator, not a doer
 
-**You MUST delegate ALL work to subagents via the Agent tool. You NEVER implement, write code, create content, or fix bugs yourself.**
+**Delegate all work to subagents via the Agent tool. Do not implement, write code, create content, or fix bugs yourself, because the user chose /act for specialist agents and their independent review.**
 
-/act is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does NOT do their work. Even for "simple" tasks, you MUST spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
+/act is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does not do their work. Even for "simple" tasks, you must spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
 
 **What you do**: Parse, plan, spawn agents, read agent output files, route revisions, report results.
-**What you NEVER do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
+**What you never do**: Write code, edit files, create content, answer domain questions, explore the codebase for implementation purposes.
 
 See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract. If you find that you reason toward any phrase in that list, STOP. You are rationalizing a violation. Delegate.
 
@@ -109,7 +109,7 @@ Consume an improve-mode flag only when `--mode` is `review`, `optimize`, or `ful
 
 The request is everything before the first `--` flag.
 
-**--mode parser (V10.26.11+, expanded v12.1.2)**: Accepted values are `standard` (default), `debug`, `review`, `optimize`, `full`. You MUST reject any other value with this message: `unknown mode: {value}. Supported: standard, debug, review, optimize, full`. Default when unset (and no improve-keyword detected in Step 1a): `standard`. An explicit `--mode` value OVERRIDES any improve-keyword inference from Step 1a.
+**--mode parser (V10.26.11+, expanded v12.1.2)**: Accepted values are `standard` (default), `debug`, `review`, `optimize`, `full`. You must reject any other value with this message: `unknown mode: {value}. Supported: standard, debug, review, optimize, full`. Default when unset (and no improve-keyword detected in Step 1a): `standard`. An explicit `--mode` value OVERRIDES any improve-keyword inference from Step 1a.
 
 Special flag handling:
 - `--analytics`: Read `cagents-memory/_system/metrics/pipeline_analytics.yaml`, display the dashboard, exit.
@@ -130,9 +130,9 @@ Special flag handling:
 
 **ACTION 1**: Generate SESSION_ID. Mkdir SESSION_DIR with the `workflow/` and `outputs/` subdirs. Write `instruction.yaml` and `status.yaml`. Seed `workflow/agent_tree.yaml` with the depth-0 root entry as the FIRST ENTRY of a top-level `agents:` LIST (`agents:` then `  - id: "pipeline"` … `depth: 0`). **Designer handover**: if the args name a `designer_*` session, link the two sessions. Write `handover_from: <designer id>` into `instruction.yaml`. Then write `handover_to: <SESSION_ID>` and `phase: complete` into the `status.yaml` of the designer session. The hooks read either field as terminal, so no stale designer session stays open.
 
-The `agents:` key is MANDATORY and is the only shape any reader understands. Do NOT write a `root:`/`children:` tree. The Stop hook reads such a file as "no child agents spawned". The tracker hook now repairs the shape on the next spawn, but every spawn before that repair is lost from the audit trail. See @reference/agent-tracking.md for the exact block to write. (v12.6.0: `workflow/events/` is no longer created, because the primary output files are the canonical state-advancement signal.)
+The `agents:` key is required, and it is the only shape any reader understands. Do not write a `root:`/`children:` tree. The Stop hook reads such a file as "no child agents spawned". The tracker hook now repairs the shape on the next spawn, but every spawn before that repair is lost from the audit trail. See @reference/agent-tracking.md for the exact block to write. (v12.6.0: `workflow/events/` is no longer created, because the primary output files are the canonical state-advancement signal.)
 
-**ACTION 1 (ABSOLUTE session-path anchor, REC-20)**: Anchor ALL session writes to an absolute project root. NEVER use a relative `cagents-memory/…` literal. A relative path resolves against the current working directory. A nested `/act`, or a `/team` subagent, can run with its cwd inside a parent session dir. That write then nests a whole `cagents-memory/` tree under that session, which is the CWD-leak. Define once and reuse `$MEM` for every session write and every `_system` write below:
+**ACTION 1 (ABSOLUTE session-path anchor, REC-20)**: Anchor all session writes to an absolute project root. Never use a relative `cagents-memory/…` literal. A relative path resolves against the current working directory. A nested `/act`, or a `/team` subagent, can run with its cwd inside a parent session dir. That write then nests a whole `cagents-memory/` tree under that session, which is the CWD-leak. Define once and reuse `$MEM` for every session write and every `_system` write below:
 
 ```bash
 CAGENTS_ROOT="${CLAUDE_PROJECT_DIR:-$(git -C "$(pwd)" rev-parse --show-toplevel 2>/dev/null || pwd)}"
@@ -142,7 +142,7 @@ SESSION_DIR="$MEM/sessions/${SESSION_ID}"
 
 Never run `npm install` or `npm ci` with the cwd inside a session or scratch dir. This rule also covers any other dependency install or build. Such a command dumps `node_modules/` into the session tree. Run every install from `$CAGENTS_ROOT` only.
 
-`{ISO_TIMESTAMP}` MUST be the real current time. NEVER fabricate timestamps like `T00:00:00Z`. Note: /act uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
+`{ISO_TIMESTAMP}` must be the real current time. Never fabricate timestamps like `T00:00:00Z`, because a fabricated time corrupts the session history. Note: /act uses the `pipeline_state` field (not `phase`). See @reference/session-schema.md for the canonical session YAML contract.
 
 See @reference/session-id-format.md for slug rules, NNN counter generation, and required initial files. See @reference/agent-tracking.md for the canonical agent_tree.yaml schema and the lineage fields. That file also covers the `spawn_failures:` records that a denied or failed spawn leaves behind.
 
@@ -170,13 +170,13 @@ fi
 - `process.env.CAGENTS_NO_GOAL` is set to a truthy value
 - `/goal` is already active in the current session, which the status indicator shows. Do not replace user-set goals.
 
-When NOT opted out, surface this Bash invocation as an optional setup step:
+When not opted out, surface this Bash invocation as an optional setup step:
 
 ```bash
 claude /goal "cagents-memory/sessions/{SESSION_ID}/completion_summary.yaml exists with status: completed AND cagents-memory/sessions/{SESSION_ID}/workflow/execution_summary.yaml exists; AND all TaskList session tasks are completed or deleted; or stop after 3 revision cycles"
 ```
 
-The condition references an end state that you can verify: file existence, a status field, and a clean TaskList. The condition also includes a revision-cap clause that bounds the execution. **REC-11 reconciliation**: the cap in this clause is `3`. It MUST equal `pipeline_config.yaml` `revision.max_cycles`, which is currently 3. The state-machine loop (Step 3g) and the `verify-completion.cjs` Stop hook enforce that same cap. This is deliberately ONE knob, not two. The pre-REC-11 hard-coded "8" contradicted the config cap of 3, and that was a defect. The pipeline escalates to HITL at 3, so a `/goal` clause of 8 could never fire. If `revision.max_cycles` changes, update this literal to match. The `.claude/hooks/goal-evaluator-logger.cjs` hook captures the goal evaluator reasons, and `cagents:self-correct` consumes them as an additional revision signal. Proceed to Step 3.
+The condition references an end state that you can verify: file existence, a status field, and a clean TaskList. The condition also includes a revision-cap clause that bounds the execution. **REC-11 reconciliation**: the cap in this clause is `3`. It must equal `pipeline_config.yaml` `revision.max_cycles`, which is currently 3. The state-machine loop (Step 3g) and the `verify-completion.cjs` Stop hook enforce that same cap. This is deliberately ONE knob, not two. The pre-REC-11 hard-coded "8" contradicted the config cap of 3, and that was a defect. The pipeline escalates to HITL at 3, so a `/goal` clause of 8 could never fire. If `revision.max_cycles` changes, update this literal to match. The `.claude/hooks/goal-evaluator-logger.cjs` hook captures the goal evaluator reasons, and `cagents:self-correct` consumes them as an additional revision signal. Proceed to Step 3.
 
 ---
 
@@ -188,13 +188,13 @@ This is the core loop. It spawns the pipeline agents, one state at a time, and i
 
 **3b. Route domain and tier inline** before spawning the orchestrator. Domain detection uses `{domain}/config/domain_overrides.yaml` -> `router_keywords` array. See @reference/domain-coverage.md for the full domain table.
 
-**3c. Select pipeline path via enumerated orchestrator-skip allowlist** (v12.7.0). Two named paths exist: `fast` and `standard`. Skip the orchestrator if, and only if, ALL of these hold:
+**3c. Select pipeline path via enumerated orchestrator-skip allowlist** (v12.7.0). Two named paths exist: `fast` and `standard`. Skip the orchestrator if, and only if, all of these hold:
 
 - `tier == 2` AND
 - `!ambiguous_domain` (router returned a single high-confidence domain) AND
 - `mode != "debug"`
 
-When all three hold, select path `fast` and record `skipped: true, skipped_reason: tier-2-fast-path` in the INIT state_history entry. Otherwise select path `standard` and run the orchestrator. **Tier 3+ ALWAYS runs the orchestrator**, whatever the other signals say. The allowlist is a closed enumeration, not a heuristic.
+When all three hold, select path `fast` and record `skipped: true, skipped_reason: tier-2-fast-path` in the INIT state_history entry. Otherwise select path `standard` and run the orchestrator. **Tier 3+ always runs the orchestrator**, whatever the other signals say. The allowlist is a closed enumeration, not a heuristic.
 
 The `skipped_reason` field is an enum with exactly three permitted values:
 
@@ -204,7 +204,7 @@ The `skipped_reason` field is an enum with exactly three permitted values:
 | `tier-2-fast-path` | Skip driven by the `fast` path selector (the canonical case above). |
 | `disabled-by-flag` | Skip driven by an explicit CLI flag or env override (e.g., `--no-orchestrator`). |
 
-The freeform `note` field is deprecated as of v12.7.0. It appeared in pre-v12.7 state_history entries. Writers MUST emit `skipped_reason`, which is one of the three enum values, instead of `note`. Readers SHOULD accept either field for back-compat, but they SHOULD prefer `skipped_reason` when both are present.
+The freeform `note` field is deprecated as of v12.7.0. It appeared in pre-v12.7 state_history entries. Writers must emit `skipped_reason`, which is one of the three enum values, instead of `note`. Readers SHOULD accept either field for back-compat, but they SHOULD prefer `skipped_reason` when both are present.
 
 See @reference/adaptive-pipeline.md for the full path catalog, schema additions, and tier-2 skip-behavior specifics. (v12.0.0: decomposer and prompt-engineer no longer exist as separate stages. The planner handles decomposition inline.)
 
@@ -217,13 +217,13 @@ Detected: Domain={domain} ({super_domain}), Tier={tier}, Controller={controller_
 
 **3d-skills. Discover workspace skills** (reuse-before-rebuild). Before you spawn the planner, capture any skill that is already present in this workspace. The pipeline can then route matching work to that skill instead of a rebuild of it. You are the main-loop agent, so the harness injected the list of available skills into YOUR context. Subagents cannot see that list, so persist it now.
 
-Union the skills visible in your context with any skill under `.claude/skills/*/SKILL.md` and `~/.claude/skills/*/SKILL.md`. EXCLUDE cAgents' own skills (`act`, `team`, `designer`, `helper`). EXCLUDE Claude Code's built-in `run` skill, because it is the harness app-launcher, NOT the cAgents pipeline. EXCLUDE the pure-infra skills and the config skills. Write the result to `workflow/available_skills.yaml`. If none qualify, write an explicit empty list (`skills: []`).
+Union the skills visible in your context with any skill under `.claude/skills/*/SKILL.md` and `~/.claude/skills/*/SKILL.md`. EXCLUDE cAgents' own skills (`act`, `team`, `designer`, `helper`). EXCLUDE Claude Code's built-in `run` skill, because it is the harness app-launcher, not the cAgents pipeline. EXCLUDE the pure-infra skills and the config skills. Write the result to `workflow/available_skills.yaml`. If none qualify, write an explicit empty list (`skills: []`).
 
 Pass the path to the planner in its spawn prompt. See @reference/skill-awareness.md for the discovery procedure, the exclusion list, and the YAML schema. That file also covers the planner `assigned_skill` contract and the controller Skill-tool invocation with its graceful fallback.
 
 **3e. Execute the state machine loop**: For each state, look up the agent in pipeline_config. Spawn that agent via the Agent tool. Read the agent's primary output file (enriched_context.yaml / plan.yaml / coordination_log.yaml / validation_report.yaml). Update status.yaml, call TaskUpdate, check for revision, then advance to the next state. (v12.6.0: workflow/events/ emission removed, because the primary output files are the canonical state-advancement signal.)
 
-**MANDATORY**: Update status.yaml after EVERY state transition. The verify-completion.cjs hook (and post-compact-restore.cjs after compaction) reads pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
+Update status.yaml after every state transition. The verify-completion.cjs hook (and post-compact-restore.cjs after compaction) reads pipeline_state from status.yaml. Skipping this update breaks hook-based session detection.
 
 **3e-signals. PAUSE/STOP/RESUME signal check (REC-17, implemented).** This loop honours `pipeline_config.yaml` `signals.enabled: true`. **Before EACH state transition**, check the session signal directory and act. The signal dir does not need to pre-exist. An absent file is a no-op, so this check is free on the happy path.
 
@@ -231,7 +231,7 @@ Pass the path to the planner in its spawn prompt. See @reference/skill-awareness
 SIG="$SESSION_DIR/signals"
 if [ -f "$SIG/STOP" ]; then
   # Graceful stop: finish the current agent, write a waypoint, finalize honestly.
-  # A user-requested stop is NOT a genuine validation — go to Step 4, write
+  # A user-requested stop is not a genuine validation — go to Step 4, write
   # execution_summary.yaml with status: interrupted, set the terminal state to
   # `incomplete` (never fabricate `complete`/VALIDATED), then STOP.
   :
@@ -274,34 +274,34 @@ Spawn each state agent unnamed and synchronously. Do not add a `name` key, becau
 
 | Verdict | Action |
 |---------|--------|
-| PASS | Advance to VALIDATED. **Loop exits -- proceed IMMEDIATELY to Step 4.** Do NOT stop. |
+| PASS | Advance to VALIDATED. **Loop exits -- proceed IMMEDIATELY to Step 4.** Do not stop. |
 | FAIL | Increment `revision_cycles` (below), then route back to PLANNED. Pass validation feedback to controller. (v12.0.0: PROMPTS_READY removed; controller re-runs from PLANNED.) |
 | REVISE | Increment `revision_cycles` (below), then route back to PLANNED. Pass feedback to planner. |
 | BLOCKED (debug only) | Increment `revision_cycles`, then route to PLANNED with falsification annotation. |
 
-**Revision-cycle cap (REC-11, MANDATORY, persisted).** Persist the revision counter to `status.yaml` as `revision_cycles` (re-added in REC-11; removed in v12.6.0). On EVERY FAIL/REVISE/BLOCKED verdict, BEFORE you route back to PLANNED:
+**Revision-cycle cap (REC-11, required, persisted).** Persist the revision counter to `status.yaml` as `revision_cycles` (re-added in REC-11; removed in v12.6.0). On every FAIL/REVISE/BLOCKED verdict, before you route back to PLANNED:
 
-1. Increment `revision_cycles` in `status.yaml`. Write it to disk. Do NOT hold it only in working memory. The `verify-completion.cjs` Stop hook reads this persisted counter, and that is how it enforces the cap mechanically.
+1. Increment `revision_cycles` in `status.yaml`. Write it to disk. Do not hold it only in working memory. The `verify-completion.cjs` Stop hook reads this persisted counter, and that is how it enforces the cap mechanically.
 2. Read `max_cycles` from `pipeline_config.yaml` (`revision.max_cycles`, currently **3**). This is the single revision cap. The `/goal` auto-anchor (Step 2 ACTION 4) and the Stop hook reconcile to that same value.
-3. If `revision_cycles >= max_cycles`: **do NOT route back to PLANNED again.** The budget is exhausted. Escalate to the user per `pipeline_config.yaml revision.escalation: user_hitl`.
+3. If `revision_cycles >= max_cycles`: **do not route back to PLANNED again.** The budget is exhausted. Escalate to the user per `pipeline_config.yaml revision.escalation: user_hitl`.
 
-On that escalation, write `execution_summary.yaml` with `status: incomplete`, and set `status.yaml` `pipeline_state: incomplete`. NEVER fabricate `complete`, `VALIDATED`, or PASS for a capped-out session. A session that exhausted its revision budget is NOT genuinely validated. Report what completed against what remains, and STOP. The `verify-completion.cjs` hook independently detects `revision_cycles >= max_cycles`, and it finalizes instead of blocks as a backstop.
+On that escalation, write `execution_summary.yaml` with `status: incomplete`, and set `status.yaml` `pipeline_state: incomplete`. NEVER fabricate `complete`, `VALIDATED`, or PASS for a capped-out session. A session that exhausted its revision budget is not genuinely validated. Report what completed against what remains, and STOP. The `verify-completion.cjs` hook independently detects `revision_cycles >= max_cycles`, and it finalizes instead of blocks as a backstop.
 
 This is a mechanical cap, not a heuristic: two contradictory caps (a config `max_cycles: 3` and an ephemeral "8") are a defect. There is exactly ONE revision cap (`max_cycles`, currently 3).
 
-> **CRITICAL: DO NOT STOP HERE.** When the loop exits at ANY terminal state, Step 4 is MANDATORY. The verify-completion.cjs Stop hook will block stopping if execution_summary.yaml is missing or auto-generated.
+> **Do not stop here.** When the loop exits at any terminal state, Step 4 is required. The verify-completion.cjs Stop hook will block stopping if execution_summary.yaml is missing or auto-generated.
 
 See @reference/state-machine-detail.md for the full protocol of the revision routing and for the BLOCKED verdict semantics.
 
 ---
 
-## Step 4: MANDATORY -- Report Results and Clean Up
+## Step 4: Report results and clean up (required)
 
-This step MUST execute after the state machine loop exits. Not optional, not deferrable, not handled by any hook.
+This step must run after the state machine loop exits. Not optional, not deferrable, not handled by any hook.
 
 - [ ] **4.1**. Read final state from status.yaml
 - [ ] **4.2**. (v12.6.0: removed. `duration_ms` is no longer emitted to state_history. Skip this step.)
-- [ ] **4.3**. Write `execution_summary.yaml` -- MANDATORY even on failure or interruption. Write this BEFORE anything else. The verify-completion.cjs hook creates a stub if you forget, but that triggers a warning visible to the user.
+- [ ] **4.3**. Write `execution_summary.yaml`, even on failure or interruption. Write this BEFORE anything else. The verify-completion.cjs hook creates a stub if you forget, but that triggers a warning visible to the user.
 
 ```yaml
 session_id: {SESSION_ID}
@@ -318,7 +318,7 @@ Note: v12.6.0 dropped `revision_rounds_used` and `total_duration_ms` from execut
 
 - [ ] **4.4**. Update status.yaml to terminal state (`complete` or `failed`).
 - [ ] **4.5**. Append session metrics to `cagents-memory/_system/metrics/pipeline_analytics.yaml`. Recalculate aggregates (success_rate, avg_duration, by_domain, by_tier). Keep the last 500 sessions in the log; archive older entries.
-- [ ] **4.6**. Clean up tasks: call `TaskList`, mark ALL session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks.
+- [ ] **4.6**. Clean up tasks: call `TaskList`, mark all session tasks as `completed` or `deleted` via `TaskUpdate`. Never leave stale in_progress tasks.
 - [ ] **4.7**. Pre-stop verification: confirm that `execution_summary.yaml` exists. If a controller ran, confirm that `coordination_log.yaml` has self_validation and validation_checkpoints blocks. Confirm that `status.yaml` is in a terminal state, and that no stale tasks remain.
 - [ ] **4.8**. Report results to the user with final pipeline state, revision count, key deliverables, and any validation warnings.
 
