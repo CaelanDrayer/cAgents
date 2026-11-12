@@ -83,7 +83,7 @@ See @tech-lead/resources/frontend-lead.md for the frontend-lead mode full playbo
 
 Spawn every execution agent and every reviewer synchronously. Set `Agent({ run_in_background: false, ... })` explicitly, because a subagent is background by default since CC 2.1.198. Collect each result in the same turn, before you yield.
 
-Never background a sub-agent and then yield. A backgrounded child plus a yielding parent leaves a `stopped_at: null` child. That child makes the session *look* alive while nothing progresses. The result is an hours-long stall (REC-05). See @.claude/rules/core/controllers.md § CRITICAL: Synchronous Spawning.
+Never background a sub-agent and then yield. A backgrounded child plus a yielding parent leaves a `stopped_at: null` child. That child makes the session *look* alive while nothing progresses. The result is an hours-long stall (REC-05). See @.claude/rules/core/controllers.md § Synchronous Spawning.
 
 ## Worked Examples
 

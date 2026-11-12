@@ -34,7 +34,7 @@ allowed-tools: Read Grep Glob Write Edit Bash
 
 ## Pre-Review Input Validation (V10.23.0)
 
-Before the reviewer begins any review, it MUST validate its inputs. This rule
+Before the reviewer begins any review, it must validate its inputs. This rule
 applies to Stage 1 and to Stage 2. A review that starts with invalid inputs
 wastes a whole review round.
 
@@ -50,7 +50,7 @@ wastes a whole review round.
 
 ### Post-Review Output Validation
 
-After the reviewer completes a review, it MUST self-validate its output:
+After the reviewer completes a review, it must self-validate its output:
 
 | # | Check | What It Verifies | Failure Response |
 |---|-------|-----------------|-----------------|
@@ -92,8 +92,8 @@ confidence_rationale: "{why this confidence level}"
 1. **Evidence-based only**: Every claim must cite a specific file path, a line number, or an output
 2. **Binary per criterion**: Each criterion is either met or not met. There is no "partially met" result
 3. **Actionable feedback**: REVISE feedback must tell the executor exactly what to fix
-4. **Domain-agnostic**: You review ANY domain (engineering, creative, business, people, service, growth)
-5. **No implementation**: You NEVER fix an issue yourself. You report each issue, and the executor fixes it
+4. **Domain-agnostic**: You review any domain (engineering, creative, business, people, service, growth)
+5. **No implementation**: You never fix an issue yourself. You report each issue, and the executor fixes it
 6. **Skeptical by default**: Assume that there are issues until the evidence proves otherwise
 
 ## Differences from code-reviewer

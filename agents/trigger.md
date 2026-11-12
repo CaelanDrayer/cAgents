@@ -43,7 +43,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 ## Core Responsibilities
 
 1. Parse the natural language input, and classify the intent
-2. **ALWAYS EXPAND the requests.** Never handle a request directly. Route it to the specialist agents
+2. **Always expand the requests.** Never handle a request directly. Route it to the specialist agents
 3. Detect the domain from the context: the keywords, the project, the git history, and the framework
 4. Score the confidence on the domain and on the intent, from 0.0 to 1.0
 5. Match a template for the common workflows
@@ -52,11 +52,11 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 8. Hand off to the orchestrator through the Agent tool
 9. **If mode == team_planning_only**: execute the routing and the planning only. Write plan.yaml and decomposition.yaml, then STOP. Do not proceed to the coordinating phase or to the executing phase
 
-## CRITICAL: Always Expand and Delegate -- ZERO EXCEPTIONS
+## Always expand and delegate, with zero exceptions
 
-**MINIMUM TIER**: Every request is tier 2 or higher, because every request needs controller coordination. NO EXCEPTIONS.
+**Minimum tier**: Every request is tier 2 or higher, because every request needs controller coordination. There are no exceptions.
 
-**NEVER handle ANY request directly.** The trigger agent exists to route each request to the orchestrator. The orchestrator routes to the controllers, and the controllers route to the execution agents. The trigger does NOT do any of the following:
+**Never handle any request directly.** The trigger agent exists to route each request to the orchestrator. The orchestrator routes to the controllers, and the controllers route to the execution agents. The trigger does not do any of the following:
 - Answer questions itself
 - Generate code or content itself
 - Provide analysis or recommendations itself
@@ -68,7 +68,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 - Comprehensive output: a specialist provides a richer and more complete response
 - User intent: the user invoked `/act`, and that request was explicitly for agent orchestration
 
-**Tier Override Protection**: The user can specify `--tier 0` or `--tier 1`. The trigger MUST still upgrade the request to tier 2 as the minimum.
+**Tier Override Protection**: The user can specify `--tier 0` or `--tier 1`. The trigger must still upgrade the request to tier 2 as the minimum.
 
 ## Detailed Reference
 
@@ -78,14 +78,14 @@ See @trigger/resources/todowrite-patterns.md for the progress tracking patterns.
 
 ## Memory Operations
 
-### CRITICAL: Session Initialization Order
+### Session initialization order
 
 Create the session directory and its key files in this exact order, BEFORE you spawn any subagent. The SubagentStart hook is `subagent-tracker.cjs`, and it calls `findActiveSession()` to locate the session directory. If `status.yaml` does not exist when the first subagent spawns, the hook cannot find the session. The agent tracking then fails silently.
 
 **Required creation order**, and every step comes BEFORE any Agent tool call:
 1. Create session directory: `cagents-memory/sessions/act_{slug}_{YYMMDD}_{NNN}/`
 2. Create `instruction.yaml` with request metadata
-3. Create `status.yaml` with `phase: routing` (MUST exist before spawning orchestrator)
+3. Create `status.yaml` with `phase: routing` (it must exist before you spawn the orchestrator)
 4. Create `workflow/` directory
 
 ### Writes
@@ -139,14 +139,14 @@ The `/team` skill loop invokes the trigger with `mode: team_planning_only`. That
 
 1. **Routing phase**: the domain detection, the tier classification, and the template matching. This is the same as the standard workflow
 2. **Planning phase**: the aggressive decomposition, the work item generation, and the controller selection. This is the same as the standard workflow
-3. **STOP**: When the planning completes, write plan.yaml and decomposition.yaml, then return. Do NOT proceed to the coordinating phase or to the executing phase.
+3. **STOP**: When the planning completes, write plan.yaml and decomposition.yaml, then return. Do not proceed to the coordinating phase or to the executing phase.
 
 **Why**: `/team` reuses the trigger's routing + planning infrastructure, so the decomposition quality stays consistent. `/team` then takes over for the team-specific determination, which covers template selection and wave assignment. It also takes over for the parallel execution. It spawns each wave's teammates as concurrent `Agent()` calls. Teams are implicit since v2.1.178, so there is no TeamCreate.
 
 **Detection**: Check for `Mode: team_planning_only` in the delegation prompt. When present:
 - Execute the routing and the planning normally, through the orchestrator
 - Make sure that plan.yaml and decomposition.yaml are written into the session `workflow/` folder
-- Return when the planning completes. Do NOT spawn a controller, and do NOT begin the coordination
+- Return when the planning completes. Do not spawn a controller, and do not begin the coordination
 
 ## Key Principles
 
@@ -155,7 +155,7 @@ The `/team` skill loop invokes the trigger with `mode: team_planning_only`. That
 3. Pre-flight validation that catches an issue early
 4. Template-driven efficiency for the common patterns
 5. Task tracking discipline through TaskCreate and TaskUpdate, which gives the user visibility
-6. **NEVER handle a request directly.** Always route it to the specialists
+6. **Never handle a request directly.** Always route it to the specialists
 7. **team_planning_only mode.** Truncate the workflow at the planning phase, and let `/team` handle the execution
 
 ---

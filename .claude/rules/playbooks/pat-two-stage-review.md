@@ -25,7 +25,7 @@ metadata:
 
 # Pattern: Two-Stage Review Protocol (V10.22.0)
 
-Every reviewer loop MUST use two distinct review stages, in strict order. No code
+Every reviewer loop must use two distinct review stages, in strict order. No code
 quality review starts before the spec compliance review passes.
 
 ## Stage 1: Spec Compliance Review
@@ -34,7 +34,7 @@ Does the implementation meet the acceptance criteria exactly?
 
 ```
 Reviewer prompt (Stage 1):
-  "Review TASK-{N} for SPEC COMPLIANCE ONLY.
+  "Review TASK-{N} for spec compliance only.
    Acceptance criteria: {criteria from work_items.yaml}
 
    For each criterion:
@@ -44,7 +44,7 @@ Reviewer prompt (Stage 1):
 
    Verdict: PASS (all criteria MET) or REVISE (any NOT MET/PARTIAL)
 
-   DO NOT comment on code quality, style, or maintainability in this stage."
+   Do not comment on code quality, style, or maintainability in this stage, because Stage 2 covers them."
 ```
 
 ### Stage 1 checks
@@ -55,7 +55,7 @@ Reviewer prompt (Stage 1):
 - The verdict is binary. All criteria MET gives PASS. Anything else gives REVISE.
 
 **If Stage 1 returns REVISE**: send the feedback to the execution agent with the
-specific unmet criteria. Do NOT go on to Stage 2. The execution agent must
+specific unmet criteria. Do not go on to Stage 2. The execution agent must
 address every unmet criterion before the code quality review starts.
 
 ## Stage 2: Code Quality Review

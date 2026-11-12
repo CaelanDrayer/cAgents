@@ -1,10 +1,19 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.5
+**Current Version**: 12.79.6
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.6 - November 11, 2026 (rules and agents emphasis)
+
+This patch release lowers 143 ALL-CAPS emphasis tokens on the rules and
+agents surface to sentence case. A ledger row gives the new text for each
+token. Every obligation is kept. The emphasis count under `.claude/rules/`
+and `agents/` fell from 473 to 324. Three headings lose their emphasis
+prefix: "Synchronous Spawning", "Do not ask permission", and "Aggressive
+Delegation". Every citer of those headings names the new text.
 
 ## V12.79.5 - November 11, 2026 (skills emphasis)
 
@@ -2791,5 +2800,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.5
+**Current Version**: 12.79.6
 **Release Date**: August 21, 2026

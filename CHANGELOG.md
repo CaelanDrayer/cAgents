@@ -10,6 +10,32 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.6] - 2026-11-11
+
+Emphasis release for the rules and agents surface (WI-44). It changes how
+strongly the model weighs each rule, so it lands as its own commit. One
+revert restores the old emphasis.
+
+### Changed
+- 143 ALL-CAPS emphasis tokens in 19 files under `.claude/rules/` and
+  `agents/` are now sentence case. The WI-42 ledger gives the new text for
+  each row (140 lower, 3 lower-with-reason). Every obligation is kept. No
+  rule was added, removed, reordered, or merged. Each edit replaces one
+  line with one line, so line pins stay valid.
+- The emphasis count under `.claude/rules/` and `agents/` fell from 473
+  to 324. The 39 keep-identifier rows (such as `PASS`, `FAIL`, and
+  `REVISE`) are unchanged.
+- Three headings are renamed. Every citer is updated in the same commit:
+  - "CRITICAL: Synchronous Spawning" is now "Synchronous Spawning" in
+    `controllers.md`. The citers in `delegation.md`, `architect.md`,
+    `coordinator.md`, and `tech-lead.md` name the new heading.
+  - "CRITICAL: Do Not Ask Permission" is now "Do not ask permission" in
+    `controllers.md`, `planner.md`, and `execution-monitor.md`. The three
+    copies stay in step.
+  - "CRITICAL: Aggressive Delegation" is now "Aggressive Delegation" in
+    `CLAUDE.md`. The citer in `hook-catalog.md` names the new heading.
+    This is the only `CLAUDE.md` line in this release.
+
 ## [12.79.5] - 2026-11-11
 
 Emphasis release for the skills surface (WI-43). It changes how strongly

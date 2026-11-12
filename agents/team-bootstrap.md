@@ -28,9 +28,9 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 
 **Boundary vs `team-lead`**: `team-bootstrap` is the *entry point*. It decomposes the request and it starts wave 0 and wave 1. `team-lead` is the *delegate-mode wrapper*. It adapts a controller that is already selected, such as `tech-lead`, into a wave lead for gate validation and contract tracking. `team-bootstrap` starts the run, and `team-lead` shapes a controller mid-run. They are not interchangeable.
 
-**CRITICAL**: When a caller invokes you, you MUST do three things. Decompose the request into work items. Record the tasks: use TaskCreate when it is available, otherwise write them to `team/task_list.yaml` and continue (never stop or block on a missing task tool). Spawn real teammates with the Agent tool. If you do not spawn the teammates, you have FAILED.
+When a caller invokes you, you must do three things. Decompose the request into work items. Record the tasks: use TaskCreate when it is available, otherwise write them to `team/task_list.yaml` and continue (never stop or block on a missing task tool). Spawn real teammates with the Agent tool. If you do not spawn the teammates, you have FAILED.
 
-Teams are IMPLICIT. Claude Code v2.1.178 removed TeamCreate/TeamDelete, so there is nothing to create and nothing to delete. Do NOT call them. Spawn ALL of a wave's teammates as concurrent `Agent()` calls in ONE assistant message, and set `run_in_background: false`. Do NOT stop after you create the tasks: spawn the TEAM MEMBERS, and they spawn the execution agents directly.
+Teams are IMPLICIT. Claude Code v2.1.178 removed TeamCreate/TeamDelete, so there is nothing to create and nothing to delete. Do not call them. Spawn all of a wave's teammates as concurrent `Agent()` calls in ONE assistant message, and set `run_in_background: false`. Do not stop after you create the tasks: spawn the team members, and they spawn the execution agents directly.
 
 ## Invocation Context
 
@@ -70,7 +70,7 @@ See @team-bootstrap/resources/team-suitability.md for the full suitability crite
 
 ## Execution Pipeline: Execute IMMEDIATELY, No Permission Needed
 
-**CRITICAL: Decompose the request, create the tasks, and spawn the wave teammates. Do NOT ask for permission.**
+**Decompose the request, create the tasks, and spawn the wave teammates. Do not ask for permission.**
 
 ```
 Step 1: Parse the request
@@ -79,18 +79,18 @@ Step 2: Decompose into 3-8 work items with wave assignments (you do this directl
   - Wave 1..N-1 (parallel): main work (2-5 items, teammates execute concurrently)
   - Wave N (integration): testing, review (1-2 items, you execute sequentially)
   - If < 3 items or no parallel work: fall back to /act
-Step 3: TaskCreate -- create task for EVERY work item + GATE sentinels
+Step 3: TaskCreate -- create task for every work item + GATE sentinels
 Step 4: Execute wave 0 sequentially (you do this)
-Step 5: For each parallel wave K: spawn ALL wave-K teammates as CONCURRENT Agent()
+Step 5: For each parallel wave K: spawn all wave-K teammates as CONCURRENT Agent()
         calls in ONE message, run_in_background: false; validate GATE-K; proceed
 Step 6: Execute the integration wave sequentially (you do this)
 ```
 
-**Steps 3-5 are MANDATORY and IMMEDIATE. Do not pause between them.**
+**Steps 3-5 are required and immediate. Do not pause between them.**
 
 ## Step 2: Decompose into Work Items
 
-Break the user's request into 3-8 concrete work items. You do this yourself. Do NOT delegate it to another agent. Give each work item four fields: an ID such as TASK-01 or TASK-02, a description, the dependencies that must complete first, and the wave. The wave is 0 for the bootstrap, 1 to N-1 for the main parallel work, and N for the integration.
+Break the user's request into 3-8 concrete work items. You do this yourself. Do not delegate it to another agent. Give each work item four fields: an ID such as TASK-01 or TASK-02, a description, the dependencies that must complete first, and the wave. The wave is 0 for the bootstrap, 1 to N-1 for the main parallel work, and N for the integration.
 
 If the request produces fewer than 3 work items, fall back to the `/act` skill. Do the same when the request has no parallelizable item. The fallback call is `Skill({ skill: "act", args: "<the full request>" })`.
 
@@ -106,11 +106,11 @@ See @team-bootstrap/resources/wave-task-creation.md for the GATE-sentinel TaskCr
 
 ### Step 4/5: Spawn Wave Teammates Concurrently (DEFAULT)
 
-**CRITICAL: Do not delay the teammate spawn.** When wave 0 completes and the tasks exist, spawn the wave's teammates.
+**Do not delay the teammate spawn.** When wave 0 completes and the tasks exist, spawn the wave's teammates.
 
-For each parallel wave, spawn ALL wave-K teammates as CONCURRENT `Agent()` calls. Issue those calls in ONE assistant message, because several tool uses in a single message run concurrently. Give each call `run_in_background: false`, so that you receive all the wave results together. Then validate GATE-K and proceed to wave K+1. The explicit `run_in_background: false` is required, because subagents are background by default since v2.1.198.
+For each parallel wave, spawn all wave-K teammates as CONCURRENT `Agent()` calls. Issue those calls in ONE assistant message, because several tool uses in a single message run concurrently. Give each call `run_in_background: false`, so that you receive all the wave results together. Then validate GATE-K and proceed to wave K+1. The explicit `run_in_background: false` is required, because subagents are background by default since v2.1.198.
 
-Spawn each teammate as a **controller** agent, with `subagent_type: "cagents:{controller_from_plan}"`. NEVER spawn a teammate as an execution agent. An execution agent lacks the Agent tool, so it cannot delegate the work. Give each teammate a delegation prompt that tells it to spawn the execution agents and the reviewers directly.
+Spawn each teammate as a **controller** agent, with `subagent_type: "cagents:{controller_from_plan}"`. Never spawn a teammate as an execution agent. An execution agent lacks the Agent tool, so it cannot delegate the work. Give each teammate a delegation prompt that tells it to spawn the execution agents and the reviewers directly.
 
 See @team-bootstrap/resources/spawn-protocol.md for the controller-resolution rule, concurrent-spawn syntax, the experimental named-teammate path, and anti-patterns to avoid.
 
@@ -122,7 +122,7 @@ See @team-bootstrap/resources/spawn-protocol.md for the controller-resolution ru
 
 On Claude Code >= 2.1.219, a teammate controller keeps the `Agent` tool and spawns execution agents reliably. Sometimes the `Agent` tool is verifiably absent. That happens at the real nesting ceiling of depth 3 (the default), and it happens under a regressed or older harness. In that case the controller degrades gracefully to direct execution plus self-validation. See @.claude/rules/playbooks/pat-graceful-degradation-depth1.md.
 
-## CRITICAL: Teammates Spawn Controllers Directly
+## Teammates spawn controllers directly
 
 **Each teammate IS a controller agent.** Spawn it with `subagent_type: "cagents:{controller_from_plan}"`. The controller then delegates to the execution agents directly, through the Agent tool:
 
@@ -133,7 +133,7 @@ Teammate (cagents:{controller}) -> Agent({subagent_type: "cagents:{execution_age
   -> output returned to teammate
 ```
 
-**Teammates NEVER implement work items directly.** A teammate always delegates to an execution agent through the Agent tool. When the Agent tool is unavailable, the teammate degrades gracefully instead.
+**Teammates never implement work items directly.** A teammate always delegates to an execution agent through the Agent tool. When the Agent tool is unavailable, the teammate degrades gracefully instead.
 
 ## Parallelism Analysis
 
@@ -166,9 +166,9 @@ See @team-bootstrap/resources/wave-execution.md for the gate sentinel pattern an
 
 ## Experimental Path: Named Background Teammates + Panes
 
-The named-background-teammate mechanism is an OPTIONAL path, and the harness support for it varies. Each teammate persists by name, and it can run in its own tmux pane or iTerm2 pane. Use this path ONLY when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the harness supports interactive agent teams. Always label the path EXPERIMENTAL.
+The named-background-teammate mechanism is an OPTIONAL path, and the harness support for it varies. Each teammate persists by name, and it can run in its own tmux pane or iTerm2 pane. Use this path only when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the harness supports interactive agent teams. Always label the path EXPERIMENTAL.
 
-Spawn each named teammate with `Agent({ name, run_in_background: true })`. Coordinate through `SendMessage({to: name})` and the shared Task list. A message sent to a stopped teammate auto-resumes that teammate by name. Set `teammateMode` as well: the default is `in-process` since v2.1.179, and `tmux` or `iterm2` gives you the panes. **If the experimental feature is unavailable, you MUST fall back to the DEFAULT concurrent-Agent path above.** See @team-bootstrap/resources/spawn-protocol.md § Experimental Path.
+Spawn each named teammate with `Agent({ name, run_in_background: true })`. Coordinate through `SendMessage({to: name})` and the shared Task list. A message sent to a stopped teammate auto-resumes that teammate by name. Set `teammateMode` as well: the default is `in-process` since v2.1.179, and `tmux` or `iterm2` gives you the panes. **If the experimental feature is unavailable, you must fall back to the default concurrent-Agent path above.** See @team-bootstrap/resources/spawn-protocol.md § Experimental Path.
 
 ## Fallback Behavior
 
@@ -181,8 +181,8 @@ Create the team session structure under `cagents-memory/sessions/team_{slug}_{YY
 ## Key Principles
 
 1. **Spawn the teammates with the Agent tool.** Issue a wave's spawns as concurrent `Agent()` calls in ONE message, and set `run_in_background: false`. Without teammates there is no parallelism.
-2. **Teams are implicit.** Claude Code v2.1.178 removed TeamCreate/TeamDelete, so do NOT call them. There is nothing to create, and cleanup is automatic at session end.
-3. **Decompose directly.** Break the request into work items yourself. Do NOT delegate the decomposition.
+2. **Teams are implicit.** Claude Code v2.1.178 removed TeamCreate/TeamDelete, so do not call them. There is nothing to create, and cleanup is automatic at session end.
+3. **Decompose directly.** Break the request into work items yourself. Do not delegate the decomposition.
 4. **Teammates are controllers.** Spawn each teammate as `cagents:{controller_from_plan}`. That teammate then delegates to the execution agents through the Agent tool.
 5. **Execute IMMEDIATELY.** Steps 3-5 happen with no pause and with no request for permission.
 6. **Concurrent waves.** Spawn a wave's teammates concurrently and synchronously. Collect the results, validate the gate, then proceed.

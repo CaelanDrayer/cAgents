@@ -463,7 +463,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.79.5** — Current release. The skills surface lowers 176 ALL-CAPS emphasis tokens to sentence case. Every obligation stays, and a rule that had no reason now states one. Two skills references state the reviewer loop cap as 2 rounds.
+- **V12.79.6** — Current release. The rules and agents surface lowers 143 ALL-CAPS emphasis tokens to sentence case. Every obligation stays. Three headings lose their emphasis prefix, and every citer names the new heading.
+- **V12.79.5** — The skills surface lowers 176 ALL-CAPS emphasis tokens to sentence case. Every obligation stays, and a rule that had no reason now states one. Two skills references state the reviewer loop cap as 2 rounds.
 - **V12.79.4** — Cleanup release. It removes 62 unreachable or duplicate agent resource files, 9 Python leftovers, and the `validate:configs` npm script (`lint` now runs `validate:agents`). It resolves 20 stale documents (10 deleted, the others refreshed or kept).
 - **V12.79.3** — `/helper` Mode 1 asks a first question with at most 4 options, then one of two follow-ups. The `/act` `/goal` condition names `completion_summary.yaml` with `status: completed`, which is the file that `verify-completion.cjs` writes. The `/act` controller spawn template is synchronous and unnamed, and it adds the `cagents:` prefix only when it is missing.
 - **V12.79.2** — Stale skill and agent names are replaced across skills, agents, rules, docs and scripts. The helper references no longer describe the removed `/act context` passthrough. The hook table lists all 25 registered hooks and the 5 dispatched sub-validators. A new drift guard, `tests/regressions/skill-refs-current.test.js`, fails on a stale name in an instruction.

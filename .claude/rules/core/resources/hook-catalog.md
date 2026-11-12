@@ -992,7 +992,7 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
   Layer 2 returns an advisory `systemMessage`, but only when
   `CAGENTS_ROUTING_SUGGESTIONS` is enabled. Otherwise Layer 2 returns `null`
   before any length check and before any keyword check. Neither layer blocks the
-  prompt. It pairs with CLAUDE.md § CRITICAL: Aggressive Delegation.
+  prompt. It pairs with CLAUDE.md § Aggressive Delegation.
 
 (A2-04) The PreToolUse[Agent] registration of `prompt-router.cjs` was dropped. It
 was a documented `return null` no-op, labelled "reserved for future

@@ -25,8 +25,8 @@ metadata:
 
 # Pattern: Subagent Status Protocol (V10.22.0)
 
-Execution agents MUST report their completion status with one of four standard
-statuses. Controllers MUST handle each status in the correct way. A free-form
+Execution agents must report their completion status with one of four standard
+statuses. Controllers must handle each status in the correct way. A free-form
 completion message is no longer acceptable.
 
 ## The four statuses
@@ -40,7 +40,7 @@ completion message is no longer acceptable.
 
 ## Reporting format
 
-Execution agents MUST include the status in their completion response:
+Execution agents must include the status in their completion response:
 
 ```yaml
 status: DONE                    # One of: DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED
@@ -113,10 +113,10 @@ hint to the lead, and the YAML on disk is the audit trail.
 5. If user cannot resolve: mark work item as blocked, continue with others
 ```
 
-## CRITICAL: never ignore an escalation
+## Never ignore an escalation
 
 Never ignore an escalation. Never force a retry with no change. If an execution
-agent reports NEEDS_CONTEXT or BLOCKED, the controller MUST address the specific
+agent reports NEEDS_CONTEXT or BLOCKED, the controller must address the specific
 issue before it re-dispatches the agent. If you send the same prompt again with
 no new information, you break the status protocol.
 

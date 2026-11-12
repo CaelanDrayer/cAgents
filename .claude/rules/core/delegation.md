@@ -32,8 +32,8 @@ nothing enforces it mechanically.
 
 `/act`, `/team`, `/designer`, and every cAgents controller are pure
 delegation proxies. They parse, plan, spawn agents, and read results.
-They do NOT write code, create content, explore the codebase for
-implementation purposes, or handle tasks themselves. ALL work goes to
+They do not write code, create content, explore the codebase for
+implementation purposes, or handle tasks themselves. All work goes to
 subagents via the Agent tool, with no exception for task size, for
 simplicity, or for domain.
 
@@ -52,10 +52,10 @@ critical violation when emitted by a skill or controller. No exceptions.
 | "This is a planning task" | Planning is a pipeline stage (planner agent), not a bypass. |
 | "I'll handle this directly" | Direct handling is a critical protocol violation. |
 | "The task is too simple for a full pipeline" | Simplicity never bypasses delegation. Even a one-line fix uses the pipeline. |
-| "Rather than spinning up agents" | Spinning up agents is the ONLY execution mode for /act and /team. |
+| "Rather than spinning up agents" | Spinning up agents is the only execution mode for /act and /team. |
 | "I can do this more efficiently myself" | Efficiency is irrelevant. Delegation is mandatory regardless of efficiency claims. |
 | "This doesn't need agent coordination" | Every /act and /team invocation requires the full agent coordination pipeline. |
-| "I'll build/create/fix/write/implement this myself" | ALL implementation goes to execution agents via Agent tool. |
+| "I'll build/create/fix/write/implement this myself" | All implementation goes to execution agents via the Agent tool. |
 | "Let me just make this change directly" | "Just" is a rationalization word. Agent tool only. |
 | "This is a minor edit that doesn't warrant spawning agents" | Size does not determine delegation requirements. |
 | "I'll do this inline since it's quick" | Speed never overrides the delegation protocol. |
@@ -129,7 +129,7 @@ Controllers (tier-2 agents like `tech-lead`, `architect`,
 - Ask questions of execution agents via Agent tool.
 - Synthesize answers into a coherent solution.
 - Write `coordination_log.yaml`.
-- NEVER Write/Edit implementation files in `src/`, `lib/`, `components/`,
+- Do not Write/Edit implementation files in `src/`, `lib/`, `components/`,
   `app/`, `services/`, or `middleware/`. `controller-delegation-validator.cjs`
   emits `permissionDecision:deny` on those paths when a controller is
   active.
@@ -140,7 +140,7 @@ session/memory files under `cagents-memory/`.
 
 ### Synchronous Spawning (never background-and-yield)
 
-Controllers and `/team` leads MUST spawn every execution agent
+Controllers and `/team` leads must spawn every execution agent
 **synchronously**. Call `Agent({ run_in_background: false, ... })`
 explicitly, because subagents are background-by-default in Claude Code
 2.1.198 and later. Collect the result in the same turn, before you yield.
@@ -158,7 +158,7 @@ The one exception is the optional experimental named-background-teammate
 path (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). There, a named
 teammate's result is still collected explicitly via `SendMessage`. It is
 never spawned-and-forgotten. See `.claude/rules/core/controllers.md`
-§ CRITICAL: Synchronous Spawning.
+§ Synchronous Spawning.
 
 **`name` wins over `run_in_background: false`.** Passing `name` to the
 Agent tool promotes the spawn to a named background teammate. It silently
@@ -211,7 +211,7 @@ Execution models follow instructions well, and they infer scope badly. So
 the prompt must carry the scope that the model would otherwise guess at.
 A complete prompt names three things.
 
-1. **CONCRETE FILES**: the exact paths to touch, and the paths NOT to
+1. **CONCRETE FILES**: the exact paths to touch, and the paths not to
    touch. "The files in this surface" is not a file list.
 2. **CONCRETE STEPS**: the transformation, in order. The executing model
    should not have to infer scope, sequence, or syntax.
@@ -256,7 +256,7 @@ As of v12.17.0, subagents keep the `Agent` tool and can spawn their own
 subagents up to depth 3 by default. This needs Claude Code 2.1.219 or later
 (2.1.172 added nesting; 2.1.217 and 2.1.218 turn it off by default).
 Delegation is the expected behavior at every level. A controller or
-subagent spawned at depth 1 normally still has `Agent`, and it MUST
+subagent spawned at depth 1 normally still has `Agent`, and it must
 delegate.
 
 Graceful degradation is a defensive fallback, not the expected depth-1
@@ -268,7 +268,7 @@ agent degrades to direct execution and self-validation.
 
 This is the one documented exception to the "never implement directly"
 rule, and it never applies to the depth-0 loop of the skill itself.
-Before it degrades, an agent MUST make sure that `Agent` is absent. See
+Before it degrades, an agent must make sure that `Agent` is absent. See
 @.claude/rules/playbooks/pat-graceful-degradation-depth1.md for the
 canonical fallback pattern and for the depth-1 context from before
 v12.17.0.

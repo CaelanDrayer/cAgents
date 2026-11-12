@@ -19,7 +19,7 @@ paths:
 
 # Task Completion Protocol
 
-**MANDATORY**: Complete every task fully, and show verified evidence, before you mark that task as done.
+Complete every task fully, and show verified evidence, before you mark that task as done, because the validator rejects a claim that has no evidence.
 
 ## Core Rule
 
@@ -49,9 +49,9 @@ Validation Phase:
 ## Enforcement Points
 
 ### Decomposer/Planner
-- Every work item MUST have `acceptance_criteria`
-- Every criterion MUST have `verification_method`
-- Every objective MUST link to `derived_from` work items
+- Every work item must have `acceptance_criteria`
+- Every criterion must have `verification_method`
+- Every objective must link to `derived_from` work items
 
 ### Controllers
 - Track `work_item_status` in coordination_log.yaml
@@ -155,7 +155,7 @@ When you review a completion claim, watch for the language patterns below. Each 
 | "no issues found" | Passive non-discovery | Describe what was actively checked and how |
 | "should be fine" | Wishful thinking | Provide concrete verification evidence |
 
-**Rule**: If a completion claim holds ANY red flag phrase, and no concrete evidence goes with it, the validator MUST reject that claim. The agent must then re-verify the work and give specific evidence.
+**Rule**: If a completion claim holds any red flag phrase, and no concrete evidence goes with it, the validator must reject that claim. The agent must then re-verify the work and give specific evidence.
 
 ## Rationalization Counters
 
@@ -176,7 +176,7 @@ Agents use the rationalizations below to skip verification rigor. The table maps
 
 ## Fresh Evidence Requirement
 
-**IRON LAW: Verification commands MUST be run in the current session, not cited from memory.**
+**Iron law: run each verification command in the current session, and do not cite it from memory, because an earlier result can be stale.**
 
 Verification evidence is only valid if:
 1. **Executed fresh**: you ran the verification command AFTER the implementation was complete, in this session
@@ -191,7 +191,7 @@ Verification evidence is only valid if:
 - Citing test results from a previous session or context window
 - Paraphrasing output instead of including the actual output
 
-**Enforcement**: The validator MUST reject a completion claim that lacks fresh evidence. When you review validation_report.yaml, check that the evidence includes actual command output from the current session. A reference to a prior run is not enough.
+**Enforcement**: The validator must reject a completion claim that lacks fresh evidence. When you review validation_report.yaml, check that the evidence includes actual command output from the current session. A reference to a prior run is not enough.
 
 ## Comprehensive Validation Checklists (V12.0.0)
 
@@ -203,7 +203,7 @@ cAgents' validation surface is honestly **layered**, not one monolithic checklis
 |-------|--------|----------|----------------|
 | **Enforced** | 5 cross-cutting | `@resources/validation-checklist-active.md` | **YES**: `subagent-stop-tracker.cjs`, `post-write-validator.cjs`, `verify-completion.cjs` |
 | **Advisory (by convention)** | controller pre-execution (7) + mid-execution (5); executor self-validation (5, verifier hook deferred); two-stage review | `@.claude/rules/core/resources/controller-validation-checklist.md`, `@.claude/rules/core/resources/execution-self-validation.md`, `@.claude/rules/playbooks/pat-two-stage-review.md` | **NO**: agent-followed guidance, and no hook enforces it |
-| **Aspirational (deferred)** | 24 historical checks | `docs/FUTURE_VALIDATION_FRAMEWORK.md` (does NOT auto-load) | **NO**: deferred to future graduation work |
+| **Aspirational (deferred)** | 24 historical checks | `docs/FUTURE_VALIDATION_FRAMEWORK.md` (does not auto-load) | **NO**: deferred to future graduation work |
 
 **Canonical count narrative**: **5 enforced + advisory-by-convention + 24 aspirational-deferred**. *(HISTORICAL: the original design was framed as a 29-check framework = those same 5 active + 24 aspirational. The self-validation protocol separately churned 15→5. Both numbers are history. Neither one is the live enforced count.)*
 
