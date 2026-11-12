@@ -64,7 +64,7 @@ Is the implementation well-written, maintainable, and secure?
 
 ```
 Reviewer prompt (Stage 2):
-  "Review TASK-{N} for CODE QUALITY.
+  "Review TASK-{N} for code quality.
    Spec compliance has PASSED -- all acceptance criteria are met.
 
    Review for:

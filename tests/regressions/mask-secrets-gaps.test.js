@@ -94,3 +94,41 @@ describe('maskSecrets database URL past the window (N-01)', () => {
     expect(maskSecrets('e ' + url(8) + ' z', 200)).toBe('e [REDACTED] z');
   });
 });
+
+// CR-04 / SR-02: the N-01 mask had no whitespace bound. A URL followed by a
+// space and more text masked all of the text from the URL to the cut.
+// The mask now covers one unbroken URL token at the window end only.
+describe('maskSecrets N-01 mask stops at whitespace (CR-04)', () => {
+  const user = 'admin';
+  const filler = ' more log text'.repeat(200); // keeps the raw text past cut + 1024
+
+  it('keeps the text after a URL with a port and no credential', () => {
+    const head = 'ECONNREFUSED redis' + '://cachehost:6379 then the retry loop gave up';
+    const out = maskSecrets(head + filler, 120);
+    expect(out).toBe((head + filler).slice(0, 120));
+    expect(out).toContain('then the retry loop gave up');
+  });
+
+  it('keeps the text after a complete credential URL and masks the password', () => {
+    const pw = 'Zk' + '9secretPw';
+    const head = 'connect ' + 'postgres' + '://' + user + ':' + pw + '@db.example.com/app failed, retry later';
+    const out = maskSecrets(head + filler, 150);
+    expect(out).not.toContain(pw);
+    expect(out).toContain('connect [REDACTED] failed, retry later');
+  });
+
+  it('keeps the text before a long open password and masks the password', () => {
+    const head = 'line one\nline two connect ';
+    const raw = head + 'mysql' + '://' + user + ':' + 'q'.repeat(3000) + '@h/d' + filler;
+    const out = maskSecrets(raw, 200);
+    expect(out).not.toContain('qqqq');
+    expect(out).toBe(head + '[REDACTED]');
+  });
+
+  it('masks only the URL token when two lines follow inside the window', () => {
+    const head = 'a mongodb' + '://' + user + ':' + 'w'.repeat(1500);
+    const out = maskSecrets(head + filler, 100);
+    expect(out).not.toContain('wwww');
+    expect(out).toBe('a [REDACTED]');
+  });
+});

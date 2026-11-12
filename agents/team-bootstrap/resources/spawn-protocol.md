@@ -19,7 +19,7 @@ CONTROLLER_TYPE = plan.yaml -> controller_assignment -> primary
 
 ## Default Spawn Model: Concurrent Agent() Waves
 
-Teams are **implicit** — `TeamCreate`/`TeamDelete` were removed in Claude Code v2.1.178; there is nothing to create or delete, and cleanup is automatic at session end. The DEFAULT (works in every harness): for each parallel wave, spawn all wave-K teammates as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently). Spawn them SYNCHRONOUSLY with `run_in_background: false` so the lead receives all wave results together, validates GATE-K, then proceeds. Explicit `run_in_background: false` is required because subagents are background-by-default since v2.1.198.
+Teams are **implicit**: `TeamCreate`/`TeamDelete` were removed in Claude Code v2.1.178; there is nothing to create or delete, and cleanup is automatic at session end. The DEFAULT (works in every harness): for each parallel wave, spawn all wave-K teammates as CONCURRENT `Agent()` calls issued in ONE assistant message (multiple tool uses in a single message run concurrently). Spawn them SYNCHRONOUSLY with `run_in_background: false` so the lead receives all wave results together, validates GATE-K, then proceeds. Explicit `run_in_background: false` is required because subagents are background-by-default since v2.1.198.
 
 ## Spawning a Teammate Controller
 

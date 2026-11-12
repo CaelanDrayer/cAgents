@@ -135,7 +135,7 @@ When the team manifest includes a template with waves, coordinate the work wave 
 
 ## Key Principles
 
-1. **Teammates ARE controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates never implement directly and never invoke /act.
+1. **Teammates are controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates never implement directly and never invoke /act.
 2. **Spawn teammates IMMEDIATELY**: spawn them as soon as the wave's work items are ready. Never pause or ask permission.
 3. **Direct Agent delegation**: teammates spawn execution agents and reviewers directly via Agent. The chain runs lead -> controller teammate -> execution agent. Deeper sub-spawns are allowed within the depth-3 nesting budget. Teammates spawn execution agents directly rather than re-entering /act. This is a design choice for cost and clarity, not a harness limit.
 4. **Delegate only**: never do direct implementation work.

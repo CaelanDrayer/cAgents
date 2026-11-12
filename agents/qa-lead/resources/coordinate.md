@@ -46,6 +46,7 @@ VALIDATOR (Validation Phase):
 See @resources/coordinate-test-strategy.md for strategy design.
 See @resources/coordinate-collaboration-patterns.md for interaction flows.
 See @resources/coordinate-examples.md for detailed examples.
+See @resources/coordinate-best-practices.md for design principles, anti-patterns, and quality indicators.
 
 ## Quality Gate Criteria
 

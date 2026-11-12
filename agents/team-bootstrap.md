@@ -110,7 +110,7 @@ See @team-bootstrap/resources/wave-task-creation.md for the GATE-sentinel TaskCr
 
 For each parallel wave, spawn all wave-K teammates as CONCURRENT `Agent()` calls. Issue those calls in ONE assistant message, because several tool uses in a single message run concurrently. Give each call `run_in_background: false`, so that you receive all the wave results together. Then validate GATE-K and proceed to wave K+1. The explicit `run_in_background: false` is required, because subagents are background by default since v2.1.198.
 
-Spawn each teammate as a **controller** agent, with `subagent_type: "cagents:{controller_from_plan}"`. Never spawn a teammate as an execution agent. An execution agent lacks the Agent tool, so it cannot delegate the work. Give each teammate a delegation prompt that tells it to spawn the execution agents and the reviewers directly.
+Spawn each teammate as a **controller** agent, with `subagent_type: "cagents:{controller_from_plan}"`. Never spawn a teammate as an execution agent. An execution agent keeps the Agent tool, because nesting goes to depth 3 by default since CC 2.1.219. But the role of an execution agent is to do one work item, not to coordinate a wave. A controller asks the questions, spawns the specialists, and runs the reviewer loop. Give each teammate a delegation prompt that tells it to spawn the execution agents and the reviewers directly.
 
 See @team-bootstrap/resources/spawn-protocol.md for the controller-resolution rule, concurrent-spawn syntax, the experimental named-teammate path, and anti-patterns to avoid.
 

@@ -459,7 +459,7 @@ Approve to proceed with implementation, or reject to halt workflow."
 **Root Cause**: Agent not following automatic progression policy
 
 **Solution**:
-1. Check agent file has "CRITICAL: Do Not Ask Permission" section
+1. Check agent file has "Do not ask permission" section
 2. Verify agent logic proceeds automatically after phase completion
 3. Update agent instructions to remove permission requests
 4. Test workflow to confirm automatic progression

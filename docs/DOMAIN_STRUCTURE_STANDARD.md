@@ -60,7 +60,7 @@ Current official business domains:
 | **creative** | Creative production | 30 | narrative-director, story-architect, editor |
 | **business** | Business operations | 28 | operations-manager, product-owner, strategic-planner |
 | **growth** | Revenue & acquisition | 34 | marketing-strategist, sales-strategist, creative-director |
-| **people** | Talent & culture | 17 | hr-manager, talent-acquisition-manager |
+| **people** | Talent & culture | 17 | hr-manager (modes: recruit, learning, onboarding) |
 | **service** | Support & governance | 28 | customer-success-manager, general-counsel, support-director |
 | **leadership** | C-suite & strategy | 12 | cto, cro, cfo, coo, chro, ceo, cpo, cmo, cco, cso, clo, vp-engineering |
 | **shared** | Cross-domain intelligence | 12 | bi-specialist, data-scientist, market-research-analyst |
@@ -114,7 +114,7 @@ Revenue & acquisition: marketing, sales, partnerships
 - Growth: growth-marketer, demand-generation-manager
 
 ### People (0 agents — config-only)
-The legacy `people` domain is **routing-overlay only** as of v11.1.0. Its directory, `agents/_overlay/people/`, holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch (hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist, etc.). See CLAUDE.md § "Domain overlay (legacy: routing/config only)" for the full overlay model.
+The legacy `people` domain is **routing-overlay only** as of v11.1.0. Its directory, `agents/_overlay/people/`, holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch. That branch holds `hr-manager`, with the modes `hr-ops`, `hrbp`, `recruit`, `learning`, and `onboarding`. The `recruit` mode and the `learning` mode absorbed the former talent-recruiter agent and the former learning-specialist agent. See CLAUDE.md § "Domain overlay (legacy: routing/config only)" for the full overlay model.
 
 ### Service (28 agents)
 Support & governance: customer experience, legal, compliance
@@ -165,11 +165,7 @@ The v9.x super-domain directories (`make/`, `grow/`, `operate/`, `serve/`) were 
 
 ## Creating New Domains
 
-See CLAUDE.md "Creating Domains" section for instructions on:
-1. Creating 5 config files (with `_base` references to shared templates)
-2. Creating controller_catalog in planner_config.yaml
-3. Creating controller and execution agents
-4. Creating plugin manifest
+See the CLAUDE.md section "Creating Agents / Domains" for the current steps. That section points to `.claude/rules/core/skill-format.md` and `.claude/rules/core/execution.md`. A new domain adds its `router.keywords` and its `controller_catalog` under `domains.<name>` in `cagents-memory/_system/config/routing.yaml`.
 
 ---
 

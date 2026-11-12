@@ -1,10 +1,21 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.7
+**Current Version**: 12.79.8
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.8 - November 11, 2026 (pre-merge review fixes)
+
+This patch release fixes the findings of the pre-merge review (WI-48).
+The open DB URL mask in `hook-utils.cjs` stops at whitespace, and 4
+regression cases cover it. The history filter in
+`skill-refs-current.test.js` is narrower, and 10 crafted stale phrasings
+are negative cases. A new test keeps hidden code points and long
+base64-like runs out of `docs/example-store/`. The release removes the
+dead `scripts/fix-resource-frontmatter.sh` and corrects stale statements
+in rules, skills, agents, and docs.
 
 ## V12.79.7 - November 11, 2026 (CLAUDE.md restructure)
 
@@ -2811,5 +2822,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.7
+**Current Version**: 12.79.8
 **Release Date**: August 21, 2026

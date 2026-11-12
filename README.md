@@ -463,7 +463,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.79.7** — Current release. CLAUDE.md is slimmed from 28,528 to about 24,100 bytes. Every load-bearing rule stays, and no rule moved to another file.
+- **V12.79.8** — Current release. This release fixes the findings of the pre-merge review. The DB URL mask stops at whitespace, the history filter of a skills test is narrower, and a new test keeps hidden code points out of the example store.
+- **V12.79.7** — CLAUDE.md is slimmed from 28,528 to about 24,100 bytes. Every load-bearing rule stays, and no rule moved to another file.
 - **V12.79.6** — The rules and agents surface lowers 143 ALL-CAPS emphasis tokens to sentence case. Every obligation stays. Three headings lose their emphasis prefix, and every citer names the new heading.
 - **V12.79.5** — The skills surface lowers 176 ALL-CAPS emphasis tokens to sentence case. Every obligation stays, and a rule that had no reason now states one. Two skills references state the reviewer loop cap as 2 rounds.
 - **V12.79.4** — Cleanup release. It removes 62 unreachable or duplicate agent resource files, 9 Python leftovers, and the `validate:configs` npm script (`lint` now runs `validate:agents`). It resolves 20 stale documents (10 deleted, the others refreshed or kept).

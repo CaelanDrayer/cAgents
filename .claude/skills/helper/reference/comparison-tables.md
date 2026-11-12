@@ -2,7 +2,7 @@
 
 Side-by-side comparison matrices for `/helper --compare`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve` and `/act --mode debug`. For project context, edit `product_context.yaml` directly._
+> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/act review`, `/act optimize`, and `/act --mode debug`. (v12.1.2 folded `/improve` into `/act`.) For project context, edit `product_context.yaml` directly._
 >
 > _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0. Treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
 >

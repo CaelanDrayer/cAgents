@@ -46,22 +46,34 @@ export const ALLOW_PATTERNS = [
   /\babsorb(ed|s)\b/i, // "absorbed into", "absorbed from", "absorbs /org"
   /\bfolded into\b/i,
   /\blegacy `?\/(org|improve|run)\b/i, // "the legacy /org"
-  /\bformerly\b|\bpreviously\b|\bcarried the name\b/i,
-  /\bremoved\b|\bno longer\b|\bdeprecated\b/i,
+  // CR-03: 'previously', 'removed', 'no longer', and 'deprecated' count only in
+  // a history shape. A bare word on the same line ("clean up removed files",
+  // "no longer needed") is not a history marker.
+  /\bformerly\b|\bpreviously (typed|named|called|ran|invoked|used)\b|\bcarried the name\b/i,
+  // "`/org` was removed", "the now-removed `/org`", "v2.1.178 dropped": the name or a release tag binds the word.
+  /(\/(org|improve|run)|TeamCreate|TeamDelete|task-decomposer|security-specialist)\b[^.;,]{0,30}\b(was|were|is|are|been) removed\b|\bnow-removed\b|\d (removed|dropped)\b/i,
+  /\bremoved:? (in|since|from|the|both|`|\/|TeamCreate|TeamDelete|task-decomposer|security-specialist)/i, // "removed in v12.2.0", "removed `/org`"
+  /\bno longer (exists?|ships?|invoke)\b|\b(is|was|are|were) deprecated\b|\bdeprecated (in|since)\b/i,
+  /\bhistorical(ly)?( by| from)? `?\/(org|improve|run)\b/i, // "historically by /org", "The historical `/improve`"
   /\bpre-v1[0-2]\b/i, // "pre-v12 names"
   /\brenamed (to|from)\b/i,
   /\breplaced (by|with)\b|\bwas replaced\b|\breplaces `?\/(act|team|org|improve|run)\b/i,
   /\bfold(s|ed) `?\/(org|improve|run)`? into\b/i, // "folds `/improve` into"
   /\bmoved into `?\/(act|team|improve)\b/i, // "had moved into `/improve`"
   /\b(is|are|was|were) \*{0,2}historical\b/i, // "this reference is historical"
-  // A release tag counts only inside a history phrase.
-  /\b(in|since|as of|before|until|from|after|through) [vV]1[0-2](\.\d+)*\b/i, // "removed in v12.2.0"
+  // A release tag counts only inside a history phrase. The tag needs a dot group
+  // ("v12.2.0", "2.1.178"; "before v12" is the one bare form) and must end the
+  // phrase: "in v12.5 workflows" is not history.
+  /(\b(in|since|as of|until|from|after|through) ([vV]1[0-2]\.\d+(\.\d+|\.x)*|[vV]?2\.1\.\d+)|\bbefore ([vV]1[0-2](\.\d+|\.x)*|[vV]?2\.1\.\d+))(?=\s*([^\w\s]|$)|\s+(and|to|as|by|with|the|there|so)\b)/i, // "removed in v12.2.0."
   /\b[vV]1[0-2](\.\d+)* `?\/(org|improve|run)\b/, // "the V11.0 `/improve` surface"
   /\b[vV]1[0-2](\.\d+)+ (also )?(introduced|added|removed|folded|absorbed|shipped)\b/, // "V10.26.33 also introduced"
   /^\s*[-*] \*{0,2}[vV]?\d+\.\d+\.\d+\b/, // a dated changelog bullet
   /\bno `?Team(Create|Delete)`?/, // "no TeamDelete call"
-  /\bdo not call\b|\bdoes not depend on\b|\bno separate\b|\bnot produce\b|\bequivalent of\b/i, // a negation or an old-to-new comparison
-  /(->|→|\|)\s*`?\/(act|team)\b/, // an old -> new mapping row
+  // A negation bound to a removed tool, or an old-to-new comparison.
+  /\bdo not call `?(them|it|Team(Create|Delete))\b|\bdoes not depend on\b|\bno separate\b|\bnot produce\b|\bequivalent of\b/i,
+  // An old -> new mapping: the removed name sits left of the arrow, with no
+  // clause break between them. "Use /org to plan, then hand off -> /act" is not one.
+  /\/(org|improve|run)\b[^,;|>→]{0,40}?`?\s*(->|→)\s*`?\/(act|team)\b/,
   // A migration table row: a retired command in the first cell, its successor next.
   /^\|\s*`?\/(review|optimize|context|debug|org|improve|run)\b[^|]*\|\s*`?\/(act|team|improve)\b/,
 ];
@@ -78,6 +90,8 @@ export const ALLOW_LINES = [
   { path: '.claude/rules/core/resources/hook-catalog.md', text: '> `TeamCreate` and `TeamDelete`. The `TeammateIdle` and `TaskCompleted` hooks' },
   { path: '.claude/rules/core/teams.md', text: '`TeamCreate` and `TeamDelete` were' },
   { path: '.claude/rules/core/teams.md', text: '`TeamDelete` cleaned one up.' },
+  // Header rows of the historical comparison tables: /org is one column label.
+  { path: '.claude/skills/helper/reference/comparison-tables.md', text: '| /team | /org |' },
 ];
 
 // Same line only. A 2-line window let 13.7 percent of planted stale lines
@@ -170,6 +184,24 @@ describe('skill-refs-current: removed skill and agent names stay out of instruct
     'Call TeamDelete after the last wave to release the team.',
     'Run /org --dry-run before /team to preview the brief.',
   ])('a stale instruction with a broad word is detected: %s', (line) => {
+    expect(findStaleRefs(line)).toEqual([1]);
+  });
+
+  // CR-03 / WI-35 r2 R2-01: a history word on the same line that does not bind
+  // to the removed name must not hide a stale instruction. Round 2 let these
+  // 9 crafted phrasings pass as history.
+  it.each([
+    'Call TeamDelete when the team is no longer needed.',
+    'Run /improve to clean up removed files.',
+    'Use /run to rebuild deprecated packages.',
+    'Spawn task-decomposer as previously described.',
+    'Use /org before /team in v12.5 workflows.',
+    'Call TeamCreate since v12 to start the team.',
+    'Use /org to plan, then hand off -> /act.',
+    '| Strategy | `/org` | `/team` follow-up |',
+    'Use /org to plan. Do not call /act first.',
+    'Use /org to plan; the old flag was removed.',
+  ])('a stale instruction with an unbound history word is detected: %s', (line) => {
     expect(findStaleRefs(line)).toEqual([1]);
   });
 

@@ -35,7 +35,7 @@ acceptable for SAFE / LOW / MEDIUM risk findings:
    command's output appended.
 
 The primitive is invoked once per finding. Multiple findings batched into
-one apply step are not supported — each finding gets its own snapshot
+one apply step are not supported. Each finding gets its own snapshot
 and its own keep-or-rollback decision, so a single failing change does
 not block the remaining queue.
 

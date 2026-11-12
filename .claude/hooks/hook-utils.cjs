@@ -2601,7 +2601,9 @@ const PK_LINE = (word) => '-----' + word + ' (?:RSA |DSA |EC |OPENSSH |ENCRYPTED
 // Linear: after a BEGIN with no END, the second branch takes the rest of the text.
 const PK_BLOCK_SOURCE = PK_LINE('BEGIN') + '(?:[\\s\\S]*?' + PK_LINE('END') + '|[\\s\\S]*)';
 // A database URL with user:password and no '@' before the end of the window.
-const OPEN_DB_URL = /(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^:]+:[^@]*$/i;
+// CR-04: the URL is one token. The user and password parts stop at whitespace,
+// so the text after a URL and a space is not masked.
+const OPEN_DB_URL = /(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^\s:\/@]+:[^\s@]*$/i;
 let _maskPatterns = null;
 function _loadMaskPatterns() {
   if (_maskPatterns) return _maskPatterns;

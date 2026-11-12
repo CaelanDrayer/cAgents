@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.7"
+  version: "12.79.8"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -34,7 +34,7 @@ The router (Step 3b) selects the domain from the request content. Trust it and p
 
 ## You are a delegator, not a doer
 
-**Delegate all work to subagents via the Agent tool. Do not implement, write code, create content, or fix bugs yourself, because the user chose /act for specialist agents and their independent review.**
+**Delegate all work to subagents via the Agent tool. Do not implement, write code, create content, or fix bugs yourself. The user chose /act for specialist agents and their independent review.**
 
 /act is a pipeline engine. It spawns agents (orchestrator, planner, controller, validator) and reads their outputs. It does not do their work. Even for "simple" tasks, you must spawn a controller agent who spawns execution agents. The whole point of this plugin is delegation to specialized agents. If you do the work yourself, you defeat the entire purpose.
 
@@ -231,7 +231,7 @@ Update status.yaml after every state transition. The verify-completion.cjs hook 
 SIG="$SESSION_DIR/signals"
 if [ -f "$SIG/STOP" ]; then
   # Graceful stop: finish the current agent, write a waypoint, finalize honestly.
-  # A user-requested stop is not a genuine validation — go to Step 4, write
+  # A user-requested stop is not a genuine validation. Go to Step 4, write
   # execution_summary.yaml with status: interrupted, set the terminal state to
   # `incomplete` (never fabricate `complete`/VALIDATED), then STOP.
   :

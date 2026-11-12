@@ -10,6 +10,63 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.8] - 2026-11-11
+
+Pre-merge review fixes (WI-48). This release fixes the findings of the
+code review and the security review of the branch. It adds no feature.
+
+### Fixed
+- `.claude/hooks/hook-utils.cjs`: the open DB URL mask (`OPEN_DB_URL`)
+  now covers one URL token only. It stops at whitespace, so the prose
+  after a URL such as `redis://host:6379` stays in the stored text.
+  `tests/regressions/mask-secrets-gaps.test.js` adds 4 regression cases.
+- `tests/regressions/skill-refs-current.test.js`: the history filter is
+  narrower. The words "previously", "removed", "no longer" and
+  "deprecated" must bind to a history shape. The release-tag pattern and
+  the arrow mapping are stricter. 10 crafted stale phrasings are now
+  negative test cases.
+- `.claude/skills/_MODE_REGISTRY.md`: the old `/org --quick` flag now
+  maps to `/team --strategic`, as the other five surfaces say.
+- `cagents-memory/_system/config/pipeline_config.yaml`: the header
+  comment is correct. v12.3.0 deleted the score-based path selector, and
+  v12.7.0 brought back the two named paths `fast` and `standard`.
+- `scripts/ste100/mechanize.cjs`: a comment names the exact removal
+  version, v12.79.4.
+- Stale statements are correct in these files:
+  - `.claude/rules/memory/agent-memory.md` and
+    `agent-memory-reference.md`: the live session prefixes and the
+    example session ID.
+  - `.claude/rules/playbooks/pat-two-stage-review.md` and
+    `agents/team-lead.md`: emphasis in sentence case.
+  - `.claude/skills/act/SKILL.md`, `improve-risk-classification.md` and
+    `agents/team-bootstrap/resources/spawn-protocol.md`: 3 em dashes
+    removed, and one long sentence split.
+  - `.claude/skills/helper/reference/command-summaries.md` and
+    `comparison-tables.md`: the current `/act` passthroughs.
+  - `agents/team-bootstrap.md`: an execution agent keeps the `Agent`
+    tool.
+  - `agents/tech-lead/resources/backend-lead.md`,
+    `docs/agents/index.md` and `docs/DOMAIN_STRUCTURE_STANDARD.md`:
+    removed agent names replaced by the current agents and modes.
+  - `agents/qa-lead/resources/coordinate.md`: a link to its best
+    practices resource.
+  - `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` and
+    `docs/architecture/overview.md`: a heading quote, the overlay
+    config files and the rules count.
+- `CLAUDE.md`: the 60-80% context savings figure is labeled a
+  design-target estimate.
+
+### Added
+- `tests/regressions/example-store-no-agent-directed-payload.test.js`:
+  the deferred step of WI-16. The test checks every
+  `docs/example-store/ex-*.md` file for zero-width, bidi and tag-block
+  code points and for long base64-like runs. The detector classes use
+  `\u` escapes, so the test file holds no raw hidden code points.
+
+### Removed
+- `scripts/fix-resource-frontmatter.sh`. No script, test or CI step
+  referred to it.
+
 ## [12.79.7] - 2026-11-11
 
 CLAUDE.md restructure (WI-45). Every session loads CLAUDE.md, so this
