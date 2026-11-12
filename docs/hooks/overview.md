@@ -4,7 +4,7 @@ This is a high-level summary. The canonical per-hook detail (matchers, inputs, o
 
 ## Architecture
 
-CJS-only hooks built with the `createHook()` factory pattern. **33 `.cjs` files = 25 unique registered hooks across 17 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher) + `bash-guard-evaluator.cjs` (GuardFall evaluator library `require`'d by `bash-validator.cjs`).**
+CJS-only hooks built with the `createHook()` factory pattern. **31 `.cjs` files = 24 unique registered hooks across 17 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher).**
 
 Two consolidating dispatchers run the sub-validators in-process (one node cold-start instead of one per sub-validator):
 
@@ -18,7 +18,6 @@ Two consolidating dispatchers run the sub-validators in-process (one node cold-s
 | SessionStart | session-catchup.cjs | Initialize state, detect incomplete sessions, inject context |
 | SessionEnd | team-stop.cjs | Finalize metrics, update status, agent-tree cleanup |
 | UserPromptSubmit | prompt-router.cjs | Delegation enforcement + natural-language routing |
-| PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands (two-tier: deny + HITL) |
 | PreToolUse[Write\|Edit] | write-edit-dispatch.cjs | Dispatches secret-detection + controller-delegation-validator + skill-size-monitor |
 | PreToolUse[Agent] | agent-dispatch.cjs | Dispatches session-init-gate + model-routing-advisor |
 | ConfigChange | config-change-logger.cjs | Log config changes |

@@ -282,12 +282,13 @@ describe('7. G2 canary: run-hook.cjs launcher is untouched', () => {
     ).toBe(true);
   });
 
-  test('.claude/settings.json registers exactly 25 hooks through run-hook.cjs', () => {
+  test('.claude/settings.json registers exactly 24 hooks through run-hook.cjs', () => {
     const settings = JSON.parse(readFileSync(join(ROOT, '.claude', 'settings.json'), 'utf8'));
     // WI-7 (HS-1): count UNIQUE hook names. post-write-validator is registered
     // twice (PostToolUse Write|Edit|NotebookEdit and PostToolUse Bash), and the
-    // documented figure is 25 unique registered hooks (WI-15 D1
-    // unregistered the no-op permission-handler, 26 -> 25).
+    // documented figure is 24 unique registered hooks (WI-15 D1
+    // unregistered the no-op permission-handler, 26 -> 25; v12.80.0 removed
+    // the bash guard hook, 25 -> 24).
     const commands = new Set();
     for (const matchers of Object.values(settings.hooks || {})) {
       for (const matcher of matchers) {
@@ -303,7 +304,7 @@ describe('7. G2 canary: run-hook.cjs launcher is untouched', () => {
       commands.size,
       'the number of hooks dispatched through run-hook.cjs changed. If the rename touched ' +
         'settings.json, the hook system is broken.',
-    ).toBe(25);
+    ).toBe(24);
   });
 });
 

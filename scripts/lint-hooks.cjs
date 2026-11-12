@@ -19,8 +19,7 @@
  *   hook_files === registered_hooks + dispatched + non_hook_utilities
  *
  * where non_hook_utilities are hook-utils.cjs + run-hook.cjs (shared lib +
- * launcher) + bash-guard-evaluator.cjs (pure library require'd by
- * bash-validator.cjs — neither registered nor dispatched).
+ * launcher).
  *
  * Usage:
  *   node scripts/lint-hooks.cjs              # print counts + PASS/FAIL consistency
@@ -39,10 +38,8 @@ const HOOKS_DIR = path.join(REPO_ROOT, '.claude', 'hooks');
 const SETTINGS_PATH = path.join(REPO_ROOT, '.claude', 'settings.json');
 
 // Non-hook utility .cjs files that live in .claude/hooks/ but are not themselves
-// Claude Code hooks: the shared library, the launcher, and the bash-guard
-// evaluator library (require'd by bash-validator.cjs; not registered, not a
-// dispatched sub-validator).
-const NON_HOOK_UTILITIES = ['hook-utils.cjs', 'run-hook.cjs', 'bash-guard-evaluator.cjs'];
+// Claude Code hooks: the shared library and the launcher.
+const NON_HOOK_UTILITIES = ['hook-utils.cjs', 'run-hook.cjs'];
 
 function deriveCounts() {
   // 1. All .cjs files on disk.

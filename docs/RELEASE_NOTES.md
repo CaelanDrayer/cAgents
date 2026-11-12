@@ -1,10 +1,28 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.8
-**Release Date**: November 11, 2026
+**Current Version**: 12.80.0
+**Release Date**: November 12, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.80.0 - November 12, 2026 (bash guard removal)
+
+This minor release removes the bash guard. The `bash-validator` hook,
+its evaluator library `bash-guard-evaluator.cjs`, 13 guard test files,
+the GuardFall fixture, and the guard threat model are gone. No cAgents
+hook checks Bash commands now. This is a behavior change. The
+`CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` switches are
+inert, and you can delete them from your settings. `run-hook.cjs` lists
+`bash-validator` as a retired hook, so a stale registration exits 0
+with no output. A new regression test pins the removal. The hook counts
+went from 33 files and 25 hooks to 31 files and 24 hooks. The
+`permissions.deny` patterns, `write-edit-dispatch.cjs`, and
+`agent-dispatch.cjs` still apply. v12.79.8 was an oversize patch (39
+files in all, 23 of them outside the 16 version-sync locations, against
+the 5-file patch rule). History is not re-versioned. The
+v12.79.8 commit messages got a new trailer, and their content is
+unchanged.
 
 ## V12.79.8 - November 11, 2026 (pre-merge review fixes)
 
@@ -2822,5 +2840,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.8
+**Current Version**: 12.80.0
 **Release Date**: August 21, 2026

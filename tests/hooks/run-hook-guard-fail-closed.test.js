@@ -1,10 +1,14 @@
 /**
  * run-hook-guard-fail-closed.test.js (v12.78.0, WI-02, ITEM-1b).
  *
- * The launcher .claude/hooks/run-hook.cjs must fail closed for the 3 guard
- * hooks (bash-validator, write-edit-dispatch, agent-dispatch). If a guard
- * hook is missing, has a syntax error, or throws at module load, the launcher
- * prints a PreToolUse deny and exits 0. All other hooks stay fail-open.
+ * The launcher .claude/hooks/run-hook.cjs must fail closed for the 2 guard
+ * hooks (write-edit-dispatch, agent-dispatch). If a guard hook is missing, has
+ * a syntax error, or throws at module load, the launcher prints a PreToolUse
+ * deny and exits 0. All other hooks stay fail-open.
+ *
+ * v12.80.0 removed the bash guard. 'bash-validator' is a retired name: the
+ * launcher exits 0 with no output for it, so a stale registration never
+ * blocks a Bash call.
  *
  * Harness: the test copies the real run-hook.cjs into a mkdtemp dir at
  * <tmp>/.claude/hooks/ and puts the stub hooks beside it. Every search root of
@@ -24,6 +28,8 @@ const REAL_LAUNCHER = join(REPO_ROOT, '.claude', 'hooks', 'run-hook.cjs');
 
 let tmpRoot;
 let launcher;
+let missingRoot;
+let missingLauncher;
 let gitStatusBefore;
 
 function gitStatusHooks() {
@@ -33,17 +39,21 @@ function gitStatusHooks() {
   return r.stdout;
 }
 
-function runLauncher(hookName) {
+function runLauncher(hookName, opts = {}) {
+  const root = opts.root || tmpRoot;
+  const file = opts.launcher || launcher;
   const env = { ...process.env, CAGENTS_CI_QUIET: '1', CLAUDECODE: '1' };
   delete env.CLAUDE_PLUGIN_ROOT;
-  env.CLAUDE_PROJECT_DIR = tmpRoot;
-  const r = spawnSync(process.execPath, [launcher, hookName], {
-    cwd: tmpRoot,
+  if (opts.unsetProjectDir) delete env.CLAUDE_PROJECT_DIR;
+  else env.CLAUDE_PROJECT_DIR = root;
+  const r = spawnSync(process.execPath, [file, hookName], {
+    cwd: root,
     env,
-    input: '{}',
+    input: opts.input || '{}',
     encoding: 'utf8',
     timeout: 60000
   });
+  if (r.error) throw r.error;
   let json = null;
   const lines = (r.stdout || '').trim().split('\n').filter(Boolean);
   try { json = JSON.parse(lines[lines.length - 1]); } catch { json = null; }
@@ -63,35 +73,44 @@ beforeAll(() => {
   launcher = join(hooksDir, 'run-hook.cjs');
 
   // Guard hook with a syntax error.
-  writeFileSync(join(hooksDir, 'bash-validator.cjs'), 'module.exports = {;\n', 'utf8');
+  writeFileSync(join(hooksDir, 'write-edit-dispatch.cjs'), 'module.exports = {;\n', 'utf8');
   // Guard hook that throws at module load.
   writeFileSync(join(hooksDir, 'agent-dispatch.cjs'),
     "throw new Error('injected load fault (test)');\n", 'utf8');
-  // write-edit-dispatch.cjs is deliberately absent.
+  // Retired name with a broken file: the launcher must never load it.
+  writeFileSync(join(hooksDir, 'bash-validator.cjs'), 'module.exports = {;\n', 'utf8');
   // Non-guard hook with a syntax error.
   writeFileSync(join(hooksDir, 'session-catchup.cjs'), 'function (\n', 'utf8');
   // Healthy non-guard hook: proves that the hook still runs on the normal load path.
   writeFileSync(join(hooksDir, 'notification.cjs'),
     "console.log(JSON.stringify({ continue: true, systemMessage: 'stub-ran' }));\n", 'utf8');
+
+  // Second temp root: the launcher only. No guard file and no bash-validator.cjs.
+  missingRoot = mkdtempSync(join(tmpdir(), 'run-hook-failclosed-missing-'));
+  const missingHooks = join(missingRoot, '.claude', 'hooks');
+  mkdirSync(missingHooks, { recursive: true });
+  copyFileSync(REAL_LAUNCHER, join(missingHooks, 'run-hook.cjs'));
+  missingLauncher = join(missingHooks, 'run-hook.cjs');
 });
 
 afterAll(() => {
   if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true });
+  if (missingRoot) rmSync(missingRoot, { recursive: true, force: true });
 });
 
 describe('run-hook.cjs fails closed for guard hooks', () => {
-  it('denies when bash-validator.cjs has a syntax error', () => {
-    const r = runLauncher('bash-validator');
+  it('denies when write-edit-dispatch.cjs has a syntax error', () => {
+    const r = runLauncher('write-edit-dispatch');
     expect(r.status).toBe(0);
     expect(r.json).not.toBeNull();
     expect(r.json.hookSpecificOutput.hookEventName).toBe('PreToolUse');
     expect(decisionOf(r.json)).toBe('deny');
-    expect(r.json.hookSpecificOutput.permissionDecisionReason).toMatch(/bash-validator/);
+    expect(r.json.hookSpecificOutput.permissionDecisionReason).toMatch(/write-edit-dispatch/);
     expect(r.json.hookSpecificOutput.permissionDecisionReason).toMatch(/SyntaxError/);
   });
 
   it('denies when write-edit-dispatch.cjs is missing', () => {
-    const r = runLauncher('write-edit-dispatch');
+    const r = runLauncher('write-edit-dispatch', { root: missingRoot, launcher: missingLauncher });
     expect(r.status).toBe(0);
     expect(decisionOf(r.json)).toBe('deny');
     expect(r.json.hookSpecificOutput.hookEventName).toBe('PreToolUse');
@@ -105,6 +124,28 @@ describe('run-hook.cjs fails closed for guard hooks', () => {
     expect(decisionOf(r.json)).toBe('deny');
     expect(r.json.hookSpecificOutput.permissionDecisionReason).toMatch(/agent-dispatch/);
     expect(r.json.hookSpecificOutput.permissionDecisionReason).toMatch(/injected load fault/);
+  });
+});
+
+describe('run-hook.cjs treats bash-validator as a retired hook', () => {
+  const bashPayload = JSON.stringify({
+    hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'ls' }
+  });
+
+  it('exits 0 with no output when bash-validator.cjs is absent', () => {
+    const r = runLauncher('bash-validator', {
+      root: missingRoot, launcher: missingLauncher, unsetProjectDir: true, input: bashPayload
+    });
+    expect(r.status).toBe(0);
+    expect(r.stdout).toBe('');
+    expect(r.stderr).toBe('');
+  });
+
+  it('exits 0 with no output and never loads a bash-validator.cjs that is present', () => {
+    const r = runLauncher('bash-validator', { input: bashPayload });
+    expect(r.status).toBe(0);
+    expect(r.stdout).toBe('');
+    expect(r.stderr).toBe('');
   });
 });
 

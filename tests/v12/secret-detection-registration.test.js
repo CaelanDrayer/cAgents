@@ -12,7 +12,7 @@
 //   previously blocked silently PASS.
 //
 // THE FIX: register createHook UNCONDITIONALLY at top level (same as the sibling
-// deny hooks bash-validator.cjs / post-write-validator.cjs).
+// hook post-write-validator.cjs).
 //
 // This test drives the hook through the production launcher exactly as Claude
 // Code does — spawnSync('node', ['.claude/hooks/run-hook.cjs', 'secret-detection'])

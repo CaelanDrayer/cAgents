@@ -83,12 +83,13 @@ describe('hook exit latency (no un-unref\'d timer linger)', () => {
     expect(ms).toBeLessThan(LINGER_BUDGET_MS);
   });
 
-  it('bash-validator.cjs exits well under 500ms on a benign command', async () => {
-    // Second representative hook. `ls` is benign (not in deny/ask lists) so the
-    // hook returns quickly; the assertion proves it does not linger afterward.
-    const { ms } = await measureExitLatency('bash-validator.cjs', {
-      tool_name: 'Bash',
-      tool_input: { command: 'ls' },
+  it('write-edit-dispatch.cjs exits well under 500ms on a benign write', async () => {
+    // Second representative hook. v12.80.0 removed the bash guard, so the
+    // Write|Edit guard takes its place. A plain text write to a temp path is
+    // allowed quickly; the assertion proves the hook does not linger afterward.
+    const { ms } = await measureExitLatency('write-edit-dispatch.cjs', {
+      tool_name: 'Write',
+      tool_input: { file_path: join(tmpdir(), 'cagents-latency-probe.txt'), content: 'hello' },
     });
     expect(ms).toBeLessThan(LINGER_BUDGET_MS);
   });

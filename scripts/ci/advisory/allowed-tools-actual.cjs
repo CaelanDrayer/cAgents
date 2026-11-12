@@ -174,7 +174,7 @@ function detectCapabilities(body) {
   // STRONG = a real backticked shell command (BACKTICK_SHELL requires a known
   // shell keyword INSIDE the backticks). Deliberately NOT keyed on `run ` or a
   // bare `bash`/`npm `/`git ` token: in cAgents prose "run `cagents:foo`" runs
-  // an *agent*, not a shell, and "bash-validator" / "git state" appear as prose
+  // an *agent*, not a shell, and "git state" appears as prose
   // — matching those produced false LP1 HIGHs. The example doc's worked case
   // ("then run `npm run migrate`") is still caught by BACKTICK_SHELL.
   const bashStrong = testAny([BACKTICK_SHELL], b);

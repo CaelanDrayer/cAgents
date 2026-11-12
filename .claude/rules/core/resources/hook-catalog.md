@@ -9,7 +9,6 @@ paths:
   - "scripts/lint-hooks.cjs"
   - "tests/hooks/**"
   - "tests/regressions/hooks-md-event-mapping.test.js"
-  - "docs/SECURITY_BASH_GUARD_THREAT_MODEL.md"
 ---
 
 # Hook Catalog Detail
@@ -26,7 +25,7 @@ These contracts live in `hook-utils.cjs` and apply to many hooks. Session
 
 ### Payload Policy for the Guard Hooks
 
-The guard hooks are `BashValidator`, `WriteEditDispatch`, and `AgentDispatch`.
+The guard hooks are `WriteEditDispatch` and `AgentDispatch`.
 They are the members of `NO_PAYLOAD_FAIL_CLOSED`.
 
 | stdin status | What arrived | Verdict of a guard hook |
@@ -242,247 +241,6 @@ sections below for the detail.
 
 ## Tool Validation
 
-### PreToolUse[Bash]: bash-validator.cjs
-
-- **Matcher**: `Bash`
-- **Purpose**: Two-tier command safety. Tier 1 denies a catastrophic command
-  automatically. Tier 2 asks the user to confirm a command that is close to
-  dangerous, and it shows a safe alternative.
-
-**Tier 1, blocked (deny, auto-reject)**:
-
-- **Destructive**: `rm -rf /`, `rm -rf ~`, fork bombs, `mkfs` (and the
-  `mkfs.<fstype>` variants), `dd if=/dev/zero`, `> /dev/sda`, `sudo`, `doas`,
-  `pkexec`, `su`, `crontab`. **B3/B4 (v12.18.0)**: the hook matches `mkfs`, `su`,
-  `crontab`, and the new `doas` and `pkexec` as whole words or as
-  command-position tokens, with a regex. It does not match them as bare
-  `includes()` substrings. A benign command that only contains the text is
-  therefore no longer wrongly hard-denied. Three examples are a `node -e` string
-  that mentions `mkfsutil`, a path such as `mycrontab-helper`, and `gh issue`.
-- **Data exfiltration**: `curl` with POST data, `wget --post-file`, a `nc` pipe
-  or a `netcat` pipe, and `socat`
-- **Obfuscation**: `base64 -d | bash/sh`, `eval "$(..."`, `python3 -c` with
-  `os.system` or `subprocess`, `perl -e` with `system`, `curl|wget` piped to a
-  shell, `node -e` with `child_process`, `ruby -e` with `exec` or `system`, and
-  `php -r` with `exec` or `system`
-
-**Tier 2, HITL (ask, the user confirms and a safe alternative is shown)**:
-
-- **Git destructive (v12.76.0, K1, W1, W3, W2, WI-21)**: the evaluator reads
-  the `git` argv after the global options. It does not match a raw-string
-  regex. `gitArgvMessage` asks for these forms:
-  - A force push: `-f` (also inside a flag cluster), `--force`, a `+refspec`,
-    `--mirror`, `--delete`, `-d`, a `:ref` refspec, `--prune`, an abbreviation
-    of a long option such as `--fo`, and an alias or a push setting that `-c`,
-    `--config-env=`, or a `GIT_CONFIG_*` variable sets.
-    `--force-with-lease` and `--force-if-includes` do not ask.
-  - A history rewrite (W3): `filter-branch`, `filter-repo`, `update-ref -d`,
-    `update-ref --stdin`, `reflog expire`, `reflog delete`, `prune` without
-    `-n`, and `gc --prune=<any value except never>`.
-  - A discard of work (W2, `gitDiscardMessage`): `reset --hard` in any
-    position, `clean --force` without `-n`, a `checkout` of a pathspec or of
-    `--ours`/`--theirs`, `restore` of the worktree, `switch --discard-changes`
-    or `--force`, `stash drop`, `stash clear`, `branch -D`,
-    `worktree remove --force`, and `-c clean.requireForce`.
-  - A file write (W21-1, `gitOutputMessage`): a `--output` long option or an
-    abbreviation of it, `-o` on `format-patch` or `archive`, and
-    `bundle create`.
-  - A git subcommand or argument that is an expanded word: a variable, a
-    substitution, a brace, a tilde, a glob, or `$'..'`. A single
-    double-quoted `-b` or `-m` value is exempt.
-  - A `git` command or a test runner that can read a planted repo, config, or
-    `package.json` (W21-3). A `cd`, `pushd`, or `env -C` to a directory other
-    than the project root before the command asks. So do `git -C <dir>`,
-    `--git-dir`, `--work-tree`, and `--exec-path` that point away from the root.
-    A hook cwd outside the project root asks, unless it is a verified worktree
-    of this project. An env prefix such as `GIT_*`, `NODE_OPTIONS`, `PATH`, or
-    `HOME` before the command also asks.
-- **find deletes (W4)**: `find -delete`, or `find -exec` with an `rm`-family
-  command, an interpreter, a variable command, or a shell payload that names
-  `rm`. It asks unless every root is a temp path: `/tmp/<sub>`, the hook
-  `TMPDIR` subtree, or an H5 `mktemp` variable.
-- **SQL destructive (H8)**: `DROP TABLE/DATABASE/SCHEMA` (suggest backup),
-  `TRUNCATE TABLE` (suggest `DELETE ... WHERE`), `DELETE FROM` without `WHERE`
-  (suggest adding `WHERE`). Since v12.76.0 these ask only when a database
-  client such as `psql`, `mysql`, `sqlite3`, or `bq` is in the command. An SQL
-  keyword in `grep` or `echo` data allows.
-- **Permission escalation**: `chmod 777`, `chmod -R 777`, and `chmod -R 666`
-  (suggest `755` or `644`), `chown -R root` (suggest a check of the path)
-- **Process management**: `kill -9 -1` (suggest SIGTERM), `killall` (suggest specific PID), `pkill -9` (suggest SIGTERM first)
-- **System control (H1, G10)**: `shutdown` and `poweroff` (suggest `shutdown -c`),
-  `reboot` (suggest saving the work first), `halt` (suggest `shutdown -h +1`).
-  Since v12.76.0 a power verb asks only in command position, and the wrapper
-  scan finds it after `nohup`, `env`, `timeout`, `xargs`, `ssh`, and
-  `bash -c`. A `systemctl` or `loginctl` power verb or power target asks. So do
-  `kexec`, `runlevel0.target`, `runlevel6.target`, a `login1` reboot through
-  `busctl` or `dbus-send`, and a redirect to `/proc/sysrq-trigger`.
-- **Network and firewall**: `iptables -F` (suggest `iptables-save` first),
-  `ufw disable` (suggest per-port rules)
-- **Service management**: `systemctl stop` and `systemctl disable` (suggest a
-  check of the dependents first)
-- **Container cleanup**: `docker system prune -a` (suggest the same command
-  without `-a`), `docker volume prune` (suggest `volume ls` first)
-- **Disk operations**: `mkswap` (suggest a check of the device), `fdisk`
-  (suggest a backup of the partition table)
-
-**dontAsk mode (v12.72.2)**: if the hook payload has
-`permission_mode: dontAsk`, the hook drops each Tier 2 `ask`. A headless
-session cannot answer a prompt, so an `ask` only fails the tool call. The
-permission policy of the session, which is its allow rules and its deny rules,
-then decides. Each Tier 1 deny still applies in every mode.
-
-**Obfuscation detection** (strengthened by F7-1, audit
-run_fable-plugin-review_260609_001): the static regexes now catch three more
-obfuscation shapes, which the guard missed before:
-
-- **Tier 1 (deny)**: `eval` of a bare variable, as in `eval $VAR`, `eval "$VAR"`,
-  and `eval ${VAR}`. This is execution through variable indirection. It does not
-  match the command-substitution style of `eval $(cmd)`.
-- **Tier 1 (deny)**: a two-step download and execute inside one command string,
-  as in `curl ... -o x.sh; bash x.sh` and `wget -O /tmp/i URL && sh /tmp/i`. The
-  shape is a download flag or a redirect, and then a shell that executes that
-  file in the same chain.
-- **Tier 2 (ask)**: a bare variable in command position, which is the start of a
-  command segment. Also a download and run with no explicit shell, where the
-  command executes the file directly, as in
-  `curl URL -o /tmp/x.sh && /tmp/x.sh`.
-
-**GuardFall hardening (SHIPPED, v12.34.0)**: `bash-validator.cjs` delegates to a
-fail-closed tokenize-and-canonicalize library,
-`.claude/hooks/bash-guard-evaluator.cjs`. The validator require's that library,
-and the library holds 5 ordered components. The library reads the **RAW**
-command string. It is wrapped in its own try/catch, and that catch returns
-**deny**. An evaluator error therefore denies, and the guard no longer fails
-open. The legacy static denylist stays in place as a Stage-2 and Stage-3 belt.
-The most-restrictive verdict wins.
-
-This closes the named single-command GuardFall bypass shapes in Classes A to E:
-
-- Quote-removal token-merge: `r''m -rf /`
-- `$IFS` field-splitting: `rm$IFS-rf$IFS/`
-- Command substitution, including substitution inside double quotes:
-  `$(echo rm) -rf /`
-- A decoder pipe or a fetch pipe into an interpreter: `base64 --decode | python3`
-- The long tail of alternative argv, of destructive flags, and of sensitive-path
-  exfiltration: `dd of=/dev/sda`, `cat ~/.aws/credentials | curl --data-binary @-`
-
-A 35-probe regression corpus for Classes A to E gates CI. It runs as an
-`it.each` Vitest suite over `tests/hooks/fixtures/guardfall-corpus.json` and
-`tests/hooks/bash-guard-guardfall.test.js`.
-
-**Belt relaxation and mode override (REC-08/09, v12.50.0)**: the
-OBFUSCATION-class regexes of the legacy Stage-2 and Stage-3 belt cover
-`python3 -c`, `node -e`, `ruby -e`, `base64|sh`, `eval`, the two-step download,
-and more. Each regex used to match `.*` across the whitespace-collapsed RAW
-string. An interpreter and a keyword that appeared only as **quoted data** was
-therefore denied falsely. Two examples are the `echo` argument in
-`echo 'python3 -c "os.system(1)"'` and the `grep` argument in
-`grep -rn 'node -e child_process' src/`. Each obfuscation entry now carries an
-`obf` command-name list, and the belt confirms that list against the evaluator's
-exported `tokenize`. The flagged interpreter must be a **standalone command
-word** before the belt denies. A word buried in a quoted multi-word token does
-not count. The change only narrows a belt deny to an allow, and it never adds a
-deny. Every true positive still denies, and that includes belt-only
-`env python3 -c …` / `ruby -e '\`…\`'` and the whole evaluator floor.
-
-The `CAGENTS_BASH_GUARD` env var is new. It takes `block`, which is the default,
-`warn`, or `off`. An unrecognized value falls back to the fail-closed `block`.
-The `env` block of `.claude/settings.json` declares it. Under `warn` it
-downgrades a confirmed obfuscation belt deny to `ask`. Catastrophic literals and
-the Stage-1 evaluator stay a hard deny, so `rm -rf /` stays denied under `warn`.
-Under `off` it skips the belt. The sound evaluator still runs under `off`, so a
-catastrophic shape is never disarmed. See
-`docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.1.
-
-**Full-off switch (UD-2, v12.79.0)**: set `CAGENTS_BASH_GUARD_DISABLED=1` to
-turn the whole guard off. The hook then allows every command before any check.
-The Stage-1 denies are included, and the evaluator does not load. The hook also
-reads this key from the `env` object of `.claude/settings.local.json`, so the
-switch works in a session that already runs. The env var wins, and a file that
-does not parse keeps the guard on. `CAGENTS_BASH_GUARD` keeps its meaning.
-
-**Fail-closed soft-fail (v12.62.1)**: an **un-parseable** command no longer
-hard-denies. An un-parseable command is one the tokenizer chokes on. An example
-is an apostrophe or an unbalanced quote inside a heredoc or inside `$(...)`,
-such as `git commit -m "$(cat <<'EOF' … the model's unit … EOF)"`. The
-evaluator tags a tokenize failure or a canonicalize failure with
-`failClosed: true`. An evaluator *defect* or throw still hard-denies, because
-broken machinery has to fail hard. `bash-validator.cjs` then defers to the
-raw-string catastrophic belt. That belt is forced to run even under `off`,
-because the sound floor is not available for un-parseable input. Only if the
-belt **and** the HITL patterns are all silent does the validator downgrade to a
-confirmation `ask` instead of a `deny`. Proven-destructive verdicts are
-unchanged and still hard-deny, and those are the Classes A to E shapes, which
-tokenize successfully.
-
-Residual (§7.6): an un-parseable command that is destructive only in a way the
-belt misses, such as the subpath `rm -rf /etc`, gets an `ask`. That `ask` is not
-a guaranteed stop under `bypassPermissions`. Section 8 mitigates it with its
-rule of no auto-yes on untrusted content. See
-`docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.3 and the hook `ask` semantics
-note in §5.
-
-**Heredoc bodies skipped, not lexed (v12.69.0)**: §5.3 contained the damage from
-an un-parseable command, but it left the cause in place. The lexer treated `<<`
-as a redirect operator and never consumed the heredoc body, so it lexed body
-text as shell. One odd apostrophe in a body threw `unterminated single quote`
-and downgraded a benign command to a confirmation prompt. A commit message with
-"it's" or "don't" is enough to do it. On a 439-command corpus of real session
-history this was the single largest source of interactive approval prompts, at
-8 of 22 friction events.
-
-`tokenize()` now consumes a heredoc body to its terminator, and it matches bash
-exactly: the delimiter stands alone on its line, `<<-` strips leading tabs, and
-an unterminated body runs to EOF. A `<<<` herestring is unaffected. The skip is
-sound for the same reason the `#`-comment skip is sound: bash feeds the body to
-the command on **stdin** and never executes it. One shape is executed, and that
-is a shell reading its script from a heredoc, as in `bash <<'EOF' … EOF`. The
-evaluator recurses into that shape like a `-c` payload, so it still denies. A
-computed delimiter such as `<<$D` is deliberately not skipped, because the body
-extent is unknowable, so the old fail-closed behaviour is kept.
-
-Version 12.69.0 also shipped **constant propagation** for a recursive-force
-delete whose target is a bare `$VAR` assigned a literal earlier in the same
-command string, as in `S=/tmp/scratch; rm -rf $S`. It is sharper in both
-directions. It denies when the resolved literal is a protected path, and it no
-longer prompts for an ordinary scratch path. A variable assigned elsewhere stays
-unknown and still asks. The regression suite is
-`tests/hooks/bash-guard-heredoc.test.js`. See §5.4.
-
-**Rule changes in v12.76.0 (WI-6, WI-8, WI-15, WI-20, WI-21)**: these changes
-cut false asks and close bypass shapes. See
-`docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.5 for the full list.
-
-| Id | Change |
-|----|--------|
-| H2 | A `$VAR` in command position with one literal assignment in the same command is resolved and judged. `C='rm #'; $C -rf /etc` denies. |
-| H3 | A literal inline program that is a pipe consumer is data, unless it holds dynamic code such as `exec`, `eval`, `spawn`, `require(`, or a decoder. |
-| H5 | `T=$(mktemp -d); rm -rf $T` allows. A `..` after the variable is not checked, so `rm -rf $T/../../etc` also allows. That is gap G5. |
-| H7 | `.env.example`, `.env.sample`, `.env.template`, `.env.dist`, and `.env.defaults` are not credential files. |
-| R1 | `rm -rf /etc` inside `if`, `while`, `until`, `{ }`, or after `!` denies. Before, it allowed. |
-| WI-8 REV2 | The wrapper scans share a budget of 400 steps (`SCAN_STEP_LIMIT`). The command asks when the budget runs out. |
-| WI-20 | A non-ASCII character or an escape in an inline program that a pipe feeds asks. An opaque context, such as a `-c` payload or a process substitution, also gets a scan of its inner text. A nest deeper than the depth cap asks. A heredoc joins a `\`-newline before it finds the terminator. |
-| A1 | `settings.json` allows `npx vitest run --config tests/vitest.config.js`, `npm test`, and each `scripts/ci/` script. `runnerMessage()` asks for a `../` path, `--root`, `--dir`, `--prefix`, a setup file, a `--config` other than `tests/vitest.config.js`, a code-loading option, an npm option before `--`, a variable or substituted argument, an absolute path, and an unknown flag. |
-| W21-2 | If `bash-guard-evaluator.cjs` fails to load, `bash-validator.cjs` denies every Bash call and names the load error. |
-
-**Honest residuals (§7, still OPEN)**: no single-string evaluator can catch the
-shapes below, so do not treat them as closed:
-
-- Cross-Bash-call sequential payloads, where one call builds a payload and a
-  later call executes it.
-- Heredoc-built payloads.
-- Runtime-constructed indirection.
-- The command-position single-variable case, such as `$CMD file`, under
-  `bypassPermissions`.
-- Interiors that are not a sandbox, such as a Makefile target or an npm script.
-- Single-call shapes that the evaluator allows today (G4 to G11): `xargs rm`,
-  `rm -rf $T/../..` after `mktemp`, a command name built from parts, `git send-pack --force`, a `.env*` glob,
-  an SQL comment between keywords, a bare `TRUNCATE`, and `FLUSHALL`. The
-  threat model §7.2 lists each one with its probe verdict.
-
-See `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` for the full threat model, the
-per-class scorecard, and the complete residual list.
-
 ### PreToolUse[Write|Edit|NotebookEdit]: write-edit-dispatch.cjs
 
 - **Matcher**: `Write|Edit|NotebookEdit`
@@ -601,8 +359,9 @@ read `process.env.AGENT_MEMORY_DIR`, which the `env` block of
 `cagents-memory/_data/policies/` directory, which never existed in production.
 Its deny path could therefore never fire. It paid a cold-start node spawn on
 every Bash, Write, and Edit only to `return null`. A hard denial is now the job
-of `bash-validator.cjs` for Bash, and of the security gates inside
-`write-edit-dispatch.cjs` for Write and Edit.
+of the security gates inside `write-edit-dispatch.cjs` for Write and Edit. For
+Bash, the `permissions.deny` patterns in `.claude/settings.json` apply. Since
+v12.80.0, no cAgents hook checks Bash commands.
 
 ### PreToolUse[Agent]: agent-dispatch.cjs
 
@@ -948,8 +707,7 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
   one node spawn and a "Checking permissions..." message to every permission
   dialog, and it changed nothing. WI-15 unregistered it and deleted the file.
 - **Auto-approval source**: the `permissions.allow` patterns in
-  `.claude/settings.json`. The bash guard asks for the git discard forms (W2)
-  in every mode where an ask can reach a human.
+  `.claude/settings.json`.
 
 ## State Management
 

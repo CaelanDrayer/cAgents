@@ -23,7 +23,7 @@ npm run test:watch
 npx vitest run --config tests/vitest.config.js --reporter=verbose
 
 # Single test file
-npx vitest run --config tests/vitest.config.js tests/hooks/bash-validator.test.js
+npx vitest run --config tests/vitest.config.js tests/hooks/secret-detection.test.js
 ```
 
 ## Configuration
