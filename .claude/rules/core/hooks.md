@@ -13,7 +13,7 @@ paths:
 32 .cjs files = 25 unique registered hooks across 17 event types.
 cAgents also has 5 dispatched sub-validators and 2 non-hook utilities. See the Architecture section below. See @resources/hook-catalog.md for the detail of each hook.
 
-> **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 31, 24, and 17 from disk. It counts the `.cjs` files, and it parses
+> **Count generator (A2-11, v12.x)**: `scripts/lint-hooks.cjs` derives the counts 32, 25, and 17 from disk. It counts the `.cjs` files, and it parses
 > `.claude/settings.json` for the unique registered hook names and the event keys. It then asserts that the inventory is internally consistent, with
 > `hook_files === registered + dispatched + utilities`. Run `node scripts/lint-hooks.cjs` after you add a hook or remove one. Then update the hardcoded
 > counts in this doc, in `CLAUDE.md`, and in the `$comment` of `settings.json`. `tests/hooks/lint-hooks.test.js` guards the script.

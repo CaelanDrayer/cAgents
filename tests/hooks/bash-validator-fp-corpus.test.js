@@ -7,6 +7,7 @@
  *
  * On a failure the test prints only the entry id and the rule. It never prints the
  * command text.
+ * A third test makes sure that the fixture holds no session URL and no long session id.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -74,5 +75,15 @@ describe('bash-validator false-positive corpus', () => {
       }
     }
     expect(failures).toEqual([]);
+  });
+
+  it('the fixture holds no session URL and no long session id', () => {
+    const raw = readFileSync(FIXTURE, 'utf8');
+    const SESSION_ID = /session_[A-Za-z0-9]{20,}/;
+    const urlIds = entries.filter(e => JSON.stringify(e).includes('claude.ai/code/session_')).map(e => e.id);
+    const longIds = entries.filter(e => SESSION_ID.test(e.id) || SESSION_ID.test(e.command)).map(e => e.id);
+    expect(urlIds).toEqual([]);
+    expect(longIds).toEqual([]);
+    expect(raw.includes('claude.ai/code/session_')).toBe(false);
   });
 });
