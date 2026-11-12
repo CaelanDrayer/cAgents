@@ -1,10 +1,23 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.0
+**Current Version**: 12.79.1
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.1 - November 11, 2026 (truth fixes)
+
+This patch release fixes counts, paths, a validator and secret masking
+(WI-31). Count drift in `README.md` and `.claude/rules/README.md` is fixed,
+and `validate-counts.sh` checks 18 and 19 now check these counts.
+`CLAUDE.md` names the correct overlay paths, and its test count is derived
+again from disk. The planner output validator accepts work items that a skill
+is assigned to, and both forms of a controller name. The `README.md` version
+history no longer lists each V10 release. The example-store round-2 review
+inputs agree with `pat-two-stage-review.md`, and the verify exemplar has the
+zero-item clause. The reviewer best practices give a round cap of 2. Secret
+masking covers a full private key block and a long database URL.
 
 ## V12.79.0 - November 11, 2026 (audited lessons from example repos)
 
@@ -2735,5 +2748,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.0
+**Current Version**: 12.79.1
 **Release Date**: August 21, 2026

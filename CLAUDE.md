@@ -69,9 +69,9 @@ Total: 45 .md = 38 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 **Canonical structure: 9 archetypes**, declared in each agent's `archetype:` frontmatter, NOT as directories. Agent files are flat at `agents/<name>.md`. Claude Code scans a plugin `agents/` directory recursively, so `.claude-plugin/plugin.json` lists the 60 agent files explicitly. Resource files under `agents/<name>/resources/` are therefore not registered. Per-archetype counts also appear in Quick Reference. The archetypes are Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
 
-**Domain overlay (legacy: routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files. They hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs were deleted: `engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`. Their router keywords and controller catalogs moved into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/`. They are not orphans.
+**Domain overlay (legacy: routing/config only)**: 2 legacy domain dirs (`agents/_overlay/people/`, `agents/_overlay/shared/`) survive on disk **without** SKILL.md files. They hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs were deleted: `engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`. Their router keywords and controller catalogs moved into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `agents/_overlay/people/` or `agents/_overlay/shared/`. They are not orphans.
 
-**Config**: `people/` and `shared/` keep their own `{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots also ship `config/domain_overrides.yaml` files: `core/` and `leadership/`. Those files hold the pipeline and C-suite routing tables. So `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root).
+**Config**: `agents/_overlay/people/` and `agents/_overlay/shared/` keep their own `agents/_overlay/{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots also ship `config/domain_overrides.yaml` files: `agents/core/` and `agents/leadership/`. Those files hold the pipeline and C-suite routing tables. So `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root).
 
 ## CRITICAL: Aggressive Delegation
 
@@ -124,7 +124,7 @@ Grouping only. Each agent's own role is in its frontmatter, which is already res
 - **Coordination** (1): `coordinator` (reusable controller for small domains: health, education, personal, arts, trades)
 - **Logging** (1): `coord-log-writer`
 
-**Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
+**Config**: `agents/_overlay/{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
 
 ## Aggressive Decomposition
 
@@ -146,7 +146,7 @@ Controllers are the coordination hub between planning and execution. See `.claud
 
 **Key Principles**: Controllers ask (not assign), execution agents answer, synthesis drives implementation, adaptive follow-up questions.
 
-**Controller selection by tier**. Per-domain catalogs live in `{domain}/config/domain_overrides.yaml` under `controller_catalog`, matched on tier + domain. Tier 2 = 1 primary controller (e.g. tech-lead, narrative-director, marketing-strategist). Tier 3 = primary + 1-2 supporting (e.g. architect, security-engineer). Tier 4 = 1 executive (cto/cco/cpo/chro) + primary + 2-4 supporting + HITL.
+**Controller selection by tier**. Per-domain catalogs live in `agents/_overlay/{domain}/config/domain_overrides.yaml` under `controller_catalog`, matched on tier + domain. Tier 2 = 1 primary controller (e.g. tech-lead, narrative-director, marketing-strategist). Tier 3 = primary + 1-2 supporting (e.g. architect, security-engineer). Tier 4 = 1 executive (cto/cco/cpo/chro) + primary + 2-4 supporting + HITL.
 
 **Coordinating Phase**: The orchestrator spawns the controller with plan.yaml. The controller asks clarifying questions, coordinates work items, tracks completion, and verifies acceptance criteria. It then writes `coordination_log.yaml` with `schema_version: "1"`, `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, and `status: completed`. See `.claude/rules/core/controllers.md` for the full schema and reviewer loop.
 
@@ -319,8 +319,8 @@ reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9). The split is 44 routable + 16 core. 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: Each agent file records an intended model under `metadata.model` (disk-verified: 27 sonnet, 23 opusplan, 7 opus, 3 fable). These values are advisory. Claude Code does not read `metadata.*` or `allowed-tools` in agent frontmatter, and no agent declares a top-level `model:` or `tools:` key. Thus every cAgents subagent currently inherits the session model and all tools, unless the spawn passes a `model` parameter. Only the cAgents validators and hooks read the advisory values. No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 2647+ Vitest tests across 289+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
-**Version**: 12.79.0
+**Tests**: `npm test` runs 2668+ Vitest tests across 292+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
+**Version**: 12.79.1
 
 ## Troubleshooting
 

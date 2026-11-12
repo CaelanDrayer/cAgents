@@ -17,7 +17,7 @@ objectives:
   - "Ensure security best practices"
 
 controller_assignment:
-  primary: cagents:tech-lead
+  primary: cagents:tech-lead    # Check 0 accepts "cagents:tech-lead" and "tech-lead"; it strips the prefix
   supporting: [cagents:architect, cagents:security-engineer]
 
 temporal_analysis:

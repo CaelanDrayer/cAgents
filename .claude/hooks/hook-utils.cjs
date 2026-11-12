@@ -2588,9 +2588,20 @@ function repairSession(sessionDir, opts = {}) {
  *
  * S2-01: the prefix guard is quadratic on a long run of 'sk-' or 'key-'.
  * Thus it runs only on the cut text. Use maskSecrets(text) only on short text.
+ *
+ * S2-03: a private key block is masked from BEGIN to END as one unit.
+ * If the END line is missing, the mask goes to the end of the text.
+ * N-01: if the raw text goes past the window, a database URL at the window end
+ * can have its '@' outside the window. The helper then masks the open URL.
  */
 const REDACTION_MARK = '[REDACTED]';
 const MASK_WINDOW_SLACK = 1024;
+// Built by concatenation, so that this file holds no complete key header.
+const PK_LINE = (word) => '-----' + word + ' (?:RSA |DSA |EC |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----';
+// Linear: after a BEGIN with no END, the second branch takes the rest of the text.
+const PK_BLOCK_SOURCE = PK_LINE('BEGIN') + '(?:[\\s\\S]*?' + PK_LINE('END') + '|[\\s\\S]*)';
+// A database URL with user:password and no '@' before the end of the window.
+const OPEN_DB_URL = /(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^:]+:[^@]*$/i;
 let _maskPatterns = null;
 function _loadMaskPatterns() {
   if (_maskPatterns) return _maskPatterns;
@@ -2620,7 +2631,8 @@ function _loadMaskPatterns() {
     .map(p => p.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&'))
     .join('|');
   _maskPatterns = {
-    sources: list.map(({ pattern }) => [pattern.source, pattern.flags]),
+    // The block pattern runs first. The header-only pattern would hide the BEGIN line.
+    sources: [[PK_BLOCK_SOURCE, 'g'], ...list.map(({ pattern }) => [pattern.source, pattern.flags])],
     trailing: new RegExp(`(?<![A-Za-z0-9_])(?:${alt})[A-Za-z0-9_.\\-]*$`),
     prefixes: [...prefixes],
   };
@@ -2647,7 +2659,10 @@ function maskSecrets(text, cut) {
   }
   if (Number.isInteger(cut) && cut >= 0) {
     // Mask a bounded window before the cut, not the full raw text.
-    out = _maskPatternsOnly(out.slice(0, cut + MASK_WINDOW_SLACK), pats).slice(0, cut);
+    let win = _maskPatternsOnly(out.slice(0, cut + MASK_WINDOW_SLACK), pats);
+    // N-01: the raw text goes on past the window, so the '@' can be outside it.
+    if (out.length > cut + MASK_WINDOW_SLACK) win = win.replace(OPEN_DB_URL, REDACTION_MARK);
+    out = win.slice(0, cut);
   }
   // The trailing-prefix guard runs only on short (cut) text.
   return _maskPatternsOnly(out, pats).replace(pats.trailing, REDACTION_MARK);

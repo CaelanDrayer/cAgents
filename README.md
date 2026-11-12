@@ -12,7 +12,7 @@ Deploy 60 specialized agents across 9 builder-role archetypes. An intelligent pi
 |------|-------|
 | Agents | 60 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /act) |
-| Hooks | 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library, across 18 event types |
+| Hooks | 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library, across 17 event types |
 | Models | Opus 4.8 (controllers / high-reasoning) · Sonnet 4.6 (execution). The catalog uses no `model: haiku` / `tier: support`; both remain available via `model_routing.yaml` |
 
 ---
@@ -43,7 +43,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 
 - **Claude Code 2.1.198+** (required). Nested subagents need 2.1.172 or later. The synchronous-spawn rules assume the background-by-default subagents of 2.1.198. On 2.1.217 and 2.1.218 nesting is off by default, so set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` on those versions.
 - **Bash** (required on Windows). Every hook runs through `bash -c`. On Windows, install Git for Windows, which supplies Git Bash. Since Claude Code 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` blocks the call when Git for Windows is missing. Without Git Bash, every Bash, Write, Edit, and Agent call is denied. Linux and macOS have bash already.
-- **Node.js** (recommended). It powers 24 unique registered hooks + 5 dispatched sub-validators (32 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library). Those hooks handle session management, secret detection, team coordination, and completion verification.
+- **Node.js** (recommended). It powers 25 unique registered hooks + 5 dispatched sub-validators (33 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library). Those hooks handle session management, secret detection, team coordination, and completion verification.
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -298,7 +298,7 @@ This fires automatically, and it requires no prompt engineering. It is a no-op w
 
 ### Lifecycle Hooks
 
-cAgents ships 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. bash-guard-evaluator.cjs is the GuardFall evaluator library that bash-validator.cjs requires. The hooks fire across 18 of Claude Code's 24 event types:
+cAgents ships 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. bash-guard-evaluator.cjs is the GuardFall evaluator library that bash-validator.cjs requires. The hooks fire across 17 of Claude Code's 24 event types:
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -382,7 +382,7 @@ Use `/team` for cross-domain work that spans multiple areas. Launching a product
 | **Parallel team execution** | Yes: N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes: executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes: spec compliance then code quality | No | No |
-| **Hook lifecycle** | 24 unique registered hooks + 5 dispatched sub-validators across 18 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 25 unique registered hooks + 5 dispatched sub-validators across 17 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes: attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes: 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes: `/team` strategic mode fires the full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
@@ -452,7 +452,8 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.79.0** — Current release. A new switch, `CAGENTS_BASH_GUARD_DISABLED`, turns the bash guard fully off. Set it in the env or in the git-ignored `.claude/settings.local.json`. The shipped default stays `block`. `validate-agents.sh` compares hook registrations on name, event, matcher and timeout, and a check that examined zero items fails. Two tracker hooks mask secrets before they store text. The review and delegation rules adopt lessons from audited CLEAN repos, and the example store records their provenance.
+- **V12.79.1** — Current release. Count drift in the READMEs is fixed, and `validate-counts.sh` checks 18 and 19 now check it. `CLAUDE.md` names the correct overlay paths. The planner validator accepts skill-assigned work items and both forms of a controller name. Secret masking covers a full private key block and a long database URL.
+- **V12.79.0** — A new switch, `CAGENTS_BASH_GUARD_DISABLED`, turns the bash guard fully off. Set it in the env or in the git-ignored `.claude/settings.local.json`. The shipped default stays `block`. `validate-agents.sh` compares hook registrations on name, event, matcher and timeout, and a check that examined zero items fails. Two tracker hooks mask secrets before they store text. The review and delegation rules adopt lessons from audited CLEAN repos, and the example store records their provenance.
 - **V12.78.2** — The guard-config tamper check tracks the cwd through `cd`, `pushd` and `popd` chains, so a relative `find` start that is, is in, or is a parent of the project now asks in every mode. `gfind`, `busybox find`, `toybox find`, `xargs find` and `find` after a wrapper follow the `find` rule. The `-fprint*` and `-fls` actions test their FILE, so `find . -fprint /tmp/list` allows. Threat model entry R-77.4 scopes its claim and names the open gaps.
 - **V12.78.1** — The bash guard config tamper check now asks for the write modes of `awk` (redirects, `system(`, `|&`, `getline`, `@include`, `@load`), `sed` (`w`, `W`, `e`), `git` (`config --file`, `--output`, `-o`) and `find` (write actions that can reach `.claude`), in the default mode and under `CAGENTS_BASH_GUARD=off`. More git write subcommands are covered, and threat model entry R-77.4 now agrees with the code.
 - **V12.78.0** — The bash guard matches parsed, canonicalized write targets for its guard config, so quoting, `..`, case, `cd`, variables, globs, `bash -c` and `$(..)` no longer bypass it. `run-hook.cjs` denies when a guard dispatcher cannot load. Sanitize mode applies Edit and MultiEdit to the full file, and `secret-restore` restores every secret after several sanitized writes. Test and CI output is quiet under Claude Code (dot reporter, `CAGENTS_CI_QUIET`).
@@ -482,15 +483,7 @@ See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries
 - **V11.3.0** — Plugin health sweep. Archetype-canonical doc alignment landed (9 archetypes canonical, 15 domains as routing overlay). The sweep cleared 109 stale `related_agents` cross-references. It corrected the hook-count assertions (26 unique registered, 29 .cjs total). It added a `sync-agents.sh --check` dry-run flag. It pruned `validate-versions.sh` to 18 canonical slots, and it added regression tests.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`). The `/act context …` passthrough replaced `/context`. The `/act --mode debug` flag replaced `/debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
-- **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
-- **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
-- **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
-- **V10.18.0** — Vibe field on all 243 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
-- **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log
-- **V10.12.0** — External session-visualizer integration with 15 session-data improvements (contract dropped in v12.6.0)
-- **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
-- **V10.3.0** — Creative domain overhaul (24 to 30 agents, all on Opus 4.6)
-- **V10.0.0** — 8 business domains, agent chaining with topological execution
+- **V10.x and earlier**: See `CHANGELOG.md` and `docs/RELEASE_NOTES.md` for the full history.
 
 ---
 
@@ -500,4 +493,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 60 agents across 9 archetypes | Opus 4.8 · Sonnet 4.6
+**Built with Claude Code** | 60 agents across 9 archetypes

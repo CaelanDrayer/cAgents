@@ -10,6 +10,25 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.1] - 2026-11-11
+
+Truth fixes for counts, overlay paths, the planner validator and secret
+masking (WI-31).
+
+### Fixed
+- Count drift in `README.md` and `.claude/rules/README.md` is fixed.
+  `validate-counts.sh` checks 18 and 19 now check these counts.
+- `CLAUDE.md` names the correct overlay paths.
+- The planner output validator accepts work items that a skill is assigned
+  to. It accepts both forms of a controller name.
+- The `README.md` version history no longer lists each V10 release. The
+  footer no longer names models.
+- The round-2 review inputs in the example store agree with
+  `pat-two-stage-review.md`. The verify exemplar has the zero-item clause.
+- The reviewer best practices give a round cap of 2.
+- Secret masking covers a full private key block and a long database URL.
+- The test count in `CLAUDE.md` is derived again from disk.
+
 ## [12.79.0] - 2026-11-11
 
 Audited lessons from the example repos (WI-24). The lessons came only from

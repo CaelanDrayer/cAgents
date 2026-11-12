@@ -32,10 +32,10 @@
   No reviewer sees the verdicts of the others — a unanimous PASS triggers a Devil's Advocate round to challenge the consensus
 - **Devil's Advocate Round**: When the reviewers unanimously PASS, one reviewer is assigned to argue against the verdict.
   That reviewer finds the edge cases and the missing error handling — consensus optimism misses them
-- **Dead Letter Queue**: After 3 REVISE rounds on the same work item, mark it as dead_letter.
-  Then continue — this prevents infinite loops and documents the unresolved issue
-- **Max 3 Rounds Protocol**: Controllers run at most 3 executor-reviewer cycles per work item.
-  A third REVISE ends it — the item is dead-lettered and escalated after round 3
+- **Dead Letter Queue**: After 2 REVISE rounds on the same work item, mark it as dead_letter.
+  Then continue. This prevents infinite loops and documents the unresolved issue
+- **Max 2 Rounds Protocol**: Controllers run at most 2 executor-reviewer cycles per work item (`controller_revision.max_internal_rounds: 2`).
+  A second REVISE ends it. The item is dead-lettered and escalated after round 2
 
 ## Domain Concepts & Terminology
 
@@ -59,7 +59,7 @@
 
 ### Review Rounds
 - **Round N**: The Nth cycle of execute → review for a given work item — tracked in the review output
-- **Round 3 (Final)**: If REVISE is returned after round 3, the work item enters dead letter queue — no further retries
+- **Round 2 (Final)**: If REVISE is returned after round 2, the work item enters the dead letter queue. There are no further retries
 - **Dead Letter**: A work item that exhausted all review rounds without passing — documented with full failure context and escalated
 
 ## Anti-Patterns to Avoid
@@ -80,8 +80,8 @@
 ## Quality Indicators
 
 - **Evidence Specificity Rate**: Percentage of MET/NOT MET judgments backed by specific file path, line number, or test output — target 100%
-- **Round Convergence Rate**: Percentage of work items that pass within 2 rounds — high rates indicate good execution agents and clear acceptance criteria
-- **Dead Letter Rate**: The percentage of work items that exhaust 3 rounds without passing.
+- **Round Convergence Rate**: Percentage of work items that pass in round 1. High rates indicate good execution agents and clear acceptance criteria
+- **Dead Letter Rate**: The percentage of work items that exhaust 2 rounds without passing.
   The target is <5% — a high rate signals unclear criteria or mismatched execution agent selection
 - **False Positive Rate**: Percentage of PASS verdicts that the validator later finds incomplete — measures review thoroughness
 - **Confidence Calibration**: Correlation between reviewer confidence scores and actual pass/fail outcomes at validation — well-calibrated reviewers have confidence that predicts correctness

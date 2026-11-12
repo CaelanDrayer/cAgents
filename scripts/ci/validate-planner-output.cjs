@@ -27,7 +27,8 @@
  *     - domain (non-empty string)
  *     - mission (non-empty string)
  *     - objectives (non-empty list; every entry has `id` + `description`)
- *     - controller_assignment.primary (non-empty string)
+ *     - controller_assignment.primary (non-empty string; `tech-lead` and
+ *       `cagents:tech-lead` are both accepted; the prefix is stripped first)
  *     - success_criteria (non-empty list of strings) at plan root OR on every objective
  *
  *   work_items.yaml MUST contain:
@@ -35,7 +36,8 @@
  *     - every list entry has:
  *         - id (non-empty string)
  *         - title (non-empty string)
- *         - assigned_to (non-empty string)
+ *         - exactly one of assigned_to and assigned_skill (non-empty string);
+ *           a skill-assigned item sets assigned_to: null
  *         - acceptance_criteria (non-empty list; each entry either a string
  *           or an object with a `criterion` string)
  */
@@ -97,6 +99,11 @@ function nonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
 }
 
+// Accept both `tech-lead` and `cagents:tech-lead` for an agent name.
+function stripPluginPrefix(value) {
+  return typeof value === 'string' ? value.replace(/^cagents:/, '') : value;
+}
+
 function validatePlan(plan, errors) {
   if (!plan || typeof plan !== 'object') {
     errors.push('plan.yaml: root must be an object');
@@ -134,7 +141,7 @@ function validatePlan(plan, errors) {
   }
   if (!plan.controller_assignment || typeof plan.controller_assignment !== 'object') {
     errors.push('plan.yaml: missing `controller_assignment` block');
-  } else if (!nonEmptyString(plan.controller_assignment.primary)) {
+  } else if (!nonEmptyString(stripPluginPrefix(plan.controller_assignment.primary))) {
     errors.push('plan.yaml: missing or empty `controller_assignment.primary`');
   }
   // success_criteria may live at plan root OR per-objective. Accept either:
@@ -174,8 +181,11 @@ function validateWorkItems(doc, errors) {
     if (!nonEmptyString(item.title)) {
       errors.push(`work_items.yaml: item[${idx}].title missing or empty`);
     }
-    if (!nonEmptyString(item.assigned_to)) {
-      errors.push(`work_items.yaml: item[${idx}].assigned_to missing or empty`);
+    // Exactly one of assigned_to and assigned_skill (see skill-awareness.md).
+    if (nonEmptyString(item.assigned_to) === nonEmptyString(item.assigned_skill)) {
+      errors.push(
+        `work_items.yaml: item[${idx}] must set exactly one of \`assigned_to\` and \`assigned_skill\``
+      );
     }
     if (!nonEmptyArray(item.acceptance_criteria)) {
       errors.push(

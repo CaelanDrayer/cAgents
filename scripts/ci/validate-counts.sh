@@ -462,6 +462,59 @@ if [ -f "$MODE_REGISTRY_PATH" ]; then
   done < <(grep -E "^#+[[:space:]]+[A-Za-z]+[[:space:]]+archetype[[:space:]]+\([0-9]+ agents?\)[[:space:]]*$" "$MODE_REGISTRY_PATH" 2>/dev/null)
 fi
 
+# check_phrases <label> <text> <regex> <expected>
+# ABSENCE check: every phrase in <text> that matches <regex> must carry the
+# number <expected>. The first number in each matched phrase is compared.
+check_phrases() {
+  local label="$1" text="$2" regex="$3" expected="$4" phrase n
+  while IFS= read -r phrase; do
+    [ -z "$phrase" ] && continue
+    n=$(printf '%s' "$phrase" | grep -oE '[0-9]+' | head -1)
+    if [ "$n" != "$expected" ]; then
+      report_mismatch "$label" "$phrase" "$expected"
+    fi
+  done < <(printf '%s\n' "$text" | grep -oE "$regex" || true)
+}
+
+# Check 18 (WI-27, DR-03): README.md live-section hook counts.
+# Checks 3-5 cover settings.json and core/hooks.md only, so README hook lines
+# drifted to 32/24/18 while disk said 33/25/17. Only the text before
+# "## Version History" is scanned, because release notes cite past counts.
+# "across N of Claude Code's M event types" checks N only; M is the Claude
+# Code total, which disk does not hold.
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_README.
+README_PATH="${CAGENTS_VALIDATE_COUNTS_README:-README.md}"
+if [ -f "$README_PATH" ]; then
+  readme_live_hooks="$(sed '/^## Version History/,$d' "$README_PATH")"
+  check_phrases "$README_PATH (live section)" "$readme_live_hooks" \
+    '[0-9]+ \.cjs files' "$HOOK_FILES"
+  check_phrases "$README_PATH (live section)" "$readme_live_hooks" \
+    '[0-9]+ unique registered hooks' "$REGISTERED_HOOKS"
+  check_phrases "$README_PATH (live section)" "$readme_live_hooks" \
+    'across [0-9]+ (event types|of Claude Code)' "$EVENT_TYPES"
+fi
+
+# Check 19 (WI-27, DR-01/DR-02): .claude/rules/README.md rule and hook counts.
+# No check read this file before, so it said 43 rule files and 18 event types
+# while disk said 45 and 17.
+# Test-friendly override: CAGENTS_VALIDATE_COUNTS_RULES_README.
+RULES_README_PATH="${CAGENTS_VALIDATE_COUNTS_RULES_README:-.claude/rules/README.md}"
+if [ -f "$RULES_README_PATH" ]; then
+  rules_readme="$(cat "$RULES_README_PATH")"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    '\*\*Rule files\*\*: [0-9]+' "$RULES_MD"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    'Current Rules \([0-9]+ files\)' "$RULES_MD"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    '\*\*Hook event types\*\*: [0-9]+' "$EVENT_TYPES"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    '[0-9]+ (distinct hook )?event types' "$EVENT_TYPES"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    '[0-9]+ `?\.cjs`? files' "$HOOK_FILES"
+  check_phrases "$RULES_README_PATH" "$rules_readme" \
+    '[0-9]+ unique registered hooks' "$REGISTERED_HOOKS"
+fi
+
 # ---- Result ----------------------------------------------------------------
 if [ "$MISMATCHES" -gt 0 ]; then
   echo "" >&2
