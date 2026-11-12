@@ -1,10 +1,115 @@
 # cAgents Release Notes
 
-**Current Version**: 12.78.2
-**Release Date**: October 17, 2026
+**Current Version**: 12.79.8
+**Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.8 - November 11, 2026 (pre-merge review fixes)
+
+This patch release fixes the findings of the pre-merge review (WI-48).
+The open DB URL mask in `hook-utils.cjs` stops at whitespace, and 4
+regression cases cover it. The history filter in
+`skill-refs-current.test.js` is narrower, and 10 crafted stale phrasings
+are negative cases. A new test keeps hidden code points and long
+base64-like runs out of `docs/example-store/`. The release removes the
+dead `scripts/fix-resource-frontmatter.sh` and corrects stale statements
+in rules, skills, agents, and docs.
+
+## V12.79.7 - November 11, 2026 (CLAUDE.md restructure)
+
+This patch release slims `CLAUDE.md` from 28,528 to about 24,100 bytes
+(WI-45). Every load-bearing rule is kept. A preservation table of 57 rows
+records each rule or fact, and no rule moved to another file. The release
+applies 17 ALL-CAPS ledger rows. It removes the `act context`
+passthrough, which has been gone since V11.0. The overlay paragraph
+states that only `people` and `shared` live under `agents/_overlay/`.
+The Skills table drops the Context and Agent columns, because Claude Code
+does not read them.
+
+## V12.79.6 - November 11, 2026 (rules and agents emphasis)
+
+This patch release lowers 143 ALL-CAPS emphasis tokens on the rules and
+agents surface to sentence case. A ledger row gives the new text for each
+token. Every obligation is kept. The emphasis count under `.claude/rules/`
+and `agents/` fell from 473 to 324. Three headings lose their emphasis
+prefix: "Synchronous Spawning", "Do not ask permission", and "Aggressive
+Delegation". Every citer of those headings names the new text.
+
+## V12.79.5 - November 11, 2026 (skills emphasis)
+
+This patch release lowers 176 ALL-CAPS emphasis tokens on the skills
+surface to sentence case. A ledger row gives the new text for each token.
+Every obligation is kept, and a rule that had no reason now states one.
+The emphasis count under `.claude/skills/` fell from 361 to 185. Two
+skills references now state the reviewer loop cap as 2 rounds, which
+matches the pipeline config.
+
+## V12.79.4 - November 11, 2026 (cleanup)
+
+This patch release removes files that nothing reaches. It removes 62
+unreachable or duplicate agent resource files, with a per-file proof for
+each file. It removes 9 Python leftovers and the `validate:configs` npm
+script, and the `lint` script now runs `validate:agents`. It resolves 20
+stale documents: 10 are deleted, and the others are refreshed or kept. It
+repoints 9 partnership links, regenerates the STE-100 scope list, and
+replaces the dead `agents/reviewer/**` and `tests/agent_linting/**` rule
+globs.
+
+## V12.79.3 - November 11, 2026 (skill defect fixes)
+
+This patch release fixes three skill defects (WI-37). The `/helper` Mode 1
+first question now fits the 4-option cap of AskUserQuestion, and two
+follow-up questions select the exact intent. The `/act` `/goal` condition
+names `completion_summary.yaml` with `status: completed`, which is what
+`verify-completion.cjs` writes. The `/act` controller spawn template is
+synchronous and unnamed, and it adds the `cagents:` prefix only when it is
+missing. The delegation patterns reference states the reviewer loop cap as 2
+rounds. Four new regression tests pin these fixes.
+
+## V12.79.2 - November 11, 2026 (stale-name sweeps)
+
+This patch release replaces stale skill and agent names (WI-32 to WI-35).
+The skills, agents, rules, docs and scripts now point to the current agent or
+skill. Dated history notes keep the old names. The helper references no
+longer describe the removed `/act context` passthrough. The `README.md` hook
+table lists all 25 registered hooks and the 5 dispatched sub-validators, and
+the Models row matches the advisory agent metadata. The controller validation
+checklist agrees with the planner validator. A new drift guard,
+`tests/regressions/skill-refs-current.test.js`, fails on a stale name in an
+instruction.
+
+## V12.79.1 - November 11, 2026 (truth fixes)
+
+This patch release fixes counts, paths, a validator and secret masking
+(WI-31). Count drift in `README.md` and `.claude/rules/README.md` is fixed,
+and `validate-counts.sh` checks 18 and 19 now check these counts.
+`CLAUDE.md` names the correct overlay paths, and its test count is derived
+again from disk. The planner output validator accepts work items that a skill
+is assigned to, and both forms of a controller name. The `README.md` version
+history no longer lists each V10 release. The example-store round-2 review
+inputs agree with `pat-two-stage-review.md`, and the verify exemplar has the
+zero-item clause. The reviewer best practices give a round cap of 2. Secret
+masking covers a full private key block and a long database URL.
+
+## V12.79.0 - November 11, 2026 (audited lessons from example repos)
+
+This minor release adopts lessons from the example repos (WI-24). The
+lessons came only from repos whose audit verdict is CLEAN. A new switch,
+`CAGENTS_BASH_GUARD_DISABLED`, turns the bash guard fully off. Set it in the
+env, or in the env block of the git-ignored `.claude/settings.local.json`.
+The guard reads that file only when it is a regular file of 64 KiB or less.
+The shipped default stays `block`, and `.gitignore` now ignores
+`.claude/settings.local.json`. `validate-agents.sh` compares each hook
+registration on name, event, matcher and timeout. A check that examined zero
+items now fails. Two tracker hooks mask secrets in a bounded window before
+they cut and store text. The validator, two-stage review, delegation and
+controller rules now say that zero items is not evidence, that a round-2
+review is scoped to the fix diff, that a parent never spawns a work item or
+a reviewer as a fork, and that a child runs Bash in the foreground. The
+example store records provenance for 12 CLEAN source repos and for the 6
+DR-06 exemplars.
 
 ## V12.78.2 - October 17, 2026 (guard-config reach of find)
 
@@ -2717,5 +2822,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.78.2
+**Current Version**: 12.79.8
 **Release Date**: August 21, 2026

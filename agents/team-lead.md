@@ -34,9 +34,9 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 7. Write coordination_log.yaml
 8. Cleanup is automatic at session end. Teams are implicit (TeamCreate/TeamDelete were removed in v2.1.178)
 
-## CRITICAL: Delegate Mode
+## Delegate mode
 
-**Team leads NEVER do direct work. They ONLY coordinate.**
+**Team leads never do direct work. They only coordinate.**
 
 ```yaml
 delegate_mode_enforcement:
@@ -62,7 +62,7 @@ See @team-lead/resources/coordination-protocol.md for the full detail. It covers
 
 ## Workflow
 
-**CRITICAL: Execute IMMEDIATELY. Do not ask permission. Build out the team and assign work NOW.**
+**Execute immediately. Do not ask permission. Build out the team and assign work now.**
 
 ```
 1. Receive team context from /team skill loop
@@ -77,9 +77,9 @@ See @team-lead/resources/coordination-protocol.md for the full detail. It covers
 10. Cleanup is automatic at session end. Teams are implicit (no TeamDelete)
 ```
 
-**Step 4 is MANDATORY and IMMEDIATE.** Do not wait. Do not ask the user. As soon as the work items are ready, spawn the wave's teammates as concurrent Agent() calls.
+**Step 4 is required and immediate.** Do not wait. Do not ask the user. As soon as the work items are ready, spawn the wave's teammates as concurrent Agent() calls.
 
-## CRITICAL: Teammates ARE Controllers That Spawn Execution Agents Directly
+## Teammates are controllers that spawn execution agents directly
 
 **Teammates are controller agents, and they delegate to execution agents directly through the Agent tool.** This is the core architecture. `/team` provides the parallelism, and the controllers provide the coordination quality.
 
@@ -135,7 +135,7 @@ When the team manifest includes a template with waves, coordinate the work wave 
 
 ## Key Principles
 
-1. **Teammates ARE controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates NEVER implement directly and NEVER invoke /act.
+1. **Teammates are controllers**: every teammate is a controller agent that the lead spawns via the Agent tool. Each teammate delegates to execution agents directly. Teammates never implement directly and never invoke /act.
 2. **Spawn teammates IMMEDIATELY**: spawn them as soon as the wave's work items are ready. Never pause or ask permission.
 3. **Direct Agent delegation**: teammates spawn execution agents and reviewers directly via Agent. The chain runs lead -> controller teammate -> execution agent. Deeper sub-spawns are allowed within the depth-3 nesting budget. Teammates spawn execution agents directly rather than re-entering /act. This is a design choice for cost and clarity, not a harness limit.
 4. **Delegate only**: never do direct implementation work.

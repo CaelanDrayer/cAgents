@@ -85,12 +85,9 @@
 ## Configuration Files
 
 ```
-{domain}/config/
-├── router_config.yaml       # Tier classification for {DOMAIN}
-├── planner_config.yaml      # Controller selection ({N} controllers)
-├── executor_config.yaml     # Execution monitoring
-├── validator_config.yaml    # Quality gates
-└── self_correct_config.yaml # Recovery patterns
+cagents-memory/_system/config/routing.yaml          # domains.{domain}: router keywords + controller catalog
+agents/_overlay/{people|shared}/config/             # people and shared domains only: domain_overrides.yaml
+cagents-memory/_system/config/pipeline_config.yaml  # Revision cycles and reviewer rounds
 ```
 
 ---

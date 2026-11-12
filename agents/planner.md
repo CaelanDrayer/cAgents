@@ -202,7 +202,7 @@ See @planner/resources/vertical-slice-extraction.md for the slice-detection algo
 
 See @planner/resources/plan-output-format.md for the plan.yaml output format and full example.
 
-## CRITICAL: Do Not Ask Permission
+## Do not ask permission
 
 After you create the plan and the decomposition:
 - Write decomposition.yaml with the full breakdown

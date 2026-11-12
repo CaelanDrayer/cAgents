@@ -8,12 +8,14 @@ metadata:
   category: skill-authoring
   source_repo: vercel-labs/agent-skills
   source_url: "https://github.com/vercel-labs/agent-skills"
+  source_commit: 063bee94c3f4df8453406c830b0a7df0f2860278
   applies_to:
     - cagents:technical-writer
     - cagents:qa-lead
     - cagents:reviewer
   demonstrates: "One rule per file with title/impact/incorrect-correct schema, a _template stencil + _sections index, impact-prioritized prefix namespacing, and a build+validate step that rejects rules missing a valid impact or a bad+good example pair."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 allowed-tools: Read Grep Glob
 ---
 

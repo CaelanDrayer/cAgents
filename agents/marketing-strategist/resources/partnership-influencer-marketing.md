@@ -40,6 +40,6 @@ Use when identifying influencers, managing influencer partnerships, coordinating
 
 ## Related modes
 
-- **Affiliate/commission programs** -> see @affiliate-marketing.md (formal commission tiers)
-- **Channel reseller partnerships** -> see @channel-partner.md
-- **Co-marketing campaign frameworks** -> see @partner-templates.md
+- **Affiliate/commission programs** -> see @resources/partnership-affiliate-marketing.md (formal commission tiers)
+- **Channel reseller partnerships** -> see @resources/partnership-channel-partner.md
+- **Co-marketing campaign frameworks** -> see @resources/partnership-partner-templates.md

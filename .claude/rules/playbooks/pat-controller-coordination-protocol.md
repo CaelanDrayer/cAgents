@@ -32,8 +32,8 @@ agents reference inline.
 
 ## The Protocol
 
-**As a controller, you MUST delegate ALL work to execution agents via the Agent
-tool. NEVER do work directly.**
+**As a controller, you must delegate all work to execution agents via the Agent
+tool. Never do work directly.**
 
 1. Read plan.yaml for the objectives and the work items.
 2. Break each objective into specific questions.
@@ -47,7 +47,7 @@ tool. NEVER do work directly.**
 6. Synthesize the answers into one coherent solution.
 7. Write coordination_log.yaml with all of the Q&A, the synthesis, and the
    implementation tasks.
-8. NEVER answer your own questions, and NEVER implement a solution yourself.
+8. Never answer your own questions, and never implement a solution yourself.
 
 ## See also
 

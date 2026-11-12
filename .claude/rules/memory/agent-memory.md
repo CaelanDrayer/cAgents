@@ -66,10 +66,10 @@ cagents-memory/
 ├── _system/          # configs, commands/, domains/, metrics/, evals/, templates/
 ├── _knowledge/       # semantic, procedural, calibration, analytics
 ├── _archive/         # Completed sessions
-└── sessions/         # run_*, designer_*, review_*, optimize_*, team_*, org_*
+└── sessions/         # act_*, team_*, designer_* (legacy: run_*, review_*, optimize_*, org_*)
 ```
 
-**Session ID Format**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `run_fix-auth_260317_001`)
+**Session ID Format**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `act_fix-auth_260317_001`)
 
 See `agent-memory-reference.md` for the full directory structure, and for the
 session folder details.

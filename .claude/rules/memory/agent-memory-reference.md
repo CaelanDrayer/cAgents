@@ -27,7 +27,7 @@ cagents-memory/
 │   └── templates/                    # waypoint.yaml, session_files.yaml
 ├── _knowledge/                       # semantic/, procedural/, calibration/, analytics/
 ├── _archive/                         # Completed sessions
-└── sessions/                         # run_*, designer_*, review_*, optimize_*
+└── sessions/                         # act_*, team_*, designer_* (legacy: run_*, review_*, optimize_*, org_*)
 ```
 
 ## Session Folder Structure

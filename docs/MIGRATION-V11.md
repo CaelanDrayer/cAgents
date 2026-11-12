@@ -1,7 +1,7 @@
 # Migration Guide — cAgents V10 → V11
 
 > **Note**: This guide covers V10 → V11 only. For V11 → V12 migrations, see also:
-> - **v12.1.2** — `/improve` folded into `/run` via the first-word keyword router. The flag surface from `/improve` (`--mode review|optimize|full`, `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix`, etc.) now lives on `/run`. See [CHANGELOG.md v12.1.2](../CHANGELOG.md) and [.claude/skills/run/reference/improve-mode.md](../.claude/skills/run/reference/improve-mode.md).
+> - **v12.1.2**: `/improve` folded into `/run` via the first-word keyword router. The flag surface from `/improve` (`--mode review|optimize|full`, `--baseline`, `--suppress`, `--benchmark`, `--scope`, `--auto-fix`, etc.) now lives on `/run`. See [CHANGELOG.md v12.1.2](../CHANGELOG.md) and [.claude/skills/act/reference/improve-mode.md](../.claude/skills/act/reference/improve-mode.md).
 > - **v12.2.0** — `/org` skill removed; cross-domain coordination folded into `/team` strategic mode (auto-enables when `router.domain_count >= 2`). See [CHANGELOG.md v12.2.0](../CHANGELOG.md).
 
 V11.0.0 is the breaking-change release that removed four previously-

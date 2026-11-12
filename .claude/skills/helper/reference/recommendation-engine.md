@@ -2,7 +2,7 @@
 
 Intent classification and command recommendation logic for `/helper` when given natural language input.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Review/audit intent now routes to `/act review` (or `/act audit`), optimize intent to `/act optimize`, review+optimize to `/act improve`. Context and debug intents continue to route to `/act context ...` and `/act --mode debug` (unchanged)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Review/audit intent now routes to `/act review` (or `/act audit`), optimize intent to `/act optimize`, review+optimize to `/act improve`. Debug intent continues to route to `/act --mode debug`. Context intent has no command: edit `product_context.yaml` directly._
 
 ## Keyword Router Discovery (v12.1.2+)
 
@@ -165,17 +165,17 @@ When the user provides a natural language description of what they want to do, c
 - "Can't figure out the root cause of this crash" -> `/act --mode debug {error description}`
 - "It works locally but fails in CI" -> `/act --mode debug Works locally but fails in CI: {description}`
 
-### Context / Knowledge Intent -> /act context
+### Context / Knowledge Intent -> edit product_context.yaml
 
 **Signal words**: context, product context, project knowledge, persist knowledge, remember project, project conventions, project settings, share knowledge between sessions
 
-The `/act context` passthrough provides the same `init|show|update|clear` subcommands the legacy `/context` skill exposed.
+No skill handles this intent. V11.0 removed the `/context` skill, and `/act` has no context subcommand. Tell the user to edit `cagents-memory/_projects/{hash}/product_context.yaml` directly. If that file exists, the orchestrator reads it when it enriches a request.
 
 **Examples**:
-- "Set up project context for this repo" -> `/act context init`
-- "Show me the current project context" -> `/act context show`
-- "Update the project knowledge" -> `/act context update`
-- "Agents keep making wrong assumptions about my project" -> `/act context init` (then `/act context update`)
+- "Set up project context for this repo" -> create `product_context.yaml` by hand
+- "Show me the current project context" -> read `product_context.yaml`
+- "Update the project knowledge" -> edit `product_context.yaml`
+- "Agents keep making wrong assumptions about my project" -> correct `product_context.yaml`
 
 ### Plan / Design / Explore Intent -> /designer
 

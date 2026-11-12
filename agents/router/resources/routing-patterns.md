@@ -96,7 +96,7 @@ routing_decision:
     scope_adjustment: +1  # External integration, security critical
     controller_logic: |
       Primary: tech-lead
-      Supporting: architect (design), security-specialist (payments)
+      Supporting: architect (design), security-engineer (payments)
 ```
 
 ### Tier 4: Architecture Migration

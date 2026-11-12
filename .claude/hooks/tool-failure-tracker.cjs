@@ -13,7 +13,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { createHook, findActiveSession, safeRead, ensureDir, withFileLock } = require('./hook-utils.cjs');
+const { createHook, findActiveSession, safeRead, ensureDir, withFileLock, maskSecrets } = require('./hook-utils.cjs');
 
 const TOOL_ALTERNATIVES = {
   'Bash': 'Consider using Read/Write/Glob/Grep dedicated tools instead of shell commands.',
@@ -69,7 +69,8 @@ createHook('ToolFailureTracker', async (input) => {
   if (!input.tool_name) return null;
 
   const toolName = input.tool_name;
-  const errorMsg = (input.error || input.tool_output || '').toString().slice(0, 200);
+  // LC-SHC-04: mask credentials before the cut and again on the cut text (a key prefix left at its end)
+  const errorMsg = maskSecrets(input.error || input.tool_output || '', 200);
   const now = new Date().toISOString();
 
   const sessionDir = findActiveSession(input.session_id);

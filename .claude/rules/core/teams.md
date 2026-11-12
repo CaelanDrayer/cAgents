@@ -35,7 +35,7 @@ Guidelines for parallel team execution in cAgents using concurrent-Agent waves.
 
 **Core Architecture**: `/team` decomposes the request into work items. Those
 work items spread across as many waves as the work needs. Teams are
-**implicit**, so the lead does NOT create a team.
+**implicit**, so the lead does not create a team.
 
 For each wave, the lead spawns all wave subagents as **concurrent `Agent()`
 calls issued in one message**. Those calls run synchronously, with
@@ -90,10 +90,10 @@ Team Mode gives you N-wave parallel execution. It has these parts:
   protocol, the brief schema, the escalation, and the examples.
 - **Independent contexts**: each subagent has its own context window.
 
-## CRITICAL: Wave Subagents ARE Controllers That Spawn Execution Agents Directly
+## Wave subagents are controllers that spawn execution agents directly
 
 **This is the principle of team mode, and it is unconditionally true.** Wave
-subagents do NOT implement work items directly. The lead spawns each wave
+subagents do not implement work items directly. The lead spawns each wave
 subagent as a controller agent, such as `cagents:tech-lead`. That controller
 delegates to execution agents through the Agent tool. It then spawns
 `cagents:reviewer` to validate the work.
@@ -126,11 +126,11 @@ the validator. Re-entry into that pipeline for the work items of a single wave
 duplicates the enrichment that the lead already did in Wave 0. It also burns
 extra context and extra tokens. Spawn the execution agent directly instead.
 
-**Anti-patterns (NEVER DO):**
+**Anti-patterns (never do these):**
 - Do not tell a subagent to invoke /act. Re-entry into the full pipeline
   duplicates the Wave 0 enrichment and wastes tokens. Spawn execution agents
   directly instead. This rule is a design choice for cost and for clarity, and
-  it is NOT a harness limit.
+  it is not a harness limit.
 - Do not let the team lead do implementation work.
 - Do not let a wave subagent implement a work item directly in place of a spawn
   of an execution agent. The one exception is the Nesting-Ceiling fallback
@@ -154,7 +154,7 @@ execution agents and reviewers reliably. Delegation is the expected behavior at
 every level.
 
 **Graceful degradation is a DEFENSIVE FALLBACK**, and it is not the expected
-depth-1 behavior. It triggers ONLY when the `Agent` tool is genuinely absent.
+depth-1 behavior. It triggers only when the `Agent` tool is genuinely absent.
 That happens at the real nesting **ceiling**, where a subagent at depth 3 cannot
 spawn a depth-4 child. It also happens if an older harness or a future harness
 regresses the capability.
@@ -169,11 +169,11 @@ canonical fallback pattern. That playbook holds the
 tool-inventory-check-before-BLOCKED rule, the scope of the ceiling and of a
 harness regression, and the historical depth-1 context from before v12.17.0.
 
-## CRITICAL: Spawn Wave Subagents, Not Just Tasks
+## Spawn wave subagents, not just tasks
 
 **The most common failure mode is the creation of tasks with no real subagent
 spawn.** There is no `TeamCreate` step, because the tool was removed in 2.1.178
-and teams are implicit. For each wave the `/team` lead MUST do BOTH steps:
+and teams are implicit. For each wave the `/team` lead must do both steps:
 1. **TaskCreate** -- create the work items of the wave as shared tasks. They
    give visibility and the gate-sentinel dependencies.
 2. **Spawn wave subagents via concurrent `Agent()` calls in ONE message** --
@@ -194,11 +194,11 @@ be created first.
     |
     Step 1: PARSE request and flags
     Step 2: DECOMPOSE into work items with MAXIMUM wave granularity (3-10 waves)
-    Step 3: TaskCreate -- create tasks for ALL work items + GATE sentinels with wave dependencies
+    Step 3: TaskCreate -- create tasks for all work items + GATE sentinels with wave dependencies
     Step 4: Execute Wave 0 (enrichment + bootstrap) -- lead does this sequentially
     |
     Step 5: FOR EACH Wave K (1 to N-1):
-    |   +-- Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
+    |   +-- Spawn all wave-K subagents as CONCURRENT Agent() calls in ONE message,
     |   |   synchronously (run_in_background: false), so the lead collects every
     |   |   wave-K result together before proceeding:
     |   |   +-- Agent(subagent 1, controller): Agent(execution agent) -> Agent(reviewer) --> result
@@ -213,14 +213,14 @@ be created first.
     Step 7: Report results (cleanup is automatic at session end — no TeamDelete)
 ```
 
-**Steps 3-5 are MANDATORY and IMMEDIATE. Do not pause or ask permission between waves.**
+**Steps 3-5 are required and immediate. Do not pause or ask permission between waves.**
 
 **Why `run_in_background: false`**: since v2.1.198 subagents are
-**background-by-default**. Each wave-K `Agent()` call MUST therefore set
+**background-by-default**. Each wave-K `Agent()` call must therefore set
 `run_in_background: false` explicitly. That setting collects the results of a
 wave synchronously, so the lead can validate GATE-K before the next wave.
 
-**CRITICAL: Maximize waves.** More waves give more quality gates, and more
+**Maximize waves.** More waves give more quality gates, and more
 quality gates give higher quality output. There is nothing wrong with more
 waves. Prefer 5-7 waves over 2-3 waves.
 
@@ -319,7 +319,7 @@ from an accidental change to a file outside its assigned module.
 
 ## Display Modes (teammateMode)
 
-`teammateMode` controls how Claude Code displays a spawned teammate. It does NOT
+`teammateMode` controls how Claude Code displays a spawned teammate. It does not
 affect the DEFAULT concurrent-Agent execution model. Synchronous concurrent
 `Agent()` waves work in every mode. The split-pane display of tmux and iTerm2 is
 tied to the EXPERIMENTAL named-teammate path only.
@@ -348,10 +348,10 @@ Per-session: `claude --teammate-mode in-process`
 
 ## OPTIONAL: Experimental Named-Background-Teammate Path
 
-> **EXPERIMENTAL and harness-variable. This is NOT the default, and this path is
-> not part of the default subagent-wave model.** Use it ONLY when
+> **EXPERIMENTAL and harness-variable. This is not the default, and this path is
+> not part of the default subagent-wave model.** Use it only when
 > `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` AND the harness supports interactive
-> agent teams. If the feature is unavailable, you MUST fall back to the DEFAULT
+> agent teams. If the feature is unavailable, you must fall back to the default
 > concurrent-Agent subagent-wave path above. Never fail the wave.
 
 The DEFAULT concurrent-Agent wave model issues synchronous `Agent()` calls, one
@@ -424,10 +424,10 @@ disqualified:
 ```
 1. Parse request and flags (including --waves <N>)
 2. Decompose request into work items with MAXIMUM wave granularity
-3. TaskCreate -- create ALL work items + GATE sentinels with wave dependencies IMMEDIATELY
+3. TaskCreate -- create all work items + GATE sentinels with wave dependencies IMMEDIATELY
 4. Execute wave 0 (enrichment + bootstrap) sequentially
 5. FOR EACH wave K (1 to N-1):
-   a. Spawn ALL wave-K subagents as CONCURRENT Agent() calls in ONE message,
+   a. Spawn all wave-K subagents as CONCURRENT Agent() calls in ONE message,
       synchronously (run_in_background: false)
    b. Collect wave-K results together; review TaskList status
    c. Validate GATE-K when all wave-K items complete
@@ -436,7 +436,7 @@ disqualified:
 7. Report results (cleanup automatic at session end — no TeamDelete)
 ```
 
-**Steps 3-5 are MANDATORY and IMMEDIATE. Do not pause or ask permission between waves.**
+**Steps 3-5 are required and immediate. Do not pause or ask permission between waves.**
 
 **Wave count guidance:**
 | Tier | Minimum waves | Typical waves |
@@ -469,7 +469,7 @@ Agent({
 // (issued together in the same assistant message → they run in parallel)
 ```
 
-**Do NOT pass `name` on this path.** `name` forces the spawn into the
+**Do not pass `name` on this path.** `name` forces the spawn into the
 background, and it overrides `run_in_background: false` in silence. This was
 CONFIRMED on Claude Code 2.1.221. The lead then returns in the belief that the
 wave completed, and it does the work of the wave itself.
@@ -538,7 +538,7 @@ SendMessage({
 ```
 
 Update your expectations of the teammate lifecycle. A teammate that finishes a
-wave and stops is NOT gone. You can re-activate it with SendMessage, for a
+wave and stops is not gone. You can re-activate it with SendMessage, for a
 follow-up work item.
 
 ## Cross-Teammate Request Pattern
@@ -616,7 +616,7 @@ The lead does not manage the team teardown.
 
 ### Delegate Mode Enforcement
 
-Team leads ONLY coordinate. They NEVER implement.
+Team leads only coordinate. They never implement.
 
 ```yaml
 allowed_actions:

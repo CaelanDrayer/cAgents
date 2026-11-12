@@ -124,8 +124,8 @@ controller_catalog:
       complexity: tier_2
 
     # Customer
-    - name: account-manager
-      agent_path: operator/support/account-manager/SKILL.md
+    - name: support-director  # mode: account (absorbed from account-manager)
+      agent_path: agents/support-director.md
       coordination_style: question_based
       typical_questions:
         - "What is the current account health and engagement level?"

@@ -30,7 +30,7 @@ Non-obvious pointers only. The rest of the tree is discoverable with `ls`:
 
 ## Version Management
 
-**CRITICAL: Always bump version on commits.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See `.claude/rules/core/version-registry.md` for the canonical list (16 locations).
+**Bump the version on every commit.** Run `scripts/sync-versions.sh <version>` to update all registry locations. See `.claude/rules/core/version-registry.md` for the canonical list (16 locations).
 
 **Version Format**: `major.minor.patch`. Patch is a bug fix. Minor is a feature. Major is a breaking change.
 
@@ -51,37 +51,25 @@ Total: 45 .md = 38 top-level across 6 categories + 2 READMEs (root + playbooks/)
 
 ## Project Overview
 
-**cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks with 60-80% context savings.
+**cAgents**: Universal multi-domain agent system with CSV-based task inventory for large-scale workflows. Handles 100+ tasks, with a design-target estimate of 60-80% context savings.
 
-> **NOT a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 60-agent catalog work in every domain. They span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. The router selects `backend-developer` / `architect` / `validator` for *code* requests. Those agents are not what the system "is."
+> **cAgents is not a software-engineering tool.** cAgents is domain-agnostic. The pipeline machinery (orchestrator → planner → controller → validator) and the 60-agent catalog work in every domain. They span legal, finance, marketing, sales, HR, health, education, creative, operations, and research just as fully as engineering. The router selects `backend-developer` / `architect` / `validator` for *code* requests. Those agents are not what the system "is."
 >
-> A non-technical request is squarely in scope. Examples include drafting a SOW, pricing a migration, planning a campaign, writing a story, and building a financial model. `/act` and `/team` route each one to the right domain controller. Skills and controllers MUST NOT refuse, redirect, or warn a user off a non-technical request. No skill may cite the grounds that the plugin "looks engineering-focused." That reasoning is a framing defect, not correct behavior.
+> A non-technical request is squarely in scope. Examples include drafting a SOW, pricing a migration, planning a campaign, writing a story, and building a financial model. `/act` and `/team` route each one to the right domain controller. Skills and controllers must not refuse, redirect, or warn a user off a non-technical request. No skill may cite the grounds that the plugin "looks engineering-focused." That reasoning is a framing defect, not correct behavior.
 
-**Key Features**: CSV Task Inventory, Batch Delegation (60-80% context reduction), Checkpoint/Resume, Aggressive Decomposition (30+ work items from simple requests), Controller-Centric coordination
+**Canonical structure: 9 archetypes**, declared in each agent's `archetype:` frontmatter, not as directories. Agent files are flat at `agents/<name>.md`. Claude Code scans a plugin `agents/` directory recursively, so `.claude-plugin/plugin.json` lists the 60 agent files explicitly. Resource files under `agents/<name>/resources/` are therefore not registered. The archetypes are Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
 
-**Architecture**: Controller-Centric Coordination with Task Inventory
-- **Tier 1**: 16 core infrastructure agents
-- **Tier 2**: Controllers (coordinate via batch delegation)
-- **Tier 3**: Execution agents (implement work items)
-- **Tier 4**: Support agents (foundational services)
-- **Total**: 60 agents across 9 builder-role archetypes (back-compat preserved via `scripts/migration/v12-aliases.yaml`)
-- **Execution**: Event-driven pipeline (5-state machine) with two execution paths (fast/standard), revision routing, reviewer loops
+**Domain overlay (legacy: routing/config only)**: 2 legacy domain dirs remain: `agents/_overlay/people/` and `agents/_overlay/shared/`. Without SKILL.md files, each holds `config/domain_overrides.yaml` with the router keywords and the controller catalog that the planner still reads. The other 11 legacy domains (`engineering`, `creative`, `business`, `growth`, `service`, `science`, `health`, `education`, `personal`, `arts`, `trades`) keep their keywords and catalogs in `cagents-memory/_system/config/routing.yaml` under `domains.<name>`, with the same `controller_catalog` + `router.keywords` schema. The archetype roots `agents/core/` and `agents/leadership/` also ship `config/domain_overrides.yaml` with the pipeline and C-suite routing tables, so `scripts/ci/validate-agents.sh` reports 4 files checked. Do not delete `agents/_overlay/people/` or `agents/_overlay/shared/`. They are not orphans.
 
-**Canonical structure: 9 archetypes**, declared in each agent's `archetype:` frontmatter, NOT as directories. Agent files are flat at `agents/<name>.md`. Claude Code scans a plugin `agents/` directory recursively, so `.claude-plugin/plugin.json` lists the 60 agent files explicitly. Resource files under `agents/<name>/resources/` are therefore not registered. Per-archetype counts also appear in Quick Reference. The archetypes are Developer 8 (5 branches: backend/frontend/fullstack/infrastructure/quality), Operator 8 (5 branches: support/business-ops/people-ops/marketing-sales/content), Advisor 4 (legal/health/education/personal), Analyst 5, Creator 3, Writer 4, Strategist 3, Core 16 (pipeline infra), Leadership 9 (C-suite, /team strategic mode, not directly routable).
+## Aggressive Delegation
 
-**Domain overlay (legacy: routing/config only)**: 2 legacy domain dirs (`people/`, `shared/`) survive on disk **without** SKILL.md files. They hold `config/domain_overrides.yaml` with router keywords + controller catalogs that the planner still consumes. The other 11 legacy dirs were deleted: `engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`. Their router keywords and controller catalogs moved into `cagents-memory/_system/config/routing.yaml`. Do NOT delete `people/` or `shared/`. They are not orphans.
+**Core Principle**: /act, /team, and all coordination agents never do direct work. Delegate all work to subagents via the Agent tool or the Skill tool. No exceptions.
 
-**Config**: `people/` and `shared/` keep their own `{domain}/config/domain_overrides.yaml`. The 11 deleted legacy domains live in `cagents-memory/_system/config/routing.yaml` under `domains.<name>` (with the same `controller_catalog` + `router.keywords` schema, just nested). Two archetype roots also ship `config/domain_overrides.yaml` files: `core/` and `leadership/`. Those files hold the pipeline and C-suite routing tables. So `scripts/ci/validate-agents.sh` now reports 4 files checked (2 legacy retained + 2 archetype-root).
+**Zero Tolerance**: `/act` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do not write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. An orchestrator that says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" commits a critical violation. The user chose these skills specifically for agent orchestration. Bypassing delegation defeats the entire purpose of the plugin.
 
-## CRITICAL: Aggressive Delegation
+**This applies to all request sizes**: Even for single-file bug fixes, /act must still spawn a controller who spawns an execution agent. Cross-domain strategic requests follow the same rule. `/team` (with auto-strategic mode) must still spawn C-suite subagents in Wave 0/1. It must then synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
 
-**Core Principle**: /act, /team, and all coordination agents NEVER do direct work. Delegate ALL work to subagents via the Agent tool or the Skill tool. No exceptions.
-
-**Zero Tolerance**: `/act` and `/team` are pure delegation proxies. They parse, plan, spawn agents, and read results. They do NOT write code, create content, explore the codebase for implementation purposes, or handle tasks themselves. An orchestrator that says "I will handle this myself" or "Rather than spinning up agents, I'll do this directly" commits a critical violation. The user chose these skills specifically for agent orchestration. Bypassing delegation defeats the entire purpose of the plugin.
-
-**This applies to ALL request sizes**: Even for single-file bug fixes, /act MUST still spawn a controller who spawns an execution agent. Cross-domain strategic requests follow the same rule. `/team` (with auto-strategic mode) MUST still spawn C-suite subagents in Wave 0/1. It MUST then synthesize a brief in Wave 2 before per-domain dispatch. There is no request small enough to justify self-handling.
-
-**Minimum Tier**: Always tier 2+ (controller coordination required). ALL requests use agents. NO exceptions. Former tier 0/1 automatically upgraded.
+**Minimum Tier**: Always tier 2+ (controller coordination required). All requests use agents. No exceptions. Former tier 0/1 automatically upgraded.
 
 **Delegation Chain** (event-driven pipeline):
 ```
@@ -94,13 +82,13 @@ Total: 45 .md = 38 top-level across 6 categories + 2 READMEs (root + playbooks/)
   +-> validator (level 1)       -> validation_report.yaml (PASS/FAIL/REVISE)
 ```
 
-`/act` is a config-driven state machine that reads `pipeline_config.yaml`. Enrichment agents (orchestrator, planner) run sequentially at level 1. Controllers spawn executors + reviewers at level 2, with internal reviewer loops of max 2 rounds (see controllers.md). The validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner produces decomposition and assembles delegation prompts inline. Otherwise controllers fall back to standard prompts.
+`/act` is a config-driven state machine that reads `pipeline_config.yaml`. Controllers run internal reviewer loops of max 2 rounds (see controllers.md). The validator emits PASS/FAIL/REVISE to drive outer revision routing (max 3 cycles). The planner assembles delegation prompts inline. Otherwise controllers fall back to standard prompts.
 
-**Roles**: the orchestrator and the planner enrich (L1). Controllers ONLY coordinate (L1). Execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) DO the work (L2). The reviewer validates against acceptance criteria (L2). The validator gates (L1). This config-driven machine replaces hardcoded steps, and revision loops at both levels ensure quality.
+**Roles**: the orchestrator and the planner enrich (L1). Controllers only coordinate (L1). Execution agents (backend-developer, frontend-developer, copywriter, qa-tester, …) do the work (L2). The reviewer validates against acceptance criteria (L2). The validator gates (L1).
 
 **Per-subagent context aim**: Spawned subagents carry an advisory per-subagent context aim. See `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them. It is advisory: no gate, no threshold, no abort. It also governs a different actor than `.claude/rules/core/delegation.md` § The Size Rule. That rule governs what the MAIN SESSION carries (a size class, never a token count). Neither is an exception to the other.
 
-## CRITICAL: Automatic Workflow Progression
+## Automatic Workflow Progression
 
 Workflows proceed automatically through phases WITHOUT asking permission. See `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md`.
 
@@ -108,7 +96,7 @@ Workflows proceed automatically through phases WITHOUT asking permission. See `d
 
 **ASK USER** (Only): Tier 4 HITL gates, unrecoverable errors, ambiguous requirements, validation BLOCKED
 
-**Exception**: `/designer` is EXEMPT from auto-proceed. It is interactive. It MUST use `AskUserQuestion` at every step. It MUST wait for user responses before advancing. Designer SKILL.md rules override auto-proceed.
+**Exception**: `/designer` is exempt from auto-proceed. It is interactive. It must use `AskUserQuestion` at every step. It must wait for user responses before advancing. Designer SKILL.md rules override auto-proceed.
 
 **If requirements are clear, PROCEED. Do not ask.** (Except /designer, which always asks.)
 
@@ -124,31 +112,15 @@ Grouping only. Each agent's own role is in its frontmatter, which is already res
 - **Coordination** (1): `coordinator` (reusable controller for small domains: health, education, personal, arts, trades)
 - **Logging** (1): `coord-log-writer`
 
-**Config**: `{domain}/config/domain_overrides.yaml` (controller_catalog, router keywords)
-
 ## Aggressive Decomposition
 
-Users state outcomes, not requirements. The planner unpacks everything needed.
-
-**5 Steps**: Request Analysis -> Component Extraction (UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT) -> Implicit Discovery (security, testing, infrastructure) -> Dependency Mapping -> Work Item Generation (30+ items with acceptance criteria)
-
-**Output** (`decomposition.yaml`): Work items with IDs, types, acceptance criteria, dependencies, and an optional `tags: []` array for categorization. The file also holds a dependency graph with the critical path, the parallel groups, and an optional `vertical_slice` block for the minimal tracer-bullet chain.
-
-**Controller Integration**: Controllers receive decomposition, ask clarifying questions for ambiguous items, coordinate execution respecting dependencies, verify acceptance criteria.
+Users state outcomes, not requirements. The planner unpacks everything needed in 5 steps: Request Analysis -> Component Extraction (UNDERSTAND/DESIGN/BUILD/VERIFY/DOCUMENT) -> Implicit Discovery (security, testing, infrastructure) -> Dependency Mapping -> Work Item Generation (30+ items with acceptance criteria). Output: `decomposition.yaml` (schema in `agents/planner.md`).
 
 ## Controller-Centric Architecture
 
-Controllers are the coordination hub between planning and execution. See `.claude/rules/core/controllers.md` for detailed patterns.
+Controllers are the coordination hub between planning and execution. See `.claude/rules/core/controllers.md` for patterns and the reviewer loop. Controllers write `coordination_log.yaml` with `schema_version: "1"`, `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, and `status: completed`. Validator checks: `agents/validator/resources/coordination-validation.md`.
 
-**Pattern**: Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers -> Controller -> Synthesized Solution -> Implementation
-
-**Question-Based Delegation**: The planner defines the objectives and selects the controller. The controller breaks them into questions, delegates to execution agents, synthesizes the answers, and coordinates implementation. The executor monitors progress via coordination_log.yaml.
-
-**Key Principles**: Controllers ask (not assign), execution agents answer, synthesis drives implementation, adaptive follow-up questions.
-
-**Controller selection by tier**. Per-domain catalogs live in `{domain}/config/domain_overrides.yaml` under `controller_catalog`, matched on tier + domain. Tier 2 = 1 primary controller (e.g. tech-lead, narrative-director, marketing-strategist). Tier 3 = primary + 1-2 supporting (e.g. architect, security-engineer). Tier 4 = 1 executive (cto/cco/cpo/chro) + primary + 2-4 supporting + HITL.
-
-**Coordinating Phase**: The orchestrator spawns the controller with plan.yaml. The controller asks clarifying questions, coordinates work items, tracks completion, and verifies acceptance criteria. It then writes `coordination_log.yaml` with `schema_version: "1"`, `objectives`, `questions_asked`, `synthesized_solution`, `implementation_tasks`, and `status: completed`. See `.claude/rules/core/controllers.md` for the full schema and reviewer loop.
+**Pattern**: Planner -> Objectives -> Controller -> Questions -> Execution Agents -> Answers -> Controller -> Synthesized Solution -> Implementation. Controllers ask (not assign), execution agents answer, and synthesis drives implementation.
 
 **Canonical Sources**: `workflow/work_items.yaml` is the canonical source for work-item definitions: IDs, descriptions, acceptance criteria, and dependencies. `team/task_list.yaml` is only a status overlay, and it carries IDs + status + assigned_to.
 
@@ -160,26 +132,17 @@ Controllers are the coordination hub between planning and execution. See `.claud
 | **3** (Complex) | 1 primary + 1-2 supporting | "Add feature", "Create system" |
 | **4** (Expert) | 1 executive + 1 primary + 2-4 supporting + HITL | "Major refactor", "Architecture migration" |
 
-ALL workflows use routing -> planning -> **coordinating** -> executing -> validating. Tier 0/1 deprecated (auto-upgraded to tier 2).
+All workflows use routing -> planning -> **coordinating** -> executing -> validating. The planner picks controllers from the `controller_catalog` of the domain, matched on tier + domain (see § Domain overlay).
 
 ## Workflow Execution
 
-```
-User Request -> /act (state machine loop, reads pipeline_config.yaml)
-  INIT -> orchestrator -> enriched_context.yaml
-  ORCHESTRATED -> planner -> plan.yaml + work_items.yaml (planner absorbs decomposition + delegation-prompt assembly)
-  PLANNED -> controller -> coordination_log.yaml (with executor+reviewer loops)
-  COORDINATED -> validator -> validation_report.yaml
-  VALIDATED -> Complete
-  FAIL -> back to PLANNED (re-run controller, max 3 cycles)
-  REVISE -> back to PLANNED (re-plan, max 3 cycles)
-```
+The states follow § Current State. A FAIL verdict goes back to PLANNED and re-runs the controller. A REVISE verdict goes back to PLANNED and re-plans. Each loop stops at 3 cycles.
 
 **Subagent Architecture**: Agents delegate to specialists via the Agent tool. Pattern: "Use {subagent} to {task}". Up to 20 concurrent subagents by default (CC 2.1.217+; set `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` to change the cap). See `docs/WORKFLOW_AGENT_INTERACTIONS.md`.
 
 ## Task Completion Protocol
 
-**MANDATORY**: 100% completion with verified evidence. See `.claude/rules/quality/completion.md`.
+**Completion**: every task needs 100% completion with verified evidence. See `.claude/rules/quality/completion.md`.
 
 **Enforced by**: Controllers (acceptance criteria), executor (coordination_log), validator (quality gates), orchestrator (phase validation)
 
@@ -189,9 +152,9 @@ User Request -> /act (state machine loop, reads pipeline_config.yaml)
 
 **These rules apply when `TaskCreate` is available.** Claude Code 2.1.233 turns the task tools (`TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`) off by default on Opus 4.8, Sonnet 5, Fable 5, and newer models. Since Claude Code 2.1.268 the tools are an allowlist: they are offered only on Claude 3.x, Opus 4.0-4.7, Sonnet 4.0-4.6, and Haiku 4.5. `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` turns them back on for every other model. When the tools are absent, track progress in the session files (`status.yaml`, `workflow/coordination_log.yaml`) and continue. Never stop or block because a task tool is missing.
 
-**Every `TaskCreate` MUST have a matching `TaskUpdate(status: completed | deleted)` before the agent stops.** Stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create. Before you finish a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, and `/designer` MUST clean up all tasks at pipeline/session end.
+**Every `TaskCreate` must have a matching `TaskUpdate(status: completed | deleted)` before the agent stops.** Stale `in_progress` tasks confuse users and clutter the UI. You OWN the lifecycle of any task you create. Before you finish a skill, sweep `TaskList` and resolve all of them. `/act`, `/team`, and `/designer` must clean up all tasks at pipeline/session end.
 
-**When `TaskCreate` is available, every background `Agent` spawn MUST have a `TaskCreate` call BEFORE the spawn.** Create one task per spawn when `run_in_background: true`. Match the task subject to the agent's description. Mark the task `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry, and the parallel agents stay invisible. So `/act` and `/team` pipelines MUST create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
+**When `TaskCreate` is available, every background `Agent` spawn must have a `TaskCreate` call before the spawn.** Create one task per spawn when `run_in_background: true`. Match the task subject to the agent's description. Mark the task `completed` when the agent notification arrives. Without per-agent tasks the user sees only a generic orchestration entry, and the parallel agents stay invisible. So `/act` and `/team` pipelines must create per-subagent tasks, not just top-level ones. (Foreground blocking agents: TaskCreate optional but recommended for long work.)
 
 **Per-subagent visibility comes from the task subject, never from the Agent tool's `name`.** `name` implies background and cannot be combined with a blocking call. It silently overrides an explicit `run_in_background: false`. A caller that needed the result in-turn then yields holding nothing. So the two rules above are satisfiable together only if you name the TASK, not the SPAWN.
 
@@ -205,42 +168,30 @@ Choose by how you will collect it. Work you must collect this turn → spawn **u
 
 **Mode & flag registry**: `.claude/skills/_MODE_REGISTRY.md` is the single source of truth for all skill modes, flags, and trigger phrases. Skill SKILL.md bodies reference it rather than redefining modes inline. Consult it before you add or change a skill flag.
 
-| Skill | Context | Agent | Description |
-|-------|---------|-------|-------------|
-| `/act` | `none` | `true` | Execute any task through auto-routed controller and specialist agents (passthroughs: `act context ...`, `--mode debug`; keyword router: `act improve|review|audit|optimize ...` triggers improve modes) |
-| `/team` | `none` | `true` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests. Runs inline in the main session, because Claude Code does not read its `metadata.context: fork` |
-| `/designer` | `none` | `false` | Interactive design exploration with guided Q&A before building |
-| `/helper` | `none` | `false` | Command guide that recommends the right skill for your task |
+| Skill | Description |
+|-------|-------------|
+| `/act` | Execute any task through auto-routed controller and specialist agents (passthrough: `--mode debug`; keyword router: `act improve|review|audit|optimize ...` triggers improve modes) |
+| `/team` | Parallel multi-agent execution with wave-based quality gates; auto-enables strategic mode for cross-domain requests. Runs inline in the main session |
+| `/designer` | Interactive design exploration with guided Q&A before building |
+| `/helper` | Command guide that recommends the right skill for your task |
 
 **Built-in**: `/memory` (view/edit memory files), `/init` (bootstrap project CLAUDE.md)
 
-**Per-skill detail** (pipeline internals, wave model, strategic mode, improve-mode keyword router, /designer behavior) lives in `.claude/rules/core/orchestration.md` § Skill Surface Reference. That file is `paths`-scoped to `.claude/skills/**`, so it loads when you work on a skill instead of in every session.
+**Per-skill detail** (pipelines, waves, strategic mode, improve modes, /designer) lives in `.claude/rules/core/orchestration.md` § Skill Surface Reference.
 
 ## Agent Memory
 
-**Full Structure**: See `.claude/rules/memory/agent-memory.md`
-
-```
-cagents-memory/
-+-- _system/       # configs, commands/, templates/
-+-- _knowledge/    # patterns, calibration, learnings
-+-- _archive/      # completed sessions
-+-- sessions/      # act_*, team_*, designer_* (run_*, org_*, review_*, optimize_* are legacy)
-```
+Runtime state lives in `cagents-memory/` (`_system/`, `_knowledge/`, `_archive/`, `sessions/`). Sessions: `act_*`, `team_*`, `designer_*` (`run_*`, `org_*`, `review_*`, `optimize_*` are legacy). Structure and principles: `.claude/rules/memory/agent-memory.md`.
 
 **Session ID**: `{command}_{slug}_{YYMMDD}_{NNN}` (e.g., `act_fix-auth_260317_001`)
 
 **Key Session Files**: `workflow/plan.yaml`, `workflow/coordination_log.yaml`, `workflow/execution_summary.yaml`
 
-**Principles**: File-based, session-scoped, parallel-safe, pause/resume capable. See `docs/CONTEXT_MANAGEMENT.md`.
+**Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 3`, max children: 100).
 
-**Recursive Workflows**: Complex tasks spawn child workflows (`max_nesting_depth: 3`, max children: 100). Each child follows objectives -> controller -> questions -> synthesis -> implementation.
+**Subagent Nesting (CC 2.1.172+; depth 3 by default since CC 2.1.219)**: Subagents retain the `Agent` tool. They can spawn their own subagents (`max_nesting_depth: 3`). Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower the ceiling. The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> one more level (depth 3)`. On CC 2.1.217 and 2.1.218 nesting is off by default.
 
-**Subagent Nesting (CC 2.1.172+; depth 3 by default since CC 2.1.219)**: Subagents retain the `Agent` tool. They CAN spawn their own subagents up to depth 3 by default (`max_nesting_depth: 3`). Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to raise or lower the ceiling. The skill loop is depth 0. The nesting model is `skill loop (depth 0) -> controller/subagent (depth 1) -> execution agent (depth 2) -> one more level (depth 3)`. On CC 2.1.217 and 2.1.218 nesting is off by default.
-
-`/team` wave subagents reliably spawn execution agents and reviewers. They may also nest deeper within the budget. They spawn execution agents directly rather than re-entering the full `/act` pipeline. That choice is by design for cost and clarity, not a harness limit.
-
-Graceful degradation (the `pat-graceful-degradation-depth1.md` playbook) is a **defensive fallback**. It covers the nesting ceiling and a regressed harness. A depth-3 subagent cannot spawn a depth-4 child at the default setting. Agents check whether the `Agent` tool is actually present before they degrade to direct execution + self-validation. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
+`/team` wave subagents spawn execution agents directly rather than re-entering the full `/act` pipeline. Graceful degradation is a defensive fallback for the nesting ceiling and a regressed harness. Agents check that the `Agent` tool is absent before they degrade. See `.claude/rules/core/teams.md` and `.claude/rules/playbooks/pat-graceful-degradation-depth1.md`.
 
 ## Creating Agents / Domains
 
@@ -287,22 +238,18 @@ servers) and the V11.1.12→V11.2.0 history live in `docs/ARCHITECTURE-HISTORY.m
 cAgents is distributed as a Claude Code plugin. The root manifest is
 `.claude-plugin/plugin.json`, and it registers 60 agents + skills + hooks + version.
 `.claude-plugin/marketplace.json` holds the marketplace listing. Plugin features
-(LSP servers, default settings, hook registration, marketplace fields, multi-plugin
-merge) and the full manifest-field detail live in
+and the full manifest-field detail live in
 **`docs/ARCHITECTURE-HISTORY.md § Plugin Architecture`**.
 
-Worktree sparse checkout is declared in `.claude/settings.json`
-(`worktree.sparsePaths`), so `/team` worktree-isolated subagents only populate the
-paths they need. `.claude-plugin/` was added in v12.62.2. Without it, a
-worktree-isolated subagent's checkout lacks `plugin.json`. The hook
-`session-init-gate.cjs` then misreads every agent as unregistered (see CHANGELOG
-v12.62.2).
+`.claude/settings.json` declares `worktree.sparsePaths`. Keep `.claude-plugin/` in
+that list: without it, `session-init-gate.cjs` in a worktree-isolated subagent
+misreads every agent as unregistered (see CHANGELOG v12.62.2).
 
 ## Performance Benchmarks
 
 Two classes of figures exist. **MEASURED** means a reproducible artifact from the
 perf-corpus runner, with node/OS/timestamp provenance. **ESTIMATE** means a
-design-target aspiration with NO artifact. Treat an estimate as a target. Never cite
+design-target aspiration with no artifact. Treat an estimate as a target. Never cite
 an estimate as measured. The two classes must never be conflated.
 
 The full measured-vs-estimate tables + provenance live in
@@ -319,8 +266,8 @@ reconstruct with `ls` has been removed deliberately.
 
 **Agents**: 60 total across 9 archetypes (developer 8, operator 8, advisor 4, analyst 5, creator 3, writer 4, strategist 3, core 16, leadership 9). The split is 44 routable + 16 core. 88 absorbed agents use mode flags (disk-derived: `grep -hoE 'absorbed from [a-z0-9/_-]+' agents/*.md | sort -u | wc -l` = 88 distinct former agents folded into a survivor mode)
 **Models**: Each agent file records an intended model under `metadata.model` (disk-verified: 27 sonnet, 23 opusplan, 7 opus, 3 fable). These values are advisory. Claude Code does not read `metadata.*` or `allowed-tools` in agent frontmatter, and no agent declares a top-level `model:` or `tools:` key. Thus every cAgents subagent currently inherits the session model and all tools, unless the spawn passes a `model` parameter. Only the cAgents validators and hooks read the advisory values. No agent in the catalog declares `model: haiku` or `tier: support`. Both remain available via `model_routing.yaml`, but the current 60-agent catalog does not use either one (disk-verified: 0 `model: haiku`, 0 `tier: support`; tiers are 26 controller / 22 execution / 12 infrastructure)
-**Tests**: `npm test` runs 2613+ Vitest tests across 286+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
-**Version**: 12.78.2
+**Tests**: `npm test` runs 2686+ Vitest tests across 297+ files (hooks + config validation + regression tests). That figure is a static lower bound. The actual runtime count is higher, because `it.each` rows expand to multiple tests.
+**Version**: 12.79.8
 
 ## Troubleshooting
 
@@ -331,9 +278,8 @@ reconstruct with `ls` has been removed deliberately.
 | coordination_log missing | Check controller completed coordinating phase |
 | Agent not found | Check agent has tier field in frontmatter |
 | Workflow stuck in coordinating | Check controller is asking questions and synthesizing |
-| Memory not loading | Run `/memory` to view loaded files |
 | Hook not running | Check `.claude/settings.json` registration, verify `node` in PATH |
 | Hook blocks unexpectedly | Test: `echo '{}' \| node .claude/hooks/<name>.cjs` |
 | `SessionEnd hook...team-stop...failed: Hook cancelled` | Expected when you cancel a session. Claude Code terminates hooks during teardown before they finish. No data is lost or corrupted. |
 
-See `docs/WORKFLOW_EVALUATION_FIXES.md` for recent workflow issue resolutions.
+See `CHANGELOG.md` for recent workflow issue resolutions.

@@ -9,14 +9,13 @@ V11.0.0 removed `/review`, `/optimize`, `/context`, and `/debug` after a 10-patc
 | `/review <target>` | `/improve --mode review <target>` (or `/improve <target>`; `review` is the default mode) |
 | `/optimize <target>` | `/improve --mode optimize <target>` |
 | `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
-| `/context init\|show\|update\|clear` | `/act context init\|show\|update\|clear` |
+| `/context init\|show\|update\|clear` | Edit `product_context.yaml` directly. V11.0 removed `/context`, and `/act` has no context subcommand |
 | `/debug <bug>` | `/act --mode debug <bug>` |
 
 ## Passthroughs (handled inside /act)
 
 | Form | Replaces | Landed in |
 |------|----------|-----------|
-| `/act context show\|init\|update\|clear` | `/context` | V10.26.9 |
 | `/act --mode debug` | `/debug` | V10.26.11 |
 
 ## Dynamic SKILL.md Reading

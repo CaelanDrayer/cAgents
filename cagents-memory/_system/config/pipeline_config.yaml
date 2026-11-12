@@ -4,10 +4,15 @@
 #
 # v12.0.0: 7-state -> 5-state collapse. task-decomposer + prompt-engineer
 # absorbed into universal-planner. See revamp-design-v2.md Q1.
-# v12.3.0: Adaptive fast path deleted. Every /act and /team unconditionally
-# executes all 5 states. Skill-declared pipeline_exemptions + phase stubs
-# substitute for the deleted complexity-scoring shortcut. See
-# revamp-design-v2.md Pillar 1.
+# v12.3.0: the score-based path selector (3 paths, 9 complexity signals) was
+# deleted (commit 247fad7f, Pillar 1). v12.7.0 (commit 6903afc0) brought back
+# two named paths with no score, `fast` and `standard`. The `fast` path
+# skips only the orchestrator spawn, for a
+# tier-2 request with one clear domain and no debug mode. The skip is recorded
+# as skipped_reason: tier-2-fast-path. Every other run takes the `standard`
+# path. See .claude/skills/act/reference/adaptive-pipeline.md.
+# Skill-declared pipeline_exemptions + phase stubs replace the other
+# complexity-scoring shortcuts. See revamp-design-v2.md Pillar 1.
 version: "2.0"
 
 # Subagent nesting ceiling (updated v12.74.0).
@@ -94,7 +99,9 @@ classification_mapping:
 
 # Pre-enrichment detection removed in v12.3.0.
 # Every /act and /team session unconditionally executes the full 5-state
-# pipeline. /team teammate flows that previously short-circuited INIT or
+# pipeline. On the /act `fast` path the INIT state skips only the
+# orchestrator spawn and records the skip (see the header note).
+# /team teammate flows that previously short-circuited INIT or
 # ORCHESTRATED now declare pipeline_exemptions in their spawning skill's
 # SKILL.md metadata and write workflow/{phase}_stub.yaml instead. The
 # validator's Phase-0 artifact-presence check recognizes the stub as a

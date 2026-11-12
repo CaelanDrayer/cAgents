@@ -4,7 +4,7 @@
 # Mirrors cagents-memory/_system/templates/teams/_index.yaml shape.
 
 schema_version: "1"
-catalog_version: "1.1"
+catalog_version: "1.2"
 
 categories:
   - review
@@ -17,6 +17,27 @@ categories:
   - structured-io
   - security
 
+# Audited-through record, one row for each source repo of the store.
+# baseline_sha: the upstream commit that the example bodies were distilled from.
+# It is the same value as metadata.source_commit in each ex-*.md file of the repo.
+# last_audited_sha: the newest upstream commit that a security audit cleared.
+# The next review reads the upstream range from last_audited_sha to the new HEAD.
+# A repo advances only when its audit verdict is CLEAN. Any other verdict keeps
+# last_audited_sha at the baseline, and report points to the audit result.
+source_repos:
+  - {repo: NousResearch/hermes-agent, baseline_sha: ca069e12239a2c8d13887ac9f983557d00bdcfd2, last_audited_sha: ca069e12239a2c8d13887ac9f983557d00bdcfd2, last_audited: "2026-10-15", verdict: SUSPICIOUS, report: "See the audit report of session act_streamline-cleanup-plugin_261111_001 (local session data, not in git)."}
+  - {repo: NVIDIA/SkillSpector, baseline_sha: 4c52fbb83bbca0dd13f2685453c9b661d8c95bf8, last_audited_sha: 7d9b4be35d0f995cc33db72875a62bdbad00db5d, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: multica-ai/andrej-karpathy-skills, baseline_sha: 2c606141936f1eeef17fa3043a72095b4765b9c2, last_audited_sha: 2c606141936f1eeef17fa3043a72095b4765b9c2, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: phuryn/pm-skills, baseline_sha: c68487d721e419ec87af1ae6412a842978eab785, last_audited_sha: 9af7bfd0bc47fdad43c2eaa7a43cd13918e7aaef, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: affaan-m/ECC, baseline_sha: b92f181b3b748d1abbc2afd94af6aa7d8c8fca29, last_audited_sha: d2ef2680594f9a17526a6e1a2e18b3d242c5d17b, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: anthropics/skills, baseline_sha: dbd4588f9e1033efb41dad4bef2f7947c8993d44, last_audited_sha: 2c5958ecac7cee2b583967a2c4981d0f4a75c579, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: ayghri/i-have-adhd, baseline_sha: 1ecea1993b7fce257ffbd686c070948b5e07eda6, last_audited_sha: 1ecea1993b7fce257ffbd686c070948b5e07eda6, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: f/prompts.chat, baseline_sha: bbd0529530d99fa76ab2f51809b6184ea4b625b8, last_audited_sha: 4a30823ba54239dac088eba9e52ddfce8e69196f, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: juliusbrussee/caveman, baseline_sha: d262ab3882952a59312ff3537cd86d894523c5ab, last_audited_sha: 3dc497a7f858c774d6e15b25e8c6120ef3a0eda8, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: mattpocock/skills, baseline_sha: 49dd158d1076134a641b33efb035946536778336, last_audited_sha: 4ae2317ddb22b046e26455e4f9c9b3aaaf62212d, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: vercel-labs/agent-skills, baseline_sha: 063bee94c3f4df8453406c830b0a7df0f2860278, last_audited_sha: 1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: latent-spaces/brag, baseline_sha: 069432cac935ed1895859df201c31436c07fb74e, last_audited_sha: 669ab9286aa28b6c3ee30e75f181ee74319d012a, last_audited: "2026-11-11", verdict: CLEAN}
+  - {repo: obra/superpowers, baseline_sha: bb92a77741419a4ab5f06e711a283343f1ada0c3, last_audited_sha: 22f0b463e7a5e579904dd6211a520321035526f7, last_audited: "2026-11-11", verdict: CLEAN}
 
 examples:
   # ---- review ----

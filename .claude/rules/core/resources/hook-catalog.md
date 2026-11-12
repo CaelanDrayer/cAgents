@@ -394,6 +394,13 @@ Under `off` it skips the belt. The sound evaluator still runs under `off`, so a
 catastrophic shape is never disarmed. See
 `docs/SECURITY_BASH_GUARD_THREAT_MODEL.md` §5.1.
 
+**Full-off switch (UD-2, v12.79.0)**: set `CAGENTS_BASH_GUARD_DISABLED=1` to
+turn the whole guard off. The hook then allows every command before any check.
+The Stage-1 denies are included, and the evaluator does not load. The hook also
+reads this key from the `env` object of `.claude/settings.local.json`, so the
+switch works in a session that already runs. The env var wins, and a file that
+does not parse keeps the guard on. `CAGENTS_BASH_GUARD` keeps its meaning.
+
 **Fail-closed soft-fail (v12.62.1)**: an **un-parseable** command no longer
 hard-denies. An un-parseable command is one the tokenizer chokes on. An example
 is an apostrophe or an unbalanced quote inside a heredoc or inside `$(...)`,
@@ -985,7 +992,7 @@ of `bash-validator.cjs` for Bash, and of the security gates inside
   Layer 2 returns an advisory `systemMessage`, but only when
   `CAGENTS_ROUTING_SUGGESTIONS` is enabled. Otherwise Layer 2 returns `null`
   before any length check and before any keyword check. Neither layer blocks the
-  prompt. It pairs with CLAUDE.md § CRITICAL: Aggressive Delegation.
+  prompt. It pairs with CLAUDE.md § Aggressive Delegation.
 
 (A2-04) The PreToolUse[Agent] registration of `prompt-router.cjs` was dropped. It
 was a documented `return null` no-op, labelled "reserved for future

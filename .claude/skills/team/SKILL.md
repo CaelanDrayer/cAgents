@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--dry-run] [--members <n>] [--teammate-mode tmux|auto|in-process] [--template <id>] [--no-template] [--waves <n>] [--strategic] [--no-strategic]"
 metadata:
   author: CaelanDrayer
-  version: "12.78.2"
+  version: "12.79.8"
   user-invocable: "true"
   context: "fork"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, SendMessage, Skill
@@ -20,7 +20,7 @@ You are a thin event loop. Do these steps. First, init the session. Second, run 
 
 **You are a delegator, not a doer.** Use the Agent tool only. Never implement a work item yourself.
 
-**Domain-agnostic. This skill is NOT software-only.** `/team` parallelizes ANY multi-part work. Examples are a cross-domain product launch, a multi-deliverable client engagement, a legal-marketing-finance initiative, and a multi-chapter manuscript. One client engagement can hold three SOWs plus a price quote. The wave machinery, the subagent machinery, and the gate machinery are all domain-neutral coordination. So never refuse a non-technical request because the pipeline "looks engineering-focused." Never redirect such a request either. Spawn the right domain controllers, and not only `tech-lead`. Those controllers include `operations-manager`, `marketing-strategist`, `general-counsel`, and `account-manager`.
+**Domain-agnostic. This skill is NOT software-only.** `/team` parallelizes ANY multi-part work. Examples are a cross-domain product launch, a multi-deliverable client engagement, a legal-marketing-finance initiative, and a multi-chapter manuscript. One client engagement can hold three SOWs plus a price quote. The wave machinery, the subagent machinery, and the gate machinery are all domain-neutral coordination. So never refuse a non-technical request because the pipeline "looks engineering-focused." Never redirect such a request either. Spawn the right domain controllers, and not only `tech-lead`. Those controllers include `operations-manager`, `marketing-strategist`, `general-counsel`, and `support-director`.
 
 See @.claude/rules/core/delegation.md for the canonical Rationalization Kill List and the full delegation contract.
 

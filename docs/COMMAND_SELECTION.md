@@ -4,7 +4,7 @@ Guide for choosing the right cAgents skill for your task.
 
 _V11.0 removed /review, /optimize, /context, /debug — see [MIGRATION-V11.md](./MIGRATION-V11.md). v12.1.2 folded /improve into /act via a first-word keyword router. v12.2.0 removed /org and absorbed it into /team strategic mode._
 
-This decision matrix routes review and optimization work to `/act review|optimize|improve <target>` (v12.1.2+ keyword router; or `/act --mode review|optimize|full`), product context to `/act context <subcmd>`, systematic debugging to `/act --mode debug`, and cross-domain coordination to `/team --strategic` (v12.2.0+; auto-enabled when `router.domain_count >= 2`).
+This decision matrix routes review and optimization work to `/act review|optimize|improve <target>` (v12.1.2+ keyword router; or `/act --mode review|optimize|full`), systematic debugging to `/act --mode debug`, and cross-domain coordination to `/team --strategic` (v12.2.0+; auto-enabled when `router.domain_count >= 2`).
 
 ## Quick Decision Tree
 
@@ -43,7 +43,7 @@ Is this a multi-domain strategic initiative?
 - **Best for**: Bug fixes, single features, simple changes, sequential work
 - **Examples**: "Fix auth bug", "Add user endpoint", "Write unit tests"
 - **Characteristics**: Event-driven pipeline, single controller, fastest for simple tasks
-- **Passthroughs**: `/act context show|init|update|clear` (product context), `/act --mode debug <bug>` (systematic debugging)
+- **Debug mode**: `/act --mode debug <bug>` (systematic debugging)
 - **Avoid when**: Work has 3+ parallelizable items (use /team instead)
 
 ### /team - Parallel Team Execution

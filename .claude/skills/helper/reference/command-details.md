@@ -39,7 +39,7 @@ You: /act Fix auth bug
   v
 [Controller: tech-lead] Asks specialists questions:
   - "What is the current auth implementation?" -> backend-developer
-  - "What are the key risks?" -> security-specialist
+  - "What are the key risks?" -> security-engineer
   - "What tests are needed?" -> qa-lead
   |
   v
@@ -206,7 +206,7 @@ for the migration details.
 | `/review`     | `/improve --mode review`  | V10.26.26 | V11.0.0 |
 | `/optimize`   | `/improve --mode optimize`| V10.26.32 | V11.0.0 |
 | `/debug`      | `/act --mode debug`       | V10.26.18 | V11.0.0 |
-| `/context`    | `/act context show|init|update|clear` | V10.26.9 (passthrough) | V11.0.0 |
+| `/context`    | Edit `product_context.yaml` directly (no passthrough) | V10.26.9 (passthrough) | V11.0.0 |
 
 V10.26.33 also introduced `/improve --mode full`. That mode runs a unified
 pipeline of review, and then optimize. It uses one shared baseline, and it

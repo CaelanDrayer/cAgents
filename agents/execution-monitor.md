@@ -31,7 +31,7 @@ This agent is the controller coordination monitor for all domains. In v12.53.0 t
 5. **DO NOT directly manage the team.** The controllers do that work.
 6. Hand off to the validator when the work is complete.
 
-## CRITICAL: Do Not Ask Permission
+## Do not ask permission
 
 **After the controller completes:**
 - Write execution_summary.yaml.

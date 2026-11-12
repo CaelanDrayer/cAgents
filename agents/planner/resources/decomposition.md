@@ -71,17 +71,17 @@ See also:
 
 ## Critical Rules
 
-1. **NEVER accept surface-level requests** - Always dig deeper
-2. **ALWAYS classify abstraction level** - How much must we fill in?
-3. **ALWAYS identify implicit requirements** - What did user NOT say?
-4. **ALWAYS discover dependencies** - What must happen first?
-5. **ALWAYS include verification** - How do we know it works?
+1. **Never accept surface-level requests** - Always dig deeper
+2. **Always classify the abstraction level** - How much must we fill in?
+3. **Always identify implicit requirements** - What did the user not say?
+4. **Always discover dependencies** - What must happen first?
+5. **Always include verification** - How do we know it works?
 6. **CONTEXT is king** - Search codebase, understand current state
 7. **FILL IN THE BLANKS** - User states outcome, we determine requirements
 
 ## v10 Enhanced Work Item Format (Agent Chaining)
 
-Each work item MUST include:
+Each work item must include:
 - `agent`: Specific agent assignment (e.g., `cagents:architect`, `cagents:backend-developer`)
 - `inputs`: File paths of dependency outputs this work item consumes
 - `outputs`: File path where this agent writes its output (format: `outputs/TASK-{N}_{name}.md`)

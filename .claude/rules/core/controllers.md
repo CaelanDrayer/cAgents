@@ -92,9 +92,9 @@ Controller receives work_items.yaml with agent assignments + dependency graph
   4. After all work items complete: write coordination_log.yaml
 ```
 
-## CRITICAL: Controllers NEVER Do Direct Work
+## Controllers never do direct work
 
-**Controllers coordinate. They do not implement.** They MUST use the Agent tool for
+**Controllers coordinate. They do not implement.** They must use the Agent tool for
 all work.
 
 - **Allowed**: Ask questions, synthesize answers, create task lists, write coordination_log.yaml
@@ -106,16 +106,16 @@ tool, then record the answer. Synthesize after every question has an answer.
 ### Context-Efficient Question Delegation
 
 Keep a question prompt **under 300 tokens**. Include only three things: the
-question, where to look, and what to report. Do NOT include the contents of the
+question, where to look, and what to report. Do not include the contents of the
 plan, of the decomposition, or of the instruction.
 
 When the executor will run shell commands, add a one-line note pointing to `.claude/rules/playbooks/pat-concurrent-session-hooks.md` § Writing commands that pass the bash guard.
 
 Spawned subagents carry an advisory per-subagent context aim; see `.claude/rules/playbooks/pat-context-budget-tiers.md` for the figures and for the delegation levers that hold them.
 
-## CRITICAL: Synchronous Spawning (never background-and-yield)
+## Synchronous Spawning (never background-and-yield)
 
-Controllers and `/team` leads MUST spawn execution agents **synchronously**. Collect
+Controllers and `/team` leads must spawn execution agents **synchronously**. Collect
 each result before you yield the turn. Issue every `Agent(...)` call with an
 explicit `run_in_background: false`, because subagents are background-by-default
 since Claude Code 2.1.198. The controller then waits for the result in the same turn
@@ -127,6 +127,10 @@ child sits with `stopped_at: null` in `agent_tree.yaml`, so the session *looks*
 alive, because a null-stop child reads as "actively working". Nothing progresses,
 because no agent waits for the child. This is the controller-background-yield stall
 (REC-05, session `run_bash-guard-evaluator_260708_001`).
+
+The same rule covers a long Bash command inside a child. Run it in the foreground
+under a timeout, in bounded slices. Never start it in the background before the
+child ends its turn.
 
 The Stop-hook stale-child freshness gate is `sessionActivelyWorking` in
 `verify-completion.cjs`. It now discounts a null-stop child whose `spawned_at` is
@@ -171,13 +175,13 @@ Skill({ skill: "{assigned_skill}", args: "{skill_args}" })
 ```
 
 When a controller invokes a workspace skill, that IS a valid form of delegation. It
-is NOT the controller "doing the work directly". Treat the output of the skill as
+is not the controller "doing the work directly". Treat the output of the skill as
 the deliverable of the work item. Then run the normal reviewer loop against the
 acceptance criteria.
 
 **Graceful fallback**: the `Skill` tool can be absent from the surface of the
 controller, at the nesting ceiling or on a regressed harness. If it is verifiably
-absent, do NOT fail the work item. Spawn the closest-matching cAgents execution
+absent, do not fail the work item. Spawn the closest-matching cAgents execution
 agent instead, and record `skill_fallback: "{reason}"` in `coordination_log.yaml`.
 Make sure the tool is absent before you fall back. Never route an `assigned_skill`
 work item back into the cAgents `act`, `team`, `designer`, or `helper` skills.
@@ -201,7 +205,7 @@ procedure, `available_skills.yaml` schema, and the planner contract.
 
 ## Task Tracking for Execution Agent Visibility
 
-When TaskCreate is available, every controller MUST call it once it has chosen its
+When TaskCreate is available, every controller must call it once it has chosen its
 execution agents. TaskCreate is the main tool a controller uses to show progress to
 the user. Its companions are TaskUpdate for a status change, TaskList for an
 inventory, and TaskGet for a detail read.
@@ -213,7 +217,7 @@ inventory, and TaskGet for a detail read.
 **Legacy note**: the `TodoWrite` tool is gated with the task tools, so it is no fallback. Do not call it.
 
 **TaskCreate scope boundary**: /act owns the pipeline-level tasks at level 0, which
-track the pipeline agent that is running. Controllers do NOT create TaskCreate tasks
+track the pipeline agent that is running. Controllers do not create TaskCreate tasks
 that /act expects to clean up. Such a task lives in the scope of the controller, and
 /act cannot update it. The cleanup step then reports a "Task not found" error.
 
@@ -290,9 +294,9 @@ The rounds-cap is `controller_revision.max_internal_rounds: 2` in
 not claim completion. This contract holds by convention, and no hook currently
 enforces it. The promotion has four steps:
 
-1. **Set the underlying implementation_task status** to `dead_letter` (NOT `completed`, NOT `in_progress`) in `coordination_log.yaml`.
+1. **Set the underlying implementation_task status** to `dead_letter` (not `completed` and not `in_progress`) in `coordination_log.yaml`.
 2. **Append the item to `dead_letter_items[]`** in `coordination_log.yaml` with the schema documented in `controller-reference.md` (task_id, name, rounds_attempted, last_feedback, best_attempt_location, reason).
-3. **Continue with the remaining work items.** Do NOT halt coordination on a single
+3. **Continue with the remaining work items.** Do not halt coordination on a single
    dead_letter. The pipeline classifies a session with `dead_letter_items.length > 0`
    as `PARTIAL_PASS`. `pipeline_config.yaml` maps `PARTIAL_PASS` to PASS, and
    `validation_report.yaml` reports the dead-letter items to the user.
@@ -407,7 +411,7 @@ the guards by default when a command is available.
 > deferred-enforcement roadmap.
 
 Controllers SHOULD chain several guard commands, so that the chain covers every kind
-of regression. Run ALL applicable guards, not only the first one.
+of regression. Run all applicable guards, not only the first one.
 
 #### Guard Command Chain
 
@@ -484,7 +488,7 @@ its own subagents up to depth 3 by default. A controller or a subagent spawned a
 **keeps the `Agent` tool** and can spawn execution agents. Those execution agents
 can spawn deeper sub-agents, inside the depth-3 ceiling. Delegation is the expected
 behavior at every level. A controller normally still has `Agent` at depth 1, and it
-MUST delegate.
+must delegate.
 
 **Graceful degradation is a defensive fallback**, not the expected depth-1 behavior.
 It triggers only when the `Agent` tool is genuinely absent. That happens at the real
@@ -505,7 +509,7 @@ fallback pattern. That playbook holds:
 
 ## Agent ID Tracking
 
-When controllers spawn execution agents with the Agent tool, they MUST record the
+When controllers spawn execution agents with the Agent tool, they must record the
 returned `agent_id`. It goes in the `implementation_tasks` entry of the
 coordination_log. That link joins a work item to its `agent_tree.yaml` entry, which
 makes the audit trail traceable.
@@ -557,12 +561,12 @@ Controllers record this in `coordination_log.yaml` under the matching `implement
 
 ## Confidence Tiers
 
-Every completed work item MUST include `confidence` (0.0-1.0) and
+Every completed work item must include `confidence` (0.0-1.0) and
 `confidence_rationale`. An item below 0.7 triggers more scrutiny.
 
 ## Read-Before-Decide Pattern
 
-Controllers MUST re-read plan objectives before major decisions to combat attention drift.
+Controllers must re-read plan objectives before major decisions to combat attention drift.
 
 > Before synthesis and before spawning execution agents, re-read plan.yaml objectives to refresh goals in the attention window.
 
@@ -576,7 +580,7 @@ coordination_log.
 > checks them now. See docs/FUTURE_VALIDATION_FRAMEWORK.md for the
 > deferred-enforcement roadmap.
 
-Controllers MUST run validation checkpoints at two points:
+Controllers must run validation checkpoints at two points:
 
 **Pre-Execution** (7 checks): run these before you spawn any executor.
 
@@ -600,7 +604,7 @@ See @resources/controller-validation-checklist.md for detailed check description
 
 ## Decision Log Protocol (V10.6.0)
 
-Controllers MUST keep append-only DECISIONS.md and CORRECTIONS.md logs during
+Controllers must keep append-only DECISIONS.md and CORRECTIONS.md logs during
 coordination. Each entry holds a timestamp, the context, the rationale, and the
 confidence. These logs live in `cagents-memory/_projects/{hash}/`, and they survive
 context compaction.
@@ -609,7 +613,7 @@ See `controller-reference.md` for examples and file location details.
 
 ## Evidence-First Execution Pattern (V10.10.0)
 
-Controllers MUST ask execution agents for specific evidence: a file path, a line
+Controllers must ask execution agents for specific evidence: a file path, a line
 number, test output, or a measured metric. A vague confirmation is not evidence.
 "Looks correct" and "reviewed code, all good" are not acceptable.
 
@@ -617,13 +621,13 @@ See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical
 pattern, the bad-versus-good examples, and the four things an execution agent must
 put in its response.
 
-## CRITICAL: Do Not Ask Permission
+## Do not ask permission
 
 After completing coordination:
 - Write coordination_log.yaml with `schema_version: "1"` at the top. Write the
   handoff document and the completion event.
 - Signal completion: coordination_log.yaml carries a complete status.
-- DO NOT ask the user to review or approve. /act auto-proceeds to validation.
+- Do not ask the user to review or approve. /act auto-proceeds to validation.
 
 **Canonical Sources**: `workflow/work_items.yaml` is the canonical source for the
 work item definitions. `team/task_list.yaml` is a status-only overlay that holds

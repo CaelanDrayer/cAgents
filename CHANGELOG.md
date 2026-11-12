@@ -10,6 +10,255 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.8] - 2026-11-11
+
+Pre-merge review fixes (WI-48). This release fixes the findings of the
+code review and the security review of the branch. It adds no feature.
+
+### Fixed
+- `.claude/hooks/hook-utils.cjs`: the open DB URL mask (`OPEN_DB_URL`)
+  now covers one URL token only. It stops at whitespace, so the prose
+  after a URL such as `redis://host:6379` stays in the stored text.
+  `tests/regressions/mask-secrets-gaps.test.js` adds 4 regression cases.
+- `tests/regressions/skill-refs-current.test.js`: the history filter is
+  narrower. The words "previously", "removed", "no longer" and
+  "deprecated" must bind to a history shape. The release-tag pattern and
+  the arrow mapping are stricter. 10 crafted stale phrasings are now
+  negative test cases.
+- `.claude/skills/_MODE_REGISTRY.md`: the old `/org --quick` flag now
+  maps to `/team --strategic`, as the other five surfaces say.
+- `cagents-memory/_system/config/pipeline_config.yaml`: the header
+  comment is correct. v12.3.0 deleted the score-based path selector, and
+  v12.7.0 brought back the two named paths `fast` and `standard`.
+- `scripts/ste100/mechanize.cjs`: a comment names the exact removal
+  version, v12.79.4.
+- Stale statements are correct in these files:
+  - `.claude/rules/memory/agent-memory.md` and
+    `agent-memory-reference.md`: the live session prefixes and the
+    example session ID.
+  - `.claude/rules/playbooks/pat-two-stage-review.md` and
+    `agents/team-lead.md`: emphasis in sentence case.
+  - `.claude/skills/act/SKILL.md`, `improve-risk-classification.md` and
+    `agents/team-bootstrap/resources/spawn-protocol.md`: 3 em dashes
+    removed, and one long sentence split.
+  - `.claude/skills/helper/reference/command-summaries.md` and
+    `comparison-tables.md`: the current `/act` passthroughs.
+  - `agents/team-bootstrap.md`: an execution agent keeps the `Agent`
+    tool.
+  - `agents/tech-lead/resources/backend-lead.md`,
+    `docs/agents/index.md` and `docs/DOMAIN_STRUCTURE_STANDARD.md`:
+    removed agent names replaced by the current agents and modes.
+  - `agents/qa-lead/resources/coordinate.md`: a link to its best
+    practices resource.
+  - `docs/AUTOMATIC_WORKFLOW_PROGRESSION.md` and
+    `docs/architecture/overview.md`: a heading quote, the overlay
+    config files and the rules count.
+- `CLAUDE.md`: the 60-80% context savings figure is labeled a
+  design-target estimate.
+
+### Added
+- `tests/regressions/example-store-no-agent-directed-payload.test.js`:
+  the deferred step of WI-16. The test checks every
+  `docs/example-store/ex-*.md` file for zero-width, bidi and tag-block
+  code points and for long base64-like runs. The detector classes use
+  `\u` escapes, so the test file holds no raw hidden code points.
+
+### Removed
+- `scripts/fix-resource-frontmatter.sh`. No script, test or CI step
+  referred to it.
+
+## [12.79.7] - 2026-11-11
+
+CLAUDE.md restructure (WI-45). Every session loads CLAUDE.md, so this
+change lands as its own commit. One revert restores the old file.
+
+### Changed
+- `CLAUDE.md` is slimmed from 28,528 to about 24,100 bytes. Every
+  load-bearing rule is kept. A preservation table of 57 rows records the
+  class of each rule or fact. No rule moved to another file.
+- 17 ALL-CAPS ledger rows with owner WI-45 are applied to `CLAUDE.md`.
+  One more line changes in `.claude/skills/act/SKILL.md` (line 169). It
+  quotes the `/designer` exemption rule, and the quote now matches the
+  new sentence-case text.
+- The overlay paragraph states that only `people` and `shared` live
+  under `agents/_overlay/`.
+- The Skills table drops the Context and Agent columns. Claude Code does
+  not read those values.
+
+### Removed
+- The `act context` passthrough in the Skills table. That passthrough
+  has been gone since V11.0.
+
+## [12.79.6] - 2026-11-11
+
+Emphasis release for the rules and agents surface (WI-44). It changes how
+strongly the model weighs each rule, so it lands as its own commit. One
+revert restores the old emphasis.
+
+### Changed
+- 143 ALL-CAPS emphasis tokens in 19 files under `.claude/rules/` and
+  `agents/` are now sentence case. The WI-42 ledger gives the new text for
+  each row (140 lower, 3 lower-with-reason). Every obligation is kept. No
+  rule was added, removed, reordered, or merged. Each edit replaces one
+  line with one line, so line pins stay valid.
+- The emphasis count under `.claude/rules/` and `agents/` fell from 473
+  to 324. The 39 keep-identifier rows (such as `PASS`, `FAIL`, and
+  `REVISE`) are unchanged.
+- Three headings are renamed. Every citer is updated in the same commit:
+  - "CRITICAL: Synchronous Spawning" is now "Synchronous Spawning" in
+    `controllers.md`. The citers in `delegation.md`, `architect.md`,
+    `coordinator.md`, and `tech-lead.md` name the new heading.
+  - "CRITICAL: Do Not Ask Permission" is now "Do not ask permission" in
+    `controllers.md`, `planner.md`, and `execution-monitor.md`. The three
+    copies stay in step.
+  - "CRITICAL: Aggressive Delegation" is now "Aggressive Delegation" in
+    `CLAUDE.md`. The citer in `hook-catalog.md` names the new heading.
+    This is the only `CLAUDE.md` line in this release.
+
+## [12.79.5] - 2026-11-11
+
+Emphasis release for the skills surface (WI-43). It changes how strongly
+the model weighs each rule, so it lands as its own commit. One revert
+restores the old emphasis.
+
+### Changed
+- 176 ALL-CAPS emphasis tokens in 11 files under `.claude/skills/` are now
+  sentence case. The WI-42 ledger gives the new text for each row. Every
+  obligation is kept: a `MUST` became "must", a `NEVER` became "never", or
+  the sentence became an imperative. Where a rule had no reason, the same
+  sentence now states one. No rule was added, removed, reordered, or merged.
+- The emphasis count on the skills surface fell from 361 to 185. The
+  ledger keeps the other tokens or does not list them for this item. Kept
+  tokens include identifiers (such as `PASS`, `FAIL`, and `REVISE`), one
+  safety rule in `act/SKILL.md`, and one quote of `CLAUDE.md` that WI-45
+  owns.
+- `/designer` still stops and waits for the user. The wait rule now states
+  its reason.
+- `act/reference/state-machine-detail.md` and
+  `team/reference/teammate-spawning-template.md` now state the reviewer
+  loop cap as 2 rounds. This matches `max_internal_rounds: 2` in
+  `pipeline_config.yaml`. The outer validator loop keeps its cap of 3.
+
+## [12.79.4] - 2026-11-11
+
+Cleanup release. It removes unreachable resources, Python leftovers, and
+stale documents (WI-38, WI-39, WI-40, landed by WI-41). The commit holds
+81 file deletions, so one revert restores all of the files.
+
+### Removed
+- 62 agent resource files under `agents/*/resources/` (WI-38). Each file
+  was unreachable or was a duplicate of a kept file. The per-file proof is
+  in the session cleanup table `dedupe.tsv`.
+- 9 Python leftovers under `scripts/` (WI-39). No live consumer used them,
+  and `scripts/ci/validate-agents.sh` covers their checks.
+- The `validate:configs` npm script (WI-39). The `lint` script now runs
+  `validate:agents`.
+- 10 stale documents under `docs/` (WI-40), including `docs/LIFECYCLE.md`.
+
+### Changed
+- 20 stale documents were resolved (WI-40). 10 were deleted, and the
+  others were refreshed against their source of truth or kept. Links that
+  pointed to the deleted documents were fixed, including two links in
+  `CLAUDE.md`.
+- 9 links in three `partnership-*.md` resources of `marketing-strategist`
+  now point to the kept files (WI-38).
+- `scripts/ste100/in-scope.txt` was regenerated for the new file set.
+- In the `paths` frontmatter of 5 rule files, the dead `agents/reviewer/**`
+  glob was replaced with `agents/reviewer.md` or removed. In
+  `.claude/rules/core/skill-format.md`, the dead `tests/agent_linting/**`
+  glob was removed.
+
+## [12.79.3] - 2026-11-11
+
+Three skill defect fixes from the 2026-10-15 skill review (WI-37).
+
+### Fixed
+- `/helper` Mode 1 (HLP-H1): the first question had 7 options, but
+  AskUserQuestion takes at most 4. The first question now groups the 7
+  intents into 4 choices. Two follow-up questions (3 options and 2 options)
+  select the exact intent.
+- `/act` `/goal` condition (ACT-01): the condition now names
+  `completion_summary.yaml` with `status: completed`. This is the file and
+  the value that `verify-completion.cjs` writes.
+- `/act` controller spawn template (ACT-04): the template in `SKILL.md` and
+  in `reference/delegation-patterns.md` is synchronous and unnamed
+  (`run_in_background: false`, no `name` key). The skill never yields while
+  the controller is still running. The template adds the `cagents:` prefix
+  to `controller_assignment.primary` only when the prefix is missing.
+- `reference/delegation-patterns.md` states the reviewer loop cap as 2
+  rounds. This matches `max_internal_rounds: 2` in `pipeline_config.yaml`.
+  An item that is still REVISE after round 2 goes to dead_letter.
+
+### Added
+- Four regression tests: `helper-mode1-option-cap.test.js`,
+  `act-goal-condition-file.test.js`, `act-spawn-template-sync.test.js` and
+  `act-controller-prefix.test.js` in `tests/regressions/`.
+
+## [12.79.2] - 2026-11-11
+
+Stale-name sweeps and a drift guard (WI-32 to WI-35, committed by WI-36).
+
+### Changed
+- The skills, agents, rules, docs and scripts no longer tell a reader to use
+  a removed skill or agent name. Each stale name now points to its current
+  agent or skill. Dated history notes and migration tables keep the old
+  names.
+- The helper references no longer describe the `/act context` passthrough.
+  That passthrough was removed in V11.0.
+- The `README.md` hook table lists all 25 registered hooks and the 5
+  dispatched sub-validators.
+- The `README.md` Models row matches the advisory `metadata.model` values in
+  the agent files.
+- `controller-validation-checklist.md` agrees with the planner output
+  validator.
+
+### Added
+- `tests/regressions/skill-refs-current.test.js` is a drift guard. It fails
+  when a skill, agent or rule file uses a stale name outside a history line.
+
+## [12.79.1] - 2026-11-11
+
+Truth fixes for counts, overlay paths, the planner validator and secret
+masking (WI-31).
+
+### Fixed
+- Count drift in `README.md` and `.claude/rules/README.md` is fixed.
+  `validate-counts.sh` checks 18 and 19 now check these counts.
+- `CLAUDE.md` names the correct overlay paths.
+- The planner output validator accepts work items that a skill is assigned
+  to. It accepts both forms of a controller name.
+- The `README.md` version history no longer lists each V10 release. The
+  footer no longer names models.
+- The round-2 review inputs in the example store agree with
+  `pat-two-stage-review.md`. The verify exemplar has the zero-item clause.
+- The reviewer best practices give a round cap of 2.
+- Secret masking covers a full private key block and a long database URL.
+- The test count in `CLAUDE.md` is derived again from disk.
+
+## [12.79.0] - 2026-11-11
+
+Audited lessons from the example repos (WI-24). The lessons came only from
+repos whose audit verdict is CLEAN.
+
+### Added
+- The bash guard has a full-off switch, `CAGENTS_BASH_GUARD_DISABLED`. Set it
+  in the env, or in the env block of the git-ignored
+  `.claude/settings.local.json`. The guard reads that file only when it is a
+  regular file of 64 KiB or less. The shipped default stays `block`.
+- `.gitignore` now ignores `.claude/settings.local.json`.
+
+### Changed
+- `validate-agents.sh` compares each hook registration on name, event,
+  matcher and timeout. A check that examined zero items now fails.
+- Two tracker hooks mask secrets before they cut and store text. The mask
+  scans a bounded window.
+- The validator rule, the two-stage review playbook, the delegation rule and
+  the controller rule now say these things. A gate with zero items is not
+  evidence. A round-2 review is scoped to the fix diff. A parent never spawns
+  a work item or a reviewer as a fork. A child runs Bash in the foreground.
+- The example store records provenance for 12 CLEAN source repos. The 6
+  DR-06 exemplars now have a source commit and a review date.
+
 ## [12.78.2] - 2026-10-17
 
 Guard-config reach of `find`. A `cd` to a parent dir, or a `find` wrapper,

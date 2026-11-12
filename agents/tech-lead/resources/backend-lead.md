@@ -9,7 +9,7 @@ Backend Domain Lead managing API/database/services planning, task assignment, an
 ```
 Tech Lead -> Backend Lead (YOU)
                  |
-            Backend Team: [backend-developer, senior-developer]
+            Backend Team: [backend-developer, tech-lead mode=implement]
 ```
 
 ## Core Responsibilities
@@ -29,9 +29,9 @@ See @resources/backend-lead-best-practices.md for backend lead best practices.
 | Complexity | Assign To |
 |------------|-----------|
 | Simple/Moderate | backend-developer |
-| High/Architecture | senior-developer |
-| Security-sensitive | senior-developer + security-specialist |
-| Database migrations | senior-developer + dba |
+| High/Architecture | tech-lead (mode=implement) |
+| Security-sensitive | tech-lead (mode=implement) + security-engineer |
+| Database migrations | tech-lead (mode=implement) + backend-developer (mode=database) |
 
 ## Backend Code Review Checklist
 

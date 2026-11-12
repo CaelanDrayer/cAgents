@@ -107,7 +107,7 @@ Comprehensive checklist for security reviews.
 ```yaml
 type: review
 from: {developer}
-to: security-specialist
+to: security-engineer
 priority: {critical|high|medium|low}
 review_type: security_review
 scope: {endpoint/file description}
@@ -117,7 +117,7 @@ files_changed: [...]
 ### Outbound Review Response
 ```yaml
 type: review_response
-from: security-specialist
+from: security-engineer
 to: {developer}
 review_result: approved | approved_with_changes | rejected
 vulnerabilities_found: [...]
@@ -128,7 +128,7 @@ sla: {based on severity}
 ### Escalation (Critical)
 ```yaml
 type: escalation
-from: security-specialist
+from: security-engineer
 to: tech-lead
 priority: critical
 issue: critical_vulnerability

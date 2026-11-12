@@ -13,8 +13,15 @@
  *   5. `.claude/rules/core/resources/controller-validation-checklist.md` contains
  *      "Check 0" placed BEFORE "Check 1" and updates the heading to mention 7 checks.
  *
+ *   6. A work item names exactly one of `assigned_to` and `assigned_skill`.
+ *      A skill-assigned item (`assigned_skill: pr`, `assigned_to: null`) passes.
+ *      An item with neither fails. An item with both fails.
+ *   7. `controller_assignment.primary` accepts a bare name and a `cagents:`
+ *      prefixed name. A bare `cagents:` prefix fails.
+ *
  * History:
  *   - v12.7.x LP-28: initial planner-output schema validator contract.
+ *   - v12.79.x WI-29: skill-assigned work items and both primary forms.
  */
 import { describe, it, expect, afterAll } from 'vitest';
 import fs from 'fs';
@@ -69,6 +76,38 @@ work_items:
     title: "Item without acceptance criteria"
     assigned_to: cagents:backend-developer
 `;
+
+const SKILL_ITEM = `schema_version: "1"
+work_items:
+  - id: WI-1
+    title: "Reuse the workspace pr skill"
+    assigned_skill: pr
+    assigned_to: null
+    acceptance_criteria:
+      - "The pr skill opens the pull request"
+`;
+
+const NEITHER_ITEM = `schema_version: "1"
+work_items:
+  - id: WI-1
+    title: "Item with no agent and no skill"
+    acceptance_criteria:
+      - "Validator rejects the item"
+`;
+
+const BOTH_ITEM = `schema_version: "1"
+work_items:
+  - id: WI-1
+    title: "Item with an agent and a skill"
+    assigned_skill: pr
+    assigned_to: cagents:backend-developer
+    acceptance_criteria:
+      - "Validator rejects the item"
+`;
+
+function planWithPrimary(primary) {
+  return VALID_PLAN.replace('primary: cagents:tech-lead', `primary: "${primary}"`);
+}
 
 function makeTmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'planner-output-schema-'));
@@ -152,5 +191,46 @@ describe('LP-28: planner-output schema validator (Pre-Execution Check 0)', () =>
     // Check 0 references the validator script
     const check0Block = md.slice(check0Idx, check1Idx);
     expect(check0Block).toMatch(/validate-planner-output\.cjs/);
+  });
+
+  function runPair(planText, workText) {
+    const dir = makeTmpDir();
+    tmpDirs.push(dir);
+    fs.writeFileSync(path.join(dir, 'plan.yaml'), planText);
+    fs.writeFileSync(path.join(dir, 'work_items.yaml'), workText);
+    return runValidator(dir);
+  }
+
+  it('Assertion 6a: a skill-assigned work item (assigned_skill set, assigned_to null) passes', () => {
+    const result = runPair(VALID_PLAN, SKILL_ITEM);
+    expect(result.stderr).toBe('');
+    expect(result.exitCode).toBe(0);
+  });
+
+  it('Assertion 6b: a work item with neither assigned_to nor assigned_skill fails', () => {
+    const result = runPair(VALID_PLAN, NEITHER_ITEM);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toMatch(/exactly one of `assigned_to` and `assigned_skill`/);
+  });
+
+  it('Assertion 6c: a work item with both assigned_to and assigned_skill fails on the either-or rule', () => {
+    const result = runPair(VALID_PLAN, BOTH_ITEM);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toMatch(/exactly one of `assigned_to` and `assigned_skill`/);
+  });
+
+  it.each(['tech-lead', 'cagents:tech-lead'])(
+    'Assertion 7: controller_assignment.primary form %s passes',
+    (primary) => {
+      const result = runPair(planWithPrimary(primary), VALID_WORK_ITEMS);
+      expect(result.stderr).toBe('');
+      expect(result.exitCode).toBe(0);
+    }
+  );
+
+  it('Assertion 7b: controller_assignment.primary of only the cagents: prefix fails', () => {
+    const result = runPair(planWithPrimary('cagents:'), VALID_WORK_ITEMS);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toMatch(/controller_assignment\.primary/);
   });
 });

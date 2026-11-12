@@ -183,7 +183,6 @@ failure mode to watch for while your muscle memory catches up.
 | `/run review src/` | `/act review src/` |
 | `/run improve --scope src/auth/` | `/act improve --scope src/auth/` |
 | `/run optimize <target>` | `/act optimize <target>` |
-| `/run context <request>` | `/act context <request>` |
 | `/run --mode debug <request>` | `/act --mode debug <request>` |
 
 Only the command name changed. Flags, modes, the first-word keyword router, the

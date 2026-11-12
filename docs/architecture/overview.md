@@ -51,9 +51,9 @@ See [domains.md](domains.md) for the 15-domain breakdown.
 ## Configuration
 
 - Pipeline: `cagents-memory/_system/config/pipeline_config.yaml`
-- Domains: `{domain}/config/domain_overrides.yaml`
+- Domains: `agents/_overlay/people/config/domain_overrides.yaml` and `agents/_overlay/shared/config/domain_overrides.yaml` (the other 11 domains live in `cagents-memory/_system/config/routing.yaml`). The core archetype and the leadership archetype also have their own routing tables: `agents/core/config/domain_overrides.yaml` and `agents/leadership/config/domain_overrides.yaml`
 - Hooks: `.claude/settings.json`
-- Rules: `.claude/rules/` (26 files)
+- Rules: `.claude/rules/` (45 files)
 
 ## File-Based State
 

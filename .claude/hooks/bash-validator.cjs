@@ -10,6 +10,68 @@
  * Output (stdout): JSON with permission decision
  */
 
+// UD-2 (v12.79.0): full-off switch. CAGENTS_BASH_GUARD_DISABLED=1 (or "true")
+// turns the whole guard off. The hook then prints {"continue":true} before any
+// check runs, the Stage-1 hard denies included, and before the evaluator loads.
+// CAGENTS_BASH_GUARD (block|warn|off) keeps its meaning; this is a separate key.
+// The env var wins. Any other non-empty env value ("0") keeps the guard on and
+// skips the file.
+//
+// With the env var unset, the hook reads the same key from the "env" object of
+// the per-user .claude/settings.local.json (CLAUDE_PROJECT_DIR, else this hook's
+// repo). A running session does not give its hooks a new settings env value.
+// Because of this, the hook reads the file to make the switch work at once. A missing or
+// unparsable file keeps the guard on.
+//
+// The hook reads the file only when it is a regular file of at most 64 KiB.
+// Thus a FIFO, a device, a directory or a huge file keeps the guard on. Such a
+// file cannot hang the hook. A plugin install sets CLAUDE_PLUGIN_ROOT. If it
+// has no CLAUDE_PROJECT_DIR, the hook skips the fallback to its own repo.
+//
+// readSmallJson returns the parsed JSON of a regular file of at most max bytes.
+// It never opens a FIFO, a device or a directory. It throws on any other case.
+function readSmallJson(p, max) {
+  const fs = require('fs');
+  const st = fs.statSync(p);
+  if (!st.isFile() || st.size > max) throw new Error('not a small regular file');
+  const fd = fs.openSync(p, fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK || 0));
+  let text;
+  try {
+    const st2 = fs.fstatSync(fd);
+    if (!st2.isFile() || st2.size > max) throw new Error('not a small regular file');
+    text = fs.readFileSync(fd, 'utf8');
+  } finally { fs.closeSync(fd); }
+  if (text.length > max) throw new Error('file grew past the cap');
+  return JSON.parse(text);
+}
+function bashGuardFullyOff() {
+  const on = (v) => /^(1|true)$/i.test(String(v).trim());
+  const env = process.env.CAGENTS_BASH_GUARD_DISABLED;
+  if (env !== undefined && String(env).trim() !== '') return on(env);
+  try {
+    const path = require('path');
+    const pd = process.env.CLAUDE_PROJECT_DIR;
+    if (!pd && process.env.CLAUDE_PLUGIN_ROOT) return false;
+    const j = readSmallJson(path.join(pd || path.join(__dirname, '..', '..'), '.claude', 'settings.local.json'), 65536);
+    const v = j && j.env && typeof j.env === 'object' ? j.env.CAGENTS_BASH_GUARD_DISABLED : undefined;
+    return v !== undefined && v !== null && on(v);
+  } catch (e) { return false; }
+}
+if (bashGuardFullyOff()) {
+  // Drain stdin so the caller never sees a broken pipe, then allow.
+  let done = false;
+  const allow = () => {
+    if (done) return;
+    done = true;
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n', () => process.exit(0));
+  };
+  process.stdin.on('data', () => {});
+  process.stdin.on('end', allow);
+  process.stdin.on('error', allow);
+  setTimeout(allow, 2000);
+  return;
+}
+
 const { createHook } = require('./hook-utils.cjs');
 // WI-2 (session run_bash-guard-evaluator_260708_001): sound tokenize-and-
 // canonicalize evaluator library (pure — NOT a hook). evaluate(rawCommand)
@@ -417,7 +479,8 @@ function settingsGuardMode() {
   files.push(path.join(__dirname, '..', 'settings.json'));
   for (const f of files) {
     let j;
-    try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { continue; }
+    // readSmallJson: a FIFO or device here must not hang the hook (SEC-UD2-3).
+    try { j = readSmallJson(f, 1048576); } catch (e) { continue; }
     const v = j && j.cagents && typeof j.cagents === 'object' && j.cagents.bash_guard !== undefined
       ? j.cagents.bash_guard : (j ? j['cagents.bash_guard'] : undefined);
     if (v !== undefined && v !== null) return guardModeOf(v);

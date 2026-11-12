@@ -8,11 +8,13 @@ metadata:
   category: strategy
   source_repo: phuryn/pm-skills
   source_url: "https://github.com/phuryn/pm-skills"
+  source_commit: c68487d721e419ec87af1ae6412a842978eab785
   applies_to:
     - cagents:strategic-planner
     - cagents:product-owner
   demonstrates: "Steelman then attack load-bearing assumptions; write each failure as a falsifiable 'Fails if ___' with a cheapest test to run this week."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 ---
 
 # Example: Strategy Red-Team — "Fails If ___"

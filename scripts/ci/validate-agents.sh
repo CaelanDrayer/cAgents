@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.78.2
+# Version: 12.79.8
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -433,6 +433,25 @@ check_orphans() {
 # Validate hook registry: all hooks referenced in settings.json exist as .cjs files
 #
 validate_hooks() {
+    # LC-SHC-01: one parser for both registration files. Prints one line per
+    # registered hook entry as name|event|matcher|timeout (missing fields empty).
+    # Nested so the regression harness, which slices this function alone, has it.
+    _hook_tuples() {
+        node -e '
+            let data;
+            try { data = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); }
+            catch (e) { console.error(e.message); process.exit(1); }
+            for (const [event, entries] of Object.entries((data && data.hooks) || {})) {
+                for (const entry of (Array.isArray(entries) ? entries : [])) {
+                    for (const hook of ((entry && entry.hooks) || [])) {
+                        const m = String(hook.command || "").match(/run-hook\.cjs["\x27]?\s+([a-z][a-z0-9-]*)/);
+                        if (m) console.log([m[1], event, entry.matcher ?? "", hook.timeout ?? ""].join("|"));
+                    }
+                }
+            }
+        ' "$1"
+    }
+
     local settings_json="$PROJECT_ROOT/.claude/settings.json"
     if [[ ! -f "$settings_json" ]]; then
         log_warn "settings.json not found, skipping hook validation"
@@ -443,23 +462,18 @@ validate_hooks() {
         echo -e "\n${BLUE}[hook registry]${NC}"
     fi
 
-    local hook_names
-    hook_names=$(node -e "
-        const data = JSON.parse(require('fs').readFileSync('$settings_json', 'utf8'));
-        const hooks = data.hooks || {};
-        const names = new Set();
-        for (const [event, entries] of Object.entries(hooks)) {
-            for (const entry of entries) {
-                for (const hook of (entry.hooks || [])) {
-                    if (hook.command) {
-                        const match = hook.command.match(/run-hook\\.cjs[\"']?\\s+([a-z][a-z0-9-]*)/);
-                        if (match) names.add(match[1]);
-                    }
-                }
-            }
-        }
-        names.forEach(n => console.log(n));
-    " 2>/dev/null)
+    # LC-SHC-02: a parse failure is reported, not discarded.
+    # stderr is kept apart, so a node warning cannot become a hook name (S2-02).
+    local settings_tuples hook_names tuple_err tuple_rc=0
+    tuple_err=$(mktemp)
+    settings_tuples=$(_hook_tuples "$settings_json" 2>"$tuple_err") || tuple_rc=$?
+    if [[ $tuple_rc -ne 0 ]]; then
+        log_fail "Hook registry check: settings.json could not be parsed: $(cat "$tuple_err") $settings_tuples"
+        rm -f "$tuple_err"
+        return 0
+    fi
+    rm -f "$tuple_err"
+    hook_names=$(sed 's/|.*//' <<< "$settings_tuples" | sed '/^$/d' | sort -u)
 
     local hook_count=0
     local hook_missing=0
@@ -484,8 +498,11 @@ validate_hooks() {
     #   1. settings.json's own "\$comment" states "N unique registered hooks";
     #      the registrations parsed above must match that claim.
     #   2. The plugin registration file .claude/hooks.json must register the
-    #      same set of hooks as settings.json (names, not just counts).
-    [[ $hook_count -gt 0 ]] || return 0
+    #      same hook entries as settings.json (name, event, matcher, timeout).
+    if [[ $hook_count -eq 0 ]]; then
+        log_fail "Hook registry check examined 0 registrations in settings.json (expected at least 1)"
+        return 0
+    fi
 
     local expected_count
     expected_count=$(node -e "
@@ -503,21 +520,9 @@ validate_hooks() {
 
     local plugin_hooks_json="$PROJECT_ROOT/.claude/hooks.json"
     if [[ -f "$plugin_hooks_json" ]]; then
-        local plugin_hook_names drift
-        plugin_hook_names=$(node -e "
-            const data = JSON.parse(require('fs').readFileSync('$plugin_hooks_json', 'utf8'));
-            const names = new Set();
-            for (const entries of Object.values(data.hooks || {})) {
-                for (const entry of entries) {
-                    for (const hook of (entry.hooks || [])) {
-                        const match = (hook.command || '').match(/run-hook\\.cjs[\"']?\\s+([a-z][a-z0-9-]*)/);
-                        if (match) names.add(match[1]);
-                    }
-                }
-            }
-            names.forEach(n => console.log(n));
-        " 2>/dev/null)
-        drift=$(comm -3 <(sort -u <<< "$hook_names" | sed '/^$/d') <(sort -u <<< "$plugin_hook_names" | sed '/^$/d') | tr -d '\t' | tr '\n' ' ')
+        local plugin_tuples drift
+        plugin_tuples=$(_hook_tuples "$plugin_hooks_json" 2>/dev/null)
+        drift=$(comm -3 <(sort -u <<< "$settings_tuples" | sed '/^$/d') <(sort -u <<< "$plugin_tuples" | sed '/^$/d') | tr -d '\t' | tr '\n' ' ')
         if [[ -n "${drift// /}" ]]; then
             log_warn "Hook registration drift between settings.json and .claude/hooks.json: $drift"
         fi
@@ -556,7 +561,8 @@ validate_plugin_json() {
 
 #
 # Validate domain_overrides.yaml controller_catalog references resolve to real agents.
-# domain_overrides files still live in {legacy_domain}/config/ — only the agents/ subdir was moved.
+# domain_overrides files live in agents/_overlay/{people,shared}/config/ and in
+# agents/{core,leadership}/config/ (v12.8.0 layout).
 # Agent references are by name; we look them up via the AGENT_INDEX (any archetype).
 #
 validate_domain_overrides() {
@@ -601,6 +607,8 @@ validate_domain_overrides() {
 
     if [[ $overrides_found -gt 0 ]] && [[ $overrides_errors -eq 0 ]] && [[ $COUNT_ONLY != true ]]; then
         echo -e "  ${GREEN}All domain_overrides.yaml agent references valid ($overrides_found files checked)${NC}"
+    elif [[ $overrides_found -eq 0 ]]; then
+        log_fail "domain_overrides check examined 0 domain_overrides.yaml files (expected at least 1)"
     fi
 }
 

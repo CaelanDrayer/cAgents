@@ -47,7 +47,7 @@ allowed-tools: Read Grep Glob Write Edit Bash Agent TaskCreate TaskUpdate TaskLi
 2. **Require concrete evidence for every PASS criterion**: "Appears complete" is not evidence. Cite the file paths, the test output, or the specific code.
 3. **Challenge vague evidence**: if an agent claims "tests pass" and shows no test output, that claim is FAIL until the agent proves otherwise.
 4. **Verify the file existence for every claimed deliverable**: use the sentinel gate pattern. If the report claims a file, that file must exist on disk.
-5. **Default to FAIL for missing evidence, and never to PASS**: an absence of evidence is evidence of absence.
+5. **Default to FAIL for missing evidence, and never to PASS**: an absence of evidence is evidence of absence. A check that reports success after it examined zero items, where items were expected, also has no evidence. So the evidence for a check states how many items it examined.
 
 See @.claude/rules/playbooks/pat-evidence-first-execution.md for the canonical evidence-specificity contract.
 

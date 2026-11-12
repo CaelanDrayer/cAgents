@@ -29,21 +29,32 @@ REVISE round gets fresh reviewers.
 ## Example
 
 ```
-Round R:
+Round 1 (blind dual review):
   Spawn Reviewer A and Reviewer B in ONE message (parallel, no shared context).
-  Each gets ONLY: the diff + the identical rubric. Neither sees the other's verdict,
-  nor its own verdict from a prior round.
+  Each gets ONLY: the diff + the identical rubric. Neither sees the other's verdict.
 
   Each returns strict JSON:
     { "passed": true|false, "findings": [ {criterion, verdict, evidence: "file:line"} ] }
 
   Gate: passed ONLY if A.passed AND B.passed.
-        Either FAIL -> collect union of findings -> executor fixes ->
-        Round R+1 with FRESH A' and B' (never reuse a reviewer's context).
+        Either FAIL -> collect union of findings -> executor fixes -> Round 2.
+
+Round 2 (REVISE round, scoped):
+  Spawn FRESH A' and B' by agent type (never reuse a reviewer's context, never a fork).
+  Each gets: the identical rubric + the round-1 findings list (as input data)
+             + the fix diff. No earlier conversation, no earlier verdict reasoning.
+  Each marks every round-1 finding addressed or not addressed.
+  Each looks for new breakage only inside the fix diff.
+  A new observation outside the fix diff is a deferred note. It does not make
+  the round REVISE.
+  Gate: passed ONLY if A'.passed AND B'.passed. Else the item goes to dead_letter.
 ```
 
 **A fresh agent for each round is the load-bearing rule.** A reviewer that
-carries its earlier REVISE reasoning anchors on its own earlier judgement.
+carries its earlier REVISE reasoning anchors on its own earlier judgement. The
+fresh reviewer still gets the earlier findings, but only as a list to check. The
+canonical round-2 input rule is in `.claude/rules/playbooks/pat-two-stage-review.md`
+§ Fresh reviewer per round. That playbook wins if this example differs from it.
 
 Record these metrics in `coordination_log.yaml`:
 
@@ -58,7 +69,7 @@ Guard against these failure modes:
 
 | Failure mode | Guard |
 |---|---|
-| Infinite loop | Cap the rounds (upstream uses 3), then send the item to dead_letter. |
+| Infinite loop | Cap the rounds, then send the item to dead_letter. cAgents caps the reviewer loop at 2 rounds (upstream uses 3). |
 | Rubber stamp | Require file:line evidence for each criterion. |
 | Reviewer-agreement bias | Keep the reviewers independent. Independence reduces this bias but does not remove it. For critical output, add a third reviewer or a human spot check. |
 | Fix regression | Run the full rubric again, not only the changed criterion. |
@@ -68,5 +79,6 @@ Upstream samples 10-15% of the batch, with a minimum of 5 items.
 
 ## Why it matters
 This gives the one-line blind-review mention in cAgents a full protocol with a
-log. It adds an explicit anti-anchoring rule that the current Two-Stage Review
-does not have. Distilled from affaan-m/ECC `skills/santa-method/SKILL.md`.
+log. Two-Stage Review now has a matching anti-anchoring rule: a fresh reviewer
+on each REVISE round (see `.claude/rules/playbooks/pat-two-stage-review.md`
+§ Fresh reviewer per round). Distilled from affaan-m/ECC `skills/santa-method/SKILL.md`.

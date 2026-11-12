@@ -264,7 +264,7 @@ Outputs:
 **Workflow** (fully automatic):
 ```
 ✓ Routing: Classified as tier 3, engineering domain
-✓ Planning: Objectives defined, controllers selected (tech-lead + architect + security-specialist)
+✓ Planning: Objectives defined, controllers selected (tech-lead + architect + security-engineer)
 ✓ Coordinating:
   - Engineering-manager coordinated overall work
   - Architect designed OAuth2 architecture
@@ -295,7 +295,7 @@ Outputs:
 ✓ Routing: Classified as tier 4, engineering domain
 ✓ Planning:
   - Objectives defined
-  - Controllers selected (cto + tech-lead + architect + infrastructure-lead + security-specialist + qa-lead)
+  - Controllers selected (cto + tech-lead + architect + infrastructure-lead + security-engineer + qa-lead)
   - HITL approval gates defined
 ✓ Coordinating:
   - CTO provided strategic oversight
@@ -459,7 +459,7 @@ Approve to proceed with implementation, or reject to halt workflow."
 **Root Cause**: Agent not following automatic progression policy
 
 **Solution**:
-1. Check agent file has "CRITICAL: Do Not Ask Permission" section
+1. Check agent file has "Do not ask permission" section
 2. Verify agent logic proceeds automatically after phase completion
 3. Update agent instructions to remove permission requests
 4. Test workflow to confirm automatic progression

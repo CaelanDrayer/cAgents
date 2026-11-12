@@ -51,7 +51,7 @@ The lists below show the entries. Each entry has `content`, `status`, and `id`.
 
 ## Validation Task Pattern (V10.23.0, v12.0.0)
 
-Every pipeline phase transition MUST record at least one validation entry: a TaskCreate entry when the task tools are available, otherwise a `status.yaml` progress entry. These entries confirm that the previous phase's outputs are valid before proceeding.
+Every pipeline phase transition must record at least one validation entry: a TaskCreate entry when the task tools are available, otherwise a `status.yaml` progress entry. These entries confirm that the previous phase's outputs are valid before proceeding.
 
 ### Required Validation Entries (v12.0.0)
 
@@ -90,9 +90,9 @@ Max 3 revision cycles in v12.0.0 (lowered from 5). Both FAIL and REVISE route ba
 
 ## /act Owns All Pipeline Tasks
 
-**When the task tools are available, /act (level 0) MUST own ALL task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way that task cleanup works in Step 4, because TaskUpdate only works on tasks that the same agent scope created.
+**When the task tools are available, /act (level 0) must own all task calls for pipeline agents it spawns.** This means /act calls TaskCreate BEFORE each Agent spawn, and updates status AFTER each Agent returns. This is the only way that task cleanup works in Step 4, because TaskUpdate only works on tasks that the same agent scope created.
 
-**Subagents (controllers, executors at level 1-2) MUST NOT call TaskCreate for pipeline-tracking tasks.** A task that a subagent creates lives in the subagent's scope. /act cannot update that task, so Step 4 cleanup reports "Task not found" errors. Subagents may use TaskCreate for their OWN internal sub-spawns. Those tasks are scoped, and /act cleanup cannot see them.
+**Subagents (controllers, executors at level 1-2) must not call TaskCreate for pipeline-tracking tasks.** A task that a subagent creates lives in the subagent's scope. /act cannot update that task, so Step 4 cleanup reports "Task not found" errors. Subagents may use TaskCreate for their OWN internal sub-spawns. Those tasks are scoped, and /act cleanup cannot see them.
 
 ```
 # /act creates the task BEFORE spawning the agent:
@@ -103,4 +103,4 @@ Agent({ subagent_type: "cagents:planner", description: "...", prompt: "..." })
 TaskUpdate({ taskId: "N", status: "completed" })
 ```
 
-If /act does not own a task for each agent, the user sees only generic entries. One example is "[act] Pipeline running". The user then has no view of the 3-5 agents that work in parallel. Each pipeline agent MUST be a separate task that /act creates.
+If /act does not own a task for each agent, the user sees only generic entries. One example is "[act] Pipeline running". The user then has no view of the 3-5 agents that work in parallel. Each pipeline agent must be a separate task that /act creates.

@@ -58,7 +58,7 @@ The four states:
 |---|---|---|
 | pass | The check ran and the criterion holds. | none |
 | fail | The check ran and the criterion does not hold. | revise the work |
-| unavailable | The check could not run, for example a missing tool or a service that is down. | restore the check, then run it again |
+| unavailable | The check could not run, for example a missing tool or a service that is down. Or the check ran but examined zero items where items were expected. A check that examined zero items is not a pass. | restore the check, then run it again |
 | blocked | The check needs a decision or an input from a person. | escalate |
 
 Report for a code gate:

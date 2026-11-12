@@ -41,9 +41,10 @@ semantic checks are in Checks 1 to 6.
   `controller_assignment.primary` (string), `success_criteria[]` (at plan root
   OR on every objective).
 - `work_items.yaml` must contain `work_items[]` (or legacy `items[]`) where
-  every entry has `{id, title, assigned_to, acceptance_criteria}` and
-  `acceptance_criteria` is a non-empty list of strings (or
-  `{criterion: string}` objects).
+  every entry has `{id, title, acceptance_criteria}` and exactly one of
+  `assigned_to` and `assigned_skill` (a skill-assigned item sets
+  `assigned_to: null`). `acceptance_criteria` is a non-empty list of strings
+  (or `{criterion: string}` objects).
 
 **On failure**: BLOCKED. The validator exits 1. The controller must request a
 planner re-run. Do not continue to Check 1. Stderr holds the specific schema
@@ -65,7 +66,8 @@ Check 0 makes that assumption explicit.
   (engineering|creative|business|growth|people|service|shared|leadership)
 - mission (string, len > 10, not placeholder)
 - objectives (array, len >= 1, each has id + description)
-- controller_assignment (object with "primary" field = cagents:{name})
+- controller_assignment (object with a "primary" field: `tech-lead` or
+  `cagents:tech-lead`; the validator strips the plugin prefix first)
 - success_criteria (array, len >= 1)
 
 **On failure**: BLOCKED. Report: "plan.yaml missing required field: {field}.
@@ -77,7 +79,8 @@ Cannot coordinate without a complete plan."
 the list is not empty.
 
 **Requirements**:
-- Every item has: id, title, assigned_to, acceptance_criteria
+- Every item has: id, title, acceptance_criteria
+- Every item sets exactly one of assigned_to and assigned_skill
 - acceptance_criteria is array (len >= 1)
 - Each criterion is string (len > 5)
 - No vague placeholders: "TBD", "TODO", "pending", "TBD later"

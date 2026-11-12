@@ -69,7 +69,7 @@ mode when `router.domain_count >= 2`. This is the migration mapping:
 |------------------------|---------------------|
 | `/org <request>` | `/team <request>` (strategic mode auto-enables for multi-domain) |
 | `/org <request> --dry-run` | `/team <request> --dry-run` |
-| `/org <request> --quick` | `/team <request> --no-strategic` (skip C-suite prefix) |
+| `/org <request> --quick` | `/team <request> --strategic` (force-enable strategic mode for a single-domain request. `/team` has no flag that skips the objection phase.) |
 | `/org <request> --domains <d1,d2>` | `/team <request>` (router infers domains) |
 | `/org --resume <session_id>` | `/team --resume <session_id>` |
 

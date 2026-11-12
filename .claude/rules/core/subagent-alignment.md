@@ -14,7 +14,6 @@ paths:
   - "agents/planner.md"
   - "agents/planner/**"
   - "agents/reviewer.md"
-  - "agents/reviewer/**"
   - "agents/router.md"
   - "agents/router/**"
   - "agents/self-correct.md"

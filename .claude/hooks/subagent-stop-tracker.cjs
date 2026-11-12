@@ -28,7 +28,7 @@ let yaml = null;
 try { yaml = require('js-yaml'); } catch { yaml = null; }
 // Start and stop trackers share session discovery from hook-utils.cjs.
 // Neither guesses the newest session: no owned session means global log only.
-const { createHook, safeRead, ensureDir, AGENT_MEMORY_DIR, appendSessionEvent, resolveSession, LOCK_SKIPPED, updateYamlLocked, agentTreeHeader, reconcileTreeFromEvents, readSessionEvents } = require('./hook-utils.cjs');
+const { createHook, safeRead, ensureDir, AGENT_MEMORY_DIR, appendSessionEvent, resolveSession, LOCK_SKIPPED, updateYamlLocked, agentTreeHeader, reconcileTreeFromEvents, readSessionEvents, maskSecrets } = require('./hook-utils.cjs');
 
 /**
  * LP-22: Pattern heuristics for MEMORY.md auto-append.
@@ -91,7 +91,7 @@ function appendMemoryLine(lastMessage, sessionId, agentType) {
     .trim();
   let line = `- [${matched.slug}](${safeSession}) ${safeType} — ${summary}`;
   if (line.length > 200) {
-    line = line.slice(0, 197) + '...';
+    line = maskSecrets(line.slice(0, 197)) + '...';
   }
 
   try {
@@ -121,17 +121,17 @@ function appendMemoryLine(lastMessage, sessionId, agentType) {
  */
 function buildCompletionSummary(lastMessage) {
   if (!lastMessage) return null;
-  const firstSentence = lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100);
+  const firstSentence = maskSecrets(lastMessage.split(/[.!?\n]/)[0].trim().slice(0, 100));
   const outcome = firstSentence || 'Completed';
   const decisionLines = lastMessage.split('\n')
     .filter(l => /^\s*[-*\d]/.test(l))
-    .map(l => l.replace(/^\s*[-*\d.]+\s*/, '').trim().slice(0, 80))
+    .map(l => maskSecrets(l.replace(/^\s*[-*\d.]+\s*/, '').trim().slice(0, 80)))
     .filter(Boolean)
     .slice(0, 3);
   return {
     outcome,
     key_decisions: decisionLines.length > 0 ? decisionLines : [],
-    detail: lastMessage.slice(0, 300)
+    detail: maskSecrets(lastMessage.slice(0, 300))
   };
 }
 
@@ -143,14 +143,16 @@ createHook('SubagentStopTracker', async (input) => {
   const agentId = input.agent_id || null;
   const now = new Date().toISOString();
 
-  // Capture last assistant message summary for auditability (truncated to 500 chars)
-  const lastMessage = (input.last_assistant_message || '').slice(0, 500).replace(/\n/g, ' ').trim();
+  // Capture last assistant message summary for auditability (truncated to 500 chars).
+  // LC-SHC-04: credentials are masked in a window BEFORE the cut, and each
+  // later cut is masked again (a key prefix left at its end).
+  const lastMessage = maskSecrets(maskSecrets(input.last_assistant_message || '', 500).replace(/\n/g, ' ').trim());
 
   // Append to global audit log (includes summary)
   try {
     const logsDir = ensureDir(path.join(AGENT_MEMORY_DIR, '_system', 'logs'));
     const logFile = path.join(logsDir, 'agent_spawns.log');
-    const summaryPart = lastMessage ? ` | summary=${lastMessage.slice(0, 200)}` : '';
+    const summaryPart = lastMessage ? ` | summary=${maskSecrets(lastMessage.slice(0, 200))}` : '';
     fs.appendFileSync(logFile, `${now} | agent_id=${agentId || 'unknown'} | type=${subagentType} | event=stop | session=${input.session_id || 'unknown'}${summaryPart}\n`);
   } catch (err) {
     console.error(`[SubagentStopTracker] Failed to write audit log: ${err.message}`);
@@ -287,7 +289,7 @@ createHook('SubagentStopTracker', async (input) => {
       cagents_type: cagentsType || null,
       duration_seconds: durationSeconds,
       session_id: sessionName,
-      completion_summary: (lastMessage || '').slice(0, 200),
+      completion_summary: maskSecrets((lastMessage || '').slice(0, 200)),
       timestamp: now
     };
 

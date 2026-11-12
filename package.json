@@ -1,6 +1,6 @@
 {
   "name": "cagents",
-  "version": "12.78.2",
+  "version": "12.79.8",
   "description": "Universal multi-domain agent orchestration framework. 60 agents across 9 archetypes with 4 user skills (/act, /team, /designer, /helper).",
   "type": "module",
   "engines": {
@@ -11,11 +11,10 @@
     "test:hooks": "vitest run --config tests/vitest.config.js tests/hooks/",
     "test:config": "vitest run --config tests/vitest.config.js tests/config/",
     "test:watch": "vitest --config tests/vitest.config.js",
-    "validate:configs": "python3 scripts/validate_agent_configs.py",
     "validate:agents": "bash scripts/ci/validate-agents.sh",
     "validate:versions": "bash scripts/ci/validate-versions.sh",
     "validate:counts": "bash scripts/ci/validate-counts.sh",
-    "lint": "npm run validate:configs",
+    "lint": "npm run validate:agents",
     "ci": "npm run test && npm run validate:versions && npm run validate:agents"
   },
   "keywords": [

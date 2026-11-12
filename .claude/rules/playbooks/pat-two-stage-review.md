@@ -25,7 +25,7 @@ metadata:
 
 # Pattern: Two-Stage Review Protocol (V10.22.0)
 
-Every reviewer loop MUST use two distinct review stages, in strict order. No code
+Every reviewer loop must use two distinct review stages, in strict order. No code
 quality review starts before the spec compliance review passes.
 
 ## Stage 1: Spec Compliance Review
@@ -34,7 +34,7 @@ Does the implementation meet the acceptance criteria exactly?
 
 ```
 Reviewer prompt (Stage 1):
-  "Review TASK-{N} for SPEC COMPLIANCE ONLY.
+  "Review TASK-{N} for spec compliance only.
    Acceptance criteria: {criteria from work_items.yaml}
 
    For each criterion:
@@ -44,7 +44,7 @@ Reviewer prompt (Stage 1):
 
    Verdict: PASS (all criteria MET) or REVISE (any NOT MET/PARTIAL)
 
-   DO NOT comment on code quality, style, or maintainability in this stage."
+   Do not comment on code quality, style, or maintainability in this stage, because Stage 2 covers them."
 ```
 
 ### Stage 1 checks
@@ -55,7 +55,7 @@ Reviewer prompt (Stage 1):
 - The verdict is binary. All criteria MET gives PASS. Anything else gives REVISE.
 
 **If Stage 1 returns REVISE**: send the feedback to the execution agent with the
-specific unmet criteria. Do NOT go on to Stage 2. The execution agent must
+specific unmet criteria. Do not go on to Stage 2. The execution agent must
 address every unmet criterion before the code quality review starts.
 
 ## Stage 2: Code Quality Review
@@ -64,7 +64,7 @@ Is the implementation well-written, maintainable, and secure?
 
 ```
 Reviewer prompt (Stage 2):
-  "Review TASK-{N} for CODE QUALITY.
+  "Review TASK-{N} for code quality.
    Spec compliance has PASSED -- all acceptance criteria are met.
 
    Review for:
@@ -115,11 +115,24 @@ diff, that is a REVISE, not a pass. See
 
 ## Fresh reviewer per round
 
-On each REVISE round, re-spawn a fresh reviewer that carries no context. That
-reviewer gets the diff and the rubric only. A reviewer that carries its own
-earlier REVISE reasoning anchors on that earlier judgment. A clean start on each
-round therefore keeps the assessment independent. This is the canonical statement
-of the rule, and `controllers.md` references it.
+On each REVISE round, re-spawn a fresh reviewer that carries no context. A
+reviewer that carries its own earlier REVISE reasoning anchors on that earlier
+judgment. A clean start on each round therefore keeps the assessment
+independent. Spawn the reviewer by its agent type and never as a fork. A fork
+inherits the parent conversation, so it is not fresh. See `delegation.md`
+§ Synchronous Spawning.
+
+That reviewer gets the rubric, the earlier findings list as input data, and the
+fix diff, but not the earlier conversation or verdict reasoning. It marks each
+earlier finding addressed or not addressed. It looks for new breakage only inside the fix diff. It records a new observation outside the
+fix diff as a deferred note, and that note does not make the round REVISE. The
+reason is the 2-round cap: an unrelated new finding can send a correctly fixed
+item to `dead_letter`.
+
+This is the canonical statement of the rule, and `controllers.md` references it.
+The "diff and rubric only" input that
+`docs/example-store/ex-review-blind-dual-convergence.md` describes applies to
+round 1 only. For a REVISE round, use the input above.
 
 ## Auto-apply eligibility tiers (SAFE / CAREFUL / RISKY)
 

@@ -77,7 +77,7 @@ Strategy, product, operations, finance. Includes: marketing-strategist (absorbed
 
 ## People (0 — config-only)
 
-The legacy `people/` domain is **routing-overlay only** as of v11.1.0 — the directory holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch (hr-manager, talent-acquisition-manager, recruiter, compensation-analyst, learning-specialist, etc.). See CLAUDE.md § "Domain overlay (legacy — routing/config only)" for the full overlay model.
+The legacy `people` domain is **routing-overlay only** as of v11.1.0. Its directory, `agents/_overlay/people/`, holds `config/domain_overrides.yaml` (router keywords + controller catalog) but ships zero SKILL.md files. People-domain requests route through this overlay to active agents under the `operator/people-ops/` archetype branch. That branch holds `hr-manager`, with the modes `hr-ops`, `hrbp`, `recruit`, `learning`, and `onboarding`. The `recruit` mode and the `learning` mode absorbed the former talent-recruiter agent and the former learning-specialist agent. See CLAUDE.md § "Domain overlay (legacy: routing/config only)" for the full overlay model.
 
 ## Service (28 agents)
 

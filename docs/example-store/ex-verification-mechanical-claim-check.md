@@ -8,12 +8,14 @@ metadata:
   category: verification
   source_repo: vercel-labs/agent-skills
   source_url: "https://github.com/vercel-labs/agent-skills"
+  source_commit: 063bee94c3f4df8453406c830b0a7df0f2860278
   applies_to:
     - cagents:validator
     - cagents:reviewer
     - all-controllers
   demonstrates: "Extract each numeric/file/snippet/citation claim from a completed report and check it with grep+fs+math; passRate = verified/(verified+failed); passRate<0.8 with >=2 checkable claims triggers a re-gen with the failures fed back."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 allowed-tools: Read Grep Glob Bash
 ---
 

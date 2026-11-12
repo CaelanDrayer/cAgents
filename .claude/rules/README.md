@@ -7,8 +7,8 @@ paths:
 
 Topic-specific rules organized for better maintainability. Counts in this index are derived from disk at edit time:
 
-- **Rule files**: 43 (`find .claude/rules -name '*.md' -type f | wc -l`)
-- **Hook event types**: 18 (`jq -r '.hooks | keys | length' .claude/settings.json`)
+- **Rule files**: 45 (`find .claude/rules -name '*.md' -type f | wc -l`)
+- **Hook event types**: 17 (`jq -r '.hooks | keys | length' .claude/settings.json`)
 - **Version-registry slots**: 16 (post-v12.2.0; was 17 in v12.1.x, was 18 in V11.0)
 - **Example store** (`docs/example-store/`): a distinct set of curated few-shot exemplars, which are `ex-*.md` + `README.md` + `_index.yaml`. They are NOT rule files. **Relocated out of `.claude/rules/` to `docs/example-store/` in v12.57.0 (REC-34)**, so the store no longer auto-loads into every agent's context. It cost about 21K tokens on every spawn. The planner still consumes `docs/example-store/_index.yaml` by explicit path, and agent SKILLs `@`-reference the bodies on demand. The store now lives under `docs/`, outside the rules tree, so the "Rule files" count above needs no examples exclusion.
 
@@ -23,7 +23,7 @@ When you add, remove, or rename a rule file, re-derive these numbers and update 
 │   ├── controller-reference.md    # Detailed controller schemas and protocols
 │   ├── delegation.md              # Aggressive-delegation rules
 │   ├── execution.md               # Execution agent patterns
-│   ├── hooks.md                   # Hook system documentation (18 event types)
+│   ├── hooks.md                   # Hook system documentation (17 event types)
 │   ├── orchestration.md           # Workflow phases and orchestration
 │   ├── orchestration-reference.md # Detailed orchestration schemas
 │   ├── progressive-disclosure.md  # Three-tier loading pattern
@@ -106,7 +106,7 @@ Import rules into CLAUDE.md or other docs:
 See @.claude/rules/core/orchestration.md for workflow patterns.
 ```
 
-## Current Rules (43 files)
+## Current Rules (45 files)
 
 ### Core (16 files)
 
@@ -132,7 +132,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 17. **domains/engineering.md**: the engineering guidelines.
 18. **domains/grow.md**: the growth guidelines, for marketing / sales.
 19. **domains/operate.md**: the operate guidelines, for finance / operations.
-20. **domains/people.md**: the people guidelines, for HR / culture. This file is config-only, and no SKILL.md agents live under `people/`.
+20. **domains/people.md**: the people guidelines, for HR / culture. This file is config-only, and no SKILL.md agents live under `agents/_overlay/people/`.
 21. **domains/serve.md**: the serve guidelines, for support / legal.
 
 ### Infrastructure (1 file)

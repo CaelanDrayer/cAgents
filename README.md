@@ -12,8 +12,8 @@ Deploy 60 specialized agents across 9 builder-role archetypes. An intelligent pi
 |------|-------|
 | Agents | 60 across 9 archetypes (developer/operator/advisor/analyst/creator/writer/strategist/core/leadership) |
 | Skills | 4 slash commands (v12.2.0: /org folded into /team strategic mode; v12.1.2: /improve folded into /act) |
-| Hooks | 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library, across 18 event types |
-| Models | Opus 4.8 (controllers / high-reasoning) · Sonnet 4.6 (execution). The catalog uses no `model: haiku` / `tier: support`; both remain available via `model_routing.yaml` |
+| Hooks | 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators (run by write-edit-dispatch.cjs + agent-dispatch.cjs) + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library, across 17 event types |
+| Models | Each agent records an advisory model in `metadata.model` (27 sonnet, 23 opusplan, 7 opus, 3 fable). Claude Code does not read that field, so every subagent inherits the session model unless the spawn passes `model`. The catalog uses no `model: haiku` or `tier: support`; both remain available via `model_routing.yaml` |
 
 ---
 
@@ -43,7 +43,7 @@ cAgents spawns 3-10+ subagents per request. Each consumes API tokens independent
 
 - **Claude Code 2.1.198+** (required). Nested subagents need 2.1.172 or later. The synchronous-spawn rules assume the background-by-default subagents of 2.1.198. On 2.1.217 and 2.1.218 nesting is off by default, so set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` on those versions.
 - **Bash** (required on Windows). Every hook runs through `bash -c`. On Windows, install Git for Windows, which supplies Git Bash. Since Claude Code 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` blocks the call when Git for Windows is missing. Without Git Bash, every Bash, Write, Edit, and Agent call is denied. Linux and macOS have bash already.
-- **Node.js** (recommended). It powers 24 unique registered hooks + 5 dispatched sub-validators (32 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library). Those hooks handle session management, secret detection, team coordination, and completion verification.
+- **Node.js** (recommended). It powers 25 unique registered hooks + 5 dispatched sub-validators (33 .cjs files = hooks + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs library). Those hooks handle session management, secret detection, team coordination, and completion verification.
 
 | cAgents | Min Claude Code | Highlights |
 |---------|----------------|------------|
@@ -298,26 +298,37 @@ This fires automatically, and it requires no prompt engineering. It is a no-op w
 
 ### Lifecycle Hooks
 
-cAgents ships 32 .cjs files = 24 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. bash-guard-evaluator.cjs is the GuardFall evaluator library that bash-validator.cjs requires. The hooks fire across 18 of Claude Code's 24 event types:
+cAgents ships 33 .cjs files = 25 unique registered hooks + 5 dispatched sub-validators + hook-utils.cjs + run-hook.cjs launcher + bash-guard-evaluator.cjs. The 5 sub-validators run in-process under write-edit-dispatch.cjs and agent-dispatch.cjs, the D1b/A2-12 consolidating dispatchers. bash-guard-evaluator.cjs is the GuardFall evaluator library that bash-validator.cjs requires. The hooks fire across 17 of Claude Code's 24 event types:
+
+The table lists all 25 registered hooks from `.claude/hooks.json`. Rows marked "via" are dispatched sub-validators. They run inside the named dispatcher and have no registration of their own.
 
 | Event | Hook | Purpose |
 |-------|------|---------|
 | SessionStart | session-catchup.cjs | Detect incomplete sessions, inject cAgents context |
 | SessionEnd | team-stop.cjs | Finalize team metrics and update session status |
-| UserPromptSubmit | prompt-router.cjs | Enforce delegation rules + natural-language routing suggestions |
-| PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
-| PreToolUse[Write\|Edit] | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
-| PreToolUse[Write\|Edit] | controller-delegation-validator.cjs | Warn when controllers write implementation files |
-| PreToolUse[Agent] | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
-| PreToolUse[Agent] | session-init-gate.cjs | Ensure session init complete before agent spawns |
-| PostToolUse[Write\|Edit] | post-write-validator.cjs | Validate JSON/YAML syntax after writes |
-| PostToolUseFailure | tool-failure-tracker.cjs | Track failures, detect patterns, suggest recovery |
-| Notification | notification.cjs | Log notifications to daily files |
+| Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
+| Stop | goal-evaluator-logger.cjs | Append the latest /goal evaluator reason to the session log for self-correct |
+| Stop | secret-restore.cjs | Restore secrets that sanitize mode replaced with placeholders |
 | SubagentStart | subagent-tracker.cjs | Log agent spawns to agent_tree.yaml with audit trail |
 | SubagentStart | team-start.cjs | Initialize team monitoring directories |
+| SubagentStart | role-manifest-injector.cjs | Inject the per-role rules pointer into each spawned agent |
 | SubagentStop | subagent-stop-tracker.cjs | Capture completion summaries and duration metrics |
-| Stop | verify-completion.cjs | Verify completion criteria before allowing stop |
+| PreToolUse[Bash] | bash-validator.cjs | Block dangerous commands and data exfiltration attempts |
+| PreToolUse[Write\|Edit\|NotebookEdit] | write-edit-dispatch.cjs | Run the 3 Write\|Edit sub-validators in one process |
+| (via write-edit-dispatch) | secret-detection.cjs | Block writes containing API keys, tokens, credentials |
+| (via write-edit-dispatch) | controller-delegation-validator.cjs | Warn when controllers write implementation files |
+| (via write-edit-dispatch) | skill-size-monitor.cjs | Warn or block when a SKILL.md grows past its line limits |
+| PreToolUse[Agent] | agent-dispatch.cjs | Run the 2 Agent sub-validators in one process |
+| (via agent-dispatch) | session-init-gate.cjs | Ensure session init complete before agent spawns |
+| (via agent-dispatch) | model-routing-advisor.cjs | Suggest optimal model before agent spawns |
+| PostToolUse[Agent\|Task] | spawn-footprint.cjs | Record spawn size numbers (diagnostic only, never blocks) |
+| PostToolUse[Bash], PostToolUse[Write\|Edit\|NotebookEdit] | post-write-validator.cjs | Validate JSON/YAML syntax after writes |
+| PostToolUse[Write\|Edit\|NotebookEdit] | validator-evidence-recheck.cjs | Re-run the evidence of a validator PASS report |
+| PostToolUseFailure | tool-failure-tracker.cjs | Track failures, detect patterns, suggest recovery |
+| UserPromptSubmit | prompt-router.cjs | Enforce delegation rules + natural-language routing suggestions |
+| Notification | notification.cjs | Log notifications to daily files |
 | StopFailure | stop-failure-handler.cjs | Save recovery state on unclean stop |
+| ConfigChange | config-change-logger.cjs | Log each settings or skills config change to a daily audit file |
 | TeammateIdle | teammate-idle-handler.cjs | Find available work or cleanly stop idle teammates (experimental named-teammate path only) |
 | TaskCompleted | team-task-complete.cjs | Update task list, unblock dependencies (experimental named-teammate path only) |
 | InstructionsLoaded | instructions-loaded.cjs | Validate rules directory, inject session context |
@@ -382,7 +393,7 @@ Use `/team` for cross-domain work that spans multiple areas. Launching a product
 | **Parallel team execution** | Yes: N-wave with per-wave quality gates | No | No |
 | **Revision loops** | Yes: executor + reviewer, max 3 rounds per work item | No | No |
 | **Two-stage review** | Yes: spec compliance then code quality | No | No |
-| **Hook lifecycle** | 24 unique registered hooks + 5 dispatched sub-validators across 18 event types | 1–4 hooks | 1–4 hooks |
+| **Hook lifecycle** | 25 unique registered hooks + 5 dispatched sub-validators across 17 event types | 1–4 hooks | 1–4 hooks |
 | **Goal drift prevention** | Yes: attention injection on every Write/Edit/Bash | No | No |
 | **Confidence scoring** | Yes: 0.0–1.0 per work item, low scores trigger scrutiny | No | No |
 | **Cross-domain orchestration** | Yes: `/team` strategic mode fires the full C-suite hierarchy (auto-enabled when `domain_count >= 2`) | No | No |
@@ -452,7 +463,16 @@ Key external tools and libraries that cAgents depends on:
 
 See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries name the execution skill `/act` throughout; it was called `/run` before the rename):
 
-- **V12.78.2** — Current release. The guard-config tamper check tracks the cwd through `cd`, `pushd` and `popd` chains, so a relative `find` start that is, is in, or is a parent of the project now asks in every mode. `gfind`, `busybox find`, `toybox find`, `xargs find` and `find` after a wrapper follow the `find` rule. The `-fprint*` and `-fls` actions test their FILE, so `find . -fprint /tmp/list` allows. Threat model entry R-77.4 scopes its claim and names the open gaps.
+- **V12.79.8** — Current release. This release fixes the findings of the pre-merge review. The DB URL mask stops at whitespace, the history filter of a skills test is narrower, and a new test keeps hidden code points out of the example store.
+- **V12.79.7** — CLAUDE.md is slimmed from 28,528 to about 24,100 bytes. Every load-bearing rule stays, and no rule moved to another file.
+- **V12.79.6** — The rules and agents surface lowers 143 ALL-CAPS emphasis tokens to sentence case. Every obligation stays. Three headings lose their emphasis prefix, and every citer names the new heading.
+- **V12.79.5** — The skills surface lowers 176 ALL-CAPS emphasis tokens to sentence case. Every obligation stays, and a rule that had no reason now states one. Two skills references state the reviewer loop cap as 2 rounds.
+- **V12.79.4** — Cleanup release. It removes 62 unreachable or duplicate agent resource files, 9 Python leftovers, and the `validate:configs` npm script (`lint` now runs `validate:agents`). It resolves 20 stale documents (10 deleted, the others refreshed or kept).
+- **V12.79.3** — `/helper` Mode 1 asks a first question with at most 4 options, then one of two follow-ups. The `/act` `/goal` condition names `completion_summary.yaml` with `status: completed`, which is the file that `verify-completion.cjs` writes. The `/act` controller spawn template is synchronous and unnamed, and it adds the `cagents:` prefix only when it is missing.
+- **V12.79.2** — Stale skill and agent names are replaced across skills, agents, rules, docs and scripts. The helper references no longer describe the removed `/act context` passthrough. The hook table lists all 25 registered hooks and the 5 dispatched sub-validators. A new drift guard, `tests/regressions/skill-refs-current.test.js`, fails on a stale name in an instruction.
+- **V12.79.1** — Count drift in the READMEs is fixed, and `validate-counts.sh` checks 18 and 19 now check it. `CLAUDE.md` names the correct overlay paths. The planner validator accepts skill-assigned work items and both forms of a controller name. Secret masking covers a full private key block and a long database URL.
+- **V12.79.0** — A new switch, `CAGENTS_BASH_GUARD_DISABLED`, turns the bash guard fully off. Set it in the env or in the git-ignored `.claude/settings.local.json`. The shipped default stays `block`. `validate-agents.sh` compares hook registrations on name, event, matcher and timeout, and a check that examined zero items fails. Two tracker hooks mask secrets before they store text. The review and delegation rules adopt lessons from audited CLEAN repos, and the example store records their provenance.
+- **V12.78.2** — The guard-config tamper check tracks the cwd through `cd`, `pushd` and `popd` chains, so a relative `find` start that is, is in, or is a parent of the project now asks in every mode. `gfind`, `busybox find`, `toybox find`, `xargs find` and `find` after a wrapper follow the `find` rule. The `-fprint*` and `-fls` actions test their FILE, so `find . -fprint /tmp/list` allows. Threat model entry R-77.4 scopes its claim and names the open gaps.
 - **V12.78.1** — The bash guard config tamper check now asks for the write modes of `awk` (redirects, `system(`, `|&`, `getline`, `@include`, `@load`), `sed` (`w`, `W`, `e`), `git` (`config --file`, `--output`, `-o`) and `find` (write actions that can reach `.claude`), in the default mode and under `CAGENTS_BASH_GUARD=off`. More git write subcommands are covered, and threat model entry R-77.4 now agrees with the code.
 - **V12.78.0** — The bash guard matches parsed, canonicalized write targets for its guard config, so quoting, `..`, case, `cd`, variables, globs, `bash -c` and `$(..)` no longer bypass it. `run-hook.cjs` denies when a guard dispatcher cannot load. Sanitize mode applies Edit and MultiEdit to the full file, and `secret-restore` restores every secret after several sanitized writes. Test and CI output is quiet under Claude Code (dot reporter, `CAGENTS_CI_QUIET`).
 - **V12.77.0** — The bash guard no longer asks for a `$VAR` script path, a `cd` into the own session tree, or a `PATH` prepend of a real SDK dir. A new opt-out, `CAGENTS_BASH_GUARD=off|warn` or the settings key `cagents.bash_guard`, is named in every ask; see `docs/HOOK_OPT_OUTS.md`. `bash -c "$(echo rm) -rf /etc"` now denies, and a Bash write to `.claude/settings*.json` or `.claude/hooks/` asks in every mode. The Stop hook allows a legitimate pause, never overwrites `pipeline_state`, and leaves an abandoned session non-terminal.
@@ -481,15 +501,7 @@ See `docs/RELEASE_NOTES.md` for the complete history. Recent highlights (entries
 - **V11.3.0** — Plugin health sweep. Archetype-canonical doc alignment landed (9 archetypes canonical, 15 domains as routing overlay). The sweep cleared 109 stale `related_agents` cross-references. It corrected the hook-count assertions (26 unique registered, 29 .cjs total). It added a `sync-agents.sh --check` dry-run flag. It pruned `validate-versions.sh` to 18 canonical slots, and it added regression tests.
 - **V11.1.3** — Removed statusLine hook and status bar integration.
 - **V11.0.0** — Removed deprecated skills `/review`, `/optimize`, `/context`, `/debug`. `/review` and `/optimize` consolidated into `/improve` (`--mode review|optimize|full`). The `/act context …` passthrough replaced `/context`. The `/act --mode debug` flag replaced `/debug`. See [docs/MIGRATION-V11.md](docs/MIGRATION-V11.md) for the migration guide.
-- **V10.23.0** — 29-check validation framework, regression validation chain, mandatory self-validation protocol for execution agents
-- **V10.22.0** — Two-stage review protocol (spec compliance then code quality), 5 pipeline improvements
-- **V10.20.0** — 23 agent communication gap fixes, Growth domain expanded from 35 to 39 agents
-- **V10.18.0** — Vibe field on all 243 agents, worktree isolation, guard command pattern, skill chaining, commit-before-verify pattern
-- **V10.16.0** — Session ID naming overhaul with readable slugs, agent_id linking in coordination_log
-- **V10.12.0** — External session-visualizer integration with 15 session-data improvements (contract dropped in v12.6.0)
-- **V10.6.0** — Confidence tiers, blind review, dead-letter queue, handoff documents
-- **V10.3.0** — Creative domain overhaul (24 to 30 agents, all on Opus 4.6)
-- **V10.0.0** — 8 business domains, agent chaining with topological execution
+- **V10.x and earlier**: See `CHANGELOG.md` and `docs/RELEASE_NOTES.md` for the full history.
 
 ---
 
@@ -499,4 +511,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with Claude Code** | 60 agents across 9 archetypes | Opus 4.8 · Sonnet 4.6
+**Built with Claude Code** | 60 agents across 9 archetypes

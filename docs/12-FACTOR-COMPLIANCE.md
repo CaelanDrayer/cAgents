@@ -126,5 +126,4 @@ cAgents agents are **not** stateless. Controllers carry context across reviewer-
 - `CLAUDE.md` — canonical project architecture
 - `docs/ARCHITECTURE.md` — subsystem deep dives
 - `AGENTS.md` — multi-tool routing surface
-- `docs/LIFECYCLE.md` — orthogonal lifecycle-axis view of the agent catalog
 - Upstream: [humanlayer/12-factor-agents](https://github.com/humanlayer/12-factor-agents)

@@ -8,12 +8,14 @@ metadata:
   category: strategy
   source_repo: phuryn/pm-skills
   source_url: "https://github.com/phuryn/pm-skills"
+  source_commit: c68487d721e419ec87af1ae6412a842978eab785
   applies_to:
     - cagents:product-owner
     - cagents:marketing-strategist
     - cagents:market-research-analyst
   demonstrates: "Classify the business (Attention/Transaction/Productivity) then validate any NSM candidate against 7 criteria + an 'NSM is NOT' list."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 ---
 
 # Example: North Star Metric Validator

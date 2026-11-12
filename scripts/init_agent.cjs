@@ -241,7 +241,7 @@ function initAgent(agentName, options) {
 **Questions Asked**:
 1. To architect: "What authentication approach should we use?"
 2. To backend-developer: "What is the current user model structure?"
-3. To security-specialist: "What security requirements apply?"
+3. To security-engineer: "What security requirements apply?"
 
 **Synthesis**: Based on answers, determined to use JWT with refresh tokens...
 

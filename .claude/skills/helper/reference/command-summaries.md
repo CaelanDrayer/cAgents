@@ -56,7 +56,7 @@ Per-command summaries used by Mode 2 and Mode 10 of `/helper`. Read this when th
 
 **Canonical reference**: See `@.claude/skills/act/reference/improve-mode.md` for the full keyword-router contract, override rules, stripping examples, and mode-specific controller behavior.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/improve --mode review`, `/optimize` to `/improve --mode optimize`, `/context` to `/act context`, and `/debug` to `/act --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Migrate `/review` to `/act review`, `/optimize` to `/act optimize`, and `/debug` to `/act --mode debug`. (v12.1.2 folded `/improve` into `/act`.) For `/context`, edit `product_context.yaml` directly._
 
 ## /team - Parallel Team Execution
 

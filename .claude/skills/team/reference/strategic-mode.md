@@ -15,7 +15,7 @@ Two conditions activate strategic mode:
 - The explicit flag `/team --strategic <instruction>`.
 - A `/team <instruction>` call where the router detects a multi-domain scope. That scope has 2 domains or more, and the complexity is tier 3 or higher.
 
-A single-domain request does NOT enter strategic mode. A tier-2 request does NOT enter it either. Both use the standard flat-wave flow of `/team`, or its template-wave flow.
+A single-domain request does not enter strategic mode. A tier-2 request does not enter it either. Both use the standard flat-wave flow of `/team`, or its template-wave flow.
 
 ## Wave Overview
 
@@ -48,9 +48,9 @@ Wait for all of Wave 0 to complete before you go on to Wave 1. Both sub-waves mu
 
 **Owner**: the strategic-mode lead re-spawns the same C-suite agents in parallel.
 
-**Mandatory reads**: each C-suite agent in Wave 1 MUST read these two files:
+**Mandatory reads**: each C-suite agent in Wave 1 must read these two files:
 1. The draft brief of the CEO, which is `strategic_brief_draft.yaml`. The lead writes it between Wave 0 and Wave 1.
-2. ALL of the peer domain analyses from Wave 0. They are every `domain_analyses/domain_analysis_*.yaml` file.
+2. All of the peer domain analyses from Wave 0. They are every `domain_analyses/domain_analysis_*.yaml` file.
 
 This is the cross-domain context pass. Each agent objects with full sight of the peer analyses, and not of its own analysis alone.
 
@@ -213,20 +213,20 @@ Release v12.6.0 removed the EVT emission, so the system no longer creates `workf
 
 ## Initialization Sequence
 
-When `/team` enters strategic mode, the lead MUST initialize the session directory before any wave work:
+When `/team` enters strategic mode, the lead must initialize the session directory before any wave work:
 
-1. Generate `SESSION_ID = "team_{slug}_{YYMMDD}_{NNN}"`. This is the standard session naming of /team. Strategic mode does NOT use a separate `org_*` prefix.
-2. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs ${SESSION_DIR}/domain_analyses ${SESSION_DIR}/objections`. From v12.6.0, do NOT create `workflow/events/`.
+1. Generate `SESSION_ID = "team_{slug}_{YYMMDD}_{NNN}"`. This is the standard session naming of /team. Strategic mode does not use a separate `org_*` prefix.
+2. `mkdir -p ${SESSION_DIR}/workflow ${SESSION_DIR}/outputs ${SESSION_DIR}/domain_analyses ${SESSION_DIR}/objections`. From v12.6.0, do not create `workflow/events/`.
 3. Write `instruction.yaml`, with `session_type: team` and `strategic_mode: true`.
 4. Write `status.yaml` with `pipeline_state: INIT`.
 5. Seed `workflow/agent_tree.yaml` with the depth-0 strategic-mode lead entry in a top-level `agents:` list. After this, the hooks own the file.
 6. Seed TaskCreate entries using the strategic-mode wave names (see below).
 
-**CRITICAL: `{ISO_TIMESTAMP}` must be the REAL current time.** Use the timestamp from "Current timestamp" at the top of the SKILL.md file. As an alternative, run `date -u +%Y-%m-%dT%H:%M:%SZ` with Bash. NEVER fabricate a timestamp.
+**`{ISO_TIMESTAMP}` must be the real current time.** Use the timestamp from "Current timestamp" at the top of the SKILL.md file. As an alternative, run `date -u +%Y-%m-%dT%H:%M:%SZ` with Bash. Never fabricate a timestamp.
 
 **State casing**: always write each `pipeline_state` value in `status.yaml` in lowercase. Write `complete`, and do not write `COMPLETE`.
 
-**State transition protocol**: At every state transition, the lead MUST:
+**State transition protocol**: At every state transition, the lead must:
 1. Compute `duration_ms` for the previous `state_history` entry
 2. Append new `state_history` entry with `entered_at: now`, `duration_ms: null`
 3. Update `pipeline_state` to the new state
@@ -234,7 +234,7 @@ When `/team` enters strategic mode, the lead MUST initialize the session directo
 
 ## TaskCreate Seeding
 
-Seed the TaskCreate entries with a description of the strategic-mode work. Do NOT use the state machine names. Use the parent>child format when you spawn a C-suite agent or a domain controller.
+Seed the TaskCreate entries with a description of the strategic-mode work. Do not use the state machine names. Use the parent>child format when you spawn a C-suite agent or a domain controller.
 
 Interactive seed example:
 ```
@@ -250,7 +250,7 @@ TaskCreate({ subject: "[team-strategic] Complete" })
 
 As the work progresses, call `TaskUpdate` with `in_progress`, and then with `completed`. Use the parent>child format when you spawn a C-suite agent, for example `[team-strategic > {csuite}] {domain} domain analysis`.
 
-**CRITICAL: never use a state machine name as a task subject.** Examples of those names are INIT and ANALYZED. Describe the work that you do. Never put a slash in front: write `[team-strategic]`, and do not write `[/team-strategic]`.
+**Never use a state machine name as a task subject.** Examples of those names are INIT and ANALYZED. Describe the work that you do. Never put a slash in front: write `[team-strategic]`, and do not write `[/team-strategic]`.
 
 ## Completion
 
@@ -261,9 +261,9 @@ Do not edit `agent_tree.yaml` to finalize the lead entry. The hooks close it: `r
 
 Advance the `pipeline_state` in `status.yaml` to `complete`. Release v12.6.0 removed the `workflow/events/EVT-{N}.yaml` emission. Three artifacts are now the canonical completion signal: the `pipeline_state: complete` value in `status.yaml`, `integration_report.yaml`, and `execution_summary.yaml`.
 
-### Clean Up Tasks (MANDATORY — Hard Gate Before Stopping)
+### Clean up tasks (required hard gate before stopping)
 
-Call `TaskList` to get the CURRENT task inventory. Do NOT use a task ID that you remember from earlier in the session. An ID can shift after a Skill invocation. For EVERY task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`.
+Call `TaskList` to get the CURRENT task inventory. Do not use a task ID that you remember from earlier in the session. An ID can shift after a Skill invocation. For every task that is `in_progress` or `pending`, call `TaskUpdate({ taskId: "{id}", status: "completed" })`.
 
 Sometimes TaskUpdate returns "Task not found". The task then belongs to a different namespace. One example is a task that a spawned subagent created in its own scope. Log that task, and continue. Teams are implicit, so there is no `TeamDelete` call. The cleanup is automatic at session end.
 

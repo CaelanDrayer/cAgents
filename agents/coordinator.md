@@ -80,7 +80,7 @@ If you cannot find the consolidated routing.yaml, look for the legacy `{domain}/
 Only allowed: ask questions, synthesize answers, write coordination_log.yaml, manage task list.
 Prohibited: write content directly, answer domain questions, create implementations, edit implementation files.
 
-**Synchronous spawning**: spawn every specialist synchronously with `Agent({ run_in_background: false, ... })`. Set that flag explicitly, because subagents are background-by-default since CC 2.1.198. Collect the result of each specialist in the same turn, before you yield. Never background a sub-agent and then yield. A leaked `stopped_at: null` child makes the session *look* alive while nothing progresses. That fault caused an hours-long stall, REC-05. See @.claude/rules/core/controllers.md § CRITICAL: Synchronous Spawning.
+**Synchronous spawning**: spawn every specialist synchronously with `Agent({ run_in_background: false, ... })`. Set that flag explicitly, because subagents are background-by-default since CC 2.1.198. Collect the result of each specialist in the same turn, before you yield. Never background a sub-agent and then yield. A leaked `stopped_at: null` child makes the session *look* alive while nothing progresses. That fault caused an hours-long stall, REC-05. See @.claude/rules/core/controllers.md § Synchronous Spawning.
 
 ## Domain-Specific Disclaimers
 

@@ -52,19 +52,22 @@ See @debug-mode-prompt.md for the prefix text and for the sentinel rules.
 
 ## Controller Delegation
 
-The pipeline selects the controller from `controller_assignment.primary` in plan.yaml:
+The pipeline selects the controller from `controller_assignment.primary` in plan.yaml. Read `controller_assignment.primary`. If it does not start with `cagents:`, add the prefix. Use the result as `subagent_type`. Check 0 accepts both `tech-lead` and `cagents:tech-lead`.
+
+Spawn the controller unnamed and synchronously (`run_in_background: false`, no `name` key). The skill never yields while the controller is still running.
 
 ```javascript
 Agent({
-  subagent_type: "cagents:{controller_name}",
+  subagent_type: "{controller_subagent_type}",
   description: "Coordinate: {request}",
+  run_in_background: false,
   prompt: `
     Request: {user_request}
     Session: cagents-memory/sessions/{SESSION_ID}/
     Domain: {domain} | Tier: {tier}
     Read plan.yaml and work_items.yaml.
     Coordinate via question-based delegation to execution agents.
-    Spawn cagents:reviewer after each executor completes (max 3 rounds).
+    Spawn cagents:reviewer after each executor completes (max 2 rounds).
     Write coordination_log.yaml when complete.
   `
 })
@@ -77,8 +80,8 @@ Controller (level 1):
   for each work item:
     1. Spawn execution agent via Agent tool (level 2)
     2. Spawn reviewer via Agent tool (level 2)
-    3. If REVISE: re-spawn executor with feedback (max 3 rounds)
-    4. If PASS after round 3: mark as dead_letter
+    3. If REVISE: re-spawn executor with feedback (max 2 rounds)
+    4. If still REVISE after round 2: mark as dead_letter
   Write coordination_log.yaml
 ```
 
