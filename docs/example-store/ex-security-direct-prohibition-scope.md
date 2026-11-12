@@ -21,7 +21,8 @@ metadata:
 
 ## Context
 cAgents guard hooks and audit checks match risky patterns in prose and in
-commands. Examples are the secret-detection validator and the security-engineer
+commands. Examples are the secret-detection validator, the `secret-literal` rule
+of the narrow Bash guard `bash-validator.cjs`, and the security-engineer
 owasp-audit mode. Defensive text causes false positives.
 For example, "Never print the API key" contains the risky words. A loose fix such
 as "ignore a match if a negation is nearby" opens a bypass. An attacker then

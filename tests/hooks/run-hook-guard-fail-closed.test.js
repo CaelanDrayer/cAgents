@@ -6,9 +6,9 @@
  * a syntax error, or throws at module load, the launcher prints a PreToolUse
  * deny and exits 0. All other hooks stay fail-open.
  *
- * v12.80.0 removed the bash guard. 'bash-validator' is a retired name: the
- * launcher exits 0 with no output for it, so a stale registration never
- * blocks a Bash call.
+ * v12.81.0 restores 'bash-validator' as a narrow guard. It is not retired and
+ * it is not a guard hook of the launcher, so it stays fail-open: a missing or
+ * broken file allows the Bash call with a systemMessage and never denies it.
  *
  * Harness: the test copies the real run-hook.cjs into a mkdtemp dir at
  * <tmp>/.claude/hooks/ and puts the stub hooks beside it. Every search root of
@@ -19,7 +19,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawnSync } from 'child_process';
-import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, rmSync } from 'fs';
+import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, rmSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
@@ -30,6 +30,8 @@ let tmpRoot;
 let launcher;
 let missingRoot;
 let missingLauncher;
+let realRoot;
+let realLauncher;
 let gitStatusBefore;
 
 function gitStatusHooks() {
@@ -77,7 +79,7 @@ beforeAll(() => {
   // Guard hook that throws at module load.
   writeFileSync(join(hooksDir, 'agent-dispatch.cjs'),
     "throw new Error('injected load fault (test)');\n", 'utf8');
-  // Retired name with a broken file: the launcher must never load it.
+  // bash-validator with a broken file: the launcher loads it and fails open.
   writeFileSync(join(hooksDir, 'bash-validator.cjs'), 'module.exports = {;\n', 'utf8');
   // Non-guard hook with a syntax error.
   writeFileSync(join(hooksDir, 'session-catchup.cjs'), 'function (\n', 'utf8');
@@ -91,11 +93,22 @@ beforeAll(() => {
   mkdirSync(missingHooks, { recursive: true });
   copyFileSync(REAL_LAUNCHER, join(missingHooks, 'run-hook.cjs'));
   missingLauncher = join(missingHooks, 'run-hook.cjs');
+
+  // Third temp root: the launcher and the real bash-validator.cjs with the two
+  // modules that it requires.
+  realRoot = mkdtempSync(join(tmpdir(), 'run-hook-failclosed-real-'));
+  const realHooks = join(realRoot, '.claude', 'hooks');
+  mkdirSync(realHooks, { recursive: true });
+  for (const f of ['run-hook.cjs', 'bash-validator.cjs', 'hook-utils.cjs', 'secret-detection.cjs']) {
+    copyFileSync(join(REPO_ROOT, '.claude', 'hooks', f), join(realHooks, f));
+  }
+  realLauncher = join(realHooks, 'run-hook.cjs');
 });
 
 afterAll(() => {
   if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true });
   if (missingRoot) rmSync(missingRoot, { recursive: true, force: true });
+  if (realRoot) rmSync(realRoot, { recursive: true, force: true });
 });
 
 describe('run-hook.cjs fails closed for guard hooks', () => {
@@ -127,25 +140,52 @@ describe('run-hook.cjs fails closed for guard hooks', () => {
   });
 });
 
-describe('run-hook.cjs treats bash-validator as a retired hook', () => {
+describe('run-hook.cjs: bash-validator is a fail-open hook', () => {
   const bashPayload = JSON.stringify({
     hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'ls' }
   });
 
-  it('exits 0 with no output when bash-validator.cjs is absent', () => {
-    const r = runLauncher('bash-validator', {
-      root: missingRoot, launcher: missingLauncher, unsetProjectDir: true, input: bashPayload
-    });
-    expect(r.status).toBe(0);
-    expect(r.stdout).toBe('');
-    expect(r.stderr).toBe('');
+  it('is absent from RETIRED_HOOKS and from GUARD_HOOKS of the launcher', () => {
+    const src = readFileSync(REAL_LAUNCHER, 'utf8');
+    const setOf = (name) => {
+      const m = src.match(new RegExp(`const ${name} = new Set\\(([^)]*)\\)`));
+      expect(m, `${name} declaration`).not.toBeNull();
+      return m[1];
+    };
+    expect(setOf('RETIRED_HOOKS')).not.toMatch(/bash-validator/);
+    expect(setOf('GUARD_HOOKS')).not.toMatch(/bash-validator/);
   });
 
-  it('exits 0 with no output and never loads a bash-validator.cjs that is present', () => {
+  it('allows with a HOOK NOT FOUND systemMessage and never denies when bash-validator.cjs is absent', () => {
+    const r = runLauncher('bash-validator', {
+      root: missingRoot, launcher: missingLauncher, input: bashPayload
+    });
+    expect(r.status).toBe(0);
+    expect(decisionOf(r.json)).toBeUndefined();
+    expect(r.json.continue).toBe(true);
+    expect(r.json.systemMessage).toMatch(/HOOK NOT FOUND/);
+    expect(r.json.systemMessage).toMatch(/bash-validator/);
+  });
+
+  it('allows with a HOOK LOAD FAILED systemMessage when bash-validator.cjs is broken', () => {
     const r = runLauncher('bash-validator', { input: bashPayload });
     expect(r.status).toBe(0);
-    expect(r.stdout).toBe('');
-    expect(r.stderr).toBe('');
+    expect(decisionOf(r.json)).toBeUndefined();
+    expect(r.json.continue).toBe(true);
+    expect(r.json.systemMessage).toMatch(/HOOK LOAD FAILED/);
+    expect(r.json.systemMessage).toMatch(/bash-validator/);
+  });
+
+  it('gives {continue:true} for a benign payload with the real bash-validator.cjs', () => {
+    const r = runLauncher('bash-validator', {
+      root: realRoot, launcher: realLauncher,
+      input: JSON.stringify({
+        hook_event_name: 'PreToolUse', tool_name: 'Bash', cwd: realRoot, tool_input: { command: 'ls' }
+      })
+    });
+    expect(r.status, r.stderr).toBe(0);
+    expect(decisionOf(r.json)).toBeUndefined();
+    expect(r.json).toEqual({ continue: true });
   });
 });
 

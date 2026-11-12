@@ -7,7 +7,7 @@ import { tmpdir } from 'os';
 /**
  * WI-27 regression (DR-01..DR-04): README.md and .claude/rules/README.md
  * stated hook and rule counts that disk did not match. README.md said
- * "32 .cjs files = 24 unique registered hooks ... across 18 event types".
+ * "32 .cjs files", a registered-hook count of 24, and "18 event types".
  * .claude/rules/README.md said "Rule files: 43", "Current Rules (43 files)"
  * and "18 event types". Disk said 33 / 25 / 17 / 45.
  *

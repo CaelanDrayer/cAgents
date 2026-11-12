@@ -4,12 +4,16 @@ This is a high-level summary. The canonical per-hook detail (matchers, inputs, o
 
 ## Architecture
 
-CJS-only hooks built with the `createHook()` factory pattern. **31 `.cjs` files = 24 unique registered hooks across 17 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher).**
+CJS-only hooks built with the `createHook()` factory pattern. **32 `.cjs` files = 25 unique registered hooks across 17 event types + 5 in-process dispatched sub-validators + `hook-utils.cjs` (shared utilities) + `run-hook.cjs` (launcher).**
 
 Two consolidating dispatchers run the sub-validators in-process (one node cold-start instead of one per sub-validator):
 
-- **`write-edit-dispatch.cjs`** (PreToolUse[Write\|Edit]) — runs `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The two security/governance gates fail CLOSED.
-- **`agent-dispatch.cjs`** (PreToolUse[Agent]) — runs `session-init-gate.cjs` (session-presence gate) and `model-routing-advisor.cjs` (advisory). Both sub-validators fail OPEN. Since v12.76.0 (WI-19 F2) a crash inside `session-init-gate.cjs` allows the spawn with one `[FAIL-OPEN]` message. A fault in `agent-dispatch.cjs` itself still denies.
+- **`write-edit-dispatch.cjs`** (PreToolUse[Write\|Edit]) runs `secret-detection.cjs`, `controller-delegation-validator.cjs`, and `skill-size-monitor.cjs`. The two security/governance gates fail CLOSED.
+- **`agent-dispatch.cjs`** (PreToolUse[Agent]) runs `session-init-gate.cjs` (session-presence gate) and `model-routing-advisor.cjs` (advisory). Both sub-validators fail OPEN. Since v12.76.0 (WI-19 F2) a crash inside `session-init-gate.cjs` allows the spawn with one `[FAIL-OPEN]` message. A fault in `agent-dispatch.cjs` itself still denies.
+
+One more PreToolUse hook runs on its own:
+
+- **`bash-validator.cjs`** (PreToolUse[Bash]) is a narrow guard. It denies a critical or high secret literal in the command text. It also denies a write, a delete, a move, or a mode or owner change on a protected path. It fails open, and `CAGENTS_BASH_NARROW_GUARD=off` turns it off. The old `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` keys are inert. The path rule expands `~` and `$HOME` and parses `bash -c` and `sh -c` strings at one level. It does not check script file contents, other variables, command substitution, `eval`, other interpreter code, `find -delete`, or hook-config paths. The secret rule still scans the whole command text, including the text inside `eval`, `python -c`, `node -e`, and `$(...)`. It is a tripwire for agent mistakes and plain injections, not a sandbox.
 
 ## Hook Registry (by event)
 
@@ -18,6 +22,7 @@ Two consolidating dispatchers run the sub-validators in-process (one node cold-s
 | SessionStart | session-catchup.cjs | Initialize state, detect incomplete sessions, inject context |
 | SessionEnd | team-stop.cjs | Finalize metrics, update status, agent-tree cleanup |
 | UserPromptSubmit | prompt-router.cjs | Delegation enforcement + natural-language routing |
+| PreToolUse[Bash] | bash-validator.cjs | Narrow guard: deny secret literals and writes to protected paths (fail-open) |
 | PreToolUse[Write\|Edit] | write-edit-dispatch.cjs | Dispatches secret-detection + controller-delegation-validator + skill-size-monitor |
 | PreToolUse[Agent] | agent-dispatch.cjs | Dispatches session-init-gate + model-routing-advisor |
 | ConfigChange | config-change-logger.cjs | Log config changes |

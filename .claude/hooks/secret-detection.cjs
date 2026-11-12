@@ -720,4 +720,4 @@ if (!process.env.CAGENTS_DISPATCH_IMPORT) {
 }
 
 // Export internals for in-process unit testing and for the D1b dispatcher.
-module.exports = { handler, scanForSecrets, isPathFalsePositive, SECRET_PATTERNS };
+module.exports = { handler, scanForSecrets, isPathFalsePositive, isProtectedPath, PROTECTED_PATHS, SECRET_PATTERNS };

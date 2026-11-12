@@ -2,7 +2,7 @@
 
 ## Test Infrastructure
 
-cAgents uses [Vitest](https://vitest.dev/) for testing. 2371+ tests across 286+ test files (286 test files on disk) covering hooks and configuration validation.
+cAgents uses [Vitest](https://vitest.dev/) for testing. 2408+ tests across 288+ test files (288 test files on disk) covering hooks and configuration validation.
 
 ## Test Categories
 
@@ -17,6 +17,8 @@ cAgents uses [Vitest](https://vitest.dev/) for testing. 2371+ tests across 286+ 
 | session-catchup.test.js | 10 | Session initialization |
 | subagent-tracker.test.js | 8 | Agent spawn tracking |
 | notification.test.js | 6 | Notification logging |
+
+The narrow Bash guard, `bash-validator.cjs`, has its own tests in `tests/hooks/bash-validator.test.js` and `tests/hooks/bash-validator-fp-corpus.test.js`. The table above does not count them. The guard denies a critical or high secret literal in the command text. It also denies a write, a delete, a move, or a mode or owner change on a protected path. It fails open.
 
 ### Config Tests (3 files, 120 tests)
 | File | Tests | Coverage |

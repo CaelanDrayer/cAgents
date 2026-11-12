@@ -32,11 +32,13 @@ The environment variables for all hook and agent executions:
 
 The file does not set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`. The default `/team` path uses concurrent `Agent` waves and does not need that flag.
 
-For the opt-out values of the guards, see `docs/HOOK_OPT_OUTS.md`.
+For the opt-out values of the guards, see `docs/HOOK_OPT_OUTS.md`. The file does not set `CAGENTS_BASH_NARROW_GUARD`, so the narrow Bash guard is on. Set `CAGENTS_BASH_NARROW_GUARD=off` to turn it off. The old `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` keys are inert.
 
 ### permissions
 
-The `allow` list and the `deny` list for tools. The `deny` list blocks some destructive commands, `sudo`, and edits to system and SSH paths.
+The `allow` list and the `deny` list for tools. The `deny` list blocks some destructive commands, `sudo`, and edits to system and SSH paths. This block ships in the source repo only. A plugin install has no such block.
+
+The narrow Bash guard, `bash-validator.cjs`, is a separate check. It denies a critical or high secret literal in the command text. It also denies a write, a delete, a move, or a mode or owner change on a protected path. It fails open. It is a tripwire for agent mistakes and plain injections, not a sandbox. See `docs/hooks/overview.md`.
 
 ### teammateMode
 

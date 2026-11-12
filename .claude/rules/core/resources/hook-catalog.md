@@ -241,6 +241,48 @@ sections below for the detail.
 
 ## Tool Validation
 
+### PreToolUse[Bash]: bash-validator.cjs
+
+- **Matcher**: `Bash`
+- **Timeout**: 5 s in `.claude/settings.json` and `.claude/hooks.json`.
+- **Purpose**: `bash-validator.cjs` is a narrow guard for Bash commands. It
+  checks two rule families and nothing more. The guard is a tripwire for agent
+  mistakes and plain injections. It is not a sandbox.
+- **Rule 1, `secret-literal`**: the hook denies a command when the shared
+  secret scanner finds a critical or a high secret in the command text. Heredoc
+  bodies are included. The hook drops a finding that holds a shell expansion.
+  A loopback database URL passes, and a read of a secret file passes. The deny
+  message names the secret class and the offset. It never shows the value.
+- **Rule 2, `protected-path-write`**: the hook denies a write, a delete, a
+  move, or a change of mode or owner on the shared protected-path list. The
+  Write path in `secret-detection.cjs` uses the same list: `/etc/`, `/usr/`,
+  `/bin/`, `/sbin/`, `/boot/`, `/sys/`, `/proc/`, `~/.ssh/`, and `~/.gnupg/`.
+  The hook reads these verbs: redirects, `tee`, `rm`, `rmdir`, `unlink`,
+  `shred`, `mv`, the target of `cp`, `install`, and `ln`, `sed -i`, `chmod`,
+  `chown`, `chgrp`, `truncate`, `dd of=`, `touch`, and `mkdir`. A read or a
+  mention of a protected path passes.
+- **Fail open**: a command over 256 KB skips both rules. An internal error
+  skips the rest of the checks, so an error in the path rule leaves the secret
+  verdict in place.
+  A command that does not parse, such as one with an unbalanced quote, skips
+  the path rule. Each such event and each deny writes one line to
+  `cagents-memory/_system/logs/bash_guard.log`. The line never holds the
+  command text. If the hook file is missing, `run-hook.cjs` allows the call
+  with a message.
+- **Off switch**: set `CAGENTS_BASH_NARROW_GUARD=off` to turn the guard off.
+  The old `CAGENTS_BASH_GUARD` and `CAGENTS_BASH_GUARD_DISABLED` keys are
+  inert. No hook reads them.
+- **What the path rule does not check**: the path rule expands `~` and
+  `$HOME` and parses `bash -c` and `sh -c` strings at one level. It does not
+  check script file contents, other variables, command substitution, `eval`,
+  other interpreter code, `find -delete`, or hook-config paths such as
+  `.claude/settings*.json` and `.claude/hooks/`. The secret rule still scans
+  the whole command text, including the text inside `eval`, `python -c`,
+  `node -e`, and `$(...)`.
+- **History**: v12.80.0 removed the old bash guard and its evaluator library.
+  v12.81.0 added this narrow guard. It does not restore the old command-pattern
+  rules.
+
 ### PreToolUse[Write|Edit|NotebookEdit]: write-edit-dispatch.cjs
 
 - **Matcher**: `Write|Edit|NotebookEdit`
@@ -360,8 +402,9 @@ read `process.env.AGENT_MEMORY_DIR`, which the `env` block of
 Its deny path could therefore never fire. It paid a cold-start node spawn on
 every Bash, Write, and Edit only to `return null`. A hard denial is now the job
 of the security gates inside `write-edit-dispatch.cjs` for Write and Edit. For
-Bash, the `permissions.deny` patterns in `.claude/settings.json` apply. Since
-v12.80.0, no cAgents hook checks Bash commands.
+Bash, the narrow `bash-validator.cjs` guard denies secret literals and writes
+to protected paths. See § PreToolUse[Bash]: bash-validator.cjs. In the source
+repo, the `permissions.deny` patterns in `.claude/settings.json` also apply.
 
 ### PreToolUse[Agent]: agent-dispatch.cjs
 

@@ -186,13 +186,14 @@ describe('P1-5: validate-counts.sh enforces doc-vs-disk alignment', () => {
     // injection — the restoration half of the rules load cut). Net:
     // WI-15 D1 deleted the no-op permission-handler.cjs (26 -> 25 registered).
     // v12.80.0 removed the bash guard hook and its evaluator library (25 -> 24).
-    // 31 .cjs files = 24 unique registered + 5 dispatched sub-validators + 2 utilities
+    // v12.81.0 added the narrow bash-validator.cjs (24 -> 25).
+    // 32 .cjs files = 25 unique registered + 5 dispatched sub-validators + 2 utilities
     // (hook-utils.cjs, run-hook.cjs).
-    expect(output, 'derive-only should print hook_files=31').toMatch(
-      /hook_files[=:]\s*31/
+    expect(output, 'derive-only should print hook_files=32').toMatch(
+      /hook_files[=:]\s*32/
     );
-    expect(output, 'derive-only should print registered_hooks=24').toMatch(
-      /registered_hooks[=:]\s*24/
+    expect(output, 'derive-only should print registered_hooks=25').toMatch(
+      /registered_hooks[=:]\s*25/
     );
   });
 });
