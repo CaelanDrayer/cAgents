@@ -63,8 +63,7 @@ metadata:
 
 **This is a fallback. It applies to any cAgents controller or execution agent
 that does a tool-inventory check and finds the `Agent` tool genuinely absent. It
-applies whatever skill spawned that agent: `/act`, `/team`, or the legacy
-`/org`.**
+applies whatever skill spawned that agent: `/act` or `/team`.**
 
 ## When this fallback fires
 

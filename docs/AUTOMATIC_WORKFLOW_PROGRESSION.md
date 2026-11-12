@@ -264,7 +264,7 @@ Outputs:
 **Workflow** (fully automatic):
 ```
 ✓ Routing: Classified as tier 3, engineering domain
-✓ Planning: Objectives defined, controllers selected (tech-lead + architect + security-specialist)
+✓ Planning: Objectives defined, controllers selected (tech-lead + architect + security-engineer)
 ✓ Coordinating:
   - Engineering-manager coordinated overall work
   - Architect designed OAuth2 architecture
@@ -295,7 +295,7 @@ Outputs:
 ✓ Routing: Classified as tier 4, engineering domain
 ✓ Planning:
   - Objectives defined
-  - Controllers selected (cto + tech-lead + architect + infrastructure-lead + security-specialist + qa-lead)
+  - Controllers selected (cto + tech-lead + architect + infrastructure-lead + security-engineer + qa-lead)
   - HITL approval gates defined
 ✓ Coordinating:
   - CTO provided strategic oversight

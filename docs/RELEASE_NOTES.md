@@ -1,10 +1,22 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.1
+**Current Version**: 12.79.2
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.2 - November 11, 2026 (stale-name sweeps)
+
+This patch release replaces stale skill and agent names (WI-32 to WI-35).
+The skills, agents, rules, docs and scripts now point to the current agent or
+skill. Dated history notes keep the old names. The helper references no
+longer describe the removed `/act context` passthrough. The `README.md` hook
+table lists all 25 registered hooks and the 5 dispatched sub-validators, and
+the Models row matches the advisory agent metadata. The controller validation
+checklist agrees with the planner validator. A new drift guard,
+`tests/regressions/skill-refs-current.test.js`, fails on a stale name in an
+instruction.
 
 ## V12.79.1 - November 11, 2026 (truth fixes)
 
@@ -2748,5 +2760,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.1
+**Current Version**: 12.79.2
 **Release Date**: August 21, 2026

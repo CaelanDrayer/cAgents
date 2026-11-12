@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "[<topic>] [--deep] [--resume <id>] [--template <name>] [--brief <path>] [--iterate <session_id>]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.1"
+  version: "12.79.2"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
@@ -179,7 +179,7 @@ Explore 2-4 concrete solution alternatives, evaluate the trade-offs, and select 
 
 ### Phase 5: Refinement (30% of session)
 
-Detail the selected approach with the architecture, the flows, the data models, the security, and the tests. The designer ALWAYS spawns the research agents. Read the `question_prep/refinement_*.yaml` files that the overlap already spawned. Present the research-enriched questions for the chosen domain, which is Software, Business, or Creative. After each significant answer, output what you added to the design. Generate the mermaid diagrams inline, which are the architecture diagram, the sequence diagram, the ERD, and the flowcharts. For a tier 3 design or higher, spawn the specialist agents to validate each design decision as it forms. Those agents are the architect, the security-specialist, and the qa-lead. Phase gate: you answered all of the major design questions, you generated at least 1 diagram, and you considered the edge cases. At about 60% completion, spawn the Specification research, as in the phase-overlap. See @reference/phase-5-refinement.md and @reference/follow-up-research.md.
+Detail the selected approach with the architecture, the flows, the data models, the security, and the tests. The designer ALWAYS spawns the research agents. Read the `question_prep/refinement_*.yaml` files that the overlap already spawned. Present the research-enriched questions for the chosen domain, which is Software, Business, or Creative. After each significant answer, output what you added to the design. Generate the mermaid diagrams inline, which are the architecture diagram, the sequence diagram, the ERD, and the flowcharts. For a tier 3 design or higher, spawn the specialist agents to validate each design decision as it forms. Those agents are the architect, the security-engineer, and the qa-lead. Phase gate: you answered all of the major design questions, you generated at least 1 diagram, and you considered the edge cases. At about 60% completion, spawn the Specification research, as in the phase-overlap. See @reference/phase-5-refinement.md and @reference/follow-up-research.md.
 
 ### Phase 6: Specification (20% of session)
 

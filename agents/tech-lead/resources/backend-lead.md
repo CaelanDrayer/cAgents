@@ -30,7 +30,7 @@ See @resources/backend-lead-best-practices.md for backend lead best practices.
 |------------|-----------|
 | Simple/Moderate | backend-developer |
 | High/Architecture | senior-developer |
-| Security-sensitive | senior-developer + security-specialist |
+| Security-sensitive | senior-developer + security-engineer |
 | Database migrations | senior-developer + dba |
 
 ## Backend Code Review Checklist

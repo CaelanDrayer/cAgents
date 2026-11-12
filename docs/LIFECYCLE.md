@@ -263,7 +263,7 @@ launch, sales execution, customer-facing rollout, post-launch support enablement
 | seo-specialist | operator | Optimizing search rankings, keyword research, on-page and technical SEO |
 | territory-manager | operator | Defining sales territories, balancing account distribution |
 | video-marketing-specialist | operator | Producing marketing videos, video content strategy, video optimization |
-| account-manager | operator | Managing client relationships, account reviews, upsell identification |
+| support-director (mode account) | operator | Managing client relationships, account reviews, upsell identification |
 | community-manager | operator | Building community programs, moderating forums, user engagement |
 | customer-advocacy-manager | operator | Customer advocacy programs, reference customers, case studies |
 | customer-success-manager | operator | Onboarding customers, customer health scores, product adoption |

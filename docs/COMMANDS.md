@@ -4,7 +4,7 @@ Comprehensive reference for all cAgents universal commands.
 
 > **Migration Note** (current as of v12.6.0):
 > - `/review`, `/optimize`, `/context`, `/debug` were removed in V11.0.0.
-> - `/improve` was folded into `/act` via the first-word keyword router in v12.1.2: use `/act review`, `/act optimize`, or `/act improve` (equivalent to `/act --mode review|optimize|full`); `/act context <subcmd>` for product context; `/act --mode debug <request>` for systematic debugging.
+> - `/improve` was folded into `/act` via the first-word keyword router in v12.1.2: use `/act review`, `/act optimize`, or `/act improve` (equivalent to `/act --mode review|optimize|full`); `/act --mode debug <request>` for systematic debugging.
 > - `/org` was removed in v12.2.0 and absorbed into `/team` strategic mode (auto-enables when `router.domain_count >= 2`; override with `--strategic` / `--no-strategic`).
 >
 > See [docs/MIGRATION-V11.md](MIGRATION-V11.md) for the V10→V11 migration baseline and CHANGELOG entries v12.1.2 / v12.2.0 for the v12 follow-ups.

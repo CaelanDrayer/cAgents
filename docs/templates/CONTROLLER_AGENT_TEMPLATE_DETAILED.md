@@ -43,7 +43,7 @@ Objective: "Implement OAuth2 authentication for API"
 Questions to Ask:
 1. "What is the current authentication implementation?" → backend-developer
 2. "What OAuth2 library should we use for Node.js?" → architect
-3. "What security vulnerabilities should we watch for?" → security-specialist
+3. "What security vulnerabilities should we watch for?" → security-engineer
 4. "What tests are required for OAuth2 flow?" → qa-lead
 
 Synthesize Answers → Create implementation plan → Coordinate execution
@@ -188,7 +188,7 @@ questions_asked:
     timestamp: 2026-01-12T10:05:00Z
 
   - question: "What security vulnerabilities to watch for?"
-    delegated_to: security-specialist
+    delegated_to: security-engineer
     answer:
       vulnerabilities: ["CSRF without state parameter", "Token theft", "Redirect URI manipulation"]
       mitigations: ["Use state parameter", "Implement PKCE", "Whitelist redirect URIs", "Encrypt tokens at rest"]
@@ -322,8 +322,8 @@ implementation_tasks:
     completed_at: 2026-01-12T11:15:00Z
 
   - task_id: task_003
-    name: "[security-specialist] Security review"
-    assigned_to: security-specialist
+    name: "[security-engineer] Security review"
+    assigned_to: security-engineer
     status: completed
     completed_at: 2026-01-12T11:20:00Z
 

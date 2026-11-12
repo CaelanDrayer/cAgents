@@ -42,7 +42,8 @@ cAgents v12.0.0 is the major consolidation release. Architectural changes:
 - **Legacy directory cleanup**: 11 of 13 legacy domain dirs removed
   (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`,
   `health/`, `education/`, `personal/`, `arts/`, `trades/`). `people/` and
-  `shared/` retained as routing-config-only overlays.
+  `shared/` retained as routing-config-only overlays (now at `agents/_overlay/people/`
+  and `agents/_overlay/shared/`).
 - **`cagents-memory/_communication/` removed**: Unused agent-messaging
   inbox/broadcast directory deleted.
 
@@ -84,8 +85,9 @@ cAgents is a universal multi-domain agent system with controller-centric coordin
 
 ### Legacy domain overlay (config-only)
 
-Since v12.0.0, only `people/` and `shared/` legacy domain dirs remain on
-disk — both retained as routing-config-only overlays holding
+Since v12.0.0, only the `people` and `shared` legacy domain dirs remain on
+disk, at `agents/_overlay/people/` and `agents/_overlay/shared/`. Both are
+routing-config-only overlays that hold
 `config/domain_overrides.yaml` (controller_catalog + router_keywords). The
 11 other legacy dirs (`engineering/`, `creative/`, `business/`, `growth/`,
 `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`,

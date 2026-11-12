@@ -130,8 +130,9 @@ reason is the 2-round cap: an unrelated new finding can send a correctly fixed
 item to `dead_letter`.
 
 This is the canonical statement of the rule, and `controllers.md` references it.
-For a REVISE round, this input replaces the "diff and rubric only" input that
-`docs/example-store/ex-review-blind-dual-convergence.md` describes.
+The "diff and rubric only" input that
+`docs/example-store/ex-review-blind-dual-convergence.md` describes applies to
+round 1 only. For a REVISE round, use the input above.
 
 ## Auto-apply eligibility tiers (SAFE / CAREFUL / RISKY)
 

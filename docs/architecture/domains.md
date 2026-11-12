@@ -17,7 +17,7 @@
 
 ## Legacy Domain Routing Overlay (config-only)
 
-The router and planner still consume `controller_catalog` + `router_keywords` from a routing overlay. Two legacy domain directories survive on disk as routing-config-only overlays (no SKILL.md files): `people/` and `shared/`. The other 11 historical domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs were consolidated into `cagents-memory/_system/config/routing.yaml`.
+The router and planner still consume `controller_catalog` + `router_keywords` from a routing overlay. Two legacy domain directories survive on disk as routing-config-only overlays (no SKILL.md files): `agents/_overlay/people/` and `agents/_overlay/shared/`. The other 11 historical domain dirs (`engineering/`, `creative/`, `business/`, `growth/`, `service/`, `science/`, `health/`, `education/`, `personal/`, `arts/`, `trades/`) were deleted in v12 W4.2 and their router keywords + controller catalogs were consolidated into `cagents-memory/_system/config/routing.yaml`.
 
 ## Domain Configuration
 

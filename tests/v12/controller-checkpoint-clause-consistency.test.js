@@ -34,7 +34,7 @@ const CHECKLIST_MD = path.join(
 );
 
 const CONTROLLERS_MD_LINE = 595;
-const CHECKLIST_MD_LINE = 147;
+const CHECKLIST_MD_LINE = 150;
 
 const CLAUSE_ANCHOR = 'after every 3 completed work items';
 

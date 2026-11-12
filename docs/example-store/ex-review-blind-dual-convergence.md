@@ -79,5 +79,6 @@ Upstream samples 10-15% of the batch, with a minimum of 5 items.
 
 ## Why it matters
 This gives the one-line blind-review mention in cAgents a full protocol with a
-log. It adds an explicit anti-anchoring rule that the current Two-Stage Review
-does not have. Distilled from affaan-m/ECC `skills/santa-method/SKILL.md`.
+log. Two-Stage Review now has a matching anti-anchoring rule: a fresh reviewer
+on each REVISE round (see `.claude/rules/playbooks/pat-two-stage-review.md`
+§ Fresh reviewer per round). Distilled from affaan-m/ECC `skills/santa-method/SKILL.md`.

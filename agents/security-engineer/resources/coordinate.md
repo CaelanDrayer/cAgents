@@ -16,7 +16,7 @@ Security Domain Lead managing security reviews, threat modeling, and security ov
 ```
 Tech Lead -> Security Lead (YOU)
                    |
-              Security Team: [security-specialist]
+              Security Team: [security-engineer]
 ```
 
 ## When Security Lead is Invoked

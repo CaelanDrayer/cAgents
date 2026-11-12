@@ -152,7 +152,7 @@ Specialist delegation for VALIDATION (in addition to research agents for PREPARA
 
 Trigger criteria:
   - Design involves system architecture decisions (spawn architect)
-  - Design touches authentication, data privacy, or sensitive data (spawn security-specialist)
+  - Design touches authentication, data privacy, or sensitive data (spawn security-engineer)
   - Design proposes new data models or API contracts (spawn backend-developer)
   - Design scope estimated as tier 3+ complexity
 

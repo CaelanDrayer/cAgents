@@ -29,7 +29,7 @@
 - **task_id**: Unique stable identifier — referenced by all other systems
 - **parent_id**: Links child tasks to a parent work item for hierarchical tracking
 - **name**: Brief task description — kept to <80 characters for CSV readability
-- **type**: UNDERSTAND, DESIGN, BUILD, VERIFY, DOCUMENT — matches task-decomposer classifications
+- **type**: UNDERSTAND, DESIGN, BUILD, VERIFY, DOCUMENT. These match the work item types that the planner writes
 - **status**: pending, in_progress, completed, blocked, dead_letter — the five valid states
 - **priority**: Numeric or label — drives order of assignment when multiple tasks are available
 - **assigned_to**: Agent name currently responsible — blank if unassigned

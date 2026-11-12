@@ -2,7 +2,7 @@
 
 Complete flag tables for all commands, used by `/helper --flags <command>`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Flag surfaces moved to `/act review|audit|optimize|improve` (keyword router; review/optimize/full modes inferred from first token), `/act context` (passthrough), and `/act --mode debug` (debug mode)._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Flag surfaces moved to `/act review|audit|optimize|improve` (keyword router; review/optimize/full modes inferred from first token) and `/act --mode debug` (debug mode). Project context has no flag surface: edit `product_context.yaml` directly._
 
 ## /act Flags
 
@@ -23,14 +23,9 @@ Complete flag tables for all commands, used by `/helper --flags <command>`.
 | `--escalate` | Boolean | Used with `--mode debug`; force escalation report after investigation | false | `/act --mode debug ... --escalate` |
 | `--phase <1-4>` | Number | Used with `--mode debug`; start at a specific debugging phase | 1 | `/act --mode debug ... --phase 3` |
 
-### /act context Passthrough (V11 replacement for /context)
+### Project context (no passthrough)
 
-| Form | Description |
-|------|-------------|
-| `/act context init` | Auto-detect and initialize product context |
-| `/act context show` | Display current product context |
-| `/act context update` | Interactively update product context |
-| `/act context clear` | Remove the product context document |
+V11.0 removed `/context`, and `/act` has no context subcommand. Edit the product context document directly.
 
 The product context document lives at `cagents-memory/_projects/{hash}/product_context.yaml`.
 

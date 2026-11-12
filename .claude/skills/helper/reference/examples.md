@@ -2,7 +2,7 @@
 
 Categorized examples for `/helper --examples`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). All examples below use the v12.1.2 surface: `/act review|audit|optimize|improve <target>` (keyword router), `/act context init|show|update|clear`, and `/act --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, `/debug`; v12.1.2 folded `/improve` into `/act` via the keyword router. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). All examples below use the v12.1.2 surface: `/act review|audit|optimize|improve <target>` (keyword router) and `/act --mode debug`. For project context, edit `product_context.yaml` directly._
 
 ## By Domain
 
@@ -42,9 +42,6 @@ Categorized examples for `/helper --examples`.
 
 # Systematic debugging when quick fixes fail (V11: /debug -> /act --mode debug)
 /act --mode debug "Auth token expiry causes random logouts" --escalate
-
-# Initialize project context (V11: /context init -> /act context init)
-/act context init
 ```
 
 ### Creative Writing Examples
@@ -125,12 +122,6 @@ Categorized examples for `/helper --examples`.
 /act --mode debug "Payment tests fail 1 in 5 runs with connection timeout"
 /act --mode debug "Race condition in WebSocket reconnect" --escalate
 /act --mode debug "Memory leak in event listener" --phase 3
-
-# Product context management (V11 passthroughs)
-/act context init                    # Initialize for new project
-/act context show                    # Check current context
-/act context update                  # Update after framework change
-/act context clear                   # Remove and start fresh
 
 # Debug-then-Fix pipeline
 /act --mode debug "Intermittent 500 error in checkout"

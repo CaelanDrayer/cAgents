@@ -45,12 +45,6 @@ Common issues and diagnostic flows for each command. Used by `/helper --troubles
 - **Fix**: Use `--escalate` to build an escalation report: `/act --mode debug --escalate "..."`. Then ask a domain expert to review it
 - **Prevention**: Use `--escalate` from the start if the bug already resisted 3 or more attempts
 
-### 7. `/act context` not picked up by subsequent /act
-- **Symptom**: /act still makes wrong assumptions about the project structure after `/act context init`
-- **Likely cause**: The context file is not at the expected path. Or the project hash does not match
-- **Check**: Run `/act context show` to make sure that the context exists and holds the correct project_root
-- **Fix**: Run `/act context init` again from the root directory of the project. If a framework or a dependency changed, run `/act context update`
-
 ---
 
 ## /designer Troubleshooting

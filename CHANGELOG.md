@@ -10,6 +10,28 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.2] - 2026-11-11
+
+Stale-name sweeps and a drift guard (WI-32 to WI-35, committed by WI-36).
+
+### Changed
+- The skills, agents, rules, docs and scripts no longer tell a reader to use
+  a removed skill or agent name. Each stale name now points to its current
+  agent or skill. Dated history notes and migration tables keep the old
+  names.
+- The helper references no longer describe the `/act context` passthrough.
+  That passthrough was removed in V11.0.
+- The `README.md` hook table lists all 25 registered hooks and the 5
+  dispatched sub-validators.
+- The `README.md` Models row matches the advisory `metadata.model` values in
+  the agent files.
+- `controller-validation-checklist.md` agrees with the planner output
+  validator.
+
+### Added
+- `tests/regressions/skill-refs-current.test.js` is a drift guard. It fails
+  when a skill, agent or rule file uses a stale name outside a history line.
+
 ## [12.79.1] - 2026-11-11
 
 Truth fixes for counts, overlay paths, the planner validator and secret

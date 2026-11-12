@@ -2,7 +2,7 @@
 #
 # cAgents Agent Schema Validation
 # Validates all agent definition files (flat layout: agents/<name>.md)
-# Version: 12.79.1
+# Version: 12.79.2
 #
 # Usage:
 #   ./scripts/ci/validate-agents.sh                    # Validate all archetypes
@@ -561,7 +561,8 @@ validate_plugin_json() {
 
 #
 # Validate domain_overrides.yaml controller_catalog references resolve to real agents.
-# domain_overrides files still live in {legacy_domain}/config/ — only the agents/ subdir was moved.
+# domain_overrides files live in agents/_overlay/{people,shared}/config/ and in
+# agents/{core,leadership}/config/ (v12.8.0 layout).
 # Agent references are by name; we look them up via the AGENT_INDEX (any archetype).
 #
 validate_domain_overrides() {

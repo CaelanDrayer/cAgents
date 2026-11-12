@@ -2,7 +2,7 @@
 
 Side-by-side comparison matrices for `/helper --compare`.
 
-> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve`, `/act context`, and `/act --mode debug`._
+> _V11.0 removed `/review`, `/optimize`, `/context`, and `/debug`. See [docs/MIGRATION-V11.md](../../../../docs/MIGRATION-V11.md). Their functionality moved to `/improve` and `/act --mode debug`. For project context, edit `product_context.yaml` directly._
 >
 > _v12.2.0 removed `/org` and absorbed its responsibilities into `/team` strategic mode (auto-enabled when `router.domain_count >= 2`; force via `--strategic` / `--no-strategic`). The `/org` columns in the matrices below are PRESERVED as historical reference for users migrating from pre-v12.2.0. Treat any `/org` cell as "equivalent /team --strategic behavior" in v12.2.0+._
 >
@@ -39,7 +39,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | Quick question | Best | -- | -- | -- | -- |
 | Cross-domain coordination | -- | -- | -- | -- | Best |
 | Debug stubborn bug | Best (`--mode debug`) | -- | -- | -- | -- |
-| Persist project knowledge | Best (`/act context init`) | -- | -- | -- | -- |
+| Persist project knowledge | -- (edit `product_context.yaml` directly) | -- | -- | -- | -- |
 | Audit + optimize together | -- | -- | Best (`--mode full`) | -- | -- |
 
 ## Flag Overlap Matrix
@@ -110,7 +110,7 @@ Side-by-side comparison matrices for `/helper --compare`.
 | `/review <target>` | `/improve --mode review <target>` (or `/improve <target>`; `review` is the default mode) |
 | `/optimize <target>` | `/improve --mode optimize <target>` |
 | `/optimize <target> --review-after` | `/improve --mode full --scope <target>` |
-| `/context init\|show\|update\|clear` | `/act context init\|show\|update\|clear` |
+| `/context init\|show\|update\|clear` | Edit `product_context.yaml` directly. V11.0 removed `/context`, and `/act` has no context subcommand |
 | `/debug <bug>` | `/act --mode debug <bug>` |
 
 ## V11 → v12.1.2 Migration Quick Reference

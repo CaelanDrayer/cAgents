@@ -132,7 +132,7 @@ See @.claude/rules/core/orchestration.md for workflow patterns.
 17. **domains/engineering.md**: the engineering guidelines.
 18. **domains/grow.md**: the growth guidelines, for marketing / sales.
 19. **domains/operate.md**: the operate guidelines, for finance / operations.
-20. **domains/people.md**: the people guidelines, for HR / culture. This file is config-only, and no SKILL.md agents live under `people/`.
+20. **domains/people.md**: the people guidelines, for HR / culture. This file is config-only, and no SKILL.md agents live under `agents/_overlay/people/`.
 21. **domains/serve.md**: the serve guidelines, for support / legal.
 
 ### Infrastructure (1 file)

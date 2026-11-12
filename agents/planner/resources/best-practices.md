@@ -7,7 +7,7 @@
 - **Users State Outcomes, Not Requirements**: A request is an iceberg — the planner surfaces the 90% below the waterline that users didn't explicitly state
 - **Fill in the Blanks**: When the request is abstract, the planner determines WHAT, HOW, and implicit prerequisites — specificity is the planner's primary contribution
 - **Plan.yaml Stays Concise**: plan.yaml is a strategic document, not a specification — keep it under 80 lines; detailed acceptance criteria live in decomposition.yaml
-- **Decomposition for Tier 3+**: For complex requests, delegate deep decomposition to task-decomposer — planner writes plan.yaml and orchestrates the planning phase; decomposer writes work_items.yaml
+- **Decomposition for Tier 3+**: For complex requests, do the deep decomposition inline. The planner writes plan.yaml and work_items.yaml in one pass
 - **Auto-Proceed After Planning**: After writing plan.yaml and decomposition.yaml, signal completion immediately — no user review, no approval requests
 - **Controller Selection is Consequential**: The controller assigned in plan.yaml determines the expertise, coordination style, and quality approach for the entire workflow — choose based on domain, tier, and work nature
 - **Context Efficiency**: plan.yaml and decomposition.yaml token budgets are enforced — bloated planning documents slow every subsequent agent in the pipeline
@@ -49,7 +49,7 @@
 
 ### Decomposition Types
 - **Inline Decomposition (Tier 2)**: Planner handles decomposition directly within plan creation — produces plan.yaml with embedded work items for simple requests
-- **Delegated Decomposition (Tier 3+)**: Planner delegates to task-decomposer which writes a separate decomposition.yaml — enables deeper abstraction handling and more aggressive work item generation
+- **Inline Decomposition (Tier 3+)**: The planner writes the work items itself. This gives deeper abstraction handling and more aggressive work item generation
 
 ## Anti-Patterns to Avoid
 
@@ -73,6 +73,5 @@
 ## Collaboration Touchpoints
 
 - **With orchestrator**: Orchestrator spawns planner after enriched_context.yaml is written — planner reads enriched_context.yaml as its primary input and returns plan.yaml to the pipeline
-- **With task-decomposer**: For tier 3+ requests, planner delegates decomposition to task-decomposer — planner writes strategic objectives; decomposer writes granular work items with acceptance criteria and dependency graphs
 - **With prompt-engineer**: Prompt-engineer consumes plan.yaml and decomposition.yaml to build delegation prompts — plan quality directly affects prompt quality; clear controller assignment and objectives produce better prompts
 - **With domain controllers**: Controllers read plan.yaml as their primary coordination brief — the objectives and temporal analysis guide which questions the controller asks and in what order

@@ -86,13 +86,13 @@ context: |
 expected_response_time: 1h
 ```
 
-### Outbound: Consultation to Security Specialist
+### Outbound: Consultation to Security Engineer
 
 ```yaml
-# cagents-memory/sessions/{session_id}/messages/security-specialist/consultation_{timestamp}.yaml
+# cagents-memory/sessions/{session_id}/messages/security-engineer/consultation_{timestamp}.yaml
 type: consultation
 from: qa-lead
-to: security-specialist
+to: security-engineer
 instruction_id: inst_20260103_047
 priority: high
 status: pending
@@ -304,12 +304,12 @@ notes_for_validator:
   - "Tests are deterministic and independent"
 ```
 
-### Inbound: Guidance from Security Specialist
+### Inbound: Guidance from Security Engineer
 
 ```yaml
 # cagents-memory/sessions/{session_id}/messages/qa-lead/consultation_response_{timestamp}.yaml
 type: consultation_response
-from: security-specialist
+from: security-engineer
 to: qa-lead
 instruction_id: inst_20260103_047
 priority: high
@@ -363,7 +363,7 @@ completion_time: 1h
 **Handle**:
 1. Task delegations from Executor/Planner (test creation assignments)
 2. Consultation responses from Backend/Frontend Developers (implementation details)
-3. Guidance from Security Specialist (security test requirements)
+3. Guidance from Security Engineer (security test requirements)
 4. Escalation responses from Tech Lead (acceptance criteria clarification)
 5. Broadcast announcements (testing standard changes, new tools)
 

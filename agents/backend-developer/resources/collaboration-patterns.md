@@ -65,12 +65,12 @@ context: |
   - Frontend needs to show "Check your email" message
 ```
 
-### Review Request to Security Specialist
+### Review Request to Security Engineer
 
 ```yaml
 type: review
 from: backend-developer
-to: security-specialist
+to: security-engineer
 priority: high
 
 review_type: security_review
@@ -113,7 +113,7 @@ question: |
 **Handle**:
 1. Task delegations from Executor/Tech Lead
 2. Consultation requests from Frontend Developer
-3. Review responses from Security Specialist
+3. Review responses from Security Engineer
 4. Consultation responses from DBA/Architect
 5. Broadcast announcements (deployment freezes, incidents)
 

@@ -208,7 +208,7 @@ Step 5: COORDINATING PHASE
   - Controller (e.g., tech-lead) takes over
   - Asks specialist questions via execution agents:
     "What is the current auth implementation?" -> backend-developer
-    "What security risks exist?" -> security-specialist
+    "What security risks exist?" -> security-engineer
     "What testing strategy?" -> qa-lead
   - Synthesizes answers into coherent solution
   - Creates implementation task list
