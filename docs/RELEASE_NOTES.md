@@ -1,10 +1,21 @@
 # cAgents Release Notes
 
-**Current Version**: 12.79.6
+**Current Version**: 12.79.7
 **Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.7 - November 11, 2026 (CLAUDE.md restructure)
+
+This patch release slims `CLAUDE.md` from 28,528 to about 24,100 bytes
+(WI-45). Every load-bearing rule is kept. A preservation table of 57 rows
+records each rule or fact, and no rule moved to another file. The release
+applies 17 ALL-CAPS ledger rows. It removes the `act context`
+passthrough, which has been gone since V11.0. The overlay paragraph
+states that only `people` and `shared` live under `agents/_overlay/`.
+The Skills table drops the Context and Agent columns, because Claude Code
+does not read them.
 
 ## V12.79.6 - November 11, 2026 (rules and agents emphasis)
 
@@ -2800,5 +2811,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.79.6
+**Current Version**: 12.79.7
 **Release Date**: August 21, 2026

@@ -6,7 +6,7 @@ compatibility: "Claude Code >= 2.1.198"
 argument-hint: "<request> [--interactive] [--dry-run] [--quiet] [--stream] [--skip-preflight] [--team] [--analytics] [--template <name>] [--domain <name>] [--tier <N>] [--confidence <N>] [--brief <path>] [--resume <session_id>] [--session <session_dir>] [--mode <standard|debug|review|optimize|full>] [--baseline <ref>] [--suppress <pattern>] [--benchmark <tool>] [--scope <path>] [--auto-fix] [--no-goal]"
 metadata:
   author: CaelanDrayer
-  version: "12.79.6"
+  version: "12.79.7"
   user-invocable: "true"
   context: "none"
 allowed-tools: Read, Grep, Glob, Write, Bash, Agent, Skill, TaskCreate, TaskUpdate, TaskList, TaskGet
@@ -166,7 +166,7 @@ fi
 **ACTION 4 (V11.3.0, /goal auto-anchor)**: Derive a `/goal` condition and offer to set it via Bash. Do this **unless** any of the following opt-out conditions hold:
 
 - `--no-goal` flag is present in `$ARGUMENTS`
-- The invocation came from `/designer` context (designer is interactive-by-contract and exempt from auto-anchoring; mirrors the existing "/designer is EXEMPT from auto-proceed" rule)
+- The invocation came from `/designer` context (designer is interactive-by-contract and exempt from auto-anchoring; mirrors the existing "/designer is exempt from auto-proceed" rule)
 - `process.env.CAGENTS_NO_GOAL` is set to a truthy value
 - `/goal` is already active in the current session, which the status indicator shows. Do not replace user-set goals.
 

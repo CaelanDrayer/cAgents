@@ -10,6 +10,28 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.7] - 2026-11-11
+
+CLAUDE.md restructure (WI-45). Every session loads CLAUDE.md, so this
+change lands as its own commit. One revert restores the old file.
+
+### Changed
+- `CLAUDE.md` is slimmed from 28,528 to about 24,100 bytes. Every
+  load-bearing rule is kept. A preservation table of 57 rows records the
+  class of each rule or fact. No rule moved to another file.
+- 17 ALL-CAPS ledger rows with owner WI-45 are applied to `CLAUDE.md`.
+  One more line changes in `.claude/skills/act/SKILL.md` (line 169). It
+  quotes the `/designer` exemption rule, and the quote now matches the
+  new sentence-case text.
+- The overlay paragraph states that only `people` and `shared` live
+  under `agents/_overlay/`.
+- The Skills table drops the Context and Agent columns. Claude Code does
+  not read those values.
+
+### Removed
+- The `act context` passthrough in the Skills table. That passthrough
+  has been gone since V11.0.
+
 ## [12.79.6] - 2026-11-11
 
 Emphasis release for the rules and agents surface (WI-44). It changes how
