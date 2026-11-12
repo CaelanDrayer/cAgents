@@ -58,7 +58,7 @@ describe('subagent-stop-tracker.cjs', () => {
     runHook({ agent_id: 'agent-123', agent_type: 'test', session_id: TEST_SESSION }, { CLAUDE_PROJECT_DIR: tmpDir });
     const tree = readFileSync(join(sessionDir, 'workflow', 'agent_tree.yaml'), 'utf8');
     expect(tree).not.toContain('stopped_at: null');
-    // yaml.dump() may produce quoted or unquoted timestamps — accept both formats
+    // yaml.dump() may produce quoted or unquoted timestamps — accept both formats.
     expect(tree).toMatch(/stopped_at: '?\d{4}-\d{2}-\d{2}/);
   });
 
@@ -120,10 +120,53 @@ describe('subagent-stop-tracker.cjs', () => {
       expect(lastEntry).toHaveProperty('session_id');
       expect(lastEntry).toHaveProperty('timestamp');
     } else {
-      // Contract test: verify the hook source contains the JSONL code path
+      // Contract test: verify the hook source contains the JSONL code path.
       const hookSource = readFileSync(join(process.cwd(), '.claude', 'hooks', 'subagent-stop-tracker.cjs'), 'utf8');
       expect(hookSource).toContain('agent_performance.jsonl');
       expect(hookSource).toContain('appendFileSync');
     }
+  });
+
+  // LC-SHC-04: last_assistant_message is masked before every cut, so the
+  // audit log, agent tree and performance log carry no token part.
+  describe('redact', () => {
+    const tok = 'ghp_' + 'A'.repeat(36);
+    const readAll = () => [
+      join(agentMemory, '_system', 'logs', 'agent_spawns.log'),
+      join(sessionDir, 'workflow', 'agent_tree.yaml'),
+      join(agentMemory, '_knowledge', 'agent_performance.jsonl'),
+    ].filter(existsSync).map((f) => readFileSync(f, 'utf8')).join('\n');
+    const stop = (msg) => runHook({ agent_id: 'agent-123', agent_type: 'test', session_id: TEST_SESSION, last_assistant_message: msg },
+      { CLAUDE_PROJECT_DIR: tmpDir });
+
+    it('stores a whole token masked', () => {
+      stop(`Pushed with ${tok} and finished.`);
+      const all = readAll();
+      expect(all).not.toContain('ghp_');
+      expect(all).toContain('Pushed with [REDACTED]');
+    });
+
+    it('masks a token that straddles the 200-character summary cut', () => {
+      stop('x'.repeat(190) + tok);
+      const all = readAll();
+      expect(all).not.toMatch(/ghp_[A-Za-z0-9]/);
+      const log = readFileSync(join(agentMemory, '_system', 'logs', 'agent_spawns.log'), 'utf8');
+      expect(log).toContain('summary=' + 'x'.repeat(190) + '[REDACTED]');
+    });
+
+    it('keeps the whole marker when the token starts at offset 150', () => {
+      stop('x'.repeat(150) + tok + ' done');
+      const log = readFileSync(join(agentMemory, '_system', 'logs', 'agent_spawns.log'), 'utf8');
+      expect(log).toContain('[REDACTED]');
+      expect(readAll()).not.toMatch(/ghp_[A-Za-z0-9]/);
+    });
+
+    it('leaves a text ending in task- unchanged and masks a trailing ghs_', () => {
+      stop('started task-');
+      stop('token prefix ghs_');
+      const log = readFileSync(join(agentMemory, '_system', 'logs', 'agent_spawns.log'), 'utf8');
+      expect(log).toContain('summary=started task-\n');
+      expect(log).toContain('summary=token prefix [REDACTED]\n');
+    });
   });
 });

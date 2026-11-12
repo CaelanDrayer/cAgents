@@ -123,6 +123,19 @@ re-expressed for cAgents, not copied verbatim. Each file's `license` field names
 the source repo's license (MIT, Apache-2.0, or CC0-1.0). The `source_url` lets any example be re-verified against its
 origin.
 
+The `source_repos` list in `_index.yaml` records how far each source repo was
+audited. Each row has a `baseline_sha`, a `last_audited_sha`, a `last_audited`
+date, and a `verdict`. The `baseline_sha` is the commit that the example bodies
+were distilled from. It is the same value as `metadata.source_commit` in the
+example files. Start the next review at `last_audited_sha`, and read the
+upstream changes from that commit to the new HEAD.
+
+A repo moves its `last_audited_sha` forward only when its audit verdict is
+CLEAN. For any other verdict, the row keeps the baseline. The `report` field of
+that row names the audit session that holds the result. Do not change the
+`source_commit` of an example when the audit moves forward. The example body
+was not distilled again from the new commit.
+
 ## A note on the word "examples"
 
 "Examples" is overloaded across cAgents, so it helps to name the three distinct

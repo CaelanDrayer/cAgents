@@ -10,6 +10,30 @@ Each entry corresponds to one atomic tiny-bump commit. See
 
 ## [Unreleased]
 
+## [12.79.0] - 2026-11-11
+
+Audited lessons from the example repos (WI-24). The lessons came only from
+repos whose audit verdict is CLEAN.
+
+### Added
+- The bash guard has a full-off switch, `CAGENTS_BASH_GUARD_DISABLED`. Set it
+  in the env, or in the env block of the git-ignored
+  `.claude/settings.local.json`. The guard reads that file only when it is a
+  regular file of 64 KiB or less. The shipped default stays `block`.
+- `.gitignore` now ignores `.claude/settings.local.json`.
+
+### Changed
+- `validate-agents.sh` compares each hook registration on name, event,
+  matcher and timeout. A check that examined zero items now fails.
+- Two tracker hooks mask secrets before they cut and store text. The mask
+  scans a bounded window.
+- The validator rule, the two-stage review playbook, the delegation rule and
+  the controller rule now say these things. A gate with zero items is not
+  evidence. A round-2 review is scoped to the fix diff. A parent never spawns
+  a work item or a reviewer as a fork. A child runs Bash in the foreground.
+- The example store records provenance for 12 CLEAN source repos. The 6
+  DR-06 exemplars now have a source commit and a review date.
+
 ## [12.78.2] - 2026-10-17
 
 Guard-config reach of `find`. A `cd` to a parent dir, or a `find` wrapper,

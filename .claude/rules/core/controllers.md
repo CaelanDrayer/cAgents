@@ -128,6 +128,10 @@ alive, because a null-stop child reads as "actively working". Nothing progresses
 because no agent waits for the child. This is the controller-background-yield stall
 (REC-05, session `run_bash-guard-evaluator_260708_001`).
 
+The same rule covers a long Bash command inside a child. Run it in the foreground
+under a timeout, in bounded slices. Never start it in the background before the
+child ends its turn.
+
 The Stop-hook stale-child freshness gate is `sessionActivelyWorking` in
 `verify-completion.cjs`. It now discounts a null-stop child whose `spawned_at` is
 older than `CAGENTS_STALE_CHILD_MS` (default 30 min), so the stall surfaces. The

@@ -115,11 +115,23 @@ diff, that is a REVISE, not a pass. See
 
 ## Fresh reviewer per round
 
-On each REVISE round, re-spawn a fresh reviewer that carries no context. That
-reviewer gets the diff and the rubric only. A reviewer that carries its own
-earlier REVISE reasoning anchors on that earlier judgment. A clean start on each
-round therefore keeps the assessment independent. This is the canonical statement
-of the rule, and `controllers.md` references it.
+On each REVISE round, re-spawn a fresh reviewer that carries no context. A
+reviewer that carries its own earlier REVISE reasoning anchors on that earlier
+judgment. A clean start on each round therefore keeps the assessment
+independent. Spawn the reviewer by its agent type and never as a fork. A fork
+inherits the parent conversation, so it is not fresh. See `delegation.md`
+§ Synchronous Spawning.
+
+That reviewer gets the rubric, the earlier findings list as input data, and the
+fix diff, but not the earlier conversation or verdict reasoning. It marks each
+earlier finding addressed or not addressed. It looks for new breakage only inside the fix diff. It records a new observation outside the
+fix diff as a deferred note, and that note does not make the round REVISE. The
+reason is the 2-round cap: an unrelated new finding can send a correctly fixed
+item to `dead_letter`.
+
+This is the canonical statement of the rule, and `controllers.md` references it.
+For a REVISE round, this input replaces the "diff and rubric only" input that
+`docs/example-store/ex-review-blind-dual-convergence.md` describes.
 
 ## Auto-apply eligibility tiers (SAFE / CAREFUL / RISKY)
 

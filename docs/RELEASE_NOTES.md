@@ -1,10 +1,28 @@
 # cAgents Release Notes
 
-**Current Version**: 12.78.2
-**Release Date**: October 17, 2026
+**Current Version**: 12.79.0
+**Release Date**: November 11, 2026
 **Status**: Production-Ready
 
 > **Note**: This file carries condensed per-release notes. The canonical [CHANGELOG.md](../CHANGELOG.md) remains the source of truth for full per-bump detail; this file summarizes each released version for quick scanning.
+
+## V12.79.0 - November 11, 2026 (audited lessons from example repos)
+
+This minor release adopts lessons from the example repos (WI-24). The
+lessons came only from repos whose audit verdict is CLEAN. A new switch,
+`CAGENTS_BASH_GUARD_DISABLED`, turns the bash guard fully off. Set it in the
+env, or in the env block of the git-ignored `.claude/settings.local.json`.
+The guard reads that file only when it is a regular file of 64 KiB or less.
+The shipped default stays `block`, and `.gitignore` now ignores
+`.claude/settings.local.json`. `validate-agents.sh` compares each hook
+registration on name, event, matcher and timeout. A check that examined zero
+items now fails. Two tracker hooks mask secrets in a bounded window before
+they cut and store text. The validator, two-stage review, delegation and
+controller rules now say that zero items is not evidence, that a round-2
+review is scoped to the fix diff, that a parent never spawns a work item or
+a reviewer as a fork, and that a child runs Bash in the foreground. The
+example store records provenance for 12 CLEAN source repos and for the 6
+DR-06 exemplars.
 
 ## V12.78.2 - October 17, 2026 (guard-config reach of find)
 
@@ -2717,5 +2735,5 @@ Copyright (c) 2025-2026 CaelanDrayer
 
 ---
 
-**Current Version**: 12.78.2
+**Current Version**: 12.79.0
 **Release Date**: August 21, 2026

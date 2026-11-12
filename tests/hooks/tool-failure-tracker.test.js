@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, rmSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import { execSync } from 'child_process';
 
 const HOOKS_DIR = join(process.cwd(), '.claude', 'hooks');
@@ -71,7 +72,7 @@ describe('tool-failure-tracker.cjs', () => {
 
     it('should truncate long error messages', () => {
       const hookContent = readFileSync(HOOK_PATH, 'utf8');
-      expect(hookContent).toContain('.slice(0, 200)');
+      expect(hookContent).toMatch(/maskSecrets\([^\n]*, 200\)/);
     });
   });
 
@@ -126,6 +127,54 @@ describe('tool-failure-tracker.cjs', () => {
     it('runtime output always includes continue:true', () => {
       const result = runHook({ tool_name: 'Bash', error: 'command not found', session_id: 'nonexistent_session_tft' });
       expect(result.continue).toBe(true);
+    });
+  });
+
+  // LC-SHC-04: credentials in a failure message are masked before the
+  // 200-character cut, so no token part reaches tool_failures.yaml.
+  describe('redact', () => {
+    const SESSION = 'act_redact-tft_261111_999';
+    // Fake token built at runtime, never a literal secret.
+    const tok = 'ghp_' + 'A'.repeat(36);
+    let projectDir;
+    beforeEach(() => {
+      projectDir = mkdtempSync(join(tmpdir(), 'tft-redact-'));
+      const sessionDir = join(projectDir, 'cagents-memory', 'sessions', SESSION);
+      mkdirSync(join(sessionDir, 'workflow'), { recursive: true });
+      writeFileSync(join(sessionDir, 'status.yaml'), 'phase: executing\npipeline_state: COORDINATED\n');
+    });
+    afterEach(() => rmSync(projectDir, { recursive: true, force: true }));
+
+    function storedError(error) {
+      const env = { ...process.env, CLAUDE_PROJECT_DIR: projectDir };
+      delete env.CAGENTS_ACTIVE_SESSION;
+      execSync(`printf '%s' '${JSON.stringify({ tool_name: 'Bash', error, session_id: SESSION }).replace(/'/g, "'\\''")}' | node "${HOOK_PATH}"`,
+        { encoding: 'utf8', timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'], env });
+      const log = readFileSync(join(projectDir, 'cagents-memory', 'sessions', SESSION, 'workflow', 'tool_failures.yaml'), 'utf8');
+      return [...log.matchAll(/error: "([^"]*)"/g)].pop()[1];
+    }
+
+    it('stores a whole token masked', () => {
+      const stored = storedError(`auth failed for ${tok} on push`);
+      expect(stored).not.toContain('ghp_');
+      expect(stored).toContain('auth failed for [REDACTED] on push');
+    });
+
+    it('masks a token that straddles the 200-character cut', () => {
+      const stored = storedError('x'.repeat(190) + tok);
+      expect(stored).not.toMatch(/ghp_[A-Za-z0-9]/);
+      expect(stored).toBe('x'.repeat(190) + '[REDACTED]');
+    });
+
+    it('keeps the whole marker when the token starts at offset 150', () => {
+      const stored = storedError('x'.repeat(150) + tok + ' tail');
+      expect(stored).toContain('[REDACTED]');
+      expect(stored).not.toMatch(/ghp_[A-Za-z0-9]/);
+    });
+
+    it('leaves a text ending in task- unchanged and masks a trailing ghs_', () => {
+      expect(storedError('failed to start task-')).toBe('failed to start task-');
+      expect(storedError('token prefix ghs_')).toBe('token prefix [REDACTED]');
     });
   });
 });

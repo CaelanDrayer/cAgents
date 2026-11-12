@@ -2574,8 +2574,88 @@ function repairSession(sessionDir, opts = {}) {
   return repairs;
 }
 
+/**
+ * LC-SHC-04: mask credentials in text that a hook is about to store.
+ *
+ * Each match of SECRET_PATTERNS in secret-detection.cjs becomes REDACTION_MARK.
+ * The helper also masks a key prefix at the end of the text, because a cut can split a token.
+ * If the pattern list cannot load, the result is the marker (fail closed).
+ *
+ * Use maskSecrets(raw, cut) on raw input of any length.
+ * It masks the first cut + MASK_WINDOW_SLACK characters and cuts the result to `cut` characters.
+ * It then masks the cut text again, with the prefix guard.
+ * A secret that crosses the cut is inside the window, so it is masked before the cut.
+ *
+ * S2-01: the prefix guard is quadratic on a long run of 'sk-' or 'key-'.
+ * Thus it runs only on the cut text. Use maskSecrets(text) only on short text.
+ */
+const REDACTION_MARK = '[REDACTED]';
+const MASK_WINDOW_SLACK = 1024;
+let _maskPatterns = null;
+function _loadMaskPatterns() {
+  if (_maskPatterns) return _maskPatterns;
+  // secret-detection.cjs registers its own createHook() on a plain require,
+  // which would contend for stdin. The flag suppresses that registration
+  // (same pattern as write-edit-dispatch.cjs).
+  const hadFlag = Object.prototype.hasOwnProperty.call(process.env, 'CAGENTS_DISPATCH_IMPORT');
+  if (!hadFlag) process.env.CAGENTS_DISPATCH_IMPORT = '1';
+  let list;
+  try {
+    list = require('./secret-detection.cjs').SECRET_PATTERNS;
+  } finally {
+    if (!hadFlag) delete process.env.CAGENTS_DISPATCH_IMPORT;
+  }
+  // Trailing-prefix guard: the leading literal run of each pattern source
+  // (letters, digits, '_', '-', escaped '.'), 3+ characters. 'aws' is dropped:
+  // it is a keyword, and the secret value follows '='.
+  const prefixes = new Set();
+  for (const { pattern } of list) {
+    const m = pattern.source.match(/^(?:[A-Za-z0-9_-]|\\\.)+/);
+    if (!m) continue;
+    const lit = m[0].replace(/\\\./g, '.');
+    if (lit.length >= 3 && lit.toLowerCase() !== 'aws') prefixes.add(lit);
+  }
+  const alt = [...prefixes]
+    .sort((a, b) => b.length - a.length)
+    .map(p => p.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&'))
+    .join('|');
+  _maskPatterns = {
+    sources: list.map(({ pattern }) => [pattern.source, pattern.flags]),
+    trailing: new RegExp(`(?<![A-Za-z0-9_])(?:${alt})[A-Za-z0-9_.\\-]*$`),
+    prefixes: [...prefixes],
+  };
+  return _maskPatterns;
+}
+
+function _maskPatternsOnly(text, pats) {
+  let out = text;
+  // A fresh RegExp per call: the patterns carry the g flag (stateful lastIndex).
+  for (const [source, flags] of pats.sources) {
+    out = out.replace(new RegExp(source, flags), REDACTION_MARK);
+  }
+  return out;
+}
+
+function maskSecrets(text, cut) {
+  let out = text == null ? '' : String(text);
+  if (!out) return out;
+  let pats;
+  try {
+    pats = _loadMaskPatterns();
+  } catch (e) {
+    return REDACTION_MARK;
+  }
+  if (Number.isInteger(cut) && cut >= 0) {
+    // Mask a bounded window before the cut, not the full raw text.
+    out = _maskPatternsOnly(out.slice(0, cut + MASK_WINDOW_SLACK), pats).slice(0, cut);
+  }
+  // The trailing-prefix guard runs only on short (cut) text.
+  return _maskPatternsOnly(out, pats).replace(pats.trailing, REDACTION_MARK);
+}
+
 module.exports = {
   repairSession, // WI-028 stop-warnings self-heal
+  maskSecrets, // LC-SHC-04: credential masking for stored hook text
   LOCK_SKIPPED,
   writeFileAtomic,
   sessionFromPromptHint,

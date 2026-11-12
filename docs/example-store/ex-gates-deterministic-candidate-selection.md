@@ -8,12 +8,14 @@ metadata:
   category: gates
   source_repo: vercel-labs/agent-skills
   source_url: "https://github.com/vercel-labs/agent-skills"
+  source_commit: 063bee94c3f4df8453406c830b0a7df0f2860278
   applies_to:
     - cagents:planner
     - all-controllers
     - cagents:execution-monitor
   demonstrates: "A pure/LLM-free gate picks investigation candidates from evidence (not LLM judgment), each investigation reads only the files its candidate names, and every skipped candidate is surfaced with a reason in a 'Not investigated' trust section."
   added: "2026-07-10"
+  reviewed: "2026-10-15"
 allowed-tools: Read Grep Glob
 ---
 

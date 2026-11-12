@@ -173,6 +173,12 @@ meant to delegate. There is no such thing as a named blocking spawn:
 This is the canonical statement of the precedence, and the other surfaces
 that mandate synchronous spawning point here.
 
+**Spawn a work item or a reviewer by its agent type, never as a fork.** Do
+not pass `subagent_type: "fork"` for this work. A fork runs in the background
+whatever `run_in_background` says, which is the background-and-yield stall
+above. A fork also inherits the whole parent conversation, so a forked
+reviewer is not a fresh reviewer.
+
 | You need | Spawn it as | Where visibility comes from |
 |----------|-------------|-----------------------------|
 | A result you must collect in this turn (the default for all execution work) | UNNAMED, `run_in_background: false` | A `TaskCreate` whose subject matches the agent's `description` |
